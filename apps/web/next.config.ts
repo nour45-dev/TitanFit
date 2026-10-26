@@ -1,7 +1,12 @@
+import path from 'node:path';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
+  output:
+    process.platform === 'win32' && process.env.NEXT_STANDALONE !== 'true'
+      ? undefined
+      : 'standalone',
+  outputFileTracingRoot: path.resolve(__dirname, '../../'),
   reactStrictMode: true,
   transpilePackages: ['@gymos/config', '@gymos/contracts', '@gymos/ui'],
   poweredByHeader: false,
