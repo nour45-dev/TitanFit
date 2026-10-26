@@ -18,23 +18,46 @@ enum TenantStatus {
   @@map("tenant_status")
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  FROZEN
+  GRACE_PERIOD
+  EXPIRED
+  CANCELLED
+
+  @@map("subscription_status")
+}
+
+enum BookingStatus {
+  BOOKED
+  WAITLISTED
+  CHECKED_IN
+  LATE_CANCELLED
+  CANCELLED
+
+  @@map("booking_status")
+}
+
 model Tenant {
   id              String       @id @default(uuid()) @db.Uuid
   slug            String       @unique @db.VarChar(80)
   nameEn          String       @map("name_en") @db.VarChar(160)
   nameAr          String       @map("name_ar") @db.VarChar(160)
   status          TenantStatus @default(TRIAL)
+  saasPlanCode    String       @default("PRO_MULTI_BRANCH") @map("saas_plan_code") @db.VarChar(40)
   defaultCurrency String       @default("EGP") @map("default_currency") @db.VarChar(3)
   defaultLocale   String       @default("en") @map("default_locale") @db.VarChar(10)
   timezone        String       @default("Africa/Cairo") @db.VarChar(64)
-  primaryColorHex String       @default("#10B981") @map("primary_color_hex") @db.VarChar(7)
-  accentColorHex  String       @default("#F59E0B") @map("accent_color_hex") @db.VarChar(7)
+  primaryColorHex String       @default("#D4AF37") @map("primary_color_hex") @db.VarChar(7)
+  accentColorHex  String       @default("#10B981") @map("accent_color_hex") @db.VarChar(7)
   logoUrl         String?      @map("logo_url") @db.Text
   createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt       DateTime?    @map("deleted_at") @db.Timestamptz(6)
 
   branches Branch[]
+  users    User[]
+  roles    Role[]
 
   @@index([status])
   @@map("tenants")
@@ -60,4 +83,207 @@ model Branch {
   @@unique([tenantId, code])
   @@index([tenantId, isActive])
   @@map("branches")
+}
+
+model User {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @map("tenant_id") @db.Uuid
+  branchId            String?   @map("branch_id") @db.Uuid
+  email               String?   @db.VarChar(160)
+  phone               String    @db.VarChar(32)
+  fullNameEn          String    @map("full_name_en") @db.VarChar(160)
+  fullNameAr          String    @map("full_name_ar") @db.VarChar(160)
+  passwordHash        String    @map("password_hash") @db.Text
+  totpSecretEncrypted String?   @map("totp_secret_encrypted") @db.Text
+  totpEnabled         Boolean   @default(false) @map("totp_enabled")
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime? @map("locked_until") @db.Timestamptz(6)
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, phone])
+  @@index([tenantId, email])
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  key         String   @db.VarChar(64)
+  nameEn      String   @map("name_en") @db.VarChar(120)
+  nameAr      String   @map("name_ar") @db.VarChar(120)
+  permissions String[] @db.Text
+  isSystem    Boolean  @default(false) @map("is_system")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, key])
+  @@map("roles")
+}
+
+model AuditLog {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  actorId        String   @map("actor_id") @db.Uuid
+  impersonatorId String?  @map("impersonator_id") @db.Uuid
+  action         String   @db.VarChar(120)
+  entityType     String   @map("entity_type") @db.VarChar(80)
+  entityId       String   @map("entity_id") @db.VarChar(120)
+  ipAddress      String   @map("ip_address") @db.VarChar(64)
+  userAgent      String?  @map("user_agent") @db.Text
+  metadataJson   String   @default("{}") @map("metadata_json") @db.Text
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, action])
+  @@map("audit_logs")
+}
+
+model MemberProfile {
+  id                    String    @id @default(uuid()) @db.Uuid
+  tenantId              String    @map("tenant_id") @db.Uuid
+  branchId              String    @map("branch_id") @db.Uuid
+  userId                String?   @map("user_id") @db.Uuid
+  membershipNumber      String    @map("membership_number") @db.VarChar(40)
+  fullNameEn            String    @map("full_name_en") @db.VarChar(160)
+  fullNameAr            String    @map("full_name_ar") @db.VarChar(160)
+  phone                 String    @db.VarChar(32)
+  email                 String?   @db.VarChar(160)
+  gender                String    @default("MALE") @db.VarChar(16)
+  emergencyContactName  String    @map("emergency_contact_name") @db.VarChar(160)
+  emergencyContactPhone String    @map("emergency_contact_phone") @db.VarChar(32)
+  tags                  String[]  @db.Text
+  encryptedHealthBlob   String?   @map("encrypted_health_blob") @db.Text
+  healthIv              String?   @map("health_iv") @db.VarChar(64)
+  healthAuthTag         String?   @map("health_auth_tag") @db.VarChar(64)
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt             DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@unique([tenantId, membershipNumber])
+  @@index([tenantId, phone])
+  @@map("member_profiles")
+}
+
+model SubscriptionPlan {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  code              String   @db.VarChar(40)
+  nameEn            String   @map("name_en") @db.VarChar(120)
+  nameAr            String   @map("name_ar") @db.VarChar(120)
+  type              String   @db.VarChar(32)
+  priceMinor        Int      @map("price_minor")
+  currency          String   @default("EGP") @db.VarChar(3)
+  durationDays      Int      @map("duration_days")
+  totalSessions     Int?     @map("total_sessions")
+  maxFreezeDays     Int      @default(14) @map("max_freeze_days")
+  maxFreezeCount    Int      @default(2) @map("max_freeze_count")
+  gracePeriodDays   Int      @default(3) @map("grace_period_days")
+  multiBranchAccess Boolean  @default(true) @map("multi_branch_access")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@unique([tenantId, code])
+  @@map("subscription_plans")
+}
+
+model MemberSubscription {
+  id                String             @id @default(uuid()) @db.Uuid
+  tenantId          String             @map("tenant_id") @db.Uuid
+  memberId          String             @map("member_id") @db.Uuid
+  planId            String             @map("plan_id") @db.Uuid
+  branchId          String             @map("branch_id") @db.Uuid
+  status            SubscriptionStatus @default(ACTIVE)
+  startsAt          DateTime           @map("starts_at") @db.Timestamptz(6)
+  endsAt            DateTime           @map("ends_at") @db.Timestamptz(6)
+  remainingSessions Int?               @map("remaining_sessions")
+  freezeDaysUsed    Int                @default(0) @map("freeze_days_used")
+  freezeCountUsed   Int                @default(0) @map("freeze_count_used")
+  autoRenew         Boolean            @default(false) @map("auto_renew")
+  createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([tenantId, memberId, status])
+  @@index([tenantId, endsAt])
+  @@map("member_subscriptions")
+}
+
+model Invoice {
+  id               String   @id @default(uuid()) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  branchId         String   @map("branch_id") @db.Uuid
+  memberId         String   @map("member_id") @db.Uuid
+  invoiceNumber    String   @map("invoice_number") @db.VarChar(64)
+  subtotalMinor    Int      @map("subtotal_minor")
+  discountMinor    Int      @default(0) @map("discount_minor")
+  taxMinor         Int      @default(0) @map("tax_minor")
+  totalMinor       Int      @map("total_minor")
+  currency         String   @default("EGP") @db.VarChar(3)
+  paymentProvider  String   @map("payment_provider") @db.VarChar(32)
+  status           String   @default("PAID") @db.VarChar(32)
+  qrVerificationHash String @map("qr_verification_hash") @db.VarChar(128)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@unique([tenantId, invoiceNumber])
+  @@index([tenantId, createdAt])
+  @@map("invoices")
+}
+
+model ClassSchedule {
+  id                      String   @id @default(uuid()) @db.Uuid
+  tenantId                String   @map("tenant_id") @db.Uuid
+  branchId                String   @map("branch_id") @db.Uuid
+  roomName                String   @map("room_name") @db.VarChar(80)
+  titleEn                 String   @map("title_en") @db.VarChar(120)
+  titleAr                 String   @map("title_ar") @db.VarChar(120)
+  category                String   @db.VarChar(40)
+  trainerId               String   @map("trainer_id") @db.Uuid
+  trainerNameEn           String   @map("trainer_name_en") @db.VarChar(120)
+  trainerNameAr           String   @map("trainer_name_ar") @db.VarChar(120)
+  startsAt                DateTime @map("starts_at") @db.Timestamptz(6)
+  endsAt                  DateTime @map("ends_at") @db.Timestamptz(6)
+  capacity                Int
+  bookedCount             Int      @default(0) @map("booked_count")
+  waitlistCount           Int      @default(0) @map("waitlist_count")
+  lateCancelWindowMinutes Int      @default(180) @map("late_cancel_window_minutes")
+  createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([tenantId, branchId, startsAt])
+  @@map("class_schedules")
+}
+
+model ClassBooking {
+  id              String        @id @default(uuid()) @db.Uuid
+  tenantId        String        @map("tenant_id") @db.Uuid
+  classScheduleId String        @map("class_schedule_id") @db.Uuid
+  memberId        String        @map("member_id") @db.Uuid
+  status          BookingStatus @default(BOOKED)
+  waitlistOrder   Int?          @map("waitlist_order")
+  penaltyApplied  Boolean       @default(false) @map("penalty_applied")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([tenantId, classScheduleId, memberId])
+  @@index([tenantId, classScheduleId, status])
+  @@map("class_bookings")
+}
+
+model AttendanceLog {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  branchId          String   @map("branch_id") @db.Uuid
+  memberId          String   @map("member_id") @db.Uuid
+  method            String   @default("QR_ROTATING_HMAC") @db.VarChar(32)
+  allowed           Boolean  @default(true)
+  denialReason      String?  @map("denial_reason") @db.VarChar(160)
+  turnstileDeviceId String?  @map("turnstile_device_id") @db.VarChar(64)
+  checkedInAt       DateTime @default(now()) @map("checked_in_at") @db.Timestamptz(6)
+
+  @@index([tenantId, branchId, checkedInAt])
+  @@index([tenantId, memberId, checkedInAt])
+  @@map("attendance_logs")
 }
