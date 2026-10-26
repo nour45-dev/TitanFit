@@ -1,0 +1,105 @@
+name: GymOS CI & Security Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - "phase-*"
+  pull_request:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  quality-and-tests:
+    name: "Quality, RLS Security, Unit, Integration & E2E"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: gymos_owner
+          POSTGRES_PASSWORD: ci_owner_password_secure_123
+          POSTGRES_DB: gymos_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      NODE_ENV: test
+      DATABASE_MIGRATION_URL: postgresql://gymos_owner:ci_owner_password_secure_123@localhost:5432/gymos_ci?schema=public
+      DATABASE_URL: postgresql://gymos_app:ci_app_password_secure_123456@localhost:5432/gymos_ci?schema=public&connection_limit=10
+      DATABASE_WORKER_URL: postgresql://gymos_worker:ci_worker_password_secure_123456@localhost:5432/gymos_ci?schema=public&connection_limit=5
+      DB_RUNTIME_APP_PASSWORD: ci_app_password_secure_123456
+      DB_RUNTIME_WORKER_PASSWORD: ci_worker_password_secure_123456
+      REDIS_URL: redis://localhost:6379
+      JWT_ACCESS_SECRET: "ci_test_jwt_access_secret_minimum_32_characters_long_0000000000"
+      JWT_REFRESH_SECRET: "ci_test_jwt_refresh_secret_minimum_32_characters_long_000000000"
+      COOKIE_SECRET: "ci_test_cookie_secret_minimum_32_characters_long_00000000000000"
+      HEALTH_DATA_ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      QR_HMAC_MASTER_SECRET: "ci_test_qr_hmac_secret_minimum_32_characters_long_0000000000000"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Secret & Sensitive File Scan
+        run: node infra/scripts/secret-scan.mjs
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.6.5
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client & Build Packages
+        run: pnpm build
+
+      - name: Run Pre-Deploy Database Migrations & Provision Non-Bypassable RLS Roles
+        run: pnpm db:migrate:deploy
+
+      - name: Lint & Strict Typecheck
+        run: |
+          pnpm lint
+          pnpm typecheck
+
+      - name: Run Unit & Real Postgres RLS Integration Tests
+        run: pnpm test
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter @gymos/web exec playwright install --with-deps chromium
+
+      - name: Run Playwright E2E Tests (English LTR & Arabic RTL)
+        run: pnpm --filter @gymos/web test:e2e
+
+      - name: Dependency Security Audit
+        run: pnpm audit --audit-level=high || true

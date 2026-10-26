@@ -1,0 +1,37 @@
+{
+  "name": "@gymos/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:migrate:deploy": "prisma migrate deploy && node ./dist/provision-roles.js",
+    "db:seed": "node ./dist/seed.js",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "typecheck": "prisma generate && tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run src/rls-role.spec.ts",
+    "test:integration": "vitest run src/rls-role.spec.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.4.1"
+  },
+  "devDependencies": {
+    "@gymos/tsconfig": "workspace:*",
+    "@electric-sql/pglite": "^0.2.17",
+    "@types/node": "^22.13.9",
+    "@types/pg": "^8.11.11",
+    "pg": "^8.13.3",
+    "prisma": "^6.4.1",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.7"
+  }
+}

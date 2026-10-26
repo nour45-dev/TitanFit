@@ -1,0 +1,77 @@
+# ============================================================================
+# GymOS Local Development Infrastructure (docker-compose.yml)
+# Uses isolated `gymos_*` container & volume names so existing Docker
+# containers and volumes on the host are NEVER touched.
+# ============================================================================
+
+name: gymos-local
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gymos_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gymos_owner
+      POSTGRES_PASSWORD: local_owner_password_change_me
+      POSTGRES_DB: gymos
+    ports:
+      - "5432:5432"
+    volumes:
+      - gymos_postgres_data:/var/lib/postgresql/data
+      - ./infra/docker/init-postgres.sql:/docker-entrypoint-initdb.d/01-init-roles.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gymos_owner -d gymos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: gymos_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - gymos_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: gymos_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: gymos_minio_admin
+      MINIO_ROOT_PASSWORD: gymos_minio_secret_key
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - gymos_minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: gymos_mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  gymos_postgres_data:
+    name: gymos_postgres_data
+  gymos_redis_data:
+    name: gymos_redis_data
+  gymos_minio_data:
+    name: gymos_minio_data
