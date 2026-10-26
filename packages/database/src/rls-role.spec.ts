@@ -10,6 +10,10 @@ const migrationSqlPath = resolve(
   __dirname,
   '../prisma/migrations/0001_init_roles_and_rls/migration.sql',
 );
+const domainMigrationSqlPath = resolve(
+  __dirname,
+  '../prisma/migrations/0002_domain_tables_and_rls/migration.sql',
+);
 
 interface SqlExecutor {
   exec(sql: string): Promise<void>;
@@ -67,6 +71,9 @@ describe('PostgreSQL Non-Bypassable Runtime Role & Tenant RLS Isolation Proof', 
 
     const migrationSql = readFileSync(migrationSqlPath, 'utf8');
     await executor.exec(migrationSql);
+
+    const domainMigrationSql = readFileSync(domainMigrationSqlPath, 'utf8');
+    await executor.exec(domainMigrationSql);
 
     // Seed two tenants and two branches as Super Admin
     await executor.exec(`
@@ -195,5 +202,25 @@ describe('PostgreSQL Non-Bypassable Runtime Role & Tenant RLS Isolation Proof', 
       `SELECT name_en FROM branches WHERE tenant_id = '${tenantBId}' AND code = 'ALEX-1'`,
     );
     expect(tenantBBranch.rows[0]?.name_en).toBe('Gleem Branch');
+  });
+
+  it('enforces append-only immutability on audit_logs (blocks UPDATE and DELETE at DB trigger level)', async () => {
+    const actorId = '33333333-3333-4333-8333-333333333333';
+    await executor.exec(`
+      SET ROLE gymos_app;
+      SELECT set_config('app.current_tenant_id', '${tenantAId}', false);
+      INSERT INTO audit_logs (tenant_id, actor_id, action, entity_type, entity_id, ip_address)
+      VALUES ('${tenantAId}', '${actorId}', 'auth.login', 'user', '${actorId}', '197.55.10.1');
+    `);
+
+    await expect(
+      executor.exec(`UPDATE audit_logs SET action = 'TAMPERED' WHERE tenant_id = '${tenantAId}';`),
+    ).rejects.toThrow(/audit_logs table is immutable/);
+
+    await expect(
+      executor.exec(`DELETE FROM audit_logs WHERE tenant_id = '${tenantAId}';`),
+    ).rejects.toThrow(/audit_logs table is immutable/);
+
+    await executor.exec(`RESET ROLE;`);
   });
 });
