@@ -26,7 +26,9 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
     await expect(page.getByTestId('free-calorie-calculator')).toBeVisible();
 
     // 2. Open Free Trial Video Workouts & Meal Plans Hub
-    await page.getByTestId('open-free-trial-hub-btn').click();
+    const freeTrialBtn = page.getByTestId('open-free-trial-hub-btn');
+    await expect(freeTrialBtn).toBeVisible();
+    await freeTrialBtn.click();
     await expect(page.getByTestId('panel-free-trial-hub')).toBeVisible();
 
     // 3. Authenticate as SaaS Super Admin (Email + Password)
@@ -93,5 +95,33 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
     await page.getByTestId('trainee-gym-code-input').fill('TF-7711');
     await page.getByTestId('trainee-submit-btn').click();
     await expect(page.getByTestId('panel-member-pwa')).toBeVisible();
+  });
+
+  test('verifies strict credential rejection on invalid logins and guest access to Free Trial Hub', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    // 1. Invalid Admin / Gym Owner credentials rejection
+    await page.getByTestId('open-login-modal-btn').click();
+    await page.getByTestId('login-email-input').fill('unknown_user@random.com');
+    await page.getByTestId('login-password-input').fill('wrongpass');
+    await page.getByTestId('login-submit-btn').click();
+    await expect(page.getByText('بيانات تسجيل الدخول غير صحيحة')).toBeVisible();
+
+    // 2. Invalid Gym Secret PIN rejection
+    await page.getByTestId('tab-trainee-pin').click();
+    await page.getByTestId('trainee-gym-code-input').fill('INVALID-9999');
+    await page.getByTestId('trainee-submit-btn').click();
+    await expect(page.getByText('غير صحيح')).toBeVisible();
+
+    // 3. Guest can open Free Trial Hub directly from the login modal without credentials
+    await page.getByTestId('guest-free-trial-btn').click();
+    await expect(page.getByTestId('panel-free-trial-hub')).toBeVisible();
+
+    // 4. Guest can also open Free Trial Hub from the top header
+    await page.goto('/');
+    await page.getByTestId('header-free-trial-btn').click();
+    await expect(page.getByTestId('panel-free-trial-hub')).toBeVisible();
   });
 });

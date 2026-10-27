@@ -687,10 +687,12 @@ export function PlatformProvider({
     const trimmed = email.trim().toLowerCase();
 
     // 1. Check Super Admin (noureldin / 010023 or admin@titanfit.com / admin123)
+    const cleanPass = (password || '').trim();
+
+    // 1. Check if SaaS Super Admin (Captain Nour El-Din) - strictly requires correct credentials
     if (
-      (trimmed === 'noureldin' && (password === '010023' || !password)) ||
-      (trimmed.includes('admin') && (password === 'admin123' || !password)) ||
-      trimmed === 'platform@titanfit.io'
+      (trimmed === 'noureldin' && cleanPass === '010023') ||
+      (trimmed === 'admin@titanfit.com' && cleanPass === 'admin123')
     ) {
       const user = {
         email: trimmed === 'noureldin' ? 'noureldin@titanfit.com' : trimmed,
@@ -714,7 +716,7 @@ export function PlatformProvider({
     }
 
     // 2. Check if Trainee logging in via Gym Secret PIN / Code
-    const targetCode = gymSecretCode || (trimmed.startsWith('tf-') || trimmed.startsWith('pk-') || trimmed.includes('-') ? trimmed : '');
+    const targetCode = gymSecretCode || (trimmed.startsWith('tf-') || trimmed.startsWith('pk-') ? trimmed : '');
     if (targetCode) {
       const gymMatch = tenants.find((t) => t.gymSecretCode.toLowerCase() === targetCode.toLowerCase());
       if (gymMatch) {
@@ -722,17 +724,20 @@ export function PlatformProvider({
       }
     }
 
-    // 3. Check if registered Tenant Gym Owner
+    // 3. Check if registered Tenant Gym Owner with REAL credentials
     const tenantMatch = tenants.find(
       (t) => t.ownerEmail.toLowerCase() === trimmed || t.slug.toLowerCase() === trimmed,
     );
 
     if (tenantMatch) {
-      const isPassValid = !password || tenantMatch.password === password || password === 'coach123' || password === 'owner123' || password === 'pass123';
-      if (!isPassValid) {
+      const expectedPassword = tenantMatch.password || 'coach123';
+      if (!cleanPass || cleanPass !== expectedPassword) {
         return {
           success: false,
-          message: locale === 'ar' ? 'كلمة المرور غير صحيحة لحساب هذا النادي' : 'Invalid password for this gym account',
+          message:
+            locale === 'ar'
+              ? 'كلمة المرور غير صحيحة لحساب هذا النادي. يرجى التأكد من كلمة المرور المسلمة لك من إدارة المنصة.'
+              : 'Invalid password for this gym account. Please check your credentials provided by platform administration.',
         };
       }
       const user = {
@@ -757,18 +762,14 @@ export function PlatformProvider({
       return { success: true, role: 'GYM_OWNER', tenant: tenantMatch };
     }
 
-    // 4. Fallback Member
-    const memberUser = {
-      email: trimmed,
-      name: locale === 'ar' ? 'متدرب في النادي' : 'Club Member',
-      role: 'MEMBER' as UserRoleKey,
+    // 4. Any other credentials are STRICTLY REJECTED — NO loose fallback login
+    return {
+      success: false,
+      message:
+        locale === 'ar'
+          ? 'بيانات تسجيل الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني وكلمة المرور المسلمة لك من إدارة المنصة.'
+          : 'Invalid login credentials. Please verify your email and password provided by platform administration.',
     };
-    setIsAuthenticated(true);
-    setCurrentUser(memberUser);
-    setActiveRole('MEMBER');
-    setActiveSection('MEMBER_PWA');
-    showToast(locale === 'ar' ? 'تم تسجيل الدخول لتطبيق المتدرب!' : 'Logged in to Member App!');
-    return { success: true, role: 'MEMBER' };
   };
 
   const loginWithGymCode: PlatformStoreContextValue['loginWithGymCode'] = (code) => {

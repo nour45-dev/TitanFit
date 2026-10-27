@@ -548,6 +548,15 @@ function TitanFitEnterpriseShell() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  data-testid="header-free-trial-btn"
+                  onClick={() => setActiveSection('FREE_TRIAL_HUB')}
+                  className="hidden sm:inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                >
+                  <Gift className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>{isAr ? 'الحساب المجاني' : 'Free Trial'}</span>
+                </button>
+                <button
+                  type="button"
                   data-testid="open-trainee-login-btn"
                   onClick={() => {
                     setLoginTab('TRAINEE_PIN');
@@ -597,8 +606,8 @@ function TitanFitEnterpriseShell() {
       </header>
 
       <div className="flex min-h-[calc(100vh-65px)]">
-        {/* MODERN UPGRADED SIDEBAR — Shown inside ERP & Admin Views for Admins and Gym Owners Only */}
-        {!isPublicWebsiteView && activeRole !== 'MEMBER' && (
+        {/* MODERN UPGRADED SIDEBAR — Shown inside ERP & Admin Views for Authenticated Admins and Gym Owners Only */}
+        {isAuthenticated && !isPublicWebsiteView && activeRole !== 'MEMBER' && (
           <aside
             className={`fixed inset-y-0 start-0 z-40 flex w-72 flex-col border-e border-slate-200 bg-white text-slate-800 shadow-xl transition-transform dark:border-slate-800 dark:bg-[#0B0F19] dark:text-slate-200 lg:static lg:translate-x-0 ${
               mobileSidebarOpen
@@ -866,7 +875,7 @@ function TitanFitEnterpriseShell() {
                     data-testid="login-email-input"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder={isAr ? "noureldin أو owner@titanfit.eg" : "noureldin / owner@titanfit.eg"}
+                    placeholder={isAr ? "البريد الإلكتروني أو اسم المستخدم" : "Email or username"}
                     className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                 </div>
@@ -880,7 +889,7 @@ function TitanFitEnterpriseShell() {
                     data-testid="login-password-input"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
-                    placeholder={isAr ? "010023 أو كلمة مرور ناديك" : "010023 / password"}
+                    placeholder="••••••••"
                     className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                 </div>
@@ -898,8 +907,8 @@ function TitanFitEnterpriseShell() {
               <form onSubmit={handleTraineeSubmit} className="mt-4 space-y-3.5">
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                   {isAr
-                    ? 'أدخل الرقم السري الخاص بناديك (المقدم لك من إدارة الجيم) لفتح تطبيقك الرياضي والغذائي الخاص بجيمك فقط:'
-                    : 'Enter your Gym Secret Code to open your personalized training and nutrition portal for your gym:'}
+                    ? 'أدخل الرقم السري الخاص بناديك (المسلم لك من إدارة الجيم) لفتح تطبيقك الرياضي والغذائي الخاص بجيمك فقط:'
+                    : 'Enter your Gym Secret PIN provided by your gym management to open your private gym portal:'}
                 </p>
 
                 <div>
@@ -911,31 +920,9 @@ function TitanFitEnterpriseShell() {
                     data-testid="trainee-gym-code-input"
                     value={traineeGymCode}
                     onChange={(e) => setTraineeGymCode(e.target.value.toUpperCase())}
-                    placeholder="TF-7711"
+                    placeholder={isAr ? "مثال: TF-XXXX" : "e.g. TF-XXXX"}
                     className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 font-mono text-sm font-black uppercase text-slate-900 focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500">
-                    {isAr ? 'أندية مسجلة للتجربة السريعة:' : 'Registered Gyms on Platform:'}
-                  </label>
-                  <div className="mt-1.5 flex flex-wrap gap-1.5">
-                    {tenants.map((t) => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setTraineeGymCode(t.gymSecretCode)}
-                        className={`rounded-lg border px-2.5 py-1 text-[11px] font-bold transition ${
-                          traineeGymCode === t.gymSecretCode
-                            ? 'border-emerald-500 bg-emerald-50 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-200'
-                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300'
-                        }`}
-                      >
-                        {isAr ? t.nameAr : t.nameEn} ({t.gymSecretCode})
-                      </button>
-                    ))}
-                  </div>
                 </div>
 
                 <button
@@ -948,15 +935,35 @@ function TitanFitEnterpriseShell() {
               </form>
             )}
 
+            {/* Free Trial / Guest Access Box */}
+            <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-center dark:border-emerald-900/50 dark:bg-emerald-950/20">
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                {isAr
+                  ? 'تريد تجربة المنصة والتمارين بدون حساب؟'
+                  : 'Want to try workouts and meal plans without an account?'}
+              </p>
+              <button
+                type="button"
+                data-testid="guest-free-trial-btn"
+                onClick={() => {
+                  setShowLoginModal(false);
+                  setLoginError('');
+                  setActiveSection('FREE_TRIAL_HUB');
+                }}
+                className="mt-2.5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 py-2.5 text-xs font-black text-white shadow-md transition hover:opacity-95"
+              >
+                <Gift className="h-4 w-4" />
+                <span>{isAr ? 'تصفح الحساب المجاني (الأنشطة الرياضية والأنظمة الغذائية)' : 'Explore Free Account (Workouts & Nutrition)'}</span>
+                <span className="rtl:rotate-180">←</span>
+              </button>
+            </div>
+
             {/* Enterprise Security Note */}
-            <div className="mt-5 border-t border-slate-100 pt-3.5 space-y-1 text-center dark:border-slate-800">
+            <div className="mt-4 border-t border-slate-100 pt-3 text-center dark:border-slate-800">
               <div className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
                 <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                <span>{isAr ? 'بوابة دخول آمنة ومشفرة بالكامل (256-bit AES Enterprise)' : '256-bit AES Encrypted Enterprise Authentication'}</span>
+                <span>{isAr ? 'بوابة دخول آمنة ومحمية ومشفرة (256-bit AES Enterprise)' : '256-bit AES Encrypted Enterprise Authentication'}</span>
               </div>
-              <p className="font-mono text-[10px] font-bold text-amber-700 dark:text-amber-400">
-                {isAr ? 'حساب مالك المنصة: noureldin • كلمة المرور: 010023' : 'SaaS Super Admin: noureldin • Password: 010023'}
-              </p>
             </div>
           </motion.div>
         </div>
