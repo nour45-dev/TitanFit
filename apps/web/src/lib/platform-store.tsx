@@ -677,11 +677,15 @@ export function PlatformProvider({
   const login: PlatformStoreContextValue['login'] = (email, password) => {
     const trimmed = email.trim().toLowerCase();
 
-    // 1. Check Super Admin
-    if (trimmed.includes('admin') || trimmed === 'platform@titanfit.io') {
+    // 1. Check Super Admin (noureldin / 010023 or admin@titanfit.com / admin123)
+    if (
+      (trimmed === 'noureldin' && (password === '010023' || !password)) ||
+      (trimmed.includes('admin') && (password === 'admin123' || !password)) ||
+      trimmed === 'platform@titanfit.io'
+    ) {
       const user = {
-        email: trimmed,
-        name: locale === 'ar' ? 'كابتن نور الدين (مالك المنصة)' : 'Nour El-Din (Super Admin)',
+        email: trimmed === 'noureldin' ? 'noureldin@titanfit.com' : trimmed,
+        name: locale === 'ar' ? 'كابتن نور الدين (مالك المنصة)' : 'Capt. Nour El-Din (Super Admin)',
         role: 'SUPER_ADMIN' as UserRoleKey,
         logoUrl: '/brand/logo.png',
         primaryColor: '#D97706',
@@ -691,11 +695,11 @@ export function PlatformProvider({
       setActiveRole('SUPER_ADMIN');
       setActiveSection('SUPER_ADMIN');
       setBrandAccentHex('#D97706');
-      appendAudit('SUPER_ADMIN_LOGIN', 'Full SaaS Control Plane access granted');
+      appendAudit('SUPER_ADMIN_LOGIN', 'Full SaaS Control Plane access granted to Nour El-Din');
       showToast(
         locale === 'ar'
-          ? 'مرحباً بك يا كابتن نور! تم فتح لوحة تحكم الـ SaaS بالكامل'
-          : 'Welcome Super Admin! Opened SaaS Control Plane',
+          ? 'مرحباً بك يا كابتن نور الدين! تم فتح لوحة تحكم المنصة والـ SaaS بالكامل 👑'
+          : 'Welcome Capt. Nour El-Din! Full SaaS Control Plane Unlocked 👑',
       );
       return { success: true, role: 'SUPER_ADMIN' };
     }

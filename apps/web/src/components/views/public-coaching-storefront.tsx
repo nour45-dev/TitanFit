@@ -12,11 +12,14 @@ import {
   ChevronDown,
   Clock,
   CreditCard,
+  Download,
   Dumbbell,
+  FileText,
   Flame,
   Gift,
   HeartPulse,
   MessageCircle,
+  MessageSquare,
   Play,
   ShieldCheck,
   Sparkles,
@@ -26,6 +29,7 @@ import {
   Utensils,
   Video,
   Zap,
+  X,
 } from 'lucide-react';
 import { usePlatformStore } from '../../lib/platform-store';
 
@@ -304,6 +308,110 @@ export function PublicCoachingStorefrontView({
     'INSTAPAY' | 'PAYMOB_CARD' | 'VODAFONE_CASH' | 'FAWRY'
   >('INSTAPAY');
   const [ebookEmail, setEbookEmail] = useState('');
+  const [showEbookModal, setShowEbookModal] = useState(false);
+  const [sentEbookEmail, setSentEbookEmail] = useState('');
+
+  const triggerDownloadBookFile = () => {
+    const bookTitle = isAr
+      ? 'الدليل الشامل لاحتراف التمرين والتغذية بدون إصابات — TitanFit Performance'
+      : 'The Complete Injury-Free Hypertrophy & Nutrition Guide — TitanFit Performance';
+
+    const bookContent = `================================================================================
+${bookTitle}
+فريق الإشراف: أطباء علاج طبيعي معتمدون + كباتن تغذية رياضية — TitanFit Performance
+الموقع الرسمي: https://titanfit.com | واتساب مالك المنصة (كابتن نور الدين): +20 155 994 9271
+================================================================================
+
+مقدمة الدليل:
+أهلاً بك يا بطل! صُمم هذا الدليل لمساعدتك على بناء أقصى كتلة عضلية صافية (Hypertrophy) وحرق الدهون 
+بأعلى معدل كفاءة حيوية، مع حماية أوتار الكتف، والركب، وأسفل الظهر من أي إصابات أو التهابات.
+
+--------------------------------------------------------------------------------
+الفصل الأول: المبادئ الذهبية لحماية المفاصل أثناء التمارين الثقيلة (Joint Biomechanics)
+--------------------------------------------------------------------------------
+1. تثبيت وضم لوحي الكتف للخلف والأسفل (Scapular Retraction & Depression):
+   - في جميع تمارين الصدر (بنش بريس، دمبل، كابل)، حافظ على تثبيت لوحي الكتف لحماية الكفة المدورة (Rotator Cuff).
+2. زاوية الكوع 45 درجة وليس 90 درجة:
+   - فتح الكوع بزاوية 90 درجة يضع حملاً هائلاً على أوتار الكتف الأمامي (Acromion). الزاوية الصحيحة 45 إلى 60 درجة.
+3. النزول البطيء المتحكم به (Eccentric Tempo):
+   - اهبط بالوزن في 3 ثوانٍ كاملة؛ مرحلة النزول تولد 70% من التمزقات المجهرية المحفزة للضخامة العضلية بدون الحاجة لأوزان مبالغ فيها.
+4. التنفس والحزام البطني (Intra-Abdominal Pressure):
+   - اسحب نفساً عميقاً في بطنك (Valsalva Maneuver) قبل كل تكرار في السكوات والديدليفت لحماية الفقرات القطنية.
+
+--------------------------------------------------------------------------------
+الفصل الثاني: جدول تمارين Push / Pull / Legs الأسبوعي مع تدرج الأحمال
+--------------------------------------------------------------------------------
+- اليوم 1 (Push - صدر / كتف أمامي وجانبي / ترايسبس):
+  * تجميع دمبل عالي زاوية 30°: 4 مجموعات × 10-12 عدّة (راحة 75 ثانية).
+  * تفتيح كابل سفلي ووسط: 3 مجموعات × 12-15 عدّة مع ثبات ثانية كاملة في قمة الانقباض.
+  * رفرفة جانبي بالدمبل للكتاف: 4 مجموعات × 15 عدّة بكوع مرتفع.
+  * دفع الحبل للترايسبس على الكابل: 3 مجموعات × 12-15 عدّة.
+
+- اليوم 2 (Pull - ظهر / كتف خلفي / بايسبس):
+  * سحب عالي واسع (Lat Pulldown): 4 مجموعات × 10-12 عدّة.
+  * سحب أرضي كابل (Seated Cable Row): 4 مجموعات × 10 عدّات.
+  * رفرفة كتف خلفي (Face Pulls): 3 مجموعات × 15 عدّة.
+  * مرجحة بايسبس بالدمبل أو البار: 3 مجموعات × 10-12 عدّة.
+
+- اليوم 3 (Legs & Core - أرجل كاملة وبطن):
+  * سكوات حر أو هاك سكوات: 4 مجموعات × 8-10 عدّات.
+  * دفع أرجل على الجهاز (Leg Press): 3 مجموعات × 12 عدّة.
+  * مرجحة خلفية للأرجل (Leg Curls): 4 مجموعات × 12 عدّة.
+  * سمانة واقف (Standing Calf Raises): 4 مجموعات × 15 عدّة.
+  * بلانك ورفع أرجل للبطن: 3 مجموعات حتى الإجهاد.
+
+- اليوم 4: راحة واستشفاء نشط (مشي 8,000 إلى 10,000 خطوة وإطالات حركية).
+- اليوم 5 و 6: تكرار الدورة مع تطبيق الـ Progressive Overload (زيادة 1-2 كجم أو تكرار إضافي).
+
+--------------------------------------------------------------------------------
+الفصل الثالث: حساب الماكروز والسعرات بالجرامات وتوزيع الوجبات
+--------------------------------------------------------------------------------
+- البروتين: 1.8 إلى 2.2 جرام لكل كجم وزن (وزنك 80 كجم = 160 إلى 175 جم بروتين صافي يومياً).
+- الدهون الصحية: 20-25% من إجمالي سعراتك اليومية لدعم هرمون التستوستيرون ومرونة المفاصل.
+- الكاربوهيدرات: تملأ باقي السعرات وتوزع حول أوقات التمرين لتغذية مخازن الجليكوجين (Glycogen).
+- الماء: 3.5 إلى 4 لتر يومياً لضمان كفاءة تخليق البروتين العضلي وتفادي الشد العضلي.
+
+--------------------------------------------------------------------------------
+الفصل الرابع: البدائل الاقتصادية المصرية لمصادر البروتين والكارب
+--------------------------------------------------------------------------------
+1. الجبنة القريش: 150 جرام = 20 جرام بروتين ممتاز بطيء الامتصاص (كازين طبيعي قبل النوم).
+2. البيض البلدي: 4 بيضات مسلوقة (2 كاملة + 2 بياض) = 22 جرام بروتين عالي القيمة الحيوية.
+3. التونة المعلبة بالماء: علبة واحدة = 28 جرام بروتين صافي.
+4. كبدة الدجاج والسمك البلطي: غنية بالزنك والحديد والبروتين بسعر اقتصادي ومناسب يومياً.
+5. الفول المدمس وبذور السوداني: مصدر رائع للألياف والأحماض الدهنية غير المشبعة.
+
+================================================================================
+إذا كنت بحاجة إلى متابعة يومية شخصية 1-on-1 وتصميم برامج مخصصة لهدفك:
+تواصل مباشرة مع كابتن نور الدين عبر واتساب: 01559949271
+منصة TitanFit — الاختيار العلمي الأول للأبطال وأصحاب الأندية الرياضية.
+================================================================================`;
+
+    const blob = new Blob([bookContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'TitanFit_Injury_Free_Hypertrophy_Guide.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleSendEbook = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ebookEmail.trim() || !ebookEmail.includes('@')) {
+      showToast(isAr ? 'يرجى إدخال بريد إلكتروني صحيح لاستلام الكتاب' : 'Please enter a valid email address');
+      return;
+    }
+    setSentEbookEmail(ebookEmail);
+    triggerDownloadBookFile();
+    setShowEbookModal(true);
+    showToast(
+      isAr
+        ? '📘 تم إرسال الكتاب وبدأ التحميل المباشر الآن على جهازك بنجاح!'
+        : '📘 E-Book dispatched and instant download started on your device!'
+    );
+  };
 
   // Mifflin-St Jeor Equation
   const bmr =
@@ -1185,74 +1293,122 @@ export function PublicCoachingStorefrontView({
 
       {/* 8. FREE E-BOOK LEAD MAGNET + SAAS WHITE-LABEL CALLOUT FOR GYM OWNERS/COACHES */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Free E-Book Lead Magnet */}
-        <div className="rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50/80 to-white p-6 shadow-sm sm:p-8">
-          <div className="flex items-center gap-2 text-xs font-extrabold text-amber-800">
-            <BookOpen className="h-4 w-4 text-amber-600" />
-            {isAr ? 'هدية مجانية للزوار' : 'FREE TRAINING E-BOOK'}
+        {/* Free E-Book Lead Magnet with Real Download & Interactive Reader */}
+        <motion.div
+          whileHover={{ y: -6 }}
+          transition={{ duration: 0.3 }}
+          className="relative overflow-hidden rounded-3xl border-2 border-amber-300/80 bg-gradient-to-br from-amber-50/90 via-white to-amber-100/30 p-6 shadow-md sm:p-8"
+        >
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-100/80 px-3.5 py-1 text-xs font-extrabold text-amber-900">
+              <BookOpen className="h-4 w-4 text-amber-600 animate-pulse" />
+              {isAr ? 'هدية مجانية موثقة للزوار' : 'FREE VERIFIED TRAINING E-BOOK'}
+            </span>
+            <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-extrabold text-emerald-700">
+              {isAr ? 'تحميل فوري مباشر' : 'Instant Direct Download'}
+            </span>
           </div>
-          <h3 className="mt-2 text-xl font-black text-slate-900">
+
+          <h3 className="mt-3 text-xl font-black text-slate-900 sm:text-2xl">
             {isAr
               ? 'حمل مجاناً كتاب "الدليل الشامل لاحتراف التمرين بدون إصابات"'
               : 'Download "The Complete Injury-Free Hypertrophy Guide" For Free'}
           </h3>
-          <p className="mt-1 text-xs text-slate-600">
+          <p className="mt-2 text-xs leading-relaxed text-slate-600 sm:text-sm">
             {isAr
-              ? 'أدخل بريدك الإلكتروني ليستقبلك رابط التحميل المباشر مع جدول تمارين مجاني للمبتدئين والمتقدمين.'
-              : 'Enter your email to receive the instant PDF guide written by our physical therapy & coaching team.'}
+              ? 'دليل عملي معتمد أعده فريق العلاج الطبيعي والتغذية الرياضية يشمل المبادئ الميكانيكية لحماية المفاصل، جدول تمارين Push/Pull/Legs، حساب الماكروز، والبدائل الاقتصادية المصرية.'
+              : 'Complete practical handbook written by certified physiotherapists & sports nutritionists covering joint safety biomechanics, PPL splits, macros, and smart budget swaps.'}
           </p>
-          <div className="mt-4 flex gap-2">
-            <input
-              type="email"
-              value={ebookEmail}
-              onChange={(e) => setEbookEmail(e.target.value)}
-              placeholder={isAr ? 'أدخل بريدك الإلكتروني...' : 'Enter your email...'}
-              className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs text-slate-900"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                showToast(
-                  isAr
-                    ? '📘 تم إرسال كتاب "الدليل الشامل للتمرين بدون إصابات" إلى بريدك الإلكتروني!'
-                    : '📘 Sent the Free Hypertrophy & Injury-Prevention E-Book to your email!',
-                );
-                setEbookEmail('');
-              }}
-              className="rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-black text-white hover:bg-slate-800"
-            >
-              {isAr ? 'أرسل لي الكتاب' : 'Send E-Book'}
-            </button>
-          </div>
-        </div>
 
-        {/* B2B SaaS Callout: Are you a Gym Owner or Coach wanting this platform? */}
-        <div className="rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-white p-6 shadow-sm sm:p-8">
-          <div className="flex items-center gap-2 text-xs font-extrabold text-emerald-800">
-            <ShieldCheck className="h-4 w-4 text-emerald-600" />
-            {isAr
-              ? 'لأصحاب الجيمات والمدربين (B2B SaaS White-Label)'
-              : 'FOR GYM OWNERS & ONLINE COACHES'}
+          <form onSubmit={handleSendEbook} className="mt-5 space-y-3">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                type="email"
+                required
+                value={ebookEmail}
+                onChange={(e) => setEbookEmail(e.target.value)}
+                placeholder={isAr ? 'أدخل بريدك الإلكتروني لاستلام الكتاب...' : 'Enter your email for instant access...'}
+                className="flex-1 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-xs font-bold text-slate-900 shadow-xs focus:border-amber-500 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-[#D4AF37] px-6 py-3 text-xs font-black text-slate-950 shadow-md transition hover:scale-[1.03]"
+              >
+                <Download className="h-4 w-4" />
+                {isAr ? 'تحميل واستلام الكتاب الآن' : 'Download Free E-Book'}
+              </button>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-500">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+              <span>{isAr ? 'يتم إرسال نسخة إلى بريدك الإلكتروني ويبدأ التحميل المباشر فوراً على جهازك.' : 'Dispatched to your email and begins immediate direct device download.'}</span>
+            </div>
+          </form>
+        </motion.div>
+
+        {/* B2B SaaS Callout: For Gym Owners & Coaches with Direct WhatsApp */}
+        <motion.div
+          whileHover={{ y: -6 }}
+          transition={{ duration: 0.3 }}
+          className="relative overflow-hidden rounded-3xl border-2 border-emerald-300/80 bg-gradient-to-br from-emerald-50/90 via-white to-emerald-100/30 p-6 shadow-md sm:p-8"
+        >
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-100/80 px-3.5 py-1 text-xs font-extrabold text-emerald-900">
+              <ShieldCheck className="h-4 w-4 text-emerald-700 animate-pulse" />
+              {isAr ? 'لأصحاب الجيمات والمدربين (B2B SaaS White-Label)' : 'FOR GYM OWNERS & ONLINE COACHES'}
+            </span>
+            <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-extrabold text-emerald-700">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+              {isAr ? 'متاح للتعاقد الفوري' : 'Available Now'}
+            </span>
           </div>
-          <h3 className="mt-2 text-xl font-black text-slate-900">
+
+          <h3 className="mt-3 text-xl font-black text-slate-900 sm:text-2xl">
             {isAr
               ? 'هل أنت صاحب جيم أو مدرب أونلاين؟ امتلك منصتك الخاصة باسمك وشعارك!'
-              : 'Own a Gym or Coaching Brand? Launch Your White-Label SaaS Platform in 60 Seconds'}
+              : 'Own a Gym or Coaching Brand? Launch Your White-Label SaaS Platform'}
           </h3>
-          <p className="mt-1 text-xs text-slate-600">
+          <p className="mt-2 text-xs leading-relaxed text-slate-600 sm:text-sm">
             {isAr
-              ? 'احصل على نسخة كاملة بهويتك البصرية (White-Label) تشمل صفحة المتدربين، تطبيق العضو، بوابات الدخول بالـ QR، والربط مع فوري وإنستاباي و Paymob.'
-              : 'Get your own public coaching storefront, member PWA, QR turnstile engine, and Egypt payment gateways.'}
+              ? 'احصل على نسخة كاملة بهويتك البصرية (White-Label) تشمل موقع المتدربين، تطبيق العضو، بوابات الدخول بالـ QR، والربط مع فوري وإنستاباي و Paymob.'
+              : 'Get your full white-label fitness ecosystem: member PWA, QR turnstiles, and Egypt payment gateways with your brand colors and domain.'}
           </p>
-          <div className="mt-4 flex flex-wrap gap-2">
+
+          {/* WhatsApp Direct Contact Highlight Box */}
+          <div className="mt-4 rounded-2xl border border-emerald-200 bg-white/90 p-3.5 shadow-xs">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#25D366] text-white shadow-sm">
+                  <MessageSquare className="h-5 w-5 fill-white" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-extrabold text-slate-500">
+                    {isAr ? 'تواصل مع كابتن نور الدين مباشرة (مالك المنصة)' : 'Direct WhatsApp with Platform Owner'}
+                  </p>
+                  <p className="font-mono text-sm font-black text-slate-900 dir-ltr">
+                    +20 155 994 9271
+                  </p>
+                </div>
+              </div>
+
+              <a
+                href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D9%86%D8%A7%20%D8%B5%D8%A7%D8%AD%D8%A8%20%D8%AC%D9%8A%D9%85/%D9%83%D9%88%D8%AA%D8%B4%20%D9%88%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%B4%D8%B1%D8%A7%D8%A1%20%D9%85%D9%86%D8%B5%D8%A9%20TitanFit%20White-Label"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-xs font-black text-white shadow-md shadow-[#25D366]/20 transition hover:scale-105 hover:bg-[#20bd5a]"
+              >
+                <MessageSquare className="h-4 w-4 fill-white" />
+                <span>{isAr ? 'محادثة واتساب الآن' : 'Chat via WhatsApp'}</span>
+              </a>
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2.5">
             <button
               type="button"
               onClick={onSwitchToSaaSPricing}
-              className="rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-black text-white hover:bg-emerald-700"
+              className="rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-slate-800"
             >
-              {isAr
-                ? 'استعرض باقات شراء المنصة (SaaS) ←'
-                : 'View SaaS Licensing & White-Label Plans →'}
+              {isAr ? 'استعرض باقات شراء المنصة (SaaS) ←' : 'View SaaS Licensing Plans →'}
             </button>
             <button
               type="button"
@@ -1262,8 +1418,130 @@ export function PublicCoachingStorefrontView({
               {isAr ? 'معاينة لوحة تحكم الإدارة' : 'Explore Admin ERP'}
             </button>
           </div>
-        </div>
+        </motion.div>
       </div>
+
+      {/* INTERACTIVE E-BOOK PREVIEW & READER MODAL */}
+      <AnimatePresence>
+        {showEbookModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 16 }}
+              className="w-full max-w-2xl overflow-hidden rounded-3xl border border-amber-300 bg-white text-slate-900 shadow-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-amber-500/15 via-transparent to-emerald-500/15 p-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-[#D4AF37] text-slate-950 shadow-md">
+                    <BookOpen className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-black text-emerald-800">
+                      <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                      {isAr ? 'تم تأكيد الإرسال والتحميل المباشر' : 'Verified Delivery & Download'}
+                    </span>
+                    <h3 className="text-base font-black text-slate-900 sm:text-lg">
+                      {isAr ? 'الدليل الشامل لاحتراف التمرين والتغذية بدون إصابات' : 'The Complete Injury-Free Hypertrophy Guide'}
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowEbookModal(false)}
+                  className="rounded-xl p-2 text-slate-400 hover:bg-slate-100"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="max-h-[60vh] space-y-4 overflow-y-auto p-6 text-xs leading-relaxed text-slate-700">
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
+                  <p className="font-extrabold text-emerald-900">
+                    {isAr
+                      ? `🎉 مبروك يا بطل! تم إرسال نسخة إلى بريدك (${sentEbookEmail}) وبدأ تنزيل الكتاب مباشرة على جهازك.`
+                      : `🎉 Congrats! Sent a copy to (${sentEbookEmail}) and started your direct download.`}
+                  </p>
+                  <p className="mt-1 text-[11px] text-emerald-800">
+                    {isAr
+                      ? 'يمكنك أيضاً قراءة ملخص الفصول المعتمدة بالأسفل أو إعادة تحميله في أي وقت.'
+                      : 'You can also review the certified chapters below or re-download anytime.'}
+                  </p>
+                </div>
+
+                {/* Chapters Index */}
+                <div className="space-y-3">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+                    <p className="font-black text-slate-900">
+                      {isAr ? '📘 الفصل الأول: المبادئ الذهبية لحماية المفاصل (Joint Protection)' : 'Chapter 1: Joint Protection Biomechanics'}
+                    </p>
+                    <p className="mt-1 text-[11px] text-slate-600">
+                      تثبيت لوحي الكتف (Scapular Retraction)، زاوية 45 درجة للكوع بدلاً من 90°، ومرحلة النزول البطيء (Eccentric Tempo) لمدة 3 ثوانٍ.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+                    <p className="font-black text-slate-900">
+                      {isAr ? '💪 الفصل الثاني: جدول تمارين Push / Pull / Legs مع تدرج الأحمال' : 'Chapter 2: Weekly Push/Pull/Legs Hypertrophy'}
+                    </p>
+                    <p className="mt-1 text-[11px] text-slate-600">
+                      تقسيم الـ 4 أيام وتمارين الصدر والظهر والأرجل مع آلية زيادة الأوزان والتكرارات التدريجية (Progressive Overload).
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+                    <p className="font-black text-slate-900">
+                      {isAr ? '🥗 الفصل الثالث: حساب الماكروز والسعرات بالجرامات وتوزيع الوجبات' : 'Chapter 3: Daily Macro Targets & Meal Timing'}
+                    </p>
+                    <p className="mt-1 text-[11px] text-slate-600">
+                      احتياج البروتين (1.8 - 2.2 جم لكل كجم وزن)، الدهون الصحية، الكاربوهيدرات النظيفة، وشرب 3.5 لتر ماء يومياً.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+                    <p className="font-black text-slate-900">
+                      {isAr ? '🇪🇬 الفصل الرابع: البدائل الاقتصادية المصرية لمصادر البروتين' : 'Chapter 4: Egyptian Economic Protein Swaps'}
+                    </p>
+                    <p className="mt-1 text-[11px] text-slate-600">
+                      الجبن القريش، البيض البلدي، التونة، كبدة الدجاج، والسمك البلطي المشوي كبدائل بروتينية عالية القيمة بسعر موفر.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 p-4 sm:px-6">
+                <button
+                  type="button"
+                  onClick={triggerDownloadBookFile}
+                  className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-black text-white hover:bg-slate-800"
+                >
+                  <Download className="h-4 w-4" />
+                  {isAr ? 'إعادة تحميل الكتاب (Download Again)' : 'Download Again'}
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <a
+                    href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D9%82%D8%B1%D8%A3%D8%AA%20%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%AA%D9%85%D8%B1%D9%8A%D9%86%20%D8%A7%D9%84%D9%85%D8%AC%D8%A7%D9%86%D9%8A%20%D9%88%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%A7%D9%84%D9%85%D8%AA%D8%A7%D8%A8%D8%B9%D8%A9%20%D8%A7%D9%84%D8%B4%D8%AE%D8%B5%D9%8A%D8%A9"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] px-4 py-2.5 text-xs font-black text-white hover:bg-[#20bd5a]"
+                  >
+                    <MessageSquare className="h-4 w-4 fill-white" />
+                    {isAr ? 'استفسر عبر واتساب: 01559949271' : 'WhatsApp 01559949271'}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setShowEbookModal(false)}
+                    className="rounded-xl border border-slate-300 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                  >
+                    {isAr ? 'إغلاق' : 'Close'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* INSTANT CHECKOUT MODAL FOR VISITORS */}
       {selectedTierForCheckout && (

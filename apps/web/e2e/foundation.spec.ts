@@ -31,8 +31,8 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
 
     // 3. Authenticate as SaaS Super Admin (Email + Password)
     await page.getByTestId('open-login-modal-btn').click();
-    await page.getByTestId('login-email-input').fill('admin@titanfit.com');
-    await page.getByTestId('login-password-input').fill('admin123');
+    await page.getByTestId('login-email-input').fill('noureldin');
+    await page.getByTestId('login-password-input').fill('010023');
     await page.getByTestId('login-submit-btn').click();
 
     // Switch to English LTR to verify English copy across ERP phases

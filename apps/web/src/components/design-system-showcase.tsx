@@ -784,7 +784,7 @@ function TitanFitEnterpriseShell() {
                   data-testid="login-email-input"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="admin@titanfit.com / coach.ahmed@peakfit.eg"
+                  placeholder={isAr ? "noureldin أو admin@titanfit.com" : "noureldin / admin@titanfit.com"}
                   className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 />
               </div>
@@ -798,7 +798,7 @@ function TitanFitEnterpriseShell() {
                   data-testid="login-password-input"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder={isAr ? "010023 أو admin123" : "010023 / admin123"}
                   className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 />
               </div>
@@ -813,11 +813,14 @@ function TitanFitEnterpriseShell() {
             </form>
 
             {/* Enterprise Security Note */}
-            <div className="mt-5 border-t border-slate-100 pt-3.5 text-center dark:border-slate-800">
+            <div className="mt-5 border-t border-slate-100 pt-3.5 space-y-1 text-center dark:border-slate-800">
               <div className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
                 <ShieldCheck className="h-4 w-4 text-emerald-500" />
                 <span>{isAr ? 'بوابة دخول آمنة ومشفرة بالكامل (256-bit AES Enterprise)' : '256-bit AES Encrypted Enterprise Authentication'}</span>
               </div>
+              <p className="font-mono text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                {isAr ? 'حساب مالك المنصة: noureldin • كلمة المرور: 010023' : 'SaaS Super Admin: noureldin • Password: 010023'}
+              </p>
             </div>
           </motion.div>
         </div>
