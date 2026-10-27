@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   Activity,
-  ArrowRight,
+  ArrowUpRight,
   Award,
   BookOpen,
   Calculator,
-  Check,
   CheckCircle2,
   ChevronDown,
   Clock,
@@ -26,10 +25,29 @@ import {
   Users,
   Utensils,
   Video,
-  X,
   Zap,
 } from 'lucide-react';
 import { usePlatformStore } from '../../lib/platform-store';
+
+interface TransformationStory {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  age: number;
+  roleAr: string;
+  roleEn: string;
+  durationAr: string;
+  durationEn: string;
+  weightBeforeKg: number;
+  weightAfterKg: number;
+  bodyFatBefore: string;
+  bodyFatAfter: string;
+  quoteAr: string;
+  quoteEn: string;
+  badgeAr: string;
+  badgeEn: string;
+  photoUrl: string;
+}
 
 interface CoachingTier {
   id: string;
@@ -43,33 +61,102 @@ interface CoachingTier {
   priceEgp: number;
   durationAr: string;
   durationEn: string;
-  accentColor: string;
-  popular?: boolean;
   spotsLeft: number;
+  popular?: boolean;
+  accentColor: string;
   featuresAr: string[];
   featuresEn: string[];
 }
 
+const TRANSFORMATION_STORIES: TransformationStory[] = [
+  {
+    id: 'tr-1',
+    nameAr: 'م. أحمد عبد اللطيف',
+    nameEn: 'Eng. Ahmed Abdellatif',
+    age: 32,
+    roleAr: 'مهندس برمجيات — التجمع الخامس',
+    roleEn: 'Software Engineer — New Cairo',
+    durationAr: '١٢ أسبوع متابعة',
+    durationEn: '12 Weeks',
+    weightBeforeKg: 108,
+    weightAfterKg: 84,
+    bodyFatBefore: '29%',
+    bodyFatAfter: '12%',
+    badgeAr: '-24 كجم دهون صافية + بناء عضل',
+    badgeEn: '-24 kg Fat Loss + Lean Muscle',
+    photoUrl:
+      'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=80',
+    quoteAr:
+      'كنت فاكر إن الدايت يعني حرمان وجوع، لكن مع وصفات الفيديو المحسوبة بالماكروز والمتابعة اليومية على الواتساب خسيت ٢٤ كيلو بدون أي ترهلات وبأكل كل اللي بحبه!',
+    quoteEn:
+      'I thought dieting meant starving, but with macro-balanced recipes and daily WhatsApp coaching I dropped 24kg with zero loose skin!',
+  },
+  {
+    id: 'tr-2',
+    nameAr: 'د. سارة المنياوي',
+    nameEn: 'Dr. Sara El-Miniawy',
+    age: 28,
+    roleAr: 'طبيبة أسنان — الشيخ زايد',
+    roleEn: 'Dentist — Sheikh Zayed',
+    durationAr: '١٠ أسابيع متابعة',
+    durationEn: '10 Weeks',
+    weightBeforeKg: 79,
+    weightAfterKg: 63,
+    bodyFatBefore: '31%',
+    bodyFatAfter: '18%',
+    badgeAr: '-16 كجم ونحت القوام بالكامل',
+    badgeEn: '-16 kg & Complete Body Recomp',
+    photoUrl:
+      'https://images.unsplash.com/photo-1548690312-e3b507d8c110?auto=format&fit=crop&w=800&q=80',
+    quoteAr:
+      'وقتي في العيادة كان ضيق جداً، بس الوصفات السريعة اللي بتتحضر في ٢٠ دقيقة وتمارين البيت المصورة بالفيديو تحت إشراف دكتور علاج طبيعي غيرت حياتي وثقتي بنفسي ١٨٠ درجة.',
+    quoteEn:
+      'My clinic schedule was hectic, but the 20-minute recipes and structured 45-minute workouts completely transformed my energy and physique.',
+  },
+  {
+    id: 'tr-3',
+    nameAr: 'كابتن كريم فؤاد',
+    nameEn: 'Karim Fouad',
+    age: 25,
+    roleAr: 'رائد أعمال — المعادي',
+    roleEn: 'Entrepreneur — Maadi',
+    durationAr: '١٦ أسبوع متابعة',
+    durationEn: '16 Weeks',
+    weightBeforeKg: 66,
+    weightAfterKg: 77,
+    bodyFatBefore: '16%',
+    bodyFatAfter: '10%',
+    badgeAr: '+11 كجم ضخامة عضلية صافية',
+    badgeEn: '+11 kg Pure Muscular Hypertrophy',
+    photoUrl:
+      'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
+    quoteAr:
+      'كنت بعاني من النحافة وإصابة قديمة في الكتف. فريق العلاج الطبيعي والتغذية صمملي برنامج ضخامة عضلية زادني ١١ كيلو عضل صافي بدون أي ألم في المفاصل!',
+    quoteEn:
+      'With physical therapy supervision and progressive overload tracking, I gained 11kg of lean mass pain-free.',
+  },
+];
+
 const COACHING_TIERS: CoachingTier[] = [
   {
-    id: 'tier-medfit',
-    badgeAr: 'بداية ذكية',
+    id: 'tier-fit-core',
+    badgeAr: 'بداية ذكية واقتصادية',
     badgeEn: 'SMART START',
     nameAr: 'برنامج فيت كور (Fit Core)',
     nameEn: 'Fit Core Program',
-    subtitleAr: 'مناسب للمبتدئين لبناء عادات صحية مستدامة',
+    subtitleAr: 'مثالي للمبتدئين لبناء أساس صحي ورياضي سليم',
     subtitleEn: 'Ideal for beginners building sustainable habits',
     oldPriceEgp: 3200,
     priceEgp: 1650,
-    durationAr: '٣ شهور',
+    durationAr: '٣ شهور كاملة',
     durationEn: '3 Months',
-    accentColor: '#10B981',
     spotsLeft: 14,
+    accentColor: '#10B981',
     featuresAr: [
-      'خطة غذائية مخصصة لهدفك وإمكانياتك تتغير كل 15 يوم',
-      'خطة تدريبية (من الجيم أو البيت) تحت إشراف دكتور علاج طبيعي كل 45 يوم',
-      'متابعة والرد على استفساراتك على واتساب خلال 24–48 ساعة',
-      'دخول مجاني لتطبيق المتدرب وتسجيل الأوزان والقياسات',
+      'نظام غذائي مرن ومفصل لهدفك يتغير كل 15 يوم',
+      'برنامج تدريبي مشروح بالفيديو (للجيم أو المنزل) تحت إشراف أطباء علاج طبيعي',
+      'متابعة على الواتساب مع فريق المتابعة خلال 24-48 ساعة',
+      'دخول كامل لتطبيق المتدرب لتسجيل الأوزان والماكروز',
     ],
     featuresEn: [
       'Tailored nutrition plan updated every 15 days',
@@ -79,25 +166,25 @@ const COACHING_TIERS: CoachingTier[] = [
     ],
   },
   {
-    id: 'tier-prime',
-    badgeAr: 'جديد • عدد محدود',
+    id: 'tier-smart-prime',
+    badgeAr: 'جديد • أماكن محدودة',
     badgeEn: 'NEW • LIMITED SPOTS',
-    nameAr: 'الباقة الذكية (Smart PRIME)',
+    nameAr: 'باقة سمارت برايم (Smart PRIME)',
     nameEn: 'Smart PRIME Package',
-    subtitleAr: 'توازن مثالي بين التغذية والتمرين واللقاءات التفاعلية',
+    subtitleAr: 'تغذية بوصفات مصورة + اجتماعات لايف جماعية',
     subtitleEn: 'Complete nutrition, training & live group coaching',
     oldPriceEgp: 4800,
     priceEgp: 2450,
-    durationAr: '٣ شهور',
+    durationAr: '٣ شهور كاملة',
     durationEn: '3 Months',
-    accentColor: '#3B82F6',
     spotsLeft: 9,
+    accentColor: '#0284C7',
     featuresAr: [
-      'خطة غذائية مرنة بوصفات مصورة فيديو تتغير كل 30 يوم',
-      'خطة تدريبية مفصلة بالفيديو لتصحيح الأداء وتجنب الإصابات',
-      'لقاء لايف 3 ساعات كل 10 أيام (Triple Care Meeting) لمناقشة التحديات',
-      'نظام مقترح للمكملات الغذائية وكتب إلكترونية حصرية',
-      'اشتراك مجاني على تطبيق المنصة + دخول فرع النادي',
+      'خطة تغذية مرنة بوصفات مصورة بالفيديو تتحدث كل 30 يوم',
+      'خطة تدريبية مشروحة بالفيديو مع تصحيح الأداء الحركي',
+      'اجتماع لايف جماعي (Triple Care Meeting) لمدة 3 ساعات كل 10 أيام',
+      'خطة مكملات غذائية اختيارية + كتب إلكترونية مجانية',
+      'اشتراك مجاني في تطبيق المنصة ودخول الفروع',
     ],
     featuresEn: [
       'Flexible meal plan with video recipes updated every 30 days',
@@ -108,27 +195,27 @@ const COACHING_TIERS: CoachingTier[] = [
     ],
   },
   {
-    id: 'tier-elite',
-    badgeAr: 'الأكثر طلباً • أفضل قيمة',
+    id: 'tier-medfit-elite',
+    badgeAr: 'الأكثر مبيعاً • أفضل قيمة',
     badgeEn: 'MOST POPULAR • BEST VALUE',
-    nameAr: 'باقة تيتان إيليت (Titan Elite)',
+    nameAr: 'تيتان إيليت برو (Titan Elite Pro)',
     nameEn: 'Titan Elite Pro',
-    subtitleAr: 'متابعة يومية ورعاية طبية ورياضية شاملة للوصول لأسرع نتيجة',
+    subtitleAr: 'متابعة يومية 1-on-1 على الواتساب + إشراف طبي كامل + مكالمات زوم',
     subtitleEn: 'Daily WhatsApp coaching, medical supervision & Zoom calls',
     oldPriceEgp: 7500,
     priceEgp: 4200,
-    durationAr: '٣ شهور',
+    durationAr: '٣ شهور كاملة',
     durationEn: '3 Months',
-    accentColor: '#D4AF37',
-    popular: true,
     spotsLeft: 5,
+    popular: true,
+    accentColor: '#D97706',
     featuresAr: [
-      'كل مزايا باقة Smart PRIME بالكامل',
-      'متابعة يومية على واتساب وأولوية قصوى في الرد',
-      '4 اجتماعات زوم (Zoom) شهرياً مع الكوتش المتخصص',
-      'رعاية طبية شاملة ومراجعة التحاليل من فريق أطباء متخصصين',
-      'تغيير النظام الغذائي كل 10 أيام حسب استجابة جسمك',
-      'دخول VIP لجميع فروع النادي والبوابات الذكية',
+      'كل مميزات باقة Smart PRIME بالكامل',
+      'متابعة يومية فورية على الواتساب مع الكوتش والطبيب المختص (أولوية قصوى)',
+      '4 اجتماعات فيديو (Zoom) شهرية لمراجعة التقدم وتعديل الخطة',
+      'إشراف طبي شامل ومراجعة التحاليل الطبية وإصابات المفاصل والعمود الفقري',
+      'تحديث النظام الغذائي كل 10 أيام حسب استجابة جسمك',
+      'دخول مجاني لجميع فروع الجيم وبوابات الـ QR الذكية',
     ],
     featuresEn: [
       'Everything in Smart PRIME included',
@@ -141,24 +228,24 @@ const COACHING_TIERS: CoachingTier[] = [
   },
   {
     id: 'tier-golden-max',
-    badgeAr: 'للمميزين فقط VIP',
+    badgeAr: 'VIP كبار الشخصيات',
     badgeEn: 'VIP EXCLUSIVE',
-    nameAr: 'الباقة الذهبية ماكس (Golden MAX)',
+    nameAr: 'جولدن إيليت ماكس (Golden MAX VIP)',
     nameEn: 'Golden Elite MAX',
-    subtitleAr: 'متابعة شخصية مباشرة مع كبير المدربين والطبيب المختص يومياً',
+    subtitleAr: 'متابعة شخصية مباشرة 1-لـ-1 مع مؤسس المنصة وكبير الأطباء',
     subtitleEn: 'Direct 1-on-1 coaching with the Head Coach & Chief Physician',
     oldPriceEgp: 14000,
     priceEgp: 8500,
-    durationAr: '٣ شهور',
+    durationAr: '٣ شهور كاملة',
     durationEn: '3 Months',
-    accentColor: '#b8860b',
     spotsLeft: 2,
+    accentColor: '#7C3AED',
     featuresAr: [
-      'متابعة شخصية مباشرة 1-on-1 مع مؤسس المنصة وكبير المدربين',
-      'مكالمات تليفونية مباشرة وزوم أسبوعي لمراجعة أدق التفاصيل',
-      'تعديل لحظي للوجبات والتمارين حسب جدول يومك وسفرك',
-      'تصحيح الأداء الحركي بالفيديو لكل تمرينة لتفادي أي إصابات',
-      'كارت خصم الشركاء 40% لك ولـ 5 من أصدقائك شهرياً',
+      'متابعة شخصية مباشرة مع مؤسس المنصة وكبير أطباء التغذية والعلاج الطبيعي',
+      'مكالمات هاتفية مباشرة واجتماع Zoom خاص أسبوعياً',
+      'تغيير فوري ومفتوح للوجبات والتمارين في أي وقت حسب جدول سفرك أو عملك',
+      'تصحيح الأداء التدريبي بالفيديو لكل تمرين خطوة بخطوة',
+      'كارت الشركاء الذهبي: خصم 40% لك ولـ 5 من أصدقائك أو عائلتك',
     ],
     featuresEn: [
       'Direct 1-on-1 supervision by the Founder & Head Coach',
@@ -167,63 +254,6 @@ const COACHING_TIERS: CoachingTier[] = [
       'Frame-by-frame video form analysis for every workout',
       'VIP Partner Card with 40% discount for you and 5 friends',
     ],
-  },
-];
-
-const TRANSFORMATIONS = [
-  {
-    id: 'tr-1',
-    nameAr: 'م. أحمد عبد اللطيف (٣٢ سنة)',
-    nameEn: 'Eng. Ahmed Abdellatif (32 yrs)',
-    roleAr: 'مهندس برمجيات — التجمع الخامس',
-    roleEn: 'Software Engineer — New Cairo',
-    durationAr: '١٢ أسبوع',
-    durationEn: '12 Weeks',
-    beforeWeight: '108 kg',
-    afterWeight: '84 kg',
-    bodyFatDrop: '29% ← 12%',
-    resultBadgeAr: '-24 كجم دهون + بناء عضل صافي',
-    resultBadgeEn: '-24 kg Fat Loss + Lean Muscle',
-    quoteAr:
-      'كنت فاكر إن الدايت يعني حرمان وجوع طول اليوم، لكن مع وصفات الأكل المحسوبة والمتابعة اليومية خسيت ٢٤ كيلو من غير ترهلات وبأكل كل الأكل اللي بحبه!',
-    quoteEn:
-      'I thought dieting meant starving, but with macro-balanced recipes and daily WhatsApp coaching I dropped 24kg with zero loose skin!',
-  },
-  {
-    id: 'tr-2',
-    nameAr: 'د. سارة المنياوي (٢٨ سنة)',
-    nameEn: 'Dr. Sara El-Miniawy (28 yrs)',
-    roleAr: 'طبيبة أسنان — الشيخ زايد',
-    roleEn: 'Dentist — Sheikh Zayed',
-    durationAr: '١٠ أسابيع',
-    durationEn: '10 Weeks',
-    beforeWeight: '79 kg',
-    afterWeight: '63 kg',
-    bodyFatDrop: '31% ← 18%',
-    resultBadgeAr: '-16 كجم وتنسيق قوام كامل',
-    resultBadgeEn: '-16 kg & Complete Body Recomp',
-    quoteAr:
-      'جدول شغلي في العيادة كان مستحيل يخليني ألتزم، بس خطة الوجبات السريعة (٢٠ دقيقة) وتمارين الـ ٤٥ دقيقة غيرت حياتي وثقتي بنفسي ١٨٠ درجة.',
-    quoteEn:
-      'My clinic schedule was hectic, but the 20-minute recipes and structured 45-minute workouts completely transformed my energy and physique.',
-  },
-  {
-    id: 'tr-3',
-    nameAr: 'كابتن كريم فؤاد (٢٥ سنة)',
-    nameEn: 'Karim Fouad (25 yrs)',
-    roleAr: 'رائد أعمال — المعادي',
-    roleEn: 'Entrepreneur — Maadi',
-    durationAr: '١٦ أسبوع',
-    durationEn: '16 Weeks',
-    beforeWeight: '66 kg',
-    afterWeight: '77 kg',
-    bodyFatDrop: '16% ← 10%',
-    resultBadgeAr: '+11 كجم كتلة عضلية صافية',
-    resultBadgeEn: '+11 kg Pure Muscular Hypertrophy',
-    quoteAr:
-      'تحت إشراف دكتور العلاج الطبيعي والكوتش، اتعلمت أتمرن صح بدون إصابات كتف، وكسرت أرقامي القياسية في السكوات والبنش بريس.',
-    quoteEn:
-      'With physical therapy supervision and progressive overload tracking, I gained 11kg of lean mass pain-free.',
   },
 ];
 
@@ -279,6 +309,8 @@ const HEALTHY_RECIPES = [
     fatsG: 9,
     tagAr: 'وجبة الغداء السريعة',
     tagEn: 'Fast High-Protein Lunch',
+    imageUrl:
+      'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 'rcp-2',
@@ -290,21 +322,25 @@ const HEALTHY_RECIPES = [
     proteinG: 34,
     carbsG: 36,
     fatsG: 6,
-    tagAr: 'فطار صحي لذيذ',
+    tagAr: 'فطار صحي لذيذ بدون حرمان',
     tagEn: 'Sweet Craving Breakfast',
+    imageUrl:
+      'https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 'rcp-3',
-    titleAr: 'أفضل كبد دجاج مشوي بدبس الرمان الصحي',
-    titleEn: 'Glazed Pomegranate Chicken Livers Skillet',
+    titleAr: 'سالمون أو دجاج مشوي مع الأرز البسمتي والأفوكادو',
+    titleEn: 'Grilled Protein Bowl with Basmati Rice & Greens',
     prepAr: '٢٥ دقيقة',
     prepEn: '25 Mins',
-    kcal: 380,
+    kcal: 450,
     proteinG: 48,
-    carbsG: 18,
-    fatsG: 12,
-    tagAr: 'غني بالحديد والبروتين',
-    tagEn: 'Iron & Protein Powerhouse',
+    carbsG: 42,
+    fatsG: 11,
+    tagAr: 'غني بالبروتين والأوميجا',
+    tagEn: 'High-Protein Power Bowl',
+    imageUrl:
+      'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
   },
 ];
 
@@ -312,10 +348,12 @@ export function PublicCoachingStorefrontView({
   onSwitchToDashboard,
   onSwitchToMemberApp,
   onSwitchToSaaSPricing,
+  onOpenFreeTrialHub,
 }: {
   onSwitchToDashboard: () => void;
   onSwitchToMemberApp: () => void;
   onSwitchToSaaSPricing: () => void;
+  onOpenFreeTrialHub?: () => void;
 }) {
   const { locale, showToast, createInvoicePayment, members, plans } = usePlatformStore();
   const isAr = locale === 'ar';
@@ -336,7 +374,9 @@ export function PublicCoachingStorefrontView({
   const [subscriberName, setSubscriberName] = useState('');
   const [subscriberPhone, setSubscriberPhone] = useState('+2010');
   const [subscriberGoal, setSubscriberGoal] = useState('تنشيف وخسارة دهون مع بناء عضل');
-  const [selectedGateway, setSelectedGateway] = useState<'INSTAPAY' | 'PAYMOB_CARD' | 'VODAFONE_CASH' | 'FAWRY'>('INSTAPAY');
+  const [selectedGateway, setSelectedGateway] = useState<
+    'INSTAPAY' | 'PAYMOB_CARD' | 'VODAFONE_CASH' | 'FAWRY'
+  >('INSTAPAY');
   const [ebookEmail, setEbookEmail] = useState('');
 
   // Mifflin-St Jeor Equation
@@ -373,36 +413,34 @@ export function PublicCoachingStorefrontView({
   };
 
   return (
-    <div data-testid="panel-public-storefront" className="space-y-16 pb-16">
-      {/* 1. HERO SECTION — DIET & CHEAT / TITANFIT HIGH-CONVERSION STYLE */}
+    <div data-testid="panel-public-storefront" className="mx-auto max-w-7xl space-y-16 bg-white pb-20 text-slate-900">
+      {/* 1. PURE WHITE LUXURY HERO SECTION — DIET & CHEAT HIGH-CONVERSION STYLE */}
       <motion.section
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-white via-amber-50/50 to-emerald-50/40 p-8 shadow-xl dark:border-[#D4AF37]/30 dark:from-[#121624] dark:via-[#171C2E] dark:to-[#1E1910] sm:p-12"
+        transition={{ duration: 0.45 }}
+        className="relative overflow-hidden rounded-3xl border border-amber-200/80 bg-gradient-to-bl from-white via-amber-50/40 to-emerald-50/40 p-6 shadow-lg sm:p-12"
       >
-        <div className="pointer-events-none absolute -top-24 -end-24 h-80 w-80 rounded-full bg-[#D4AF37]/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -start-24 h-80 w-80 rounded-full bg-emerald-500/15 blur-3xl" />
-
         <div className="relative grid grid-cols-1 items-center gap-10 lg:grid-cols-12">
+          {/* Right Text Column (in RTL) */}
           <div className="space-y-6 lg:col-span-7">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 rounded-full border border-amber-600/30 bg-amber-500/15 px-4 py-1.5 text-xs font-extrabold text-amber-900 dark:border-[#D4AF37]/40 dark:text-[#F3E5AB]"
+              className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-100/80 px-4 py-1.5 text-xs font-extrabold text-amber-900"
             >
-              <Sparkles className="h-4 w-4 text-amber-600 dark:text-[#D4AF37]" />
+              <Sparkles className="h-4 w-4 text-amber-600" />
               {isAr
                 ? 'أفضل وقت للبداية كان من سنة.. وتاني أفضل وقت هو الآن!'
                 : 'THE BEST TIME TO START WAS A YEAR AGO — THE SECOND BEST TIME IS NOW!'}
             </motion.div>
 
-            <h1 className="text-3xl font-black leading-tight tracking-tight text-slate-900 dark:text-white sm:text-5xl">
+            <h1 className="text-3xl font-black leading-tight tracking-tight text-slate-900 sm:text-5xl">
               {isAr ? (
                 <>
                   إنسى نظام الدايت الممل..{' '}
-                  <span className="bg-gradient-to-r from-amber-600 via-[#D4AF37] to-emerald-600 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-l from-amber-600 to-emerald-600 bg-clip-text text-transparent">
                     وإبني لنفسك نمط حياة صحي
                   </span>{' '}
                   وجسم مثالي بدون حرمان!
@@ -410,7 +448,7 @@ export function PublicCoachingStorefrontView({
               ) : (
                 <>
                   Forget Boring Diets —{' '}
-                  <span className="bg-gradient-to-r from-amber-600 via-[#D4AF37] to-emerald-600 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-amber-600 to-emerald-600 bg-clip-text text-transparent">
                     Build Your Dream Physique
                   </span>{' '}
                   With Science & Medical Supervision
@@ -418,201 +456,259 @@ export function PublicCoachingStorefrontView({
               )}
             </h1>
 
-            <p className="max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-300">
+            <p className="max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
               {isAr
-                ? 'أكثر من +12,500 مشترك غيروا حياتهم بالكامل ووصلوا لشكل جسمهم المثالي من خلال خطط تغذية بوصفات مصورة، برامج تدريبية من الجيم أو البيت تحت إشراف أطباء علاج طبيعي، ومتابعة يومية خطوة بخطوة.'
+                ? 'أكثر من +12,500 مشترك غيروا حياتهم بالكامل ووصلوا لشكل جسمهم المثالي من خلال خطط تغذية بوصفات مصورة، برامج تدريبية بالفيديو من الجيم أو البيت تحت إشراف أطباء علاج طبيعي، ومتابعة يومية خطوة بخطوة.'
                 : 'Over 12,500+ members transformed their bodies and lives through tailored video-recipe nutrition, physical-therapist-supervised training, and daily 1-on-1 WhatsApp & app coaching.'}
             </p>
 
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            {/* Primary CTA Buttons including the FREE TRIAL WORKOUTS & DIETS Button */}
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <a
                 href="#coaching-packages"
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-amber-500 px-7 py-4 text-sm font-black text-slate-950 shadow-lg shadow-[#D4AF37]/30 transition hover:scale-[1.02]"
+                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-[#D4AF37] px-7 py-4 text-sm font-black text-slate-950 shadow-lg shadow-amber-500/25 transition hover:scale-[1.02]"
               >
                 <Zap className="h-4 w-4" />
                 {isAr ? 'اشترك الآن وابدأ التغيير' : 'Subscribe & Start Now'}
               </a>
 
+              {onOpenFreeTrialHub && (
+                <button
+                  type="button"
+                  data-testid="open-free-trial-hub-btn"
+                  onClick={onOpenFreeTrialHub}
+                  className="inline-flex items-center gap-2 rounded-2xl border-2 border-emerald-500 bg-emerald-50 px-6 py-3.5 text-sm font-black text-emerald-900 shadow-sm transition hover:bg-emerald-600 hover:text-white"
+                >
+                  <Gift className="h-4 w-4 text-emerald-600" />
+                  {isAr
+                    ? '🎁 جرب مجاناً الآن (تمارين فيديو + أنظمة غذائية)'
+                    : '🎁 Try Free Workouts & Meal Plans'}
+                </button>
+              )}
+
               <a
                 href="#free-calorie-calculator"
-                className="inline-flex items-center gap-2 rounded-2xl border-2 border-slate-900/15 bg-white/90 px-6 py-4 text-sm font-extrabold text-slate-900 shadow-sm transition hover:border-[#D4AF37] dark:border-white/20 dark:bg-white/10 dark:text-white"
+                className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3.5 text-xs font-extrabold text-slate-800 shadow-sm transition hover:border-amber-500"
               >
-                <Calculator className="h-4 w-4 text-amber-600 dark:text-[#D4AF37]" />
-                {isAr ? 'احسب سعراتك مجاناً' : 'Free Calorie Calculator'}
+                <Calculator className="h-4 w-4 text-amber-600" />
+                {isAr ? 'حاسبة السعرات المجانية' : 'Free Calorie Calculator'}
               </a>
-
-              <button
-                type="button"
-                onClick={onSwitchToMemberApp}
-                className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-4 text-xs font-extrabold text-emerald-800 dark:text-emerald-300"
-              >
-                {isAr ? 'دخول تطبيق المشتركين ←' : 'Open Member App →'}
-              </button>
             </div>
 
-            {/* Trust Stats Bar */}
-            <div className="grid grid-cols-3 gap-4 border-t border-slate-200/80 pt-6 dark:border-slate-800">
+            {/* Trust Metrics */}
+            <div className="grid grid-cols-3 gap-4 border-t border-slate-200/90 pt-6">
               <div>
-                <p className="text-2xl font-black text-amber-600 dark:text-[#D4AF37]">+12,500</p>
-                <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                <p className="font-mono text-2xl font-black text-amber-600 sm:text-3xl">+12,500</p>
+                <p className="text-xs font-bold text-slate-600">
                   {isAr ? 'قصة نجاح وتحول حقيقي' : 'Verified Transformations'}
                 </p>
               </div>
               <div>
-                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">100%</p>
-                <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                <p className="font-mono text-2xl font-black text-emerald-600 sm:text-3xl">100%</p>
+                <p className="text-xs font-bold text-slate-600">
                   {isAr ? 'تحت إشراف طبي ورياضي' : 'Medical & PT Supervised'}
                 </p>
               </div>
               <div>
-                <p className="text-2xl font-black text-sky-600 dark:text-sky-400">24/7</p>
-                <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                <p className="font-mono text-2xl font-black text-sky-600 sm:text-3xl">24/7</p>
+                <p className="text-xs font-bold text-slate-600">
                   {isAr ? 'متابعة واتساب وتطبيق ذكي' : 'WhatsApp & App Support'}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Right Hero Card — Interactive Transformation Spotlight */}
+          {/* Left Visual Column — White Card with Real Fitness Photo + Before/After Transformation */}
           <motion.div
-            initial={{ opacity: 0, x: isAr ? -30 : 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
             className="lg:col-span-5"
           >
-            <div className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-[#151A2A]">
-              <div className="flex items-center justify-between">
-                <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
+              <div className="relative h-56 w-full overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1000&q=80"
+                  alt="Personal Trainer & Nutrition Coaching"
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
+                <span className="absolute top-4 start-4 rounded-full bg-emerald-500 px-3.5 py-1 text-xs font-extrabold text-white shadow">
                   {isAr ? '🔥 نتيجة الأسبوع الموثقة' : '🔥 FEATURED TRANSFORMATION'}
                 </span>
-                <span className="font-mono text-xs font-bold text-amber-600 dark:text-[#D4AF37]">
-                  12 WEEKS
-                </span>
-              </div>
-
-              <div className="mt-4 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 p-5 text-white">
-                <div className="flex items-center justify-between">
+                <div className="absolute bottom-3 start-4 end-4 flex items-center justify-between text-white">
                   <div>
-                    <p className="text-xs text-slate-400">{isAr ? 'قبل الاشتراك' : 'Before'}</p>
-                    <p className="font-mono text-2xl font-black text-rose-400">108 kg</p>
-                    <p className="text-[11px] text-slate-400">Body Fat: 29%</p>
+                    <p className="text-sm font-black">
+                      {isAr ? 'م. أحمد عبد اللطيف' : 'Eng. Ahmed Abdellatif'}
+                    </p>
+                    <p className="text-[11px] text-amber-300">
+                      {isAr ? 'خلال ١٢ أسبوع متابعة في باقة تيتان إيليت' : '12 Weeks on Titan Elite'}
+                    </p>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#D4AF37] font-black text-slate-950">
-                    -24kg
-                  </div>
-                  <div className="text-end">
-                    <p className="text-xs text-slate-400">{isAr ? 'بعد ١٢ أسبوع' : 'After 12 Wks'}</p>
-                    <p className="font-mono text-2xl font-black text-emerald-400">84 kg</p>
-                    <p className="text-[11px] text-emerald-300">Body Fat: 12%</p>
+                  <div className="flex gap-0.5 text-amber-400">
+                    <Star className="h-4 w-4 fill-amber-400" />
+                    <Star className="h-4 w-4 fill-amber-400" />
+                    <Star className="h-4 w-4 fill-amber-400" />
+                    <Star className="h-4 w-4 fill-amber-400" />
+                    <Star className="h-4 w-4 fill-amber-400" />
                   </div>
                 </div>
               </div>
 
-              <blockquote className="mt-4 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                &ldquo;
-                {isAr
-                  ? 'خسيت ٢٤ كيلو دهون وزدت كتلة عضلية من غير ما أحرم نفسي من الأكل اللي بحبه، والكوتش والدكتور كانوا معايا يوم بيوم على الواتساب!'
-                  : 'Lost 24kg of fat while eating delicious macro-friendly meals with daily doctor & coach check-ins!'}
-                &rdquo;
-              </blockquote>
+              <div className="p-6">
+                <div className="grid grid-cols-2 gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-center">
+                  <div className="border-e border-slate-200 pe-2">
+                    <p className="text-[11px] font-bold text-slate-500">
+                      {isAr ? 'قبل الاشتراك' : 'Before'}
+                    </p>
+                    <p className="mt-1 font-mono text-2xl font-black text-rose-600">108 kg</p>
+                    <p className="text-[11px] font-semibold text-slate-500">Body Fat: 29%</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-emerald-700">
+                      {isAr ? 'بعد ١٢ أسبوع' : 'After 12 Wks'}
+                    </p>
+                    <p className="mt-1 font-mono text-2xl font-black text-emerald-600">84 kg</p>
+                    <p className="text-[11px] font-bold text-emerald-700">Body Fat: 12% (-24kg)</p>
+                  </div>
+                </div>
 
-              <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
-                <div>
-                  <p className="text-xs font-extrabold text-slate-900 dark:text-white">
-                    {isAr ? 'م. أحمد عبد اللطيف' : 'Eng. Ahmed Abdellatif'}
-                  </p>
-                  <p className="text-[11px] text-slate-500">
-                    {isAr ? 'مشترك باقة تيتان إيليت' : 'Titan Elite Subscriber'}
-                  </p>
-                </div>
-                <div className="flex text-amber-500">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className="h-4 w-4 fill-current" />
-                  ))}
-                </div>
+                <blockquote className="mt-4 text-xs leading-relaxed font-semibold text-slate-600">
+                  {isAr
+                    ? '“خسيت ٢٤ كيلو دهون وزدت كتلة عضلية من غير ما أحرم نفسي من الأكل اللي بحبه، والكوتش والدكتور كانوا معايا يوم بيوم على الواتساب!”'
+                    : '“Lost 24kg of fat while eating delicious macro-friendly meals with daily doctor & coach check-ins!”'}
+                </blockquote>
               </div>
             </div>
           </motion.div>
         </div>
       </motion.section>
 
-      {/* 2. 4-STEP HOW IT WORKS ("اشترك بخطوات بسيطة") */}
-      <section className="space-y-6">
+      {/* 2. FREE WORKOUT & DIET TRIAL CALLOUT BANNER FOR NEW VISITORS */}
+      {onOpenFreeTrialHub && (
+        <motion.section
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="rounded-3xl border-2 border-emerald-200 bg-gradient-to-r from-emerald-50/90 via-white to-amber-50/80 p-6 shadow-md sm:p-8"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-6">
+            <div className="flex items-start gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md">
+                <Video className="h-7 w-7" />
+              </div>
+              <div className="space-y-1">
+                <span className="inline-block rounded-full bg-emerald-100 px-3 py-0.5 text-[11px] font-extrabold text-emerald-800">
+                  {isAr ? 'جديد ومجاني ١٠٠٪ لزوار الموقع' : 'NEW & 100% FREE FOR VISITORS'}
+                </span>
+                <h2 className="text-xl font-black text-slate-900 sm:text-2xl">
+                  {isAr
+                    ? 'داخل تجرب الأول؟ افتح مكتبة التمارين بالفيديو والأنظمة الغذائية المجانية!'
+                    : 'Want to Try First? Open Our Free Video Workouts & Meal Plans Hub!'}
+                </h2>
+                <p className="text-xs text-slate-600 sm:text-sm">
+                  {isAr
+                    ? 'شاهد فيديوهات التمارين مع نصائح أطباء العلاج الطبيعي، شغل تايمر التمرين التفاعلي، وحمل ٣ أنظمة غذائية كاملة بالجرامات والبدائل الاقتصادية مجاناً.'
+                    : 'Watch HD exercise demos with PT safety cues, use our interactive set & rest timer, and grab 3 complete meal plans for free.'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={onOpenFreeTrialHub}
+              className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-7 py-4 text-sm font-black text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700"
+            >
+              <Play className="h-4 w-4 fill-white" />
+              {isAr
+                ? 'افتح التمارين والأنظمة المجانية الآن ←'
+                : 'Open Free Workouts & Diets Now →'}
+            </button>
+          </div>
+        </motion.section>
+      )}
+
+      {/* 3. HOW IT WORKS IN 4 STEPS — "إنت مش لوحدك" */}
+      <section className="space-y-8">
         <div className="text-center">
-          <span className="rounded-full bg-amber-500/15 px-3.5 py-1 text-xs font-extrabold text-amber-700 dark:text-[#D4AF37]">
-            {isAr ? 'رحلتك معنا خطوة بخطوة' : 'HOW YOUR TRANSFORMATION WORKS'}
+          <span className="text-xs font-extrabold uppercase tracking-wider text-amber-600">
+            {isAr ? 'رحلتك معانا خطوة بخطوة' : 'HOW YOUR TRANSFORMATION WORKS'}
           </span>
-          <h2 className="mt-2 text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
-            {isAr ? 'اشترك بخطوات بسيطة.. وإنت مش لوحدك!' : 'Start in 4 Simple Steps — You Are Never Alone'}
+          <h2 className="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">
+            {isAr
+              ? 'ابدأ رحلة تغيير جسمك وحياتك في ٤ خطوات بسيطة'
+              : 'Start in 4 Simple Steps — You Are Never Alone'}
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
               step: '01',
               titleAr: '١. إشترك بسهولة',
               titleEn: '1. Choose & Subscribe',
               descAr:
-                'اختر البرنامج المناسب لك وادفع بأمان من أي مكان (إنستاباي، فوري، فودافون كاش، أو بطاقة بنكية).',
+                'اختر الباقة المناسبة لهدفك وادفع بأمان عبر إنستاباي، فودافون كاش، فوري، أو البطاقة البنكية.',
               descEn:
                 'Pick your coaching package and pay securely via InstaPay, Fawry, Vodafone Cash, or Card.',
               icon: CreditCard,
+              color: 'text-amber-600 bg-amber-50 border-amber-200',
             },
             {
               step: '02',
               titleAr: '٢. تاريخك الصحي والرياضي',
               titleEn: '2. Deep-Dive Assessment',
               descAr:
-                'ندرس تاريخك مع الأكل والرياضة والتحاليل والإصابات عشان خطتك تتفصل فعلاً على مقاس حياتك وهدفك.',
+                'بنتعرف على تفاصيل يومك، الأكل اللي بتحبه، تحاليلك الطبية، وأي إصابات سابقة عشان نفصل البرنامج عليك.',
               descEn:
                 'We analyze your nutrition history, lifestyle, lab tests, and injuries to tailor every detail.',
               icon: HeartPulse,
+              color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
             },
             {
               step: '03',
-              titleAr: '٣. الجزء السحري (استلام خطتك)',
+              titleAr: '٣. الجزء السحري (البرنامج المفصل)',
               titleEn: '3. The Magic Blueprint',
               descAr:
-                'استلم برنامجك الشامل من دايت بوصفات مصورة وتمرين (جيم أو بيت) ومكملات بعد عرضه على طبيب مختص.',
+                'تستلم على التطبيق خطتك الغذائية بالوصفات المصورة وبرنامجك التدريبي بالفيديو تحت إشراف طبيب علاج طبيعي.',
               descEn:
                 'Receive your custom meal plan, video workouts, and supplement guide reviewed by a physician.',
               icon: Sparkles,
+              color: 'text-sky-600 bg-sky-50 border-sky-200',
             },
             {
               step: '04',
-              titleAr: '٤. المتابعة اليومية (إنت مش لوحدك)',
+              titleAr: '٤. المتابعة: إنت مش لوحدك!',
               titleEn: '4. Daily Coaching & Support',
               descAr:
-                'معاك خطوة بخطوة على الواتساب والتطبيق، حتى لو لخبطت يوم هنعرفك ازاي تعوض وتكمل لحد ما توصل لحلمك.',
+                'متابعة يومية على الواتساب والتطبيق، وتصحيح لأدائك التدريبي بالفيديو ودعم نفسي مستمر لحد ما توصل لهدفك.',
               descEn:
                 'Daily WhatsApp check-ins, video form corrections, and mindset support until you hit your goal.',
               icon: MessageCircle,
+              color: 'text-purple-600 bg-purple-50 border-purple-200',
             },
-          ].map((item, i) => {
+          ].map((item, idx) => {
             const Icon = item.icon;
             return (
               <motion.div
                 key={item.step}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                whileHover={{ y: -6 }}
-                className="relative rounded-2xl border border-slate-200/90 bg-white p-6 shadow-md transition dark:border-slate-800 dark:bg-[#121623]"
+                transition={{ duration: 0.35, delay: idx * 0.08 }}
+                whileHover={{ y: -5 }}
+                className="relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
               >
                 <div className="flex items-center justify-between">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-600 dark:text-[#D4AF37]">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="font-mono text-2xl font-black text-slate-200 dark:text-slate-800">
-                    {item.step}
-                  </span>
+                  <div className={`rounded-xl border p-3 ${item.color}`}>
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <span className="font-mono text-2xl font-black text-slate-200">{item.step}</span>
                 </div>
-                <h3 className="mt-4 text-base font-extrabold text-slate-900 dark:text-white">
+                <h3 className="mt-4 text-base font-extrabold text-slate-900">
                   {isAr ? item.titleAr : item.titleEn}
                 </h3>
-                <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                <p className="mt-2 text-xs leading-relaxed text-slate-600">
                   {isAr ? item.descAr : item.descEn}
                 </p>
               </motion.div>
@@ -621,133 +717,164 @@ export function PublicCoachingStorefrontView({
         </div>
       </section>
 
-      {/* 3. TRANSFORMATION STORIES ("شركاؤنا حققوا أفضل نسخة من نفسهم") */}
-      <section className="space-y-6">
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+      {/* 4. REAL TRANSFORMATION STORIES WITH PHOTOS ("شركاؤنا حققوا أفضل نسخة من نفسهم") */}
+      <section id="transformations-section" className="scroll-mt-24 space-y-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <span className="rounded-full bg-emerald-500/15 px-3.5 py-1 text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
-              {isAr ? 'قصص نجاح حقيقية' : 'REAL CLIENT RESULTS'}
+            <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-600">
+              {isAr ? 'نتائج حقيقية وموثقة بالصور والأرقام' : 'REAL CLIENT RESULTS'}
             </span>
-            <h2 className="mt-2 text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
+            <h2 className="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">
               {isAr
-                ? 'شركاؤنا حققوا أفضل نسخة من نفسهم.. مش بس شكل جسمهم!'
+                ? 'شركاؤنا حققوا أفضل نسخة من نفسهم — الدور عليك الآن!'
                 : 'Real People, Real Science, Life-Changing Results'}
             </h2>
           </div>
           <a
             href="#coaching-packages"
-            className="text-xs font-extrabold text-amber-600 hover:underline dark:text-[#D4AF37]"
+            className="text-xs font-extrabold text-amber-600 hover:underline"
           >
-            {isAr ? 'اعرف قصصهم، الآن دورك — ابدأ قصتك ←' : 'Now it is your turn — Start today →'}
+            {isAr ? 'ابدأ قصتك الخاصة اليوم ←' : 'Now it is your turn — Start today →'}
           </a>
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {TRANSFORMATIONS.map((tr, i) => (
+          {TRANSFORMATION_STORIES.map((story, idx) => (
             <motion.div
-              key={tr.id}
+              key={story.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              whileHover={{ y: -5 }}
-              className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-6 shadow-md dark:border-slate-800 dark:bg-[#121623]"
+              transition={{ duration: 0.4, delay: idx * 0.1 }}
+              whileHover={{ y: -6 }}
+              className="flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:shadow-lg"
             >
               <div>
-                <div className="flex items-center justify-between">
-                  <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
-                    {isAr ? tr.resultBadgeAr : tr.resultBadgeEn}
+                <div className="relative h-52 w-full overflow-hidden bg-slate-100">
+                  <img
+                    src={story.photoUrl}
+                    alt={isAr ? story.nameAr : story.nameEn}
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+                  <span className="absolute top-3 start-3 rounded-full bg-emerald-500 px-3 py-1 text-[11px] font-extrabold text-white shadow">
+                    {isAr ? story.badgeAr : story.badgeEn}
                   </span>
-                  <span className="font-mono text-xs font-bold text-slate-500">
-                    {isAr ? tr.durationAr : tr.durationEn}
+                  <span className="absolute bottom-3 end-3 rounded-lg bg-white/95 px-2.5 py-1 font-mono text-[11px] font-extrabold text-slate-900">
+                    {isAr ? story.durationAr : story.durationEn}
                   </span>
                 </div>
 
-                <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-slate-100 p-3 text-center text-xs dark:bg-slate-900">
-                  <div>
-                    <span className="text-slate-500">{isAr ? 'قبل' : 'Before'}</span>
-                    <p className="font-mono font-black text-rose-500">{tr.beforeWeight}</p>
+                <div className="p-6">
+                  <div className="grid grid-cols-3 gap-2 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-center">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-500">
+                        {isAr ? 'الوزن السابق' : 'Before'}
+                      </span>
+                      <p className="font-mono text-base font-black text-rose-600">
+                        {story.weightBeforeKg} kg
+                      </p>
+                    </div>
+                    <div className="border-x border-slate-200">
+                      <span className="text-[10px] font-bold text-emerald-700">
+                        {isAr ? 'الوزن الحالي' : 'After'}
+                      </span>
+                      <p className="font-mono text-base font-black text-emerald-600">
+                        {story.weightAfterKg} kg
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-500">
+                        {isAr ? 'نسبة الدهون' : 'Body Fat'}
+                      </span>
+                      <p className="font-mono text-xs font-extrabold text-amber-700">
+                        {story.bodyFatBefore} ← {story.bodyFatAfter}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-slate-500">{isAr ? 'بعد' : 'After'}</span>
-                    <p className="font-mono font-black text-emerald-500">{tr.afterWeight}</p>
-                  </div>
-                  <div>
-                    <span className="text-slate-500">{isAr ? 'نسبة الدهون' : 'Body Fat'}</span>
-                    <p className="font-mono font-black text-amber-600 dark:text-[#D4AF37]">
-                      {tr.bodyFatDrop}
-                    </p>
-                  </div>
-                </div>
 
-                <p className="mt-4 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                  &ldquo;{isAr ? tr.quoteAr : tr.quoteEn}&rdquo;
-                </p>
+                  <p className="mt-4 text-xs leading-relaxed text-slate-600">
+                    “{isAr ? story.quoteAr : story.quoteEn}”
+                  </p>
+                </div>
               </div>
 
-              <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
-                <p className="text-sm font-extrabold text-slate-900 dark:text-white">
-                  {isAr ? tr.nameAr : tr.nameEn}
+              <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4">
+                <p className="text-sm font-extrabold text-slate-900">
+                  {isAr ? story.nameAr : story.nameEn} ({story.age} {isAr ? 'سنة' : 'yrs'})
                 </p>
-                <p className="text-xs text-slate-500">{isAr ? tr.roleAr : tr.roleEn}</p>
+                <p className="text-[11px] font-semibold text-slate-500">
+                  {isAr ? story.roleAr : story.roleEn}
+                </p>
               </div>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* 4. COACHING PACKAGES & COMPARISON TABLE ("برامج الاشتراك والمقارنة") */}
-      <section id="coaching-packages" className="space-y-8 scroll-mt-20">
+      {/* 5. 4 TIERED COACHING PACKAGES + COMPARISON TABLE */}
+      <section id="coaching-packages" className="scroll-mt-24 space-y-8">
         <div className="text-center">
-          <span className="rounded-full bg-amber-500/15 px-3.5 py-1 text-xs font-extrabold text-amber-700 dark:text-[#D4AF37]">
-            {isAr ? 'خصم 50% لفترة محدودة' : 'LIMITED TIME 50% LAUNCH DISCOUNT'}
-          </span>
-          <h2 className="mt-2 text-2xl font-black text-slate-900 dark:text-white sm:text-4xl">
-            {isAr ? 'اختر برنامج الاشتراك الأنسب لهدفك' : 'Choose Your Transformation Package'}
-          </h2>
-          <p className="mx-auto mt-2 max-w-xl text-xs text-slate-600 dark:text-slate-400">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100/80 px-3.5 py-1 text-xs font-extrabold text-amber-900">
+            <Flame className="h-3.5 w-3.5 text-amber-600" />
             {isAr
-              ? 'جميع الباقات تشمل خطة تغذية مفصلة، برنامج تدريبي مشروح بالفيديو، وتفعيل فوري لحسابك على تطبيق المتدرب.'
+              ? 'خصم 50% لفترة محدودة على جميع الباقات'
+              : 'LIMITED TIME 50% LAUNCH DISCOUNT'}
+          </span>
+          <h2 className="mt-2 text-2xl font-black text-slate-900 sm:text-4xl">
+            {isAr
+              ? 'اختر باقة المتابعة المناسبة لهدفك وابدأ اليوم'
+              : 'Choose Your Transformation Package'}
+          </h2>
+          <p className="mx-auto mt-2 max-w-2xl text-xs text-slate-600 sm:text-sm">
+            {isAr
+              ? 'جميع الباقات تشمل خطة تغذية مفصلة، برنامج تدريبي بالفيديو، واشتراك مجاني في تطبيق المتدرب الذكي.'
               : 'All packages include tailored nutrition, video workout programs, and instant access to the Member App.'}
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {COACHING_TIERS.map((tier) => (
+          {COACHING_TIERS.map((tier, idx) => (
             <motion.div
               key={tier.id}
-              whileHover={{ y: -8 }}
-              className={`relative flex flex-col justify-between rounded-3xl border p-6 shadow-lg transition ${
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: idx * 0.08 }}
+              whileHover={{ y: -6 }}
+              className={`relative flex flex-col justify-between rounded-3xl border bg-white p-6 shadow-sm transition hover:shadow-xl ${
                 tier.popular
-                  ? 'border-2 border-[#D4AF37] bg-gradient-to-b from-amber-50/70 to-white dark:from-[#1A1F33] dark:to-[#121623]'
-                  : 'border-slate-200/90 bg-white dark:border-slate-800 dark:bg-[#121623]'
+                  ? 'border-2 border-amber-500 ring-4 ring-amber-500/15'
+                  : 'border-slate-200'
               }`}
             >
               <div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <span
-                    className="rounded-full px-3 py-0.5 text-[11px] font-extrabold text-white"
+                    className="rounded-full px-3 py-1 text-[10px] font-extrabold text-white"
                     style={{ backgroundColor: tier.accentColor }}
                   >
                     {isAr ? tier.badgeAr : tier.badgeEn}
                   </span>
-                  <span className="text-[11px] font-bold text-rose-500">
-                    {isAr ? `متبقي ${tier.spotsLeft} أماكن فقط` : `Only ${tier.spotsLeft} spots left`}
+                  <span className="text-[11px] font-bold text-rose-600">
+                    {isAr
+                      ? `متبقي ${tier.spotsLeft} أماكن فقط`
+                      : `Only ${tier.spotsLeft} spots left`}
                   </span>
                 </div>
 
-                <h3 className="mt-4 text-lg font-black text-slate-900 dark:text-white">
+                <h3 className="mt-4 text-lg font-black text-slate-900">
                   {isAr ? tier.nameAr : tier.nameEn}
                 </h3>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                <p className="mt-1 text-xs text-slate-500">
                   {isAr ? tier.subtitleAr : tier.subtitleEn}
                 </p>
 
-                <div className="mt-4 flex items-baseline gap-2 border-y border-slate-100 py-4 dark:border-slate-800">
+                <div className="mt-4 flex items-baseline gap-2 border-y border-slate-100 py-4">
                   <span className="font-mono text-sm text-slate-400 line-through">
                     {tier.oldPriceEgp.toLocaleString()} EGP
                   </span>
-                  <span className="font-mono text-3xl font-black text-slate-900 dark:text-white">
+                  <span className="font-mono text-3xl font-black text-slate-900">
                     {tier.priceEgp.toLocaleString()}
                   </span>
                   <span className="text-xs font-bold text-slate-500">
@@ -755,7 +882,7 @@ export function PublicCoachingStorefrontView({
                   </span>
                 </div>
 
-                <ul className="mt-4 space-y-2.5 text-xs text-slate-700 dark:text-slate-300">
+                <ul className="mt-4 space-y-2.5 text-xs text-slate-700">
                   {(isAr ? tier.featuresAr : tier.featuresEn).map((feat) => (
                     <li key={feat} className="flex items-start gap-2">
                       <CheckCircle2
@@ -771,108 +898,107 @@ export function PublicCoachingStorefrontView({
               <button
                 type="button"
                 onClick={() => setSelectedTierForCheckout(tier)}
-                className="mt-6 w-full rounded-2xl py-3.5 text-xs font-black text-slate-950 shadow-md transition hover:brightness-110"
-                style={{ backgroundColor: tier.popular ? '#D4AF37' : '#F59E0B' }}
+                className={`mt-6 w-full rounded-2xl py-3.5 text-xs font-black transition ${
+                  tier.popular
+                    ? 'bg-gradient-to-r from-amber-500 to-[#D4AF37] text-slate-950 shadow-md shadow-amber-500/20 hover:brightness-105'
+                    : 'bg-slate-900 text-white hover:bg-slate-800'
+                }`}
               >
-                {isAr ? `اشترك الآن في ${tier.nameAr}` : `Subscribe to ${tier.nameEn}`}
+                {isAr
+                  ? `اشترك الآن في ${tier.nameAr}`
+                  : `Subscribe to ${tier.nameEn}`}
               </button>
             </motion.div>
           ))}
         </div>
 
-        {/* Comparison Table ("المقارنة بين البرامج") */}
-        <div className="overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-md dark:border-slate-800 dark:bg-[#121623]">
-          <div className="border-b border-slate-200 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/70">
-            <h3 className="text-base font-black text-slate-900 dark:text-white">
-              {isAr ? 'جدول المقارنة التفصيلي بين البرامج' : 'Detailed Program Comparison Matrix'}
+        {/* Comparison Table */}
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 bg-slate-50 px-6 py-4">
+            <h3 className="text-sm font-black text-slate-900">
+              {isAr
+                ? 'جدول المقارنة التفصيلي بين الباقات الأربعة'
+                : 'Detailed Program Comparison Matrix'}
             </h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-start text-xs">
-              <thead className="border-b border-slate-200 bg-slate-100/70 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-                <tr>
-                  <th className="px-4 py-3.5 text-start">{isAr ? 'المميزات' : 'Feature'}</th>
-                  <th className="px-4 py-3.5 text-center">Fit Core</th>
-                  <th className="px-4 py-3.5 text-center">Smart PRIME</th>
-                  <th className="px-4 py-3.5 text-center text-amber-600 dark:text-[#D4AF37]">
-                    Titan Elite Pro
+              <thead>
+                <tr className="border-b border-slate-200 bg-white text-slate-600">
+                  <th className="px-5 py-3.5 font-extrabold">
+                    {isAr ? 'وجه المقارنة' : 'Feature'}
                   </th>
-                  <th className="px-4 py-3.5 text-center">Golden MAX VIP</th>
+                  <th className="px-4 py-3.5 font-extrabold">Fit Core</th>
+                  <th className="px-4 py-3.5 font-extrabold text-sky-700">Smart PRIME</th>
+                  <th className="px-4 py-3.5 font-extrabold text-amber-700">Titan Elite Pro</th>
+                  <th className="px-4 py-3.5 font-extrabold text-purple-700">Golden MAX VIP</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200/70 dark:divide-slate-800/70">
-                {[
-                  {
-                    featAr: 'تحديث النظام الغذائي المخصص',
-                    featEn: 'Custom Diet Plan Updates',
-                    c1: 'كل 15 يوم',
-                    c2: 'كل 30 يوم + وصفات فيديو',
-                    c3: 'كل 10 أيام',
-                    c4: 'تحديث لحظي مفتوح',
-                  },
-                  {
-                    featAr: 'متابعة الواتساب مع الكوتش',
-                    featEn: 'WhatsApp Coaching Response',
-                    c1: '24–48 ساعة',
-                    c2: 'مرتين أسبوعياً + لايف',
-                    c3: 'متابعة يومية (أولوية)',
-                    c4: 'متابعة شخصية مع مؤسس المنصة',
-                  },
-                  {
-                    featAr: 'اجتماعات زوم ومكالمات مباشرة',
-                    featEn: 'Live Zoom & Phone Check-ins',
-                    c1: '—',
-                    c2: 'Triple Care كل 10 أيام',
-                    c3: '4 اجتماعات زوم شهرياً',
-                    c4: 'زوم أسبوعي + مكالمات تليفونية',
-                  },
-                  {
-                    featAr: 'إشراف طبي وعلاج طبيعي للإصابات',
-                    featEn: 'Medical & Physical Therapy Care',
-                    c1: '✓',
-                    c2: '✓',
-                    c3: '✓ شامل مراجعة التحاليل',
-                    c4: '✓ كونسلتو طبي كامل',
-                  },
-                ].map((row) => (
-                  <tr key={row.featEn}>
-                    <td className="px-4 py-3.5 font-extrabold text-slate-900 dark:text-white">
-                      {isAr ? row.featAr : row.featEn}
-                    </td>
-                    <td className="px-4 py-3.5 text-center text-slate-600 dark:text-slate-300">{row.c1}</td>
-                    <td className="px-4 py-3.5 text-center text-slate-600 dark:text-slate-300">{row.c2}</td>
-                    <td className="px-4 py-3.5 text-center font-extrabold text-amber-600 dark:text-[#D4AF37]">
-                      {row.c3}
-                    </td>
-                    <td className="px-4 py-3.5 text-center font-bold text-emerald-600 dark:text-emerald-400">
-                      {row.c4}
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                <tr>
+                  <td className="px-5 py-3 font-bold">
+                    {isAr ? 'تحديث الخطة الغذائية' : 'Custom Diet Plan Updates'}
+                  </td>
+                  <td className="px-4 py-3">كل 15 يوم</td>
+                  <td className="px-4 py-3">كل 30 يوم + وصفات فيديو</td>
+                  <td className="px-4 py-3 font-bold text-amber-700">كل 10 أيام</td>
+                  <td className="px-4 py-3 font-bold text-purple-700">تحديث لحظي مفتوح</td>
+                </tr>
+                <tr>
+                  <td className="px-5 py-3 font-bold">
+                    {isAr ? 'سرعة المتابعة على الواتساب' : 'WhatsApp Coaching Response'}
+                  </td>
+                  <td className="px-4 py-3">24–48 ساعة</td>
+                  <td className="px-4 py-3">مرتين أسبوعياً + لايف</td>
+                  <td className="px-4 py-3 font-bold text-amber-700">متابعة يومية (أولوية)</td>
+                  <td className="px-4 py-3 font-bold text-purple-700">
+                    متابعة شخصية مع مؤسس المنصة
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-5 py-3 font-bold">
+                    {isAr ? 'اجتماعات الفيديو اللايف (Zoom)' : 'Live Zoom & Phone Check-ins'}
+                  </td>
+                  <td className="px-4 py-3 text-slate-400">—</td>
+                  <td className="px-4 py-3">Triple Care كل 10 أيام</td>
+                  <td className="px-4 py-3 font-bold text-amber-700">4 اجتماعات زوم شهرياً</td>
+                  <td className="px-4 py-3 font-bold text-purple-700">
+                    زوم أسبوعي + مكالمات تليفونية
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-5 py-3 font-bold">
+                    {isAr ? 'إشراف طبي وعلاج طبيعي للإصابات' : 'Medical & Physical Therapy Care'}
+                  </td>
+                  <td className="px-4 py-3 text-emerald-600 font-bold">✓</td>
+                  <td className="px-4 py-3 text-emerald-600 font-bold">✓</td>
+                  <td className="px-4 py-3 text-emerald-600 font-bold">✓ شامل مراجعة التحاليل</td>
+                  <td className="px-4 py-3 text-emerald-600 font-bold">✓ كونسلتو طبي كامل</td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
       </section>
 
-      {/* 5. INTERACTIVE FREE CALORIE & MACRO CALCULATOR ("حاسبة السعرات الحرارية المجانية") */}
+      {/* 6. INTERACTIVE FREE CALORIE & MACRO CALCULATOR ("حاسبة السعرات الحرارية المجانية") */}
       <section
         id="free-calorie-calculator"
         data-testid="free-calorie-calculator"
-        className="scroll-mt-20 rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-[#121623] sm:p-10"
+        className="scroll-mt-24 rounded-3xl border border-slate-200 bg-white p-6 shadow-md sm:p-10"
       >
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           <div className="space-y-4 lg:col-span-7">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3.5 py-1 text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
-              <Calculator className="h-3.5 w-3.5" />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3.5 py-1 text-xs font-extrabold text-emerald-800">
+              <Calculator className="h-3.5 w-3.5 text-emerald-600" />
               {isAr ? 'أداة علمية مجانية 100%' : 'FREE SCIENTIFIC BMR & MACRO CALCULATOR'}
             </span>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+            <h2 className="text-2xl font-black text-slate-900">
               {isAr
                 ? 'حاسبة السعرات الحرارية والماكروز المجانية'
                 : 'Calculate Your Exact Daily Calories & Macros'}
             </h2>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
+            <p className="text-xs text-slate-600">
               {isAr
                 ? 'لو حاسس إنك بتقلل أكلك وبرضه مفيش نتائج ملموسة، احسب احتياج جسمك الحقيقي من السعرات والبروتين والنشويات والدهون الصحية الآن بمرجعية علمية.'
                 : 'Enter your body metrics below to compute your exact Mifflin-St Jeor TDEE, protein, carbs, fats, and hydration targets.'}
@@ -880,189 +1006,216 @@ export function PublicCoachingStorefrontView({
 
             <div className="grid grid-cols-2 gap-4 pt-2 sm:grid-cols-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                <label className="block text-xs font-bold text-slate-700">
                   {isAr ? 'النوع' : 'Gender'}
                 </label>
                 <select
                   value={calcGender}
                   onChange={(e) => setCalcGender(e.target.value as 'MALE' | 'FEMALE')}
-                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-900"
                 >
                   <option value="MALE">{isAr ? 'ذكر' : 'Male'}</option>
                   <option value="FEMALE">{isAr ? 'أنثى' : 'Female'}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                <label className="block text-xs font-bold text-slate-700">
                   {isAr ? 'السن (سنة)' : 'Age (Years)'}
                 </label>
                 <input
                   type="number"
                   value={calcAge}
                   onChange={(e) => setCalcAge(Number(e.target.value))}
-                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 font-mono text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 font-mono text-xs font-bold text-slate-900"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  {isAr ? 'الوزن الحالي (كجم)' : 'Weight (kg)'}
+                <label className="block text-xs font-bold text-slate-700">
+                  {isAr ? 'الوزن (كجم)' : 'Weight (kg)'}
                 </label>
                 <input
                   type="number"
                   value={calcWeight}
                   onChange={(e) => setCalcWeight(Number(e.target.value))}
-                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 font-mono text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 font-mono text-xs font-bold text-slate-900"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                <label className="block text-xs font-bold text-slate-700">
                   {isAr ? 'الطول (سم)' : 'Height (cm)'}
                 </label>
                 <input
                   type="number"
                   value={calcHeight}
                   onChange={(e) => setCalcHeight(Number(e.target.value))}
-                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 font-mono text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 font-mono text-xs font-bold text-slate-900"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  {isAr ? 'معدل النشاط' : 'Activity Level'}
+                <label className="block text-xs font-bold text-slate-700">
+                  {isAr ? 'مستوى النشاط' : 'Activity Level'}
                 </label>
                 <select
                   value={calcActivity}
                   onChange={(e) => setCalcActivity(Number(e.target.value))}
-                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-900"
                 >
-                  <option value={1.2}>{isAr ? 'خامل (عمل مكتبي)' : 'Sedentary'}</option>
-                  <option value={1.375}>{isAr ? 'نشاط خفيف (١-٢ يوم تمرين)' : 'Light (1-2 days)'}</option>
-                  <option value={1.55}>{isAr ? 'نشاط متوسط (٣-٥ أيام تمرين)' : 'Moderate (3-5 days)'}</option>
-                  <option value={1.725}>{isAr ? 'نشاط عالي (٦ أيام تمرين)' : 'Active (6 days)'}</option>
+                  <option value={1.2}>{isAr ? 'مكتبي / خامل' : 'Sedentary'}</option>
+                  <option value={1.375}>{isAr ? 'نشاط خفيف (١-٢ يوم)' : 'Light (1-2 days)'}</option>
+                  <option value={1.55}>{isAr ? 'متوسط (٣-٥ أيام تمرين)' : 'Moderate (3-5 days)'}</option>
+                  <option value={1.725}>{isAr ? 'عالي (٦ أيام تمرين)' : 'Active (6 days)'}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                <label className="block text-xs font-bold text-slate-700">
                   {isAr ? 'هدفك الحالي' : 'Primary Goal'}
                 </label>
                 <select
                   value={calcGoal}
                   onChange={(e) => setCalcGoal(e.target.value as 'CUT' | 'MAINTAIN' | 'BULK')}
-                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-900"
                 >
-                  <option value="CUT">{isAr ? 'خسارة دهون وتنشيف' : 'Fat Loss / Cutting'}</option>
-                  <option value="MAINTAIN">{isAr ? 'ثبات الوزن وتحسين الأداء' : 'Body Recomp / Maintain'}</option>
-                  <option value="BULK">{isAr ? 'زيادة كتلة عضلية صافية' : 'Lean Muscle Bulk'}</option>
+                  <option value="CUT">{isAr ? 'تنشيف وخسارة دهون' : 'Fat Loss / Cutting'}</option>
+                  <option value="MAINTAIN">{isAr ? 'ثبات وإعادة تشكيل (Recomp)' : 'Body Recomp / Maintain'}</option>
+                  <option value="BULK">{isAr ? 'ضخامة عضلية صافية' : 'Lean Muscle Bulk'}</option>
                 </select>
               </div>
             </div>
           </div>
 
-          {/* Calculated Result Card */}
-          <div className="flex flex-col justify-between rounded-2xl bg-gradient-to-br from-slate-900 via-[#151A2C] to-slate-950 p-6 text-white lg:col-span-5">
+          {/* Calculated Output Card — Clean White & Warm Amber */}
+          <div className="flex flex-col justify-between rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50/70 via-white to-emerald-50/50 p-6 lg:col-span-5">
             <div>
-              <p className="text-xs font-extrabold uppercase tracking-wider text-[#D4AF37]">
-                {isAr ? 'نتيجتك العلمية اليومية المقترحة' : 'YOUR PERSONALIZED DAILY TARGETS'}
+              <p className="text-xs font-extrabold uppercase tracking-wider text-amber-800">
+                {isAr ? 'احتياجك اليومي المحسوب علمياً' : 'YOUR PERSONALIZED DAILY TARGETS'}
               </p>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="font-mono text-4xl font-black text-[#D4AF37]">
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="font-mono text-4xl font-black text-slate-900">
                   {targetCalories.toLocaleString()}
                 </span>
-                <span className="text-xs font-bold text-slate-300">
-                  {isAr ? 'سعرة حرارية / يومياً (kcal/day)' : 'kcal / day'}
+                <span className="text-xs font-bold text-amber-700">
+                  {isAr ? 'سعرة حرارية / يومياً (kcal)' : 'kcal / day'}
                 </span>
               </div>
 
-              <div className="mt-5 grid grid-cols-2 gap-3 text-xs">
-                <div className="rounded-xl bg-white/10 p-3">
-                  <span className="text-slate-300">{isAr ? 'البروتين اليومي' : 'Daily Protein'}</span>
-                  <p className="mt-1 font-mono text-lg font-black text-emerald-400">
-                    {targetProteinG}g
-                  </p>
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-emerald-200 bg-white p-3 shadow-xs">
+                  <span className="text-[10px] font-bold text-slate-500">
+                    {isAr ? 'البروتين اليومي (لبناء العضل)' : 'Daily Protein'}
+                  </span>
+                  <p className="font-mono text-lg font-black text-emerald-600">{targetProteinG}g</p>
                 </div>
-                <div className="rounded-xl bg-white/10 p-3">
-                  <span className="text-slate-300">{isAr ? 'النشويات المحسوبة' : 'Smart Carbs'}</span>
-                  <p className="mt-1 font-mono text-lg font-black text-amber-300">
-                    {targetCarbsG}g
-                  </p>
+                <div className="rounded-xl border border-amber-200 bg-white p-3 shadow-xs">
+                  <span className="text-[10px] font-bold text-slate-500">
+                    {isAr ? 'النشويات الذكية (للطاقة)' : 'Smart Carbs'}
+                  </span>
+                  <p className="font-mono text-lg font-black text-amber-600">{targetCarbsG}g</p>
                 </div>
-                <div className="rounded-xl bg-white/10 p-3">
-                  <span className="text-slate-300">{isAr ? 'الدهون الصحية' : 'Healthy Fats'}</span>
-                  <p className="mt-1 font-mono text-lg font-black text-rose-300">{targetFatsG}g</p>
+                <div className="rounded-xl border border-sky-200 bg-white p-3 shadow-xs">
+                  <span className="text-[10px] font-bold text-slate-500">
+                    {isAr ? 'الدهون الصحية (للهرمونات)' : 'Healthy Fats'}
+                  </span>
+                  <p className="font-mono text-lg font-black text-sky-600">{targetFatsG}g</p>
                 </div>
-                <div className="rounded-xl bg-white/10 p-3">
-                  <span className="text-slate-300">{isAr ? 'احتياج المياه' : 'Water Intake'}</span>
-                  <p className="mt-1 font-mono text-lg font-black text-sky-300">
-                    {targetWaterLiters} Liters
+                <div className="rounded-xl border border-purple-200 bg-white p-3 shadow-xs">
+                  <span className="text-[10px] font-bold text-slate-500">
+                    {isAr ? 'احتياج المياه اليومي' : 'Water Intake'}
+                  </span>
+                  <p className="font-mono text-lg font-black text-purple-600">
+                    {targetWaterLiters} {isAr ? 'لتر' : 'Liters'}
                   </p>
                 </div>
               </div>
             </div>
 
-            <a
-              href="#coaching-packages"
-              className="mt-6 block w-full rounded-xl bg-[#D4AF37] py-3 text-center text-xs font-black text-slate-950"
-            >
-              {isAr
-                ? 'استلم جدول وجبات مفصل بهذه السعرات الآن ←'
-                : 'Get a Custom Meal Plan For These Macros →'}
-            </a>
+            <div className="mt-6 flex flex-col gap-2">
+              {onOpenFreeTrialHub && (
+                <button
+                  type="button"
+                  onClick={onOpenFreeTrialHub}
+                  className="w-full rounded-xl bg-emerald-600 py-3 text-center text-xs font-black text-white transition hover:bg-emerald-700"
+                >
+                  {isAr
+                    ? '🥗 استلم جدول وجبات مجاني يناسب سعراتك الآن ←'
+                    : '🥗 Grab a Free Meal Plan For These Macros →'}
+                </button>
+              )}
+              <a
+                href="#coaching-packages"
+                className="block w-full rounded-xl bg-amber-500 py-3 text-center text-xs font-black text-slate-950 transition hover:bg-amber-400"
+              >
+                {isAr
+                  ? 'اشترك لنصمم لك جدولاً خاصاً بهذه الماكروز ←'
+                  : 'Get a Custom Meal Plan For These Macros →'}
+              </a>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 6. HEALTHY RECIPES & MYTH VS TRUTH ("وصفات شهية" + "الحقيقة أو الدايت؟") */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-        {/* Healthy Recipes */}
+      {/* 7. HEALTHY FAST RECIPES WITH PHOTOS + "الحقيقة أو الدايت؟" MYTH VS SCIENCE Q&A */}
+      <div id="recipes-section" className="scroll-mt-24 grid grid-cols-1 gap-8 lg:grid-cols-12">
+        {/* Fast Healthy Recipes with Real Food Photos */}
         <div className="space-y-4 lg:col-span-5">
-          <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-extrabold text-amber-700 dark:text-[#D4AF37]">
-            {isAr ? 'وصفات شهية بدون حرمان' : 'MACRO-FRIENDLY RECIPES'}
-          </span>
-          <h3 className="text-xl font-black text-slate-900 dark:text-white">
-            {isAr
-              ? 'الأكل الصحي اللي جسمك محتاجه من غير ما تتنازل عن الطعم!'
-              : 'Delicious High-Protein Meals Ready in Minutes'}
-          </h3>
+          <div>
+            <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-600">
+              {isAr ? 'وصفات صحية سريعة بدون حرمان' : 'MACRO-FRIENDLY RECIPES'}
+            </span>
+            <h3 className="mt-1 text-xl font-black text-slate-900">
+              {isAr
+                ? 'حضّر وجبات شهية عالية البروتين في دقائق'
+                : 'Delicious High-Protein Meals Ready in Minutes'}
+            </h3>
+          </div>
 
           <div className="space-y-3">
             {HEALTHY_RECIPES.map((rcp) => (
-              <div
+              <motion.div
                 key={rcp.id}
-                className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-[#121623]"
+                whileHover={{ x: isAr ? -4 : 4 }}
+                className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm"
               >
-                <div className="flex items-center justify-between">
-                  <span className="rounded-lg bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300">
-                    {isAr ? rcp.tagAr : rcp.tagEn}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-500">
-                    <Clock className="h-3.5 w-3.5" />
-                    {isAr ? rcp.prepAr : rcp.prepEn}
-                  </span>
+                <img
+                  src={rcp.imageUrl}
+                  alt={isAr ? rcp.titleAr : rcp.titleEn}
+                  className="h-20 w-20 shrink-0 rounded-xl object-cover"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-800">
+                      {isAr ? rcp.tagAr : rcp.tagEn}
+                    </span>
+                    <span className="flex items-center gap-1 text-[11px] font-bold text-slate-500">
+                      <Clock className="h-3 w-3 text-amber-600" />
+                      {isAr ? rcp.prepAr : rcp.prepEn}
+                    </span>
+                  </div>
+                  <h4 className="mt-1.5 text-sm font-black text-slate-900">
+                    {isAr ? rcp.titleAr : rcp.titleEn}
+                  </h4>
+                  <div className="mt-2 flex gap-3 font-mono text-[11px] font-bold">
+                    <span className="text-amber-700">{rcp.kcal} kcal</span>
+                    <span className="text-emerald-700">Protein: {rcp.proteinG}g</span>
+                    <span className="text-sky-700">Carbs: {rcp.carbsG}g</span>
+                  </div>
                 </div>
-                <h4 className="mt-2 text-sm font-extrabold text-slate-900 dark:text-white">
-                  {isAr ? rcp.titleAr : rcp.titleEn}
-                </h4>
-                <div className="mt-3 flex items-center gap-3 font-mono text-xs">
-                  <span className="font-bold text-amber-600 dark:text-[#D4AF37]">{rcp.kcal} kcal</span>
-                  <span className="text-emerald-600 dark:text-emerald-400">
-                    Protein: {rcp.proteinG}g
-                  </span>
-                  <span className="text-slate-500">Carbs: {rcp.carbsG}g</span>
-                </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
 
-        {/* Myth vs Truth Accordion ("الحقيقة أو الدايت؟") */}
+        {/* "الحقيقة أو الدايت؟" Interactive Accordion */}
         <div className="space-y-4 lg:col-span-7">
-          <span className="rounded-full bg-sky-500/15 px-3 py-1 text-xs font-extrabold text-sky-700 dark:text-sky-300">
-            {isAr ? 'تصحيح المفاهيم العلمية' : 'SCIENCE VS. DIET MYTHS'}
-          </span>
-          <h3 className="text-xl font-black text-slate-900 dark:text-white">
-            {isAr
-              ? 'الحقيقة أو الدايت؟ إجابات علمية على أشهر الخرافات'
-              : 'Truth or Diet Myth? Scientific Answers'}
-          </h3>
+          <div>
+            <span className="text-xs font-extrabold uppercase tracking-wider text-amber-600">
+              {isAr ? 'الحقيقة العلمية بدون خرافات' : 'SCIENCE VS. DIET MYTHS'}
+            </span>
+            <h3 className="mt-1 text-xl font-black text-slate-900">
+              {isAr
+                ? 'الحقيقة أو الدايت؟ إجابات علمية على أشهر مخاوفك'
+                : 'Truth or Diet Myth? Scientific Answers'}
+            </h3>
+          </div>
 
           <div className="space-y-2.5">
             {MYTH_FAQS.map((faq, idx) => {
@@ -1070,27 +1223,28 @@ export function PublicCoachingStorefrontView({
               return (
                 <div
                   key={faq.qEn}
-                  className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800 dark:bg-[#121623]"
+                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs"
                 >
                   <button
                     type="button"
                     onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
-                    className="flex w-full items-center justify-between px-5 py-4 text-start text-xs font-extrabold text-slate-900 dark:text-white sm:text-sm"
+                    className="flex w-full items-center justify-between px-5 py-4 text-start text-xs font-extrabold text-slate-900 sm:text-sm"
                   >
                     <span>{isAr ? faq.qAr : faq.qEn}</span>
                     <ChevronDown
-                      className={`h-4 w-4 shrink-0 transition-transform ${
-                        isOpen ? 'rotate-180 text-[#D4AF37]' : 'text-slate-400'
+                      className={`h-4 w-4 shrink-0 text-amber-600 transition-transform ${
+                        isOpen ? 'rotate-180' : ''
                       }`}
                     />
                   </button>
-                  <AnimatePresence>
+                  <AnimatePresence initial={false}>
                     {isOpen && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-slate-100 px-5 py-3.5 text-xs leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-300"
+                        transition={{ duration: 0.22 }}
+                        className="border-t border-slate-100 bg-slate-50/70 px-5 py-3.5 text-xs leading-relaxed text-slate-600"
                       >
                         {isAr ? faq.aAr : faq.aEn}
                       </motion.div>
@@ -1103,102 +1257,118 @@ export function PublicCoachingStorefrontView({
         </div>
       </div>
 
-      {/* 7. FREE E-BOOK LEAD MAGNET & SAAS WHITE-LABEL BANNER */}
+      {/* 8. FREE E-BOOK LEAD MAGNET + SAAS WHITE-LABEL CALLOUT FOR GYM OWNERS/COACHES */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Free E-book */}
-        <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-emerald-500/10 p-6 sm:p-8">
-          <div className="flex items-center gap-2 text-xs font-extrabold text-amber-700 dark:text-[#D4AF37]">
-            <BookOpen className="h-4 w-4" />
-            {isAr ? 'هدية مجانية لزوار المنصة' : 'FREE TRAINING E-BOOK'}
+        {/* Free E-Book Lead Magnet */}
+        <div className="rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50/80 to-white p-6 shadow-sm sm:p-8">
+          <div className="flex items-center gap-2 text-xs font-extrabold text-amber-800">
+            <BookOpen className="h-4 w-4 text-amber-600" />
+            {isAr ? 'هدية مجانية للزوار' : 'FREE TRAINING E-BOOK'}
           </div>
-          <h3 className="mt-2 text-lg font-black text-slate-900 dark:text-white">
+          <h3 className="mt-2 text-xl font-black text-slate-900">
             {isAr
-              ? 'وفرنالك كتاب "الدليل الشامل لاحتراف التمرين بدون إصابات" مجاناً!'
+              ? 'حمل مجاناً كتاب "الدليل الشامل لاحتراف التمرين بدون إصابات"'
               : 'Download "The Complete Injury-Free Hypertrophy Guide" For Free'}
           </h3>
+          <p className="mt-1 text-xs text-slate-600">
+            {isAr
+              ? 'أدخل بريدك الإلكتروني ليستقبلك رابط التحميل المباشر مع جدول تمارين مجاني للمبتدئين والمتقدمين.'
+              : 'Enter your email to receive the instant PDF guide written by our physical therapy & coaching team.'}
+          </p>
           <div className="mt-4 flex gap-2">
             <input
               type="email"
               value={ebookEmail}
               onChange={(e) => setEbookEmail(e.target.value)}
-              placeholder={isAr ? 'أدخل بريدك الإلكتروني لاستلام الكتاب...' : 'Enter your email...'}
-              className="flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              placeholder={isAr ? 'أدخل بريدك الإلكتروني...' : 'Enter your email...'}
+              className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs text-slate-900"
             />
             <button
               type="button"
               onClick={() => {
                 showToast(
                   isAr
-                    ? '📘 تم إرسال كتاب الدليل الشامل لاحتراف التمرين إلى بريدك الإلكتروني!'
-                    : '📘 Sent the Injury-Free Training E-Book to your inbox!',
+                    ? '📘 تم إرسال كتاب "الدليل الشامل للتمرين بدون إصابات" إلى بريدك الإلكتروني!'
+                    : '📘 Sent the Free Hypertrophy & Injury-Prevention E-Book to your email!',
                 );
                 setEbookEmail('');
               }}
-              className="rounded-xl bg-[#D4AF37] px-5 py-2.5 text-xs font-black text-slate-950"
+              className="rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-black text-white hover:bg-slate-800"
             >
-              {isAr ? 'احصل عليه مجاناً' : 'Send E-Book'}
+              {isAr ? 'أرسل لي الكتاب' : 'Send E-Book'}
             </button>
           </div>
         </div>
 
-        {/* Are you a Gym Owner or Online Coach? Get this SaaS Platform! */}
-        <div className="flex flex-col justify-between rounded-3xl border border-slate-300 bg-slate-900 p-6 text-white sm:p-8">
-          <div>
-            <span className="rounded-full bg-[#D4AF37]/20 px-3 py-1 text-[11px] font-extrabold text-[#F3E5AB]">
-              {isAr ? 'لأصحاب الجيمات ومدربي الأونلاين (B2B SaaS)' : 'FOR GYM OWNERS & ONLINE COACHES'}
-            </span>
-            <h3 className="mt-2 text-lg font-black">
-              {isAr
-                ? 'هل أنت صاحب جيم أو كوتش أونلاين؟ احصل على نسختك الخاصة من هذه المنصة باسمك وشعارك!'
-                : 'Own a Gym or Coaching Brand? Launch Your White-Label SaaS Platform in 60 Seconds'}
-            </h3>
-            <p className="mt-1 text-xs text-slate-300">
-              {isAr
-                ? 'امتلك صفحة هبوط للمتدربين + تطبيق موبايل باسمك + نظام بوابات QR + تحصيل فوري وإنستاباي.'
-                : 'Get your own public coaching storefront, member PWA, QR turnstile engine, and Egypt payment gateways.'}
-            </p>
+        {/* B2B SaaS Callout: Are you a Gym Owner or Coach wanting this platform? */}
+        <div className="rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-white p-6 shadow-sm sm:p-8">
+          <div className="flex items-center gap-2 text-xs font-extrabold text-emerald-800">
+            <ShieldCheck className="h-4 w-4 text-emerald-600" />
+            {isAr
+              ? 'لأصحاب الجيمات والمدربين (B2B SaaS White-Label)'
+              : 'FOR GYM OWNERS & ONLINE COACHES'}
           </div>
+          <h3 className="mt-2 text-xl font-black text-slate-900">
+            {isAr
+              ? 'هل أنت صاحب جيم أو مدرب أونلاين؟ امتلك منصتك الخاصة باسمك وشعارك!'
+              : 'Own a Gym or Coaching Brand? Launch Your White-Label SaaS Platform in 60 Seconds'}
+          </h3>
+          <p className="mt-1 text-xs text-slate-600">
+            {isAr
+              ? 'احصل على نسخة كاملة بهويتك البصرية (White-Label) تشمل صفحة المتدربين، تطبيق العضو، بوابات الدخول بالـ QR، والربط مع فوري وإنستاباي و Paymob.'
+              : 'Get your own public coaching storefront, member PWA, QR turnstile engine, and Egypt payment gateways.'}
+          </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <button
               type="button"
               onClick={onSwitchToSaaSPricing}
-              className="rounded-xl bg-[#D4AF37] px-4 py-2.5 text-xs font-black text-slate-950"
+              className="rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-black text-white hover:bg-emerald-700"
             >
-              {isAr ? 'استعرض باقات شراء المنصة للأندية والمدربين ←' : 'View SaaS Licensing & White-Label Plans →'}
+              {isAr
+                ? 'استعرض باقات شراء المنصة (SaaS) ←'
+                : 'View SaaS Licensing & White-Label Plans →'}
             </button>
             <button
               type="button"
               onClick={onSwitchToDashboard}
-              className="rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-bold text-white"
+              className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
             >
-              {isAr ? 'تجربة لوحة تحكم الإدارة' : 'Explore Admin ERP'}
+              {isAr ? 'معاينة لوحة تحكم الإدارة' : 'Explore Admin ERP'}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Instant Trainee Subscription & Payment Modal */}
+      {/* INSTANT CHECKOUT MODAL FOR VISITORS */}
       {selectedTierForCheckout && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl"
+          >
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div>
-                <span className="text-xs font-extrabold text-amber-600 dark:text-[#D4AF37]">
-                  {isAr ? 'تفعيل فوري للاشتراك' : 'INSTANT ONLINE ENROLLMENT'}
+                <span className="text-[11px] font-extrabold text-amber-600">
+                  {isAr ? 'إتمام الاشتراك الفوري وتفعيل التطبيق' : 'INSTANT ENROLLMENT & CHECKOUT'}
                 </span>
                 <h3 className="text-lg font-black">
                   {isAr ? selectedTierForCheckout.nameAr : selectedTierForCheckout.nameEn}
                 </h3>
               </div>
-              <button type="button" onClick={() => setSelectedTierForCheckout(null)}>
-                <X className="h-5 w-5 text-slate-400" />
+              <button
+                type="button"
+                onClick={() => setSelectedTierForCheckout(null)}
+                className="rounded-lg px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-100"
+              >
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleCompleteSubscription} className="mt-4 space-y-3.5">
+            <form onSubmit={handleCompleteSubscription} className="mt-4 space-y-4 text-xs">
               <div>
-                <label className="block text-xs font-bold">
-                  {isAr ? 'اسم المشترك بالكامل' : 'Your Full Name'}
+                <label className="block font-bold text-slate-700">
+                  {isAr ? 'الاسم بالكامل' : 'Full Name'}
                 </label>
                 <input
                   type="text"
@@ -1206,54 +1376,54 @@ export function PublicCoachingStorefrontView({
                   value={subscriberName}
                   onChange={(e) => setSubscriberName(e.target.value)}
                   placeholder={isAr ? 'مثال: محمد طارق' : 'e.g. Mohamed Tarek'}
-                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2.5 text-xs dark:border-slate-700 dark:bg-slate-900"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2.5 text-slate-900"
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-bold">
-                  {isAr ? 'رقم الواتساب للمتابعة اليومية (+20)' : 'WhatsApp Number (+20)'}
+                <label className="block font-bold text-slate-700">
+                  {isAr ? 'رقم الموبايل (واتساب للمتابعة اليومية)' : 'WhatsApp Phone Number'}
                 </label>
                 <input
                   type="text"
                   required
                   value={subscriberPhone}
                   onChange={(e) => setSubscriberPhone(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2.5 font-mono text-xs dark:border-slate-700 dark:bg-slate-900"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2.5 font-mono text-slate-900"
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-bold">
-                  {isAr ? 'هدفك من الاشتراك' : 'Your Primary Fitness Goal'}
+                <label className="block font-bold text-slate-700">
+                  {isAr ? 'هدفك الأساسي من الاشتراك' : 'Your Transformation Goal'}
                 </label>
                 <input
                   type="text"
                   value={subscriberGoal}
                   onChange={(e) => setSubscriberGoal(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2.5 text-xs dark:border-slate-700 dark:bg-slate-900"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2.5 text-slate-900"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold">
-                  {isAr ? 'اختر وسيلة الدفع' : 'Select Payment Method'}
+                <label className="block font-bold text-slate-700">
+                  {isAr ? 'اختر وسيلة الدفع المفضلة' : 'Select Payment Method'}
                 </label>
                 <div className="mt-1.5 grid grid-cols-2 gap-2">
-                  {(
-                    [
-                      { id: 'INSTAPAY', label: 'InstaPay (إنستاباي)' },
-                      { id: 'PAYMOB_CARD', label: 'Visa / MasterCard (Paymob)' },
-                      { id: 'VODAFONE_CASH', label: 'Vodafone Cash (فودافون كاش)' },
-                      { id: 'FAWRY', label: 'Fawry Pay (فوري)' },
-                    ] as const
-                  ).map((gw) => (
+                  {[
+                    { id: 'INSTAPAY', label: 'InstaPay (إنستاباي)' },
+                    { id: 'PAYMOB_CARD', label: 'Visa / MasterCard (Paymob)' },
+                    { id: 'VODAFONE_CASH', label: 'Vodafone Cash (فودافون كاش)' },
+                    { id: 'FAWRY', label: 'Fawry (كود فوري)' },
+                  ].map((gw) => (
                     <button
                       key={gw.id}
                       type="button"
-                      onClick={() => setSelectedGateway(gw.id)}
-                      className={`rounded-xl border px-3 py-2 text-xs font-extrabold ${
+                      onClick={() => setSelectedGateway(gw.id as typeof selectedGateway)}
+                      className={`rounded-xl border px-3 py-2.5 font-extrabold transition ${
                         selectedGateway === gw.id
-                          ? 'border-[#D4AF37] bg-[#D4AF37]/20 text-amber-900 dark:text-[#F3E5AB]'
-                          : 'border-slate-200 dark:border-slate-800'
+                          ? 'border-amber-500 bg-amber-50 text-amber-900'
+                          : 'border-slate-200 bg-slate-50 text-slate-700'
                       }`}
                     >
                       {gw.label}
@@ -1262,25 +1432,25 @@ export function PublicCoachingStorefrontView({
                 </div>
               </div>
 
-              <div className="rounded-xl bg-slate-100 p-3 text-xs dark:bg-slate-900">
-                <div className="flex justify-between font-bold">
-                  <span>{isAr ? 'إجمالي الباقة بعد الخصم:' : 'Package Total:'}</span>
-                  <span className="font-mono text-base font-black text-amber-600 dark:text-[#D4AF37]">
-                    {selectedTierForCheckout.priceEgp.toLocaleString()} EGP
-                  </span>
-                </div>
+              <div className="flex items-center justify-between rounded-2xl bg-slate-100 p-4">
+                <span className="font-bold">
+                  {isAr ? 'الإجمالي بعد خصم 50%:' : 'Total After 50% Discount:'}
+                </span>
+                <span className="font-mono text-xl font-black text-emerald-600">
+                  {selectedTierForCheckout.priceEgp.toLocaleString()} EGP
+                </span>
               </div>
 
               <button
                 type="submit"
-                className="w-full rounded-2xl bg-[#D4AF37] py-3.5 text-xs font-black text-slate-950 shadow-lg"
+                className="w-full rounded-2xl bg-gradient-to-r from-amber-500 to-[#D4AF37] py-3.5 text-sm font-black text-slate-950 shadow-lg"
               >
                 {isAr
-                  ? 'إتمام الدفع وتفعيل حسابك واستمارة التاريخ الصحي فوراً'
-                  : 'Complete Payment & Unlock Onboarding Form'}
+                  ? 'تأكيد الاشتراك وتفعيل حساب المتدرب فوراً'
+                  : 'Confirm Subscription & Activate Member App'}
               </button>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>

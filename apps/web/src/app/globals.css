@@ -1,10 +1,18 @@
 @import "tailwindcss";
 @source "../../packages/ui/src";
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 :root {
   --gymos-primary: #D4AF37;
   --gymos-accent: #10B981;
   --gymos-radius: 1rem;
+}
+
+html,
+body {
+  background-color: #FFFFFF;
+  color: #0F172A;
+  scroll-behavior: smooth;
 }
 
 html[dir="rtl"] body {
@@ -15,9 +23,9 @@ html[dir="ltr"] body {
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
-/* Luxury Daylight (Light Mode Default) Adaptive Styling */
+/* Pure White Daylight (Light Mode Default) Styling across all views */
 [data-theme="light"] {
-  background-color: #F8FAFC !important;
+  background-color: #FFFFFF !important;
   color: #0F172A !important;
 }
 
@@ -29,29 +37,32 @@ html[dir="ltr"] body {
 }
 
 [data-theme="light"] header {
-  background-color: rgba(255, 255, 255, 0.92) !important;
+  background-color: rgba(255, 255, 255, 0.96) !important;
   border-color: #E2E8F0 !important;
   color: #0F172A !important;
 }
 
 [data-theme="light"] .bg-\[\#121623\],
 [data-theme="light"] .bg-\[\#0D111D\],
-[data-theme="light"] .bg-\[\#141929\] {
+[data-theme="light"] .bg-\[\#141929\],
+[data-theme="light"] .bg-\[\#090C15\] {
   background-color: #FFFFFF !important;
   border-color: #E2E8F0 !important;
   color: #0F172A !important;
-  box-shadow: 0 2px 12px -2px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.05);
 }
 
+[data-theme="light"] .bg-slate-950,
 [data-theme="light"] .bg-slate-900,
 [data-theme="light"] .bg-slate-900\/60,
 [data-theme="light"] .bg-slate-900\/70,
 [data-theme="light"] .bg-slate-900\/80,
 [data-theme="light"] .bg-slate-900\/90,
 [data-theme="light"] .bg-slate-800,
+[data-theme="light"] .bg-slate-800\/70,
 [data-theme="light"] .bg-slate-800\/80 {
-  background-color: #F1F5F9 !important;
-  border-color: #CBD5E1 !important;
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
   color: #0F172A !important;
 }
 
@@ -74,6 +85,8 @@ html[dir="ltr"] body {
 
 [data-theme="light"] .border-slate-800,
 [data-theme="light"] .border-slate-800\/80,
-[data-theme="light"] .border-slate-700 {
+[data-theme="light"] .border-slate-700,
+[data-theme="light"] .border-slate-700\/70,
+[data-theme="light"] .border-slate-700\/80 {
   border-color: #E2E8F0 !important;
 }

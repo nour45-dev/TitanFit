@@ -5,6 +5,7 @@ import type { SupportedLocale } from '@gymos/config';
 
 export type WorkspaceSection =
   | 'PUBLIC_STOREFRONT'
+  | 'FREE_TRIAL_HUB'
   | 'OVERVIEW'
   | 'MEMBERS'
   | 'SUBSCRIPTIONS'
@@ -1028,7 +1029,7 @@ const PlatformContext = createContext<PlatformStoreContextValue | null>(null);
 
 export function PlatformProvider({
   children,
-  initialLocale = 'en',
+  initialLocale = 'ar',
 }: {
   children: React.ReactNode;
   initialLocale?: SupportedLocale;

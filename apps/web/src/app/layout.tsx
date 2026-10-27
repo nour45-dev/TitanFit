@@ -17,14 +17,14 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: `${PLATFORM_CONFIG.appName} — Multi-Tenant Gym Management SaaS`,
-  description: PLATFORM_CONFIG.tagline.en,
+  title: `${PLATFORM_CONFIG.appName} — منصة التدريب والتغذية وإدارة الأندية الرياضية`,
+  description: PLATFORM_CONFIG.tagline.ar,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" dir="ltr" className={`${inter.variable} ${cairo.variable}`}>
-      <body className="antialiased selection:bg-emerald-500 selection:text-slate-950">
+    <html lang="ar" dir="rtl" className={`${inter.variable} ${cairo.variable}`}>
+      <body className="bg-white text-slate-900 antialiased selection:bg-amber-400 selection:text-slate-950">
         {children}
       </body>
     </html>

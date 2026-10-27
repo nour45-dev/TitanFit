@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite (Light Mode Default + Diet & Cheat Storefront)', () => {
+test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite (Arabic RTL + Pure White Light Mode + Free Trial Hub)', () => {
   test('GET /api/health returns 200 OK', async ({ request }) => {
     const res = await request.get('/api/health');
     expect(res.ok()).toBeTruthy();
@@ -9,21 +9,29 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
     expect(body.data.service).toBe('gymos-web');
   });
 
-  test('verifies Default Light Mode, Diet & Cheat Public Storefront, and all 6 enterprise phase workspaces', async ({
+  test('verifies Arabic RTL & White Light Mode by default, Diet & Cheat Storefront, Free Video Workouts & Diets Hub, and all 6 ERP phases', async ({
     page,
   }) => {
     await page.goto('/');
 
     const rootShell = page.getByTestId('gymos-root-shell');
-    await expect(rootShell).toHaveAttribute('dir', 'ltr');
+    await expect(rootShell).toHaveAttribute('dir', 'rtl');
     await expect(rootShell).toHaveAttribute('data-theme', 'light');
 
     await expect(page.getByTestId('brand-app-name')).toHaveText('TitanFit');
     await expect(page.getByTestId('brand-logo-img')).toHaveAttribute('src', '/brand/logo.png');
 
-    // Public Storefront (Diet & Cheat style) opens by default for new visitors/trainees
+    // 1. Public Storefront (Diet & Cheat style) opens by default in Arabic RTL
     await expect(page.getByTestId('panel-public-storefront')).toBeVisible();
     await expect(page.getByTestId('free-calorie-calculator')).toBeVisible();
+
+    // 2. Open Free Trial Video Workouts & Meal Plans Hub
+    await page.getByTestId('open-free-trial-hub-btn').click();
+    await expect(page.getByTestId('panel-free-trial-hub')).toBeVisible();
+
+    // Switch to English LTR to verify English copy across ERP phases
+    await page.getByTestId('locale-toggle-btn').click();
+    await expect(rootShell).toHaveAttribute('dir', 'ltr');
 
     // Phase 1: Executive Overview
     await page.getByTestId('nav-tab-ADMIN_OVERVIEW').click();
@@ -61,7 +69,7 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
       'AUDITED IMPERSONATION ACTIVE',
     );
 
-    // Switch to Arabic (RTL) and verify Executive Overview & Dark Mode toggle
+    // Switch back to Arabic (RTL) and verify Executive Overview & Dark Mode toggle
     await page.getByTestId('locale-toggle-btn').click();
     await expect(rootShell).toHaveAttribute('dir', 'rtl');
     await page.getByTestId('nav-tab-ADMIN_OVERVIEW').click();
