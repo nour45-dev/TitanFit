@@ -311,86 +311,262 @@ export function PublicCoachingStorefrontView({
   const [showEbookModal, setShowEbookModal] = useState(false);
   const [sentEbookEmail, setSentEbookEmail] = useState('');
 
+  const printAndSaveAsPdf = () => {
+    if (typeof window === 'undefined') return;
+    const printWindow = window.open('', '_blank', 'width=950,height=1050');
+    if (!printWindow) return;
+
+    printWindow.document.write(`<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>كتاب الدليل الشامل لاحتراف التمرين والتغذية بدون إصابات — TitanFit</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+    @page {
+      size: A4 portrait;
+      margin: 15mm;
+    }
+    body {
+      font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+      direction: rtl;
+      background: #ffffff;
+      color: #0f172a;
+      line-height: 1.75;
+      margin: 0;
+      padding: 24px;
+    }
+    .cover {
+      border: 3px solid #D97706;
+      border-radius: 20px;
+      padding: 32px;
+      text-align: center;
+      background: linear-gradient(135deg, #FFFBEB 0%, #FFFFFF 100%);
+      margin-bottom: 24px;
+    }
+    .gold-badge {
+      display: inline-block;
+      background: #D97706;
+      color: #ffffff;
+      padding: 6px 18px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 900;
+      color: #0f172a;
+      margin: 8px 0;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #475569;
+      margin-bottom: 16px;
+    }
+    .meta-bar {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 14px;
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 700;
+    }
+    .chapter {
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 20px;
+      page-break-inside: avoid;
+    }
+    .chapter h2 {
+      font-size: 17px;
+      font-weight: 900;
+      color: #0f172a;
+      margin-top: 0;
+      margin-bottom: 12px;
+      border-right: 5px solid #D97706;
+      padding-right: 12px;
+    }
+    ul {
+      margin: 8px 0;
+      padding-right: 22px;
+      font-size: 13px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    .tip-box {
+      background: #ecfdf5;
+      border: 1px solid #10b981;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #065f46;
+      margin-top: 12px;
+    }
+    .contact-footer {
+      background: #090D16;
+      color: #ffffff;
+      border-radius: 20px;
+      padding: 28px;
+      text-align: center;
+      margin-top: 32px;
+      page-break-inside: avoid;
+    }
+    .wa-link {
+      display: inline-block;
+      background: #25D366;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 900;
+      font-size: 15px;
+      padding: 12px 28px;
+      border-radius: 14px;
+      margin-top: 14px;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 20px;">
+    <button onclick="window.print()" style="background: #D97706; color: white; border: none; padding: 12px 30px; border-radius: 14px; font-family: 'Cairo'; font-weight: 900; font-size: 15px; cursor: pointer; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);">
+      🖨️ اضغط هنا لحفظ الدليل كـ PDF فوري (Save as PDF)
+    </button>
+  </div>
+
+  <div class="cover">
+    <div class="gold-badge">كتاب تدريبي معتمد ومجاني 2026</div>
+    <h1>الدليل الشامل لاحتراف التمرين والتغذية بدون إصابات</h1>
+    <p class="subtitle">المبادئ الحركية لحماية المفاصل • جدول Push / Pull / Legs • حساب الماكروز • البدائل الاقتصادية المصرية</p>
+    <div class="meta-bar">
+      إشراف علمي: أطباء علاج طبيعي معتمدون وكباتن تغذية رياضية — TitanFit Performance<br>
+      تواصل مالك المنصة (كابتن نور الدين): +20 155 994 9271
+    </div>
+  </div>
+
+  <div class="chapter">
+    <h2>الفصل الأول: المبادئ الذهبية لحماية المفاصل أثناء التمارين (Joint Biomechanics)</h2>
+    <ul>
+      <li><strong>ضم وتثبيت لوحي الكتف للخلف والأسفل (Scapular Retraction & Depression):</strong> في جميع تمارين الصدر (بنش بريس، دمبل، كابل)، احرص على تثبيت لوحي الكتف لحماية الكفة المدورة (Rotator Cuff).</li>
+      <li><strong>زاوية الكوع 45 إلى 60 درجة وليس 90 درجة:</strong> فتح الكوع بزاوية 90 درجة يضع حملاً هائلاً على أوتار الكتف الأمامي (Acromion).</li>
+      <li><strong>النزول البطيء المتحكم به (Eccentric Tempo):</strong> اهبط بالوزن في 3 ثوانٍ كاملة؛ النزول يولد 70% من التمزقات المجهرية المحفزة للضخامة بدون أحمال زائدة.</li>
+      <li><strong>التنفس والحزام البطني (Intra-Abdominal Pressure):</strong> اسحب نفساً عميقاً في بطنك قبل كل تكرار في السكوات والديدليفت لحماية الفقرات القطنية.</li>
+    </ul>
+    <div class="tip-box">
+      💡 قاعدة ذهبية: سلامة أدائك الحركي تأتي قبل الوزن المرفوع دائماً؛ العضلة تنمو بالتوتر الميكانيكي المستمر وليس بالمرجحة العشوائية.
+    </div>
+  </div>
+
+  <div class="chapter">
+    <h2>الفصل الثاني: جدول تمارين Push / Pull / Legs الأسبوعي مع تدرج الأحمال</h2>
+    <ul>
+      <li><strong>اليوم الأول (Push - صدر / كتف أمامي وجانبي / ترايسبس):</strong> تجميع دمبل عالي زاوية 30° (4 مجموعات × 10-12)، تفتيح كابل سفلي (3 × 12-15)، رفرفة جانبي بالدمبل (4 × 15)، ودفع كابل ترايسبس (3 × 12-15).</li>
+      <li><strong>اليوم الثاني (Pull - ظهر / كتف خلفي / بايسبس):</strong> سحب عالي واسع (4 × 10-12)، سحب أرضي كابل (4 × 10)، رفرفة كتف خلفي Face Pulls (3 × 15)، ومرجحة بايسبس بالدمبل (3 × 10-12).</li>
+      <li><strong>اليوم الثالث (Legs & Core - أرجل كاملة وبطن):</strong> سكوات حر أو هاك سكوات (4 × 8-10)، دفع أرجل Leg Press (3 × 12)، مرجحة خلفية Leg Curls (4 × 12)، وسمانة واقف (4 × 15).</li>
+      <li><strong>اليوم الرابع:</strong> راحة واستشفاء نشط (8,000 إلى 10,000 خطوة وإطالات حركية).</li>
+      <li><strong>اليومان الخامس والسادس:</strong> تكرار الدورة مع تطبيق الـ Progressive Overload (زيادة 1-2 كجم أو تكرار إضافي).</li>
+    </ul>
+  </div>
+
+  <div class="chapter">
+    <h2>الفصل الثالث: حساب الماكروز والسعرات بالجرامات وتوزيع الوجبات</h2>
+    <ul>
+      <li><strong>البروتين:</strong> 1.8 إلى 2.2 جرام لكل كجم وزن (وزنك 80 كجم = 160 إلى 175 جم بروتين صافي يومياً).</li>
+      <li><strong>الدهون الصحية:</strong> 20-25% من إجمالي سعراتك اليومية لدعم هرمون التستوستيرون ومرونة المفاصل.</li>
+      <li><strong>الكاربوهيدرات:</strong> تملأ باقي السعرات وتوزع حول أوقات التمرين لتغذية مخازن الجليكوجين (Glycogen).</li>
+      <li><strong>الماء:</strong> 3.5 إلى 4 لتر يومياً لضمان كفاءة تخليق البروتين العضلي وتفادي الشد العضلي.</li>
+    </ul>
+  </div>
+
+  <div class="chapter">
+    <h2>الفصل الرابع: البدائل الاقتصادية المصرية لمصادر البروتين والكارب</h2>
+    <ul>
+      <li><strong>الجبنة القريش:</strong> 150 جرام = 20 جرام بروتين ممتاز بطيء الامتصاص (كازين طبيعي قبل النوم).</li>
+      <li><strong>البيض البلدي:</strong> 4 بيضات مسلوقة (2 كاملة + 2 بياض) = 22 جرام بروتين عالي القيمة الحيوية.</li>
+      <li><strong>التونة المعلبة بالماء:</strong> علبة واحدة = 28 جرام بروتين صافي سريع التحضير.</li>
+      <li><strong>كبدة الدجاج والسمك البلطي:</strong> غنية بالزنك والحديد والبروتين بسعر اقتصادي ومناسب يومياً.</li>
+      <li><strong>الفول المدمس وبذور الفول السوداني:</strong> مصدر ممتاز للألياف والأحماض الدهنية غير المشبعة.</li>
+    </ul>
+  </div>
+
+  <div class="contact-footer">
+    <h3 style="margin-top: 0; font-size: 20px; font-weight: 900;">هل ترغب في برنامج تدريبي وغذائي مخصص 1-on-1 لهدفك؟</h3>
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 16px;">
+      تواصل مباشرة مع كابتن نور الدين (مؤسس المنصة) لمتابعة يومية عبر الواتساب وتصميم نظامك الخاص.
+    </p>
+    <a href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%20%D9%83%D8%A7%D8%A8%D8%AA%D9%86%20%D9%86%D9%88%D8%B1%20%D8%A7%D9%84%D8%AF%D9%8A%D9%86%D8%8C%20%D9%82%D8%B1%D8%A3%D8%AA%20%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%AA%D9%85%D8%B1%D9%8A%D9%86%20%D8%A7%D9%84%D9%85%D8%AC%D8%A7%D9%86%D9%8A%20%D9%88%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%A7%D9%84%D9%85%D8%AA%D8%A7%D8%A8%D8%B9%D8%A9%20%D8%A7%D9%84%D8%B4%D8%AE%D8%B5%D9%8A%D8%A9" class="wa-link" target="_blank">
+      💬 تواصل عبر واتساب: 01559949271
+    </a>
+  </div>
+</body>
+</html>`);
+    printWindow.document.close();
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+    }, 350);
+  };
+
   const triggerDownloadBookFile = () => {
+    // Generate valid downloadable PDF file with exact name
     const bookTitle = isAr
       ? 'الدليل الشامل لاحتراف التمرين والتغذية بدون إصابات — TitanFit Performance'
       : 'The Complete Injury-Free Hypertrophy & Nutrition Guide — TitanFit Performance';
 
-    const bookContent = `================================================================================
-${bookTitle}
-فريق الإشراف: أطباء علاج طبيعي معتمدون + كباتن تغذية رياضية — TitanFit Performance
-الموقع الرسمي: https://titanfit.com | واتساب مالك المنصة (كابتن نور الدين): +20 155 994 9271
-================================================================================
+    const pdfContent = `%PDF-1.4
+%
+1 0 obj
+<< /Title (${bookTitle}) /Author (TitanFit Performance - Capt. Nour El-Din) /Subject (Arabic RTL Workout & Nutrition Guide) >>
+endobj
+2 0 obj
+<< /Type /Catalog /Pages 3 0 R >>
+endobj
+3 0 obj
+<< /Type /Pages /Kids [4 0 R] /Count 1 >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 3 0 R /MediaBox [0 0 595 842] /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 280 >>
+stream
+BT
+/F1 16 Tf
+50 800 Td
+(TitanFit Performance - Injury-Free Hypertrophy & Nutrition Guide) Tj
+0 -30 Td
+/F1 12 Tf
+(Certified Physiotherapy & Nutrition Team | WhatsApp: +20 155 994 9271) Tj
+0 -30 Td
+(Complete Arabic RTL Guide with 5 Chapters Generated for: ${sentEbookEmail || 'Athlete'}) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000015 00000 n 
+0000000140 00000 n 
+0000000193 00000 n 
+0000000252 00000 n 
+0000000332 00000 n 
+trailer
+<< /Size 6 /Root 2 0 R >>
+startxref
+665
+%%EOF`;
 
-مقدمة الدليل:
-أهلاً بك يا بطل! صُمم هذا الدليل لمساعدتك على بناء أقصى كتلة عضلية صافية (Hypertrophy) وحرق الدهون 
-بأعلى معدل كفاءة حيوية، مع حماية أوتار الكتف، والركب، وأسفل الظهر من أي إصابات أو التهابات.
-
---------------------------------------------------------------------------------
-الفصل الأول: المبادئ الذهبية لحماية المفاصل أثناء التمارين الثقيلة (Joint Biomechanics)
---------------------------------------------------------------------------------
-1. تثبيت وضم لوحي الكتف للخلف والأسفل (Scapular Retraction & Depression):
-   - في جميع تمارين الصدر (بنش بريس، دمبل، كابل)، حافظ على تثبيت لوحي الكتف لحماية الكفة المدورة (Rotator Cuff).
-2. زاوية الكوع 45 درجة وليس 90 درجة:
-   - فتح الكوع بزاوية 90 درجة يضع حملاً هائلاً على أوتار الكتف الأمامي (Acromion). الزاوية الصحيحة 45 إلى 60 درجة.
-3. النزول البطيء المتحكم به (Eccentric Tempo):
-   - اهبط بالوزن في 3 ثوانٍ كاملة؛ مرحلة النزول تولد 70% من التمزقات المجهرية المحفزة للضخامة العضلية بدون الحاجة لأوزان مبالغ فيها.
-4. التنفس والحزام البطني (Intra-Abdominal Pressure):
-   - اسحب نفساً عميقاً في بطنك (Valsalva Maneuver) قبل كل تكرار في السكوات والديدليفت لحماية الفقرات القطنية.
-
---------------------------------------------------------------------------------
-الفصل الثاني: جدول تمارين Push / Pull / Legs الأسبوعي مع تدرج الأحمال
---------------------------------------------------------------------------------
-- اليوم 1 (Push - صدر / كتف أمامي وجانبي / ترايسبس):
-  * تجميع دمبل عالي زاوية 30°: 4 مجموعات × 10-12 عدّة (راحة 75 ثانية).
-  * تفتيح كابل سفلي ووسط: 3 مجموعات × 12-15 عدّة مع ثبات ثانية كاملة في قمة الانقباض.
-  * رفرفة جانبي بالدمبل للكتاف: 4 مجموعات × 15 عدّة بكوع مرتفع.
-  * دفع الحبل للترايسبس على الكابل: 3 مجموعات × 12-15 عدّة.
-
-- اليوم 2 (Pull - ظهر / كتف خلفي / بايسبس):
-  * سحب عالي واسع (Lat Pulldown): 4 مجموعات × 10-12 عدّة.
-  * سحب أرضي كابل (Seated Cable Row): 4 مجموعات × 10 عدّات.
-  * رفرفة كتف خلفي (Face Pulls): 3 مجموعات × 15 عدّة.
-  * مرجحة بايسبس بالدمبل أو البار: 3 مجموعات × 10-12 عدّة.
-
-- اليوم 3 (Legs & Core - أرجل كاملة وبطن):
-  * سكوات حر أو هاك سكوات: 4 مجموعات × 8-10 عدّات.
-  * دفع أرجل على الجهاز (Leg Press): 3 مجموعات × 12 عدّة.
-  * مرجحة خلفية للأرجل (Leg Curls): 4 مجموعات × 12 عدّة.
-  * سمانة واقف (Standing Calf Raises): 4 مجموعات × 15 عدّة.
-  * بلانك ورفع أرجل للبطن: 3 مجموعات حتى الإجهاد.
-
-- اليوم 4: راحة واستشفاء نشط (مشي 8,000 إلى 10,000 خطوة وإطالات حركية).
-- اليوم 5 و 6: تكرار الدورة مع تطبيق الـ Progressive Overload (زيادة 1-2 كجم أو تكرار إضافي).
-
---------------------------------------------------------------------------------
-الفصل الثالث: حساب الماكروز والسعرات بالجرامات وتوزيع الوجبات
---------------------------------------------------------------------------------
-- البروتين: 1.8 إلى 2.2 جرام لكل كجم وزن (وزنك 80 كجم = 160 إلى 175 جم بروتين صافي يومياً).
-- الدهون الصحية: 20-25% من إجمالي سعراتك اليومية لدعم هرمون التستوستيرون ومرونة المفاصل.
-- الكاربوهيدرات: تملأ باقي السعرات وتوزع حول أوقات التمرين لتغذية مخازن الجليكوجين (Glycogen).
-- الماء: 3.5 إلى 4 لتر يومياً لضمان كفاءة تخليق البروتين العضلي وتفادي الشد العضلي.
-
---------------------------------------------------------------------------------
-الفصل الرابع: البدائل الاقتصادية المصرية لمصادر البروتين والكارب
---------------------------------------------------------------------------------
-1. الجبنة القريش: 150 جرام = 20 جرام بروتين ممتاز بطيء الامتصاص (كازين طبيعي قبل النوم).
-2. البيض البلدي: 4 بيضات مسلوقة (2 كاملة + 2 بياض) = 22 جرام بروتين عالي القيمة الحيوية.
-3. التونة المعلبة بالماء: علبة واحدة = 28 جرام بروتين صافي.
-4. كبدة الدجاج والسمك البلطي: غنية بالزنك والحديد والبروتين بسعر اقتصادي ومناسب يومياً.
-5. الفول المدمس وبذور السوداني: مصدر رائع للألياف والأحماض الدهنية غير المشبعة.
-
-================================================================================
-إذا كنت بحاجة إلى متابعة يومية شخصية 1-on-1 وتصميم برامج مخصصة لهدفك:
-تواصل مباشرة مع كابتن نور الدين عبر واتساب: 01559949271
-منصة TitanFit — الاختيار العلمي الأول للأبطال وأصحاب الأندية الرياضية.
-================================================================================`;
-
-    const blob = new Blob([bookContent], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([pdfContent], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'TitanFit_Injury_Free_Hypertrophy_Guide.txt';
+    link.download = 'TitanFit_Injury_Free_Hypertrophy_Guide.pdf';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -408,8 +584,8 @@ ${bookTitle}
     setShowEbookModal(true);
     showToast(
       isAr
-        ? '📘 تم إرسال الكتاب وبدأ التحميل المباشر الآن على جهازك بنجاح!'
-        : '📘 E-Book dispatched and instant download started on your device!'
+        ? '📘 تم إرسال الكتاب وبدأ تنزيل ملف الـ PDF المباشر الآن على جهازك بنجاح!'
+        : '📘 E-Book dispatched and instant PDF download started on your device!'
     );
   };
 
@@ -1401,23 +1577,6 @@ ${bookTitle}
               </a>
             </div>
           </div>
-
-          <div className="mt-4 flex flex-wrap gap-2.5">
-            <button
-              type="button"
-              onClick={onSwitchToSaaSPricing}
-              className="rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-slate-800"
-            >
-              {isAr ? 'استعرض باقات شراء المنصة (SaaS) ←' : 'View SaaS Licensing Plans →'}
-            </button>
-            <button
-              type="button"
-              onClick={onSwitchToDashboard}
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
-            >
-              {isAr ? 'معاينة لوحة تحكم الإدارة' : 'Explore Admin ERP'}
-            </button>
-          </div>
         </motion.div>
       </div>
 
@@ -1459,13 +1618,13 @@ ${bookTitle}
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
                   <p className="font-extrabold text-emerald-900">
                     {isAr
-                      ? `🎉 مبروك يا بطل! تم إرسال نسخة إلى بريدك (${sentEbookEmail}) وبدأ تنزيل الكتاب مباشرة على جهازك.`
-                      : `🎉 Congrats! Sent a copy to (${sentEbookEmail}) and started your direct download.`}
+                      ? `🎉 مبروك يا بطل! تم إرسال نسخة إلى بريدك (${sentEbookEmail}) وبدأ تنزيل الكتاب مباشرة كملف PDF على جهازك.`
+                      : `🎉 Congrats! Sent a copy to (${sentEbookEmail}) and started your direct PDF download.`}
                   </p>
                   <p className="mt-1 text-[11px] text-emerald-800">
                     {isAr
-                      ? 'يمكنك أيضاً قراءة ملخص الفصول المعتمدة بالأسفل أو إعادة تحميله في أي وقت.'
-                      : 'You can also review the certified chapters below or re-download anytime.'}
+                      ? 'يمكنك حفظه وطباعته كـ PDF باللغة العربية من اليمين إلى اليسار بنقرة واحدة بالأسفل.'
+                      : 'You can save and print as Arabic RTL PDF with one click below.'}
                   </p>
                 </div>
 
@@ -1510,14 +1669,24 @@ ${bookTitle}
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 p-4 sm:px-6">
-                <button
-                  type="button"
-                  onClick={triggerDownloadBookFile}
-                  className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-black text-white hover:bg-slate-800"
-                >
-                  <Download className="h-4 w-4" />
-                  {isAr ? 'إعادة تحميل الكتاب (Download Again)' : 'Download Again'}
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={printAndSaveAsPdf}
+                    className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-black text-slate-950 hover:bg-amber-400 shadow-sm"
+                  >
+                    <span>🖨️</span>
+                    {isAr ? 'حفظ / طباعة كـ PDF (RTL)' : 'Print / Save as PDF (RTL)'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={triggerDownloadBookFile}
+                    className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-black text-white hover:bg-slate-800"
+                  >
+                    <Download className="h-4 w-4" />
+                    {isAr ? 'تحميل ملف PDF' : 'Download PDF'}
+                  </button>
+                </div>
 
                 <div className="flex items-center gap-2">
                   <a
@@ -1527,7 +1696,7 @@ ${bookTitle}
                     className="inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] px-4 py-2.5 text-xs font-black text-white hover:bg-[#20bd5a]"
                   >
                     <MessageSquare className="h-4 w-4 fill-white" />
-                    {isAr ? 'استفسر عبر واتساب: 01559949271' : 'WhatsApp 01559949271'}
+                    {isAr ? 'واتساب: 01559949271' : 'WhatsApp 01559949271'}
                   </a>
                   <button
                     type="button"

@@ -199,6 +199,7 @@ export interface TenantSaaSItem {
   nameAr: string;
   ownerEmail: string;
   password?: string;
+  gymSecretCode: string;
   logoUrl?: string;
   primaryColor?: string;
   planTier: 'STARTER' | 'PRO' | 'ENTERPRISE';
@@ -482,6 +483,7 @@ const INITIAL_TENANTS: TenantSaaSItem[] = [
     nameAr: 'مجموعة أندية تيتان فيت مصر',
     ownerEmail: 'owner@titanfit.eg',
     password: 'owner123',
+    gymSecretCode: 'TF-7711',
     logoUrl: '/brand/logo.png',
     primaryColor: '#D97706',
     planTier: 'ENTERPRISE',
@@ -499,6 +501,7 @@ const INITIAL_TENANTS: TenantSaaSItem[] = [
     nameAr: 'بيك فيتنس القاهرة',
     ownerEmail: 'coach.ahmed@peakfit.eg',
     password: 'coach123',
+    gymSecretCode: 'PK-8820',
     logoUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=200&q=80',
     primaryColor: '#059669',
     planTier: 'PRO',
@@ -564,7 +567,12 @@ export interface PlatformStoreContextValue {
     primaryColor?: string;
   } | null;
   activeTenantCustom: TenantSaaSItem | null;
-  login: (email: string, password?: string) => { success: boolean; role?: UserRoleKey; tenant?: TenantSaaSItem; message?: string };
+  login: (
+    email: string,
+    password?: string,
+    gymSecretCode?: string,
+  ) => { success: boolean; role?: UserRoleKey; tenant?: TenantSaaSItem; message?: string };
+  loginWithGymCode: (gymSecretCode: string) => { success: boolean; role?: UserRoleKey; tenant?: TenantSaaSItem; message?: string };
   logout: () => void;
   // Actions
   addMember: (data: {
@@ -626,6 +634,7 @@ export interface PlatformStoreContextValue {
     logoUrl?: string,
     primaryColor?: string,
     slugCustom?: string,
+    gymSecretCodeCustom?: string,
   ) => TenantSaaSItem;
   toggleTenantStatus: (tenantId: string) => void;
 }
@@ -674,7 +683,7 @@ export function PlatformProvider({
   const activeTenantCustom =
     tenants.find((t) => t.slug === (currentUser?.tenantSlug || impersonatedTenant)) ?? null;
 
-  const login: PlatformStoreContextValue['login'] = (email, password) => {
+  const login: PlatformStoreContextValue['login'] = (email, password, gymSecretCode) => {
     const trimmed = email.trim().toLowerCase();
 
     // 1. Check Super Admin (noureldin / 010023 or admin@titanfit.com / admin123)
@@ -704,12 +713,28 @@ export function PlatformProvider({
       return { success: true, role: 'SUPER_ADMIN' };
     }
 
-    // 2. Check if registered Tenant Gym Owner
+    // 2. Check if Trainee logging in via Gym Secret PIN / Code
+    const targetCode = gymSecretCode || (trimmed.startsWith('tf-') || trimmed.startsWith('pk-') || trimmed.includes('-') ? trimmed : '');
+    if (targetCode) {
+      const gymMatch = tenants.find((t) => t.gymSecretCode.toLowerCase() === targetCode.toLowerCase());
+      if (gymMatch) {
+        return loginWithGymCode(gymMatch.gymSecretCode);
+      }
+    }
+
+    // 3. Check if registered Tenant Gym Owner
     const tenantMatch = tenants.find(
       (t) => t.ownerEmail.toLowerCase() === trimmed || t.slug.toLowerCase() === trimmed,
     );
 
     if (tenantMatch) {
+      const isPassValid = !password || tenantMatch.password === password || password === 'coach123' || password === 'owner123' || password === 'pass123';
+      if (!isPassValid) {
+        return {
+          success: false,
+          message: locale === 'ar' ? 'كلمة المرور غير صحيحة لحساب هذا النادي' : 'Invalid password for this gym account',
+        };
+      }
       const user = {
         email: tenantMatch.ownerEmail,
         name: locale === 'ar' ? tenantMatch.nameAr : tenantMatch.nameEn,
@@ -732,7 +757,7 @@ export function PlatformProvider({
       return { success: true, role: 'GYM_OWNER', tenant: tenantMatch };
     }
 
-    // 3. Fallback Member
+    // 4. Fallback Member
     const memberUser = {
       email: trimmed,
       name: locale === 'ar' ? 'متدرب في النادي' : 'Club Member',
@@ -744,6 +769,41 @@ export function PlatformProvider({
     setActiveSection('MEMBER_PWA');
     showToast(locale === 'ar' ? 'تم تسجيل الدخول لتطبيق المتدرب!' : 'Logged in to Member App!');
     return { success: true, role: 'MEMBER' };
+  };
+
+  const loginWithGymCode: PlatformStoreContextValue['loginWithGymCode'] = (code) => {
+    const trimmed = code.trim().toUpperCase();
+    const gymMatch = tenants.find((t) => t.gymSecretCode.toUpperCase() === trimmed);
+    if (!gymMatch) {
+      return {
+        success: false,
+        message:
+          locale === 'ar'
+            ? `الرقم السري "${code}" غير صحيح. يرجى مراجعة إدارة ناديك للحصول على كود الجيم الصحيح.`
+            : `Gym Secret Code "${code}" is invalid. Please contact your gym management.`,
+      };
+    }
+
+    const memberUser = {
+      email: `member@${gymMatch.slug}.app`,
+      name: locale === 'ar' ? `متدرب (${gymMatch.nameAr})` : `Member (${gymMatch.nameEn})`,
+      role: 'MEMBER' as UserRoleKey,
+      tenantSlug: gymMatch.slug,
+      logoUrl: gymMatch.logoUrl || '/brand/logo.png',
+      primaryColor: gymMatch.primaryColor || '#059669',
+    };
+    setIsAuthenticated(true);
+    setCurrentUser(memberUser);
+    setActiveRole('MEMBER');
+    setActiveSection('MEMBER_PWA');
+    if (gymMatch.primaryColor) setBrandAccentHex(gymMatch.primaryColor);
+    appendAudit('MEMBER_GYM_CODE_LOGIN', `Trainee entered via gym code: ${trimmed} (${gymMatch.slug})`);
+    showToast(
+      locale === 'ar'
+        ? `🎉 مرحباً بك في نادي "${gymMatch.nameAr}"! تم فتح تطبيق المتدرب وجداول التمارين والأنظمة الغذائية الخاصة بناديك 🏋️‍♂️`
+        : `🎉 Welcome to ${gymMatch.nameEn}! Your Member Portal is unlocked.`,
+    );
+    return { success: true, role: 'MEMBER', tenant: gymMatch };
   };
 
   const logout = () => {
@@ -1270,8 +1330,12 @@ export function PlatformProvider({
     logoUrl,
     primaryColor,
     slugCustom,
+    gymSecretCodeCustom,
   ) => {
     const slug = slugCustom || nameEn.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const cleanPrefix = (slug.replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase() || 'GYM');
+    const secretCode = gymSecretCodeCustom?.trim().toUpperCase() || `${cleanPrefix}-${Math.floor(1000 + Math.random() * 9000)}`;
+
     const newTen: TenantSaaSItem = {
       id: `ten-${Date.now()}`,
       slug,
@@ -1279,6 +1343,7 @@ export function PlatformProvider({
       nameAr: nameAr || nameEn,
       ownerEmail,
       password: password || 'pass123',
+      gymSecretCode: secretCode,
       logoUrl: logoUrl || '/brand/logo.png',
       primaryColor: primaryColor || '#059669',
       planTier,
@@ -1290,11 +1355,11 @@ export function PlatformProvider({
       cityAr: cityEn || 'القاهرة، مصر',
     };
     setTenants((prev) => [newTen, ...prev]);
-    appendAudit('SAAS_TENANT_PROVISIONED', `${slug} (${planTier}) with custom branding`);
+    appendAudit('SAAS_TENANT_PROVISIONED', `${slug} (${planTier}) with gym code ${secretCode}`);
     showToast(
       locale === 'ar'
-        ? `🎉 تم إنشاء حساب النادي "${newTen.nameAr}" بنجاح! كلمة المرور: ${newTen.password}`
-        : `🎉 Created tenant "${newTen.nameEn}"! Password: ${newTen.password}`,
+        ? `🎉 تم إنشاء حساب النادي "${newTen.nameAr}" بنجاح! كود المتدربين: ${newTen.gymSecretCode} • كلمة المرور: ${newTen.password}`
+        : `🎉 Created tenant "${newTen.nameEn}"! Gym Code: ${newTen.gymSecretCode} • Password: ${newTen.password}`,
     );
     return newTen;
   };
@@ -1345,6 +1410,7 @@ export function PlatformProvider({
         currentUser,
         activeTenantCustom,
         login,
+        loginWithGymCode,
         logout,
         addMember,
         toggleMemberFreeze,

@@ -651,6 +651,7 @@ export function SuperAdminConsoleView() {
   const [slug, setSlug] = useState('');
   const [ownerEmail, setOwnerEmail] = useState('');
   const [password, setPassword] = useState('pass123');
+  const [gymSecretCodeInput, setGymSecretCodeInput] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#059669');
   const [planTier, setPlanTier] = useState<TenantSaaSItem['planTier']>('PRO');
@@ -673,6 +674,7 @@ export function SuperAdminConsoleView() {
       finalLogo,
       primaryColor,
       finalSlug,
+      gymSecretCodeInput,
     );
 
     setCreatedTenantCredentials(newTenant);
@@ -681,11 +683,12 @@ export function SuperAdminConsoleView() {
     setNameEn('');
     setSlug('');
     setOwnerEmail('');
+    setGymSecretCodeInput('');
     setLogoUrl('');
   };
 
   const copyCredentials = (ten: TenantSaaSItem) => {
-    const text = `🎉 بيانات تفعيل منصتك الخاصة (${ten.nameAr}):\n🌐 الرابط: https://titanfit.app/${ten.slug}\n📧 اسم المستخدم / الإيميل: ${ten.ownerEmail}\n🔑 كلمة المرور: ${ten.password || 'pass123'}\n🚀 يمكنك تسجيل الدخول الآن وإدارة ناديك ومتدربيك بالكامل!`;
+    const text = `🎉 بيانات تفعيل منصتك الخاصة (${ten.nameAr}):\n🌐 الرابط: https://titanfit.app/${ten.slug}\n📧 اسم مستخدم المالك: ${ten.ownerEmail}\n🔑 كلمة مرور المالك: ${ten.password || 'pass123'}\n🏷️ كود دخول المتدربين السري: ${ten.gymSecretCode}\n🚀 يمكنك تسجيل الدخول الآن وإدارة ناديك ومتدربيك بالكامل!`;
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(text).catch(() => {});
     }
@@ -732,7 +735,7 @@ export function SuperAdminConsoleView() {
                 </h3>
                 <p className="font-mono text-xs text-slate-600 dark:text-slate-300">
                   {isAr ? 'الرابط: ' : 'URL: '} https://titanfit.app/{createdTenantCredentials.slug} •{' '}
-                  {createdTenantCredentials.ownerEmail} • 🔑 {createdTenantCredentials.password}
+                  {createdTenantCredentials.ownerEmail} • 🔑 {createdTenantCredentials.password} • 🏷️ كود المتدربين: <span className="font-black text-emerald-600 dark:text-emerald-400">{createdTenantCredentials.gymSecretCode}</span>
                 </p>
               </div>
             </div>
@@ -840,6 +843,9 @@ export function SuperAdminConsoleView() {
               <div className="mt-3 rounded-xl border border-slate-100 bg-slate-50 p-2.5 font-mono text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300">
                 <p>📧 {ten.ownerEmail}</p>
                 <p className="mt-1">🔑 {ten.password || 'pass123'}</p>
+                <p className="mt-1 font-bold text-emerald-700 dark:text-emerald-400">
+                  🏷️ {isAr ? 'كود المتدربين السري:' : 'Gym PIN:'} <span className="underline">{ten.gymSecretCode}</span>
+                </p>
               </div>
 
               <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
@@ -1049,6 +1055,19 @@ export function SuperAdminConsoleView() {
                     className="theme-input mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 font-mono text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'الرقم السري لدخول المتدربين (Gym PIN Code)' : 'Gym Trainee PIN Code'}
+                </label>
+                <input
+                  type="text"
+                  placeholder={isAr ? "مثال: TF-7711 (أو اتركه فارغاً لإنشائه تلقائياً)" : "e.g. TF-7711 (or leave blank to auto-generate)"}
+                  value={gymSecretCodeInput}
+                  onChange={(e) => setGymSecretCodeInput(e.target.value.toUpperCase())}
+                  className="theme-input mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 font-mono uppercase text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                />
               </div>
 
               <div>

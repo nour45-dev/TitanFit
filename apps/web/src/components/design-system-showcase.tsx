@@ -81,7 +81,9 @@ function TitanFitEnterpriseShell() {
     currentUser,
     activeTenantCustom,
     login,
+    loginWithGymCode,
     logout,
+    tenants,
   } = usePlatformStore();
 
   const isAr = locale === 'ar';
@@ -92,8 +94,10 @@ function TitanFitEnterpriseShell() {
   const [totpCode, setTotpCode] = useState('482910');
 
   // Login form state
+  const [loginTab, setLoginTab] = useState<'ADMIN_OWNER' | 'TRAINEE_PIN'>('ADMIN_OWNER');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [traineeGymCode, setTraineeGymCode] = useState('');
   const [loginError, setLoginError] = useState('');
 
   // Synchronize data-theme attribute on root HTML element
@@ -109,7 +113,7 @@ function TitanFitEnterpriseShell() {
   const isPublicWebsiteView =
     activeSection === 'PUBLIC_STOREFRONT' || activeSection === 'FREE_TRIAL_HUB';
 
-  const sidebarGroups: Array<{
+  const rawSidebarGroups: Array<{
     groupEn: string;
     groupAr: string;
     items: Array<{
@@ -247,6 +251,22 @@ function TitanFitEnterpriseShell() {
     },
   ];
 
+  // Role-based sidebar access control:
+  // Super Admin (Capt. Nour El-Din): full access to all ERP phases & SaaS platform
+  // Gym Owner: accesses only their gym operations & settings, cannot access SUPER_ADMIN
+  // Member: dedicated standalone PWA interface without sidebar
+  const sidebarGroups = rawSidebarGroups
+    .map((grp) => {
+      if (grp.groupEn === 'SAAS PLATFORM & WHITE-LABEL' && activeRole !== 'SUPER_ADMIN') {
+        return {
+          ...grp,
+          items: grp.items.filter((item) => item.id !== 'SUPER_ADMIN'),
+        };
+      }
+      return grp;
+    })
+    .filter((grp) => grp.items.length > 0);
+
   const roles: Array<{ id: UserRoleKey; labelEn: string; labelAr: string }> = [
     { id: 'GYM_OWNER', labelEn: 'Gym Owner', labelAr: 'مالك النادي / الكوتش' },
     { id: 'BRANCH_MANAGER', labelEn: 'Branch Manager', labelAr: 'مدير فرع' },
@@ -268,8 +288,29 @@ function TitanFitEnterpriseShell() {
       setLoginEmail('');
       setLoginPassword('');
       setLoginError('');
+      if (res.role === 'SUPER_ADMIN') {
+        setActiveSection('SUPER_ADMIN');
+      } else if (res.role === 'GYM_OWNER') {
+        setActiveSection('OVERVIEW');
+      }
     } else {
       setLoginError(res.message || (isAr ? 'بيانات الدخول غير صحيحة' : 'Invalid credentials'));
+    }
+  };
+
+  const handleTraineeSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!traineeGymCode.trim()) {
+      setLoginError(isAr ? 'يرجى إدخال كود الجيم السري' : 'Please enter gym secret code');
+      return;
+    }
+    const res = loginWithGymCode(traineeGymCode);
+    if (res.success) {
+      setShowLoginModal(false);
+      setTraineeGymCode('');
+      setLoginError('');
+    } else {
+      setLoginError(res.message || (isAr ? 'كود الجيم غير صحيح' : 'Invalid gym code'));
     }
   };
 
@@ -452,17 +493,6 @@ function TitanFitEnterpriseShell() {
               >
                 {isAr ? 'قصص التحول' : 'Success Stories'}
               </motion.button>
-
-              <motion.button
-                type="button"
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => setActiveSection('MEMBER_PWA')}
-                className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-              >
-                <Smartphone className="h-3.5 w-3.5 text-amber-500" />
-                {isAr ? 'تطبيق المشترك' : 'Member App'}
-              </motion.button>
             </motion.nav>
           ) : (
             <div className="hidden items-center gap-2 md:flex">
@@ -515,15 +545,32 @@ function TitanFitEnterpriseShell() {
 
             {/* Auth Button: Login vs User Profile & Logout */}
             {!isAuthenticated ? (
-              <button
-                type="button"
-                data-testid="open-login-modal-btn"
-                onClick={() => setShowLoginModal(true)}
-                className="inline-flex min-h-[38px] items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#D4AF37] px-4 py-1.5 text-xs font-black text-slate-950 shadow-sm transition hover:opacity-95"
-              >
-                <LogIn className="h-4 w-4" />
-                <span>{isAr ? 'تسجيل الدخول' : 'Sign In'}</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  data-testid="open-trainee-login-btn"
+                  onClick={() => {
+                    setLoginTab('TRAINEE_PIN');
+                    setShowLoginModal(true);
+                  }}
+                  className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-emerald-500/80 bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                >
+                  <KeyRound className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>{isAr ? 'دخول المتدربين (كود الجيم)' : 'Member PIN'}</span>
+                </button>
+                <button
+                  type="button"
+                  data-testid="open-login-modal-btn"
+                  onClick={() => {
+                    setLoginTab('ADMIN_OWNER');
+                    setShowLoginModal(true);
+                  }}
+                  className="inline-flex min-h-[38px] items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#D4AF37] px-4 py-1.5 text-xs font-black text-slate-950 shadow-sm transition hover:opacity-95"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>{isAr ? 'تسجيل الدخول' : 'Sign In'}</span>
+                </button>
+              </div>
             ) : (
               <div className="flex items-center gap-2">
                 <div className="hidden text-end sm:block">
@@ -550,8 +597,8 @@ function TitanFitEnterpriseShell() {
       </header>
 
       <div className="flex min-h-[calc(100vh-65px)]">
-        {/* MODERN UPGRADED SIDEBAR — Shown inside ERP & Admin Views */}
-        {!isPublicWebsiteView && (
+        {/* MODERN UPGRADED SIDEBAR — Shown inside ERP & Admin Views for Admins and Gym Owners Only */}
+        {!isPublicWebsiteView && activeRole !== 'MEMBER' && (
           <aside
             className={`fixed inset-y-0 start-0 z-40 flex w-72 flex-col border-e border-slate-200 bg-white text-slate-800 shadow-xl transition-transform dark:border-slate-800 dark:bg-[#0B0F19] dark:text-slate-200 lg:static lg:translate-x-0 ${
               mobileSidebarOpen
@@ -767,50 +814,139 @@ function TitanFitEnterpriseShell() {
               </button>
             </div>
 
-            {/* Manual Login Form */}
-            <form onSubmit={handleLoginSubmit} className="mt-5 space-y-3.5">
-              {loginError && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-bold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-400">
-                  {loginError}
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  {isAr ? 'البريد الإلكتروني أو اسم النادي (Slug)' : 'Email or Gym Slug'}
-                </label>
-                <input
-                  type="text"
-                  data-testid="login-email-input"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder={isAr ? "noureldin أو admin@titanfit.com" : "noureldin / admin@titanfit.com"}
-                  className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  {isAr ? 'كلمة المرور' : 'Password'}
-                </label>
-                <input
-                  type="password"
-                  data-testid="login-password-input"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  placeholder={isAr ? "010023 أو admin123" : "010023 / admin123"}
-                  className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                />
-              </div>
-
+            {/* Multi-Tenant Dual Tab Selector */}
+            <div className="mt-4 flex rounded-2xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-800 dark:bg-slate-800">
               <button
-                type="submit"
-                data-testid="login-submit-btn"
-                className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-[#D4AF37] py-2.5 text-xs font-black text-slate-950 shadow-md transition hover:opacity-95"
+                type="button"
+                data-testid="tab-admin-owner"
+                onClick={() => {
+                  setLoginTab('ADMIN_OWNER');
+                  setLoginError('');
+                }}
+                className={`flex-1 rounded-xl py-2 text-xs font-black transition ${
+                  loginTab === 'ADMIN_OWNER'
+                    ? 'bg-white text-slate-950 shadow-xs dark:bg-slate-900 dark:text-white'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
+                }`}
               >
-                {isAr ? 'تسجيل الدخول وفتح لوحة التحكم' : 'Sign In to Dashboard'}
+                {isAr ? '👑 مالك المنصة / صاحب جيم' : '👑 Super Admin / Owner'}
               </button>
-            </form>
+              <button
+                type="button"
+                data-testid="tab-trainee-pin"
+                onClick={() => {
+                  setLoginTab('TRAINEE_PIN');
+                  setLoginError('');
+                }}
+                className={`flex-1 rounded-xl py-2 text-xs font-black transition ${
+                  loginTab === 'TRAINEE_PIN'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
+                }`}
+              >
+                {isAr ? '🏋️‍♂️ المتدربون (كود الجيم)' : '🏋️‍♂️ Trainee (Gym PIN)'}
+              </button>
+            </div>
+
+            {loginError && (
+              <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-bold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-400">
+                {loginError}
+              </div>
+            )}
+
+            {loginTab === 'ADMIN_OWNER' ? (
+              /* Manual Admin/Owner Login Form */
+              <form onSubmit={handleLoginSubmit} className="mt-4 space-y-3.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'اسم المستخدم أو البريد الإلكتروني' : 'Username or Email'}
+                  </label>
+                  <input
+                    type="text"
+                    data-testid="login-email-input"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    placeholder={isAr ? "noureldin أو owner@titanfit.eg" : "noureldin / owner@titanfit.eg"}
+                    className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'كلمة المرور' : 'Password'}
+                  </label>
+                  <input
+                    type="password"
+                    data-testid="login-password-input"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder={isAr ? "010023 أو كلمة مرور ناديك" : "010023 / password"}
+                    className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  data-testid="login-submit-btn"
+                  className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-[#D4AF37] py-2.5 text-xs font-black text-slate-950 shadow-md transition hover:opacity-95"
+                >
+                  {isAr ? 'تسجيل الدخول وفتح لوحة التحكم' : 'Sign In to Dashboard'}
+                </button>
+              </form>
+            ) : (
+              /* Trainee Gym Secret PIN Form */
+              <form onSubmit={handleTraineeSubmit} className="mt-4 space-y-3.5">
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  {isAr
+                    ? 'أدخل الرقم السري الخاص بناديك (المقدم لك من إدارة الجيم) لفتح تطبيقك الرياضي والغذائي الخاص بجيمك فقط:'
+                    : 'Enter your Gym Secret Code to open your personalized training and nutrition portal for your gym:'}
+                </p>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'الرقم السري للجيم (Gym PIN)' : 'Gym Secret PIN'}
+                  </label>
+                  <input
+                    type="text"
+                    data-testid="trainee-gym-code-input"
+                    value={traineeGymCode}
+                    onChange={(e) => setTraineeGymCode(e.target.value.toUpperCase())}
+                    placeholder="TF-7711"
+                    className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 font-mono text-sm font-black uppercase text-slate-900 focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500">
+                    {isAr ? 'أندية مسجلة للتجربة السريعة:' : 'Registered Gyms on Platform:'}
+                  </label>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {tenants.map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setTraineeGymCode(t.gymSecretCode)}
+                        className={`rounded-lg border px-2.5 py-1 text-[11px] font-bold transition ${
+                          traineeGymCode === t.gymSecretCode
+                            ? 'border-emerald-500 bg-emerald-50 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-200'
+                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300'
+                        }`}
+                      >
+                        {isAr ? t.nameAr : t.nameEn} ({t.gymSecretCode})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  data-testid="trainee-submit-btn"
+                  className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 py-2.5 text-xs font-black text-white shadow-md transition hover:opacity-95"
+                >
+                  {isAr ? 'دخول تطبيق النادي الخاص بي' : 'Access My Club Portal'}
+                </button>
+              </form>
+            )}
 
             {/* Enterprise Security Note */}
             <div className="mt-5 border-t border-slate-100 pt-3.5 space-y-1 text-center dark:border-slate-800">

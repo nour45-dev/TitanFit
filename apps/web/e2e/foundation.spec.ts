@@ -84,4 +84,14 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
     await page.getByTestId('theme-toggle-btn').click();
     await expect(rootShell).toHaveAttribute('data-theme', 'dark');
   });
+
+  test('verifies Trainee authentication using Gym Secret PIN (TF-7711) opens dedicated Member Portal for their gym', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await page.getByTestId('open-trainee-login-btn').click();
+    await page.getByTestId('trainee-gym-code-input').fill('TF-7711');
+    await page.getByTestId('trainee-submit-btn').click();
+    await expect(page.getByTestId('panel-member-pwa')).toBeVisible();
+  });
 });
