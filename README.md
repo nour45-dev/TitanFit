@@ -52,3 +52,4 @@ pnpm test
   - `develop`: Staging environment on Railway (protected, requires CI + PR).
   - `phase-N/*`: Feature/phase branches merged into `develop` via Pull Request.
 - See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for the complete Railway setup, database role security model, Cloudflare R2 storage configuration, and backup/restore runbook.
+"# TitanFit" 
