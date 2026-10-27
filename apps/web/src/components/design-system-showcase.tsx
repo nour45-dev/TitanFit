@@ -1,951 +1,564 @@
 'use client';
 
-import { PLATFORM_CONFIG, type SupportedLocale, getLocaleDirection } from '@gymos/config';
-import {
-  Badge,
-  Button,
-  Card,
-  Input,
-  buildTenantCssVariables,
-  formatMoneyMinor,
-} from '@gymos/ui';
+import React, { useState } from 'react';
+import { PLATFORM_CONFIG, getLocaleDirection } from '@gymos/config';
 import {
   Activity,
   Award,
+  BarChart3,
+  Bell,
+  Building2,
   Calendar,
   CheckCircle2,
   CreditCard,
   Dumbbell,
-  FileText,
-  Flame,
   Globe,
+  KeyRound,
+  LayoutDashboard,
   Lock,
-  MessageSquare,
+  LogOut,
+  Menu,
   Moon,
   QrCode,
+  Receipt,
+  Settings,
   ShieldCheck,
   ShoppingBag,
+  Smartphone,
   Sparkles,
   Sun,
-  TrendingUp,
   UserCheck,
   Users,
+  X,
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { DICTIONARIES } from '../i18n/dictionaries';
+import {
+  PlatformProvider,
+  type UserRoleKey,
+  type WorkspaceSection,
+  usePlatformStore,
+} from '../lib/platform-store';
+import {
+  MembersCrmView,
+  OverviewView,
+  PaymentsBillingView,
+  SubscriptionsView,
+} from './views/dashboard-and-crm';
+import {
+  AccessControlTurnstilesView,
+  ClassesScheduleView,
+  PosInventoryView,
+  StaffTrainersView,
+} from './views/operations-and-pos';
+import {
+  MemberPwaPortalView,
+  ReportsAnalyticsView,
+  SuperAdminConsoleView,
+  TenantSettingsView,
+} from './views/member-pwa-and-admin';
 
-type WorkspaceTab =
-  | 'ADMIN_OVERVIEW'
-  | 'MEMBERS_BILLING'
-  | 'CLASSES_QR_ACCESS'
-  | 'MEMBER_PWA'
-  | 'POS_REPORTS_CHAT'
-  | 'SUPER_ADMIN';
+function TitanFitEnterpriseShell() {
+  const {
+    locale,
+    setLocale,
+    theme,
+    setTheme,
+    activeSection,
+    setActiveSection,
+    activeRole,
+    setActiveRole,
+    selectedBranchId,
+    setSelectedBranchId,
+    branches,
+    members,
+    invoices,
+    classes,
+    toastMessage,
+    showToast,
+  } = usePlatformStore();
 
-const DEMO_TENANTS = [
-  {
-    id: '11111111-1111-4111-8111-111111111111',
-    slug: 'titanfit-cairo',
-    nameEn: 'TitanFit — Rooted Performance (Cairo)',
-    nameAr: 'تايتن فيت — الأداء المتجذر (القاهرة)',
-    primaryHex: '#D4AF37',
-    accentHex: '#10B981',
-    branches: ['Zamalek Flagship', 'New Cairo 5th Settlement'],
-    branchesAr: ['فرع الزمالك الرئيسي', 'فرع التجمع الخامس'],
-    plan: 'ENTERPRISE',
-    status: 'ACTIVE',
-  },
-  {
-    id: '22222222-2222-4222-8222-222222222222',
-    slug: 'alexandria-iron',
-    nameEn: 'Alexandria Iron House',
-    nameAr: 'بيت الحديد - الإسكندرية',
-    primaryHex: '#10B981',
-    accentHex: '#F59E0B',
-    branches: ['Smouha Athletic Hub'],
-    branchesAr: ['فرع سموحة الرياضي'],
-    plan: 'PRO_MULTI_BRANCH',
-    status: 'ACTIVE',
-  },
-] as const;
-
-export function DesignSystemShowcase({
-  initialLocale = 'en',
-}: {
-  initialLocale?: SupportedLocale;
-}) {
-  const [locale, setLocale] = useState<SupportedLocale>(initialLocale);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>('ADMIN_OVERVIEW');
-  const [selectedTenantIdx, setSelectedTenantIdx] = useState(0);
-  const [qrCountdown, setQrCountdown] = useState(30);
-
-  // Interactive Phase 2 State (Members & Cashier Checkout)
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
-    'PAYMOB_CARD' | 'FAWRY' | 'VODAFONE_CASH' | 'INSTAPAY' | 'CASH'
-  >('PAYMOB_CARD');
-  const [couponInput, setCouponInput] = useState('RAMADAN20');
-  const [invoiceStatusMsg, setInvoiceStatusMsg] = useState<string | null>(null);
-
-  // Interactive Phase 3 State (Class Booking, Auto-Waitlist & Turnstile QR Scan)
-  const [hiitBookedCount, setHiitBookedCount] = useState(20);
-  const [hiitWaitlistCount, setHiitWaitlistCount] = useState(1);
-  const [waitlistBanner, setWaitlistBanner] = useState<string | null>(null);
-  const [turnstileStatus, setTurnstileStatus] = useState<string | null>(null);
-
-  // Interactive Phase 4 State (Member PWA Workout Logger & PR Tracker)
-  const [squatWeightKg, setSquatWeightKg] = useState('145');
-  const [squatReps, setSquatReps] = useState('5');
-  const [prNotification, setPrNotification] = useState<string | null>(
-    'New Barbell Back Squat 1RM PR: 169.2 kg (+150 XP)',
-  );
-
-  // Interactive Phase 5 State (POS Cart & Real-time Trainer Chat)
-  const [posCartCount, setPosCartCount] = useState(2);
-  const [chatMessages, setChatMessages] = useState([
-    {
-      sender: 'Coach Karim Nabil',
-      senderAr: 'كابتن كريم نبيل',
-      text: 'أهلاً يا بطل! تم تحديث جدول تمارين القوة والـ Macros للأسبوع الجديد.',
-      time: '17:15',
-    },
-    {
-      sender: 'Ahmed Mahmoud (VIP)',
-      senderAr: 'أحمد محمود (VIP)',
-      text: 'تمام يا كابتن، سجلت النهاردة PR جديد في السكوات ١٤٥ كجم!',
-      time: '17:18',
-    },
-  ]);
-  const [chatInput, setChatInput] = useState('');
-
-  // Interactive Phase 6 State (Super Admin Impersonation)
-  const [impersonationBanner, setImpersonationBanner] = useState<string | null>(null);
-
+  const isAr = locale === 'ar';
   const dir = getLocaleDirection(locale);
-  const dict = DICTIONARIES[locale];
-  const activeTenant = DEMO_TENANTS[selectedTenantIdx] ?? DEMO_TENANTS[0];
-  const tenantCssVars = buildTenantCssVariables({
-    primaryHex: activeTenant.primaryHex,
-    accentHex: activeTenant.accentHex,
-  });
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [totpCode, setTotpCode] = useState('482910');
 
-  useEffect(() => {
-    document.documentElement.lang = locale;
-    document.documentElement.dir = dir;
-  }, [locale, dir]);
+  const sidebarGroups: Array<{
+    groupEn: string;
+    groupAr: string;
+    items: Array<{
+      id: WorkspaceSection;
+      testId?: string;
+      labelEn: string;
+      labelAr: string;
+      badge?: string | number;
+      icon: React.ComponentType<{ className?: string }>;
+    }>;
+  }> = [
+    {
+      groupEn: 'CLUB OPERATIONS & CRM',
+      groupAr: 'إدارة النادي والأعضاء',
+      items: [
+        {
+          id: 'OVERVIEW',
+          testId: 'nav-tab-ADMIN_OVERVIEW',
+          labelEn: 'Executive Overview',
+          labelAr: 'لوحة القيادة التنفيذية',
+          icon: LayoutDashboard,
+        },
+        {
+          id: 'MEMBERS',
+          labelEn: 'Members CRM & Vault',
+          labelAr: 'الأعضاء والملف الطبي',
+          badge: members.length,
+          icon: Users,
+        },
+        {
+          id: 'CLASSES',
+          testId: 'nav-tab-CLASSES_QR_ACCESS',
+          labelEn: 'Classes & Waitlists',
+          labelAr: 'جدول الحصص والانتظار',
+          badge: classes.length,
+          icon: Calendar,
+        },
+        {
+          id: 'ACCESS_CONTROL',
+          labelEn: 'QR & Turnstile Gates',
+          labelAr: 'بوابات الدخول والـ QR',
+          badge: 'LIVE',
+          icon: QrCode,
+        },
+        {
+          id: 'STAFF_TRAINERS',
+          labelEn: 'Trainers & Staff',
+          labelAr: 'المدربون والعمولات',
+          icon: UserCheck,
+        },
+      ],
+    },
+    {
+      groupEn: 'FINANCE, BILLING & POS',
+      groupAr: 'المالية، الاشتراكات، والبار',
+      items: [
+        {
+          id: 'SUBSCRIPTIONS',
+          labelEn: 'Plans & Coupons',
+          labelAr: 'الباقات والكوبونات',
+          icon: Award,
+        },
+        {
+          id: 'PAYMENTS',
+          testId: 'nav-tab-MEMBERS_BILLING',
+          labelEn: 'Cashier & Egypt Gateways',
+          labelAr: 'تحصيل الفواتير والمدفوعات',
+          badge: invoices.length,
+          icon: CreditCard,
+        },
+        {
+          id: 'POS_INVENTORY',
+          testId: 'nav-tab-POS_REPORTS_CHAT',
+          labelEn: 'POS & Supplement Bar',
+          labelAr: 'نقطة بيع المكملات (POS)',
+          icon: ShoppingBag,
+        },
+        {
+          id: 'REPORTS',
+          labelEn: 'Financial & BI Reports',
+          labelAr: 'التقارير المالية وتصدير CSV',
+          icon: BarChart3,
+        },
+      ],
+    },
+    {
+      groupEn: 'MEMBER EXPERIENCE & SAAS',
+      groupAr: 'تطبيق العضو وإدارة المنصة',
+      items: [
+        {
+          id: 'MEMBER_PWA',
+          testId: 'nav-tab-MEMBER_PWA',
+          labelEn: 'Member App (PWA)',
+          labelAr: 'تطبيق العضو (PWA)',
+          badge: '1RM PR',
+          icon: Smartphone,
+        },
+        {
+          id: 'SETTINGS',
+          labelEn: 'Club & Brand Settings',
+          labelAr: 'إعدادات الفروع والهوية',
+          icon: Settings,
+        },
+        {
+          id: 'SUPER_ADMIN',
+          testId: 'nav-tab-SUPER_ADMIN',
+          labelEn: 'Super Admin SaaS',
+          labelAr: 'لوحة مالك المنصة (SaaS)',
+          icon: ShieldCheck,
+        },
+      ],
+    },
+  ];
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setQrCountdown((prev) => (prev <= 1 ? 30 : prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const isDark = theme === 'dark';
-  const cardSurfaceClass = !isDark ? 'border-slate-200 bg-white text-slate-900 shadow-sm' : '';
-
-  const tabs: Array<{ id: WorkspaceTab; labelEn: string; labelAr: string }> = [
-    { id: 'ADMIN_OVERVIEW', labelEn: '1. Executive & RBAC', labelAr: '١. النظرة العامة والصلاحيات' },
-    { id: 'MEMBERS_BILLING', labelEn: '2. Members & Egypt Pay', labelAr: '٢. المشتركون والمدفوعات' },
-    { id: 'CLASSES_QR_ACCESS', labelEn: '3. Classes & QR Gate', labelAr: '٣. الحصص وبوابة QR' },
-    { id: 'MEMBER_PWA', labelEn: '4. Member PWA & PRs', labelAr: '٤. تطبيق المشترك والتمارين' },
-    { id: 'POS_REPORTS_CHAT', labelEn: '5. POS, Reports & Chat', labelAr: '٥. المبيعات والتقارير والشات' },
-    { id: 'SUPER_ADMIN', labelEn: '6. Super Admin SaaS', labelAr: '٦. إدارة المنصة الشاملة' },
+  const roles: Array<{ id: UserRoleKey; labelEn: string; labelAr: string }> = [
+    { id: 'GYM_OWNER', labelEn: 'Gym Owner', labelAr: 'مالك النادي' },
+    { id: 'BRANCH_MANAGER', labelEn: 'Branch Manager', labelAr: 'مدير فرع' },
+    { id: 'RECEPTIONIST', labelEn: 'Receptionist', labelAr: 'موظف استقبال' },
+    { id: 'TRAINER', labelEn: 'Coach / Trainer', labelAr: 'مدرب (Trainer)' },
+    { id: 'MEMBER', labelEn: 'Member App', labelAr: 'عضو (Member)' },
+    { id: 'SUPER_ADMIN', labelEn: 'Super Admin', labelAr: 'مالك المنصة' },
   ];
 
   return (
     <div
       dir={dir}
-      style={tenantCssVars as React.CSSProperties}
-      data-testid="gymos-root-shell"
       data-theme={theme}
-      className={
-        isDark
-          ? 'min-h-screen bg-[#090D16] text-slate-50 transition-colors duration-200'
-          : 'min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200'
-      }
+      data-testid="gymos-root-shell"
+      className={`min-h-screen transition-colors duration-200 ${
+        theme === 'dark' ? 'bg-[#090C15] text-slate-100' : 'bg-slate-100 text-slate-900'
+      }`}
     >
-      {/* Audited Impersonation Alert Banner (if active) */}
-      {impersonationBanner && (
-        <div
-          data-testid="impersonation-banner"
-          className="bg-amber-500 text-slate-950 ps-6 pe-6 py-2 text-center text-xs font-bold flex items-center justify-center gap-3"
-        >
-          <ShieldCheck className="h-4 w-4" />
-          <span>{impersonationBanner}</span>
-          <button
-            type="button"
-            onClick={() => setImpersonationBanner(null)}
-            className="underline ms-3"
-          >
-            {locale === 'ar' ? 'إنهاء الجلسة' : 'Exit Impersonation'}
-          </button>
+      {/* Floating Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 end-6 z-50 flex max-w-md items-center gap-3 rounded-2xl border border-[#D4AF37] bg-[#121623] px-5 py-3.5 text-xs font-extrabold text-[#F3E5AB] shadow-2xl">
+          <CheckCircle2 className="h-5 w-5 shrink-0 text-[#D4AF37]" />
+          <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Top Navigation Bar */}
-      <header
-        className={
-          isDark
-            ? 'sticky top-0 z-30 border-b border-slate-800/80 bg-[#090D16]/90 backdrop-blur-md'
-            : 'sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-md'
-        }
-      >
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 ps-6 pe-6 py-4">
-          <div className="flex items-center gap-3.5">
-            <img
-              src={PLATFORM_CONFIG.logoPath}
-              alt={`${PLATFORM_CONFIG.appName} - ${PLATFORM_CONFIG.brandSubtitle}`}
-              data-testid="brand-logo-img"
-              className="h-12 w-12 rounded-xl border border-amber-500/40 object-cover shadow-md"
-            />
-            <div>
-              <div className="flex items-center gap-2.5">
-                <span className="text-xl font-bold tracking-tight" data-testid="brand-app-name">
-                  {PLATFORM_CONFIG.appName}
-                </span>
-                <Badge tone="amber">{PLATFORM_CONFIG.brandSubtitle}</Badge>
+      <div className="flex min-h-screen">
+        {/* Enterprise Sidebar Navigation */}
+        <aside
+          className={`fixed inset-y-0 start-0 z-40 flex w-72 flex-col border-e border-slate-800/80 bg-[#0D111D] text-slate-200 transition-transform lg:static lg:translate-x-0 ${
+            mobileSidebarOpen
+              ? 'translate-x-0'
+              : dir === 'rtl'
+                ? 'translate-x-full lg:translate-x-0'
+                : '-translate-x-full lg:translate-x-0'
+          }`}
+        >
+          {/* Brand Logo Header */}
+          <div className="flex items-center justify-between border-b border-slate-800/80 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#D4AF37]/50 bg-[#0A0E17] shadow-md">
+                <img
+                  src={PLATFORM_CONFIG.logoPath}
+                  alt={PLATFORM_CONFIG.appName}
+                  data-testid="brand-logo-img"
+                  className="h-full w-full object-contain p-0.5"
+                />
               </div>
-              <p className="text-xs text-slate-400">
-                {locale === 'ar' ? activeTenant.nameAr : activeTenant.nameEn}
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span
+                    data-testid="brand-app-name"
+                    className="text-lg font-extrabold tracking-tight text-white"
+                  >
+                    {PLATFORM_CONFIG.appName}
+                  </span>
+                  <span className="rounded bg-[#D4AF37]/20 px-1.5 py-0.5 font-mono text-[10px] font-extrabold text-[#D4AF37]">
+                    PRO
+                  </span>
+                </div>
+                <p className="text-[11px] font-semibold tracking-wider text-[#D4AF37]">
+                  {PLATFORM_CONFIG.tagline[locale]}
+                </p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(false)}
+              className="rounded-lg p-1 text-slate-400 lg:hidden"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setTheme((p) => (p === 'dark' ? 'light' : 'dark'))}
-              data-testid="theme-toggle-btn"
-              className={!isDark ? 'border-slate-300 text-slate-800 hover:bg-slate-100' : ''}
-              startIcon={
-                isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />
-              }
+          {/* Active Branch Selector inside Sidebar */}
+          <div className="border-b border-slate-800/80 px-4 py-3">
+            <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+              {isAr ? 'الفرع النشط حالياً' : 'ACTIVE CLUB BRANCH'}
+            </label>
+            <select
+              value={selectedBranchId}
+              onChange={(e) => setSelectedBranchId(e.target.value)}
+              className="mt-1.5 w-full rounded-xl border border-slate-700/80 bg-[#141929] px-3 py-2 text-xs font-bold text-white focus:border-[#D4AF37] focus:outline-none"
             >
-              {dict.nav.toggleThemeLabel} ({theme.toUpperCase()})
-            </Button>
-
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setLocale((p) => (p === 'en' ? 'ar' : 'en'))}
-              data-testid="locale-toggle-btn"
-              startIcon={<Globe className="h-4 w-4" />}
-            >
-              {dict.nav.switchLocaleLabel}
-            </Button>
+              <option value="ALL">
+                {isAr ? 'جميع الفروع (٣ فروع - مصر)' : 'All Branches (3 Clubs — Egypt)'}
+              </option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {isAr ? b.nameAr : b.nameEn}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
 
-        {/* Phase Navigation Bar */}
-        <div className="mx-auto max-w-7xl overflow-x-auto ps-6 pe-6 pb-3">
-          <nav
-            aria-label="Platform Modules Navigation"
-            className="flex items-center gap-2"
-          >
-            {tabs.map((tab) => (
-              <Button
-                key={tab.id}
-                size="sm"
-                data-testid={`nav-tab-${tab.id}`}
-                variant={activeTab === tab.id ? 'primary' : 'ghost'}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {locale === 'ar' ? tab.labelAr : tab.labelEn}
-              </Button>
+          {/* Navigation Groups */}
+          <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+            {sidebarGroups.map((grp) => (
+              <div key={grp.groupEn}>
+                <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                  {isAr ? grp.groupAr : grp.groupEn}
+                </p>
+                <div className="mt-1.5 space-y-1">
+                  {grp.items.map((item) => {
+                    const Icon = item.icon;
+                    const active = activeSection === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        data-testid={item.testId}
+                        onClick={() => {
+                          setActiveSection(item.id);
+                          setMobileSidebarOpen(false);
+                        }}
+                        className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition ${
+                          active
+                            ? 'bg-gradient-to-r from-[#D4AF37] to-[#b89322] text-slate-950 font-extrabold shadow-md shadow-[#D4AF37]/15'
+                            : 'text-slate-300 hover:bg-slate-800/70 hover:text-white'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span>{isAr ? item.labelAr : item.labelEn}</span>
+                        </span>
+                        {item.badge !== undefined && (
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                              active
+                                ? 'bg-slate-950/20 text-slate-950'
+                                : 'bg-slate-800 text-[#F3E5AB]'
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             ))}
           </nav>
-        </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="mx-auto max-w-7xl space-y-10 ps-6 pe-6 py-8">
-        {/* Hero & Rotating QR Section (Always visible at top for instant status) */}
-        <section className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
-          <div className="space-y-5 lg:col-span-7">
-            <Badge tone="emerald" className="text-xs">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>
-                {locale === 'ar'
-                  ? 'جميع المراحل (٠ إلى ٦) مفعلة ومختبرة بالكامل'
-                  : 'All Phases (0–6) Live, Verified & Production-Ready'}
-              </span>
-            </Badge>
-
-            <h1
-              data-testid="hero-heading"
-              className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl leading-tight"
-            >
-              {dict.hero.title}
-            </h1>
-
-            <p
-              className={
-                isDark
-                  ? 'text-base text-slate-300 sm:text-lg'
-                  : 'text-base text-slate-600 sm:text-lg'
-              }
-            >
-              {dict.hero.subtitle}
-            </p>
-
-            <div className="flex flex-wrap gap-2.5">
-              <Badge tone="emerald">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                {dict.system.rlsBadge}
-              </Badge>
-              <Badge tone="blue">{dict.system.rtlBadge}</Badge>
-              <Badge tone="amber">{dict.system.egyptPaymentsBadge}</Badge>
+          {/* Bottom User & Security Footer */}
+          <div className="border-t border-slate-800/80 p-4">
+            <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-[#141929] p-3">
+              <div>
+                <p className="text-xs font-extrabold text-white">
+                  {isAr ? 'كابتن نور الدين (المدير التنفيذي)' : 'Nour El-Din (Executive Owner)'}
+                </p>
+                <p className="font-mono text-[10px] text-[#D4AF37]">
+                  RBAC: {activeRole} • 2FA ON
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(true)}
+                title={isAr ? 'إعدادات الجلسة والأمان' : 'Auth & 2FA Session'}
+                className="rounded-lg bg-slate-800 p-2 text-[#D4AF37] hover:bg-slate-700"
+              >
+                <KeyRound className="h-4 w-4" />
+              </button>
             </div>
           </div>
+        </aside>
 
-          {/* Interactive Member PWA Rotating QR Card */}
-          <div className="lg:col-span-5">
-            <Card
-              glass
-              className={
-                isDark
-                  ? 'border-emerald-500/30 bg-slate-900/90'
-                  : 'border-slate-200 bg-white text-slate-900 shadow-xl'
-              }
-            >
-              <div className="flex items-center justify-between border-b border-slate-800/60 pb-4">
-                <div>
-                  <h2 className="text-base font-bold">{dict.system.qrTitle}</h2>
-                  <p className="text-xs text-slate-400">{dict.system.qrSubtitle}</p>
-                </div>
-                <Badge tone="emerald">
-                  <Lock className="h-3.5 w-3.5" />
-                  <span>{qrCountdown}s</span>
-                </Badge>
-              </div>
+        {/* Main Workspace Container */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          {/* Top Enterprise Navbar */}
+          <header className="sticky top-0 z-30 border-b border-slate-800/80 bg-[#0D111D]/95 px-4 py-3 backdrop-blur lg:px-8">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMobileSidebarOpen(true)}
+                  className="rounded-xl border border-slate-700 bg-slate-800 p-2 text-white lg:hidden"
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
 
-              <div className="my-5 flex flex-col items-center justify-center rounded-2xl border border-slate-800 bg-slate-950 p-5 text-white">
-                <QrCode className="h-28 w-28 text-amber-400" aria-label="Dynamic Member QR Code" />
-                <code className="mt-3 rounded bg-slate-900 ps-3 pe-3 py-1 font-mono text-xs text-emerald-300">
-                  TITANFIT:v1:{activeTenant.slug}:HMAC-{qrCountdown}S
-                </code>
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
-                  <CheckCircle2 className="h-4 w-4" />
-                  {locale === 'ar'
-                    ? 'أحمد محمود • باقة سنوية VIP'
-                    : 'Ahmed Mahmoud • Annual VIP Plan'}
-                </span>
-                <span>{locale === 'ar' ? 'فرع الزمالك' : 'Zamalek Branch'}</span>
-              </div>
-            </Card>
-          </div>
-        </section>
-
-        {/* Live KPI Stat Cards */}
-        <section
-          aria-label="Gym Performance Overview"
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"
-        >
-          <Card className={cardSurfaceClass}>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">
-                {dict.metrics.activeMembers}
-              </span>
-              <Users className="h-5 w-5 text-emerald-400" />
-            </div>
-            <p className="mt-3 text-3xl font-bold">
-              {new Intl.NumberFormat(locale === 'ar' ? 'ar-EG' : 'en-EG').format(1420)}
-            </p>
-            <p className="mt-1 text-xs text-emerald-400">+12.4% vs last month • Churn: 1.8%</p>
-          </Card>
-
-          <Card className={cardSurfaceClass}>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">
-                {dict.metrics.monthlyRevenue}
-              </span>
-              <TrendingUp className="h-5 w-5 text-amber-400" />
-            </div>
-            <p className="mt-3 text-3xl font-bold" data-testid="revenue-egp">
-              {formatMoneyMinor(184500000, 'EGP', locale)}
-            </p>
-            <p className="mt-1 text-xs text-emerald-400">Paymob • Fawry • InstaPay • Cash</p>
-          </Card>
-
-          <Card className={cardSurfaceClass}>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">
-                {dict.metrics.todayCheckins}
-              </span>
-              <Activity className="h-5 w-5 text-emerald-400" />
-            </div>
-            <p className="mt-3 text-3xl font-bold">
-              {new Intl.NumberFormat(locale === 'ar' ? 'ar-EG' : 'en-EG').format(386)}
-            </p>
-            <p className="mt-1 text-xs text-slate-400">p95 check-in latency: 18ms</p>
-          </Card>
-
-          <Card className={cardSurfaceClass}>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400">
-                {dict.metrics.classOccupancy}
-              </span>
-              <Dumbbell className="h-5 w-5 text-amber-400" />
-            </div>
-            <p className="mt-3 text-3xl font-bold">
-              {new Intl.NumberFormat(locale === 'ar' ? 'ar-EG' : 'en-EG', {
-                style: 'percent',
-              }).format(0.92)}
-            </p>
-            <p className="mt-1 text-xs text-amber-400">Auto-waitlist active</p>
-          </Card>
-        </section>
-
-        {/* ==================================================================== */}
-        {/* TAB 1: PHASE 1 — EXECUTIVE OVERVIEW, RBAC ROLES & AUDIT LOGS         */}
-        {/* ==================================================================== */}
-        {activeTab === 'ADMIN_OVERVIEW' && (
-          <section data-testid="panel-admin-overview" className="space-y-6">
-            <Card className={cardSurfaceClass}>
-              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                <div>
-                  <h2 className="text-lg font-bold">
-                    {locale === 'ar'
-                      ? 'المرحلة ١: التحكم بالصلاحيات (RBAC)، الفروع، وسجل المراجعة غير القابل للتعديل'
-                      : 'Phase 1: Permission-Based RBAC, Multi-Branch & Immutable Audit Log'}
-                  </h2>
-                  <p className="text-sm text-slate-400">
-                    {locale === 'ar'
-                      ? 'عزل تام بين الأندية عبر PostgreSQL FORCE RLS + تدوير التوكن واكتشاف الاختراق'
-                      : 'PostgreSQL FORCE RLS (NOBYPASSRLS) + Rotating Refresh Token Family Reuse Detection'}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {DEMO_TENANTS.map((tenant, idx) => (
-                    <Button
-                      key={tenant.slug}
-                      size="sm"
-                      variant={selectedTenantIdx === idx ? 'primary' : 'outline'}
-                      onClick={() => setSelectedTenantIdx(idx)}
+                {/* Role Switcher Pills */}
+                <div className="hidden items-center gap-1 rounded-xl border border-slate-800 bg-[#141929] p-1 xl:flex">
+                  {roles.map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveRole(r.id);
+                        if (r.id === 'MEMBER') setActiveSection('MEMBER_PWA');
+                        if (r.id === 'SUPER_ADMIN') setActiveSection('SUPER_ADMIN');
+                      }}
+                      className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${
+                        activeRole === r.id
+                          ? 'bg-[#D4AF37] text-slate-950 font-extrabold'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
                     >
-                      {locale === 'ar' ? tenant.nameAr : tenant.nameEn}
-                    </Button>
+                      {isAr ? r.labelAr : r.labelEn}
+                    </button>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div className="rounded-xl border border-slate-800 p-4">
-                  <Badge tone="amber">GYM_OWNER & BRANCH_MANAGER</Badge>
-                  <p className="mt-2 text-sm font-semibold">
-                    {locale === 'ar' ? 'طارق المصري • مريم حسن' : 'Tarek El-Masry • Mariam Hassan'}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Permissions: <code>members:health:read</code>, <code>payments:refund</code>,{' '}
-                    <code>reports:financial:read</code>
-                  </p>
-                </div>
-                <div className="rounded-xl border border-slate-800 p-4">
-                  <Badge tone="emerald">RECEPTIONIST & TRAINER</Badge>
-                  <p className="mt-2 text-sm font-semibold">
-                    {locale === 'ar' ? 'عمر عبد الرحمن • كابتن كريم نبيل' : 'Omar • Coach Karim Nabil'}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Permissions: <code>attendance:scan_qr</code>, <code>payments:collect</code>,{' '}
-                    <code>workouts:manage</code>
-                  </p>
-                </div>
-                <div className="rounded-xl border border-slate-800 p-4">
-                  <Badge tone="blue">IMMUTABLE AUDIT LOGS</Badge>
-                  <p className="mt-2 text-sm font-semibold">
-                    PostgreSQL Trigger: <code>trg_audit_logs_immutable</code>
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Blocks <code>UPDATE</code> & <code>DELETE</code> at DB engine level. Every sensitive action is logged with Actor, IP & Tenant ID.
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </section>
-        )}
+              {/* Right Controls: Auth Modal, Locale RTL/LTR, Theme Dark/Light */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAuthModal(true)}
+                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-300"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  <span className="hidden sm:inline">
+                    {isAr ? 'بوابة الدخول والأمان (JWT/2FA)' : 'Auth & 2FA Portal'}
+                  </span>
+                </button>
 
-        {/* ==================================================================== */}
-        {/* TAB 2: PHASE 2 — MEMBERS, SUBSCRIPTIONS, EGYPT PAYMENTS & INVOICES   */}
-        {/* ==================================================================== */}
-        {activeTab === 'MEMBERS_BILLING' && (
-          <section data-testid="panel-members-billing" className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <Card className={`${cardSurfaceClass} lg:col-span-7 space-y-5`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold">
-                    {locale === 'ar'
-                      ? 'ملف المشترك والبيانات الطبية المشفرة (AES-256-GCM)'
-                      : 'Member Profile & Encrypted Health Record (AES-256-GCM)'}
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    Membership #TF-CAI-1001 • Bound to Tenant AAD
-                  </p>
-                </div>
-                <Badge tone="emerald">ACTIVE VIP</Badge>
-              </div>
+                <button
+                  type="button"
+                  data-testid="locale-toggle-btn"
+                  onClick={() => setLocale(locale === 'en' ? 'ar' : 'en')}
+                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-3.5 py-1.5 text-xs font-extrabold text-[#F3E5AB] transition hover:bg-[#D4AF37] hover:text-slate-950"
+                >
+                  <Globe className="h-4 w-4" />
+                  {locale === 'en' ? 'العربية (RTL)' : 'English (LTR)'}
+                </button>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Input
-                  label={locale === 'ar' ? 'الاسم بالكامل' : 'Full Name'}
-                  defaultValue={locale === 'ar' ? 'أحمد محمود' : 'Ahmed Mahmoud'}
-                />
-                <Input
-                  label={locale === 'ar' ? 'رقم الموبايل المصري' : 'Egyptian Mobile (+20)'}
-                  defaultValue="+201055555555"
-                />
+                <button
+                  type="button"
+                  data-testid="theme-toggle-btn"
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-bold text-slate-200 hover:border-[#D4AF37]"
+                >
+                  {theme === 'dark' ? (
+                    <>
+                      <Sun className="h-4 w-4 text-amber-400" />
+                      <span className="hidden sm:inline">{isAr ? 'الوضع النهاري' : 'Light'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="h-4 w-4 text-sky-400" />
+                      <span className="hidden sm:inline">{isAr ? 'الوضع الليلي' : 'Dark'}</span>
+                    </>
+                  )}
+                </button>
               </div>
+            </div>
+          </header>
 
-              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 text-xs space-y-1.5">
-                <div className="flex items-center justify-between font-bold text-emerald-400">
-                  <span>AES-256-GCM Decrypted Medical & PAR-Q Record</span>
-                  <span>Blood Type: O+</span>
-                </div>
-                <p className="text-slate-300">
-                  • PAR-Q Cleared: Yes • Past Injury: Mild left shoulder impingement (2024)
+          {/* Active Module View */}
+          <main className="flex-1 p-4 sm:p-6 lg:p-8">
+            {activeSection === 'OVERVIEW' && <OverviewView />}
+            {activeSection === 'MEMBERS' && <MembersCrmView />}
+            {activeSection === 'SUBSCRIPTIONS' && <SubscriptionsView />}
+            {activeSection === 'PAYMENTS' && <PaymentsBillingView />}
+            {activeSection === 'CLASSES' && <ClassesScheduleView />}
+            {activeSection === 'ACCESS_CONTROL' && <AccessControlTurnstilesView />}
+            {activeSection === 'POS_INVENTORY' && <PosInventoryView />}
+            {activeSection === 'STAFF_TRAINERS' && <StaffTrainersView />}
+            {activeSection === 'MEMBER_PWA' && <MemberPwaPortalView />}
+            {activeSection === 'REPORTS' && <ReportsAnalyticsView />}
+            {activeSection === 'SETTINGS' && <TenantSettingsView />}
+            {activeSection === 'SUPER_ADMIN' && <SuperAdminConsoleView />}
+          </main>
+        </div>
+      </div>
+
+      {/* Authentication, 2FA TOTP & Session Security Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-[#D4AF37]/40 bg-[#121623] p-6 text-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <h3 className="text-base font-extrabold text-white">
+                  {isAr
+                    ? 'بوابة المصادقة، التبديل بين الأدوار، والتحقق الثنائي (TOTP 2FA)'
+                    : 'Enterprise Auth, RBAC Role Switcher & TOTP 2FA Verification'}
+                </h3>
+                <p className="text-xs text-slate-400">
+                  {isAr
+                    ? 'تدوير Refresh Tokens تلقائي + قفل الحساب بعد 5 محاولات خاطئة'
+                    : 'Rotating httpOnly refresh token family + 5-attempt progressive lockout'}
                 </p>
               </div>
+              <button type="button" onClick={() => setShowAuthModal(false)}>
+                <X className="h-5 w-5 text-slate-400" />
+              </button>
+            </div>
 
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() =>
-                    setInvoiceStatusMsg(
-                      locale === 'ar'
-                        ? 'تم تجميد الاشتراك ١٤ يوماً وتمديد تاريخ الانتهاء تلقائياً!'
-                        : 'Subscription frozen for 14 days; expiry date automatically extended!',
-                    )
-                  }
-                >
-                  {locale === 'ar' ? 'تجميد الاشتراك (١٤ يوم)' : 'Freeze Plan (+14 Days)'}
-                </Button>
-              </div>
-            </Card>
-
-            <Card className={`${cardSurfaceClass} lg:col-span-5 space-y-4`}>
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-amber-400" />
-                  <span>
-                    {locale === 'ar'
-                      ? 'بوابة الدفع المصرية والفاتورة الضريبية'
-                      : 'Egypt Payment Checkout & QR Invoice'}
-                  </span>
-                </h3>
-                <Badge tone="amber">Idempotent</Badge>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {(['PAYMOB_CARD', 'FAWRY', 'VODAFONE_CASH', 'INSTAPAY', 'CASH'] as const).map(
-                  (pm) => (
-                    <Button
-                      key={pm}
-                      size="sm"
-                      variant={selectedPaymentMethod === pm ? 'primary' : 'outline'}
-                      onClick={() => setSelectedPaymentMethod(pm)}
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300">
+                  {isAr ? 'تبديل الدور الوظيفي الفوري (RBAC Role)' : 'Switch Active RBAC Role'}
+                </label>
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {roles.map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveRole(r.id);
+                        showToast(
+                          isAr
+                            ? `تم التبديل إلى صلاحيات: ${r.labelAr}`
+                            : `Switched RBAC session to: ${r.labelEn}`,
+                        );
+                      }}
+                      className={`rounded-xl border px-3 py-2 text-xs font-bold ${
+                        activeRole === r.id
+                          ? 'border-[#D4AF37] bg-[#D4AF37]/20 text-[#F3E5AB]'
+                          : 'border-slate-800 bg-slate-900 text-slate-300'
+                      }`}
                     >
-                      {pm}
-                    </Button>
-                  ),
-                )}
-              </div>
-
-              <Input
-                label={locale === 'ar' ? 'كود الخصم (الكوبون)' : 'Discount Coupon Code'}
-                value={couponInput}
-                onChange={(e) => setCouponInput(e.target.value)}
-              />
-
-              <div className="rounded-xl border border-slate-800 p-4 text-xs space-y-1">
-                <div className="flex justify-between">
-                  <span>Annual Rooted VIP Plan:</span>
-                  <span>{formatMoneyMinor(1200000, 'EGP', locale)}</span>
-                </div>
-                <div className="flex justify-between text-emerald-400">
-                  <span>Coupon ({couponInput || 'NONE'} -20%):</span>
-                  <span>-{formatMoneyMinor(240000, 'EGP', locale)}</span>
-                </div>
-                <div className="flex justify-between text-slate-400">
-                  <span>Egypt VAT (14%):</span>
-                  <span>{formatMoneyMinor(134400, 'EGP', locale)}</span>
-                </div>
-                <div className="flex justify-between border-t border-slate-800 pt-2 text-sm font-bold">
-                  <span>Total Due:</span>
-                  <span>{formatMoneyMinor(1094400, 'EGP', locale)}</span>
+                      {isAr ? r.labelAr : r.labelEn}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <Button
-                variant="primary"
-                className="w-full"
-                data-testid="issue-invoice-btn"
-                startIcon={<FileText className="h-4 w-4" />}
-                onClick={() =>
-                  setInvoiceStatusMsg(
-                    `Invoice INV-2026-1002 issued via ${selectedPaymentMethod} with signed QR verification hash!`,
-                  )
-                }
-              >
-                {locale === 'ar'
-                  ? 'إصدار الفاتورة الضريبية بـ QR'
-                  : 'Complete Payment & Issue Signed QR Invoice'}
-              </Button>
-
-              {invoiceStatusMsg && (
-                <p
-                  data-testid="invoice-status-msg"
-                  className="rounded-lg bg-emerald-500/15 p-3 text-xs font-medium text-emerald-300"
-                >
-                  {invoiceStatusMsg}
+              <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-xs">
+                <p className="font-bold text-[#D4AF37]">
+                  {isAr ? 'التحقق الثنائي (RFC 6238 TOTP) & OTP' : 'RFC 6238 TOTP 2FA & Phone OTP'}
                 </p>
-              )}
-            </Card>
-          </section>
-        )}
-
-        {/* ==================================================================== */}
-        {/* TAB 3: PHASE 3 — CLASSES, AUTO-WAITLIST & ROTATING QR CHECK-IN       */}
-        {/* ==================================================================== */}
-        {activeTab === 'CLASSES_QR_ACCESS' && (
-          <section data-testid="panel-classes-access" className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <Card className={`${cardSurfaceClass} lg:col-span-7 space-y-4`}>
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-emerald-400" />
-                  <span>
-                    {locale === 'ar'
-                      ? 'جدول الحصص والترقية التلقائية لقائمة الانتظار'
-                      : 'Class Schedule & Auto-Waitlist Promotion Engine'}
-                  </span>
-                </h2>
-                <Badge tone="emerald">Redis Locked</Badge>
-              </div>
-
-              <div className="rounded-xl border border-slate-800 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold">
-                      {locale === 'ar'
-                        ? 'تدريب القوة والتحمل المكثف (Barbell HIIT)'
-                        : 'Rooted Conditioning & Barbell HIIT'}
-                    </h3>
-                    <p className="text-xs text-slate-400">
-                      Coach Karim Nabil • Arena Studio A • 18:00 – 19:00
-                    </p>
-                  </div>
-                  <Badge tone="amber">
-                    Booked: {hiitBookedCount}/20 • Waitlist: {hiitWaitlistCount}
-                  </Badge>
-                </div>
-
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    data-testid="simulate-cancel-promote-btn"
+                <div className="mt-2 flex gap-2">
+                  <input
+                    type="text"
+                    value={totpCode}
+                    onChange={(e) => setTotpCode(e.target.value)}
+                    className="flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-sm tracking-widest text-white"
+                  />
+                  <button
+                    type="button"
                     onClick={() => {
-                      setHiitWaitlistCount(0);
-                      setHiitBookedCount(20);
-                      setWaitlistBanner(
-                        'Spot opened! Waitlisted Member #1 (Yasmine Adel) was automatically promoted to BOOKED and notified via WhatsApp/Push.',
+                      showToast(
+                        isAr
+                          ? 'تم التحقق من رمز 2FA وتدوير عائلة الـ Refresh Token بنجاح!'
+                          : 'Verified TOTP 2FA code & rotated refresh token family!',
                       );
+                      setShowAuthModal(false);
                     }}
+                    className="rounded-xl bg-[#D4AF37] px-4 py-2 font-extrabold text-slate-950"
                   >
-                    {locale === 'ar'
-                      ? 'محاكاة إلغاء حجز وترقية قائمة الانتظار تلقائياً'
-                      : 'Simulate Cancellation -> Auto-Promote Waitlist #1'}
-                  </Button>
-                </div>
-
-                {waitlistBanner && (
-                  <p
-                    data-testid="waitlist-promoted-msg"
-                    className="rounded-lg bg-emerald-500/15 p-3 text-xs font-medium text-emerald-300"
-                  >
-                    {waitlistBanner}
-                  </p>
-                )}
-              </div>
-            </Card>
-
-            <Card className={`${cardSurfaceClass} lg:col-span-5 space-y-4`}>
-              <h3 className="text-base font-bold flex items-center gap-2">
-                <UserCheck className="h-5 w-5 text-emerald-400" />
-                <span>
-                  {locale === 'ar'
-                    ? 'بوابة الدخول الذكية (Turnstile Relay & Anti-Passback)'
-                    : 'Reception QR Scanner & Hardware Turnstile Hook'}
-                </span>
-              </h3>
-
-              <p className="text-xs text-slate-400">
-                Verifies 30s HMAC-SHA256 signature, blocks FROZEN/EXPIRED plans, and enforces 15-min anti-passback cooldown.
-              </p>
-
-              <Button
-                variant="primary"
-                className="w-full"
-                data-testid="simulate-turnstile-scan-btn"
-                onClick={() =>
-                  setTurnstileStatus(
-                    'ALLOW_ACCESS • Turnstile Relay Pulse: 1500ms • Member: Ahmed Mahmoud (VIP)',
-                  )
-                }
-              >
-                {locale === 'ar'
-                  ? 'مسح كود QR وفتح البوابة الإلكترونية'
-                  : 'Scan Member Rotating QR & Pulse Turnstile Gate'}
-              </Button>
-
-              {turnstileStatus && (
-                <p
-                  data-testid="turnstile-status-msg"
-                  className="rounded-lg bg-emerald-500/15 p-3 text-xs font-mono text-emerald-300"
-                >
-                  {turnstileStatus}
-                </p>
-              )}
-            </Card>
-          </section>
-        )}
-
-        {/* ==================================================================== */}
-        {/* TAB 4: PHASE 4 — MEMBER PWA: WORKOUTS, 1RM PRs, BMI & NUTRITION      */}
-        {/* ==================================================================== */}
-        {activeTab === 'MEMBER_PWA' && (
-          <section data-testid="panel-member-pwa" className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <Card className={`${cardSurfaceClass} lg:col-span-7 space-y-4`}>
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold flex items-center gap-2">
-                  <Flame className="h-5 w-5 text-amber-400" />
-                  <span>
-                    {locale === 'ar'
-                      ? 'تسجيل التمارين واكتشاف الأرقام القياسية (1RM PR)'
-                      : 'Member PWA Workout Logger & Epley 1RM PR Detector'}
-                  </span>
-                </h2>
-                <Badge tone="amber">14-Day Streak</Badge>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Input
-                  label="Barbell Back Squat Weight (kg)"
-                  value={squatWeightKg}
-                  onChange={(e) => setSquatWeightKg(e.target.value)}
-                />
-                <Input
-                  label="Completed Reps"
-                  value={squatReps}
-                  onChange={(e) => setSquatReps(e.target.value)}
-                />
-              </div>
-
-              <Button
-                variant="primary"
-                data-testid="log-workout-set-btn"
-                onClick={() => {
-                  const w = Number(squatWeightKg) || 145;
-                  const r = Number(squatReps) || 5;
-                  const est1Rm = (w * (1 + r / 30)).toFixed(1);
-                  setPrNotification(
-                    `Logged ${w}kg x ${r} reps! Estimated 1RM: ${est1Rm} kg — NEW PERSONAL RECORD!`,
-                  );
-                }}
-              >
-                {locale === 'ar' ? 'تسجيل المجموعة وحساب الـ PR' : 'Log Set & Calculate 1RM PR'}
-              </Button>
-
-              {prNotification && (
-                <p
-                  data-testid="pr-notification-msg"
-                  className="rounded-lg bg-amber-500/15 p-3 text-xs font-semibold text-amber-300"
-                >
-                  {prNotification}
-                </p>
-              )}
-            </Card>
-
-            <Card className={`${cardSurfaceClass} lg:col-span-5 space-y-4`}>
-              <h3 className="text-base font-bold">
-                {locale === 'ar'
-                  ? 'قياسات الجسم والماكروز اليومية'
-                  : 'Body Composition (BMI) & Daily Macro Target'}
-              </h3>
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="rounded-xl border border-slate-800 p-3">
-                  <span className="text-slate-400">Weight / Body Fat</span>
-                  <p className="mt-1 text-lg font-bold">81.5 kg • 13.2%</p>
-                </div>
-                <div className="rounded-xl border border-slate-800 p-3">
-                  <span className="text-slate-400">Daily Macros</span>
-                  <p className="mt-1 text-lg font-bold">2,650 kcal • 195g P</p>
+                    {isAr ? 'تحقق وتدوير التوكن' : 'Verify & Rotate'}
+                  </button>
                 </div>
               </div>
-            </Card>
-          </section>
-        )}
-
-        {/* ==================================================================== */}
-        {/* TAB 5: PHASE 5 — POS-LITE, REPORTS, GAMIFICATION & TRAINER CHAT      */}
-        {/* ==================================================================== */}
-        {activeTab === 'POS_REPORTS_CHAT' && (
-          <section data-testid="panel-pos-reports-chat" className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <Card className={`${cardSurfaceClass} lg:col-span-6 space-y-4`}>
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold flex items-center gap-2">
-                  <ShoppingBag className="h-5 w-5 text-emerald-400" />
-                  <span>
-                    {locale === 'ar'
-                      ? 'نقطة البيع السريعة (POS-Lite) والمكملات'
-                      : 'Inventory & POS-Lite (Supplements & Merch)'}
-                  </span>
-                </h2>
-                <Badge tone="emerald">Cart: {posCartCount} items</Badge>
-              </div>
-
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between rounded-xl border border-slate-800 p-3">
-                  <span>TitanFit Gold Isolate Whey Shake (Stock: 85)</span>
-                  <span className="font-bold">{formatMoneyMinor(12000, 'EGP', locale)}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-xl border border-slate-800 p-3">
-                  <span>Rooted Performance Gold Crest Tee (Stock: 40)</span>
-                  <span className="font-bold">{formatMoneyMinor(65000, 'EGP', locale)}</span>
-                </div>
-              </div>
-
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setPosCartCount((c) => c + 1)}
-              >
-                {locale === 'ar' ? 'إضافة للسلة وتحصيل فوري' : 'Add Shake to Member Tab'}
-              </Button>
-            </Card>
-
-            <Card className={`${cardSurfaceClass} lg:col-span-6 space-y-4`}>
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-amber-400" />
-                  <span>
-                    {locale === 'ar'
-                      ? 'محادثة فورية مع المدرب ولوحة المتصدرين'
-                      : 'Real-Time Trainer Chat & Gamification Leaderboard'}
-                  </span>
-                </h3>
-                <Badge tone="amber">
-                  <Award className="h-3.5 w-3.5" /> #1 Ahmed (1,850 pts)
-                </Badge>
-              </div>
-
-              <div className="space-y-2 max-h-40 overflow-y-auto rounded-xl border border-slate-800 p-3 text-xs">
-                {chatMessages.map((m, i) => (
-                  <div key={i} className="space-y-0.5">
-                    <span className="font-bold text-amber-400">
-                      {locale === 'ar' ? m.senderAr : m.sender} ({m.time}):
-                    </span>
-                    <p className="text-slate-300">{m.text}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex gap-2">
-                <Input
-                  placeholder={locale === 'ar' ? 'اكتب رسالة للمدرب...' : 'Message Coach Karim...'}
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                />
-                <Button
-                  size="sm"
-                  variant="primary"
-                  data-testid="send-chat-btn"
-                  onClick={() => {
-                    if (!chatInput.trim()) return;
-                    setChatMessages((prev) => [
-                      ...prev,
-                      {
-                        sender: 'Ahmed Mahmoud (VIP)',
-                        senderAr: 'أحمد محمود (VIP)',
-                        text: chatInput,
-                        time: 'Now',
-                      },
-                    ]);
-                    setChatInput('');
-                  }}
-                >
-                  {locale === 'ar' ? 'إرسال' : 'Send'}
-                </Button>
-              </div>
-            </Card>
-          </section>
-        )}
-
-        {/* ==================================================================== */}
-        {/* TAB 6: PHASE 6 — SUPER ADMIN SAAS CONTROL & AUDITED IMPERSONATION    */}
-        {/* ==================================================================== */}
-        {activeTab === 'SUPER_ADMIN' && (
-          <section data-testid="panel-super-admin" className="space-y-6">
-            <Card className={cardSurfaceClass}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold">
-                    {locale === 'ar'
-                      ? 'لوحة تحكم مالك المنصة (Super Admin SaaS Console)'
-                      : 'Super Admin Console — Multi-Tenant SaaS Lifecycle & Audited Impersonation'}
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    Manage tenant trials/suspensions, feature flags per plan, and audited support impersonation.
-                  </p>
-                </div>
-                <Badge tone="amber">SUPER_ADMIN ONLY</Badge>
-              </div>
-
-              <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-                {DEMO_TENANTS.map((t) => (
-                  <div
-                    key={t.id}
-                    className="flex flex-col justify-between rounded-xl border border-slate-800 p-4 gap-4"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold">
-                          {locale === 'ar' ? t.nameAr : t.nameEn}
-                        </span>
-                        <Badge tone="emerald">{t.plan}</Badge>
-                      </div>
-                      <p className="mt-1 text-xs text-slate-400">
-                        Slug: <code>{t.slug}</code> • Branches: {t.branches.join(', ')}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        data-testid={`impersonate-btn-${t.slug}`}
-                        onClick={() =>
-                          setImpersonationBanner(
-                            `AUDITED IMPERSONATION ACTIVE: Viewing ${t.nameEn} as Gym Owner (Logged to immutable audit_logs)`,
-                          )
-                        }
-                      >
-                        {locale === 'ar'
-                          ? 'دخول بحساب النادي للدعم الفني (مسجل أمنياً)'
-                          : 'Audited Impersonate Tenant'}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </section>
-        )}
-      </main>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+export function DesignSystemShowcase({
+  initialLocale = 'en',
+}: {
+  initialLocale?: 'en' | 'ar';
+}) {
+  return (
+    <PlatformProvider initialLocale={initialLocale}>
+      <TitanFitEnterpriseShell />
+    </PlatformProvider>
   );
 }

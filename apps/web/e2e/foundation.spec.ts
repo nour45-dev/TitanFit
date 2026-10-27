@@ -54,9 +54,10 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
       'AUDITED IMPERSONATION ACTIVE',
     );
 
-    // Switch to Arabic (RTL) and Light Mode
+    // Switch to Arabic (RTL) and Light Mode and verify Executive Overview
     await page.getByTestId('locale-toggle-btn').click();
     await expect(rootShell).toHaveAttribute('dir', 'rtl');
+    await page.getByTestId('nav-tab-ADMIN_OVERVIEW').click();
     await expect(page.getByTestId('hero-heading')).toContainText('للأندية الرياضية');
 
     await page.getByTestId('theme-toggle-btn').click();
