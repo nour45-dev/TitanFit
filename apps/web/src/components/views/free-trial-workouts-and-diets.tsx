@@ -151,185 +151,6 @@ const FREE_VIDEO_WORKOUTS: FreeVideoWorkout[] = [
       },
     ],
   },
-  {
-    id: 'w-home-hiit-burn',
-    titleAr: 'تمرين حرق الدهون في البيت بدون أي أدوات (20 دقيقة HIIT)',
-    titleEn: '20-Min Zero-Equipment Home Fat Burner HIIT',
-    categoryAr: 'تمرين منزلي • حرق دهون سريع',
-    categoryEn: 'Home Workout • Rapid Fat Loss',
-    levelAr: 'مناسب للمبتدئين والجميع',
-    levelEn: 'All Levels / Beginner Friendly',
-    durationMin: 20,
-    kcalBurn: 290,
-    coachAr: 'كابتن مريم القاضي',
-    coachEn: 'Coach Mariam El-Kady',
-    thumbnailUrl:
-      'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=900&q=80',
-    youtubeId: 'ml6cT4AZdqI',
-    directVideoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-    ptSafetyTipAr:
-      'انزل على مشط القدم بهدوء أثناء القفز أو استبدل القفز بخطوات سريعة لو عندك خشونة في الركبة.',
-    ptSafetyTipEn:
-      'Land softly on the balls of your feet, or switch to low-impact stepping if you have knee sensitivity.',
-    exercises: [
-      {
-        nameAr: '١. سكوات بوزن الجسم مع نبضة سفلية (Pulse Bodyweight Squats)',
-        nameEn: '1. Pulse Bodyweight Squats',
-        sets: 4,
-        reps: '40 ثانية عمل',
-        restSec: 20,
-        targetMuscleAr: 'الأفخاذ الأمامية والأرداف وحرق السعرات',
-        targetMuscleEn: 'Quads, Glutes & Metabolic Burn',
-        cuesAr: 'ظهرك مفرود تماماً والوزن موزع على كعب القدم.',
-        cuesEn: 'Keep chest proud and drive through your heels.',
-      },
-      {
-        nameAr: '٢. ضغط معدل أو كامل (Push-Ups / Knee Push-Ups)',
-        nameEn: '2. Standard or Knee Push-Ups',
-        sets: 4,
-        reps: '12 - 15 عدّة',
-        restSec: 30,
-        targetMuscleAr: 'الصدر والذراعين وشد الجذع',
-        targetMuscleEn: 'Chest, Arms & Core Stability',
-        cuesAr: 'شد عضلات البطن كأنها لوح مستقيم أثناء النزول والصعود.',
-        cuesEn: 'Brace your abs tight so your hips never sag.',
-      },
-      {
-        nameAr: '٣. متسلق الجبال السريع (Mountain Climbers)',
-        nameEn: '3. Controlled Mountain Climbers',
-        sets: 4,
-        reps: '35 ثانية عمل',
-        restSec: 25,
-        targetMuscleAr: 'عضلات البطن السفلية ورفع معدل الحرق',
-        targetMuscleEn: 'Lower Abs & Cardio Conditioning',
-        cuesAr: 'كتفك فوق كف إيدك مباشرة واسحب ركبتك باتجاه الصدر.',
-        cuesEn: 'Keep shoulders stacked directly over wrists and drive knees fast.',
-      },
-      {
-        nameAr: '٤. تمرين البلانك الثابت (Core Plank Hold)',
-        nameEn: '4. Isometric Forearm Plank',
-        sets: 3,
-        reps: '45 ثانية ثبات',
-        restSec: 30,
-        targetMuscleAr: 'الحزام البطني بالكامل وأسفل الظهر',
-        targetMuscleEn: 'Deep Transverse Abdominis & Core',
-        cuesAr: 'تنفس بانتظام ولا تحبس نفسك أثناء الثبات.',
-        cuesEn: 'Breathe steadily through your nose while squeezing glutes and abs.',
-      },
-    ],
-  },
-  {
-    id: 'w-back-posture',
-    titleAr: 'تمرين الظهر وعلاج انحناء الأكتاف وآلام الرقبة (إشراف طبي)',
-    titleEn: 'Back Width & Posture Correction Protocol (PT Supervised)',
-    categoryAr: 'علاج طبيعي وتقوية الظهر',
-    categoryEn: 'Posture & Back Strength',
-    levelAr: 'جميع المستويات (ممتاز لموظفي المكاتب)',
-    levelEn: 'All Levels (Desk Workers)',
-    durationMin: 40,
-    kcalBurn: 320,
-    coachAr: 'د. طارق منصور (استشاري العلاج الطبيعي)',
-    coachEn: 'Dr. Tarek Mansour (Physical Therapist)',
-    thumbnailUrl:
-      'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&w=900&q=80',
-    youtubeId: 'CAwf7n6Luuc',
-    directVideoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
-    ptSafetyTipAr:
-      'ابدأ كل سحبة بتحريك لوح الكتف أولاً قبل ثني الكوع؛ ده السر لعلاج التحدب وتكبير مجنص الظهر بدون شد في الرقبة.',
-    ptSafetyTipEn:
-      'Initiate every pull by depressing your scapula before bending your elbows to eliminate neck tension.',
-    exercises: [
-      {
-        nameAr: '١. سحب عالي واسع للصدر (Wide-Grip Lat Pulldown)',
-        nameEn: '1. Wide-Grip Front Lat Pulldown',
-        sets: 4,
-        reps: '12 عدّة',
-        restSec: 60,
-        targetMuscleAr: 'عضلات المجنص (Lats) لعرض الظهر',
-        targetMuscleEn: 'Latissimus Dorsi Width',
-        cuesAr: 'اسحب البار لأعلى الصدر مع فتح الصدر للأمام.',
-        cuesEn: 'Pull the bar to your upper chest while keeping your sternum lifted.',
-      },
-      {
-        nameAr: '٢. سحب أرضي ضيق (Seated Cable Row)',
-        nameEn: '2. Seated Neutral-Grip Cable Row',
-        sets: 4,
-        reps: '12 عدّة',
-        restSec: 60,
-        targetMuscleAr: 'منتصف الظهر وعضلات المعينات (Rhomboids)',
-        targetMuscleEn: 'Mid-Back Thickness & Rhomboids',
-        cuesAr: 'اعصر لوحي الكتف في الخلف لمدة ثانيتين في كل عدّة.',
-        cuesEn: 'Squeeze your shoulder blades together for 2 seconds on every rep.',
-      },
-      {
-        nameAr: '٣. سحب الحبل للوجه والكتف الخلفي (Face Pulls)',
-        nameEn: '3. External Rotation Rope Face Pulls',
-        sets: 4,
-        reps: '15 عدّة',
-        restSec: 45,
-        targetMuscleAr: 'الكتف الخلفي وتصحيح استقامة الظهر والرقبة',
-        targetMuscleEn: 'Rear Delts & Rotator Cuff Posture',
-        cuesAr: 'اسحب الحبل باتجاه الجبهة مع لف الذراع للخارج.',
-        cuesEn: 'Pull towards your forehead and externally rotate your thumbs back.',
-      },
-    ],
-  },
-  {
-    id: 'w-legs-glutes',
-    titleAr: 'تمرين الأرجل ونحت الجزء السفلي والبطن (Lower Body Sculpt)',
-    titleEn: 'Lower Body, Glutes & Core Sculpt Workout',
-    categoryAr: 'تقوية الأرجل ونحت البطن',
-    categoryEn: 'Legs, Glutes & Core',
-    levelAr: 'متوسط',
-    levelEn: 'Intermediate',
-    durationMin: 45,
-    kcalBurn: 430,
-    coachAr: 'كابتن سارة المنياوي',
-    coachEn: 'Coach Sara El-Miniawy',
-    thumbnailUrl:
-      'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=900&q=80',
-    youtubeId: 'bEv6CCg2BC8',
-    directVideoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-    ptSafetyTipAr:
-      'تأكد إن اتجاه الركبة ماشي في نفس اتجاه مشط القدم أثناء السكوات والطعن (Lunges) لحماية الغضروف الهلالي.',
-    ptSafetyTipEn:
-      'Ensure your knees track directly in line with your second toe during squats and lunges.',
-    exercises: [
-      {
-        nameAr: '١. جوبلت سكوات بالدمبل (Dumbbell Goblet Squat)',
-        nameEn: '1. Deep Dumbbell Goblet Squat',
-        sets: 4,
-        reps: '12 عدّة',
-        restSec: 75,
-        targetMuscleAr: 'الأفخاذ الأمامية والأرداف',
-        targetMuscleEn: 'Quadriceps & Gluteus Maximus',
-        cuesAr: 'امسك الدمبل أمام صدرك وانزل بعمق مريح مع ثبات الكعبين.',
-        cuesEn: 'Hold the dumbbell close to your chest and sit deep between your hips.',
-      },
-      {
-        nameAr: '٢. ديدليفت روماني بالدمبل للخلفيات (Romanian Deadlift)',
-        nameEn: '2. Dumbbell Romanian Deadlift (RDL)',
-        sets: 4,
-        reps: '10 - 12 عدّة',
-        restSec: 75,
-        targetMuscleAr: 'العضلة الخلفية للفخذ (Hamstrings) والأرداف',
-        targetMuscleEn: 'Hamstrings & Glutes',
-        cuesAr: 'ارجع بالحوض للخلف مع ثنية بسيطة في الركبة وظهر مستقيم تماماً.',
-        cuesEn: 'Hinge hips straight back while sliding dumbbells along your shins.',
-      },
-      {
-        nameAr: '٣. طعن ثابت بالدمبل (Bulgarian / Static Lunges)',
-        nameEn: '3. Dumbbell Split Squats / Lunges',
-        sets: 3,
-        reps: '10 عدّات لكل رجل',
-        restSec: 60,
-        targetMuscleAr: 'تناسق الرجلين وشد الأرداف',
-        targetMuscleEn: 'Unilateral Leg Balance & Glutes',
-        cuesAr: 'ميل بسيط بالجذع للأمام لزيادة التركيز على الأرداف.',
-        cuesEn: 'Lean your torso slightly forward to maximize glute recruitment.',
-      },
-    ],
-  },
 ];
 
 const FREE_DIET_BLUEPRINTS: FreeDietBlueprint[] = [
@@ -435,199 +256,8 @@ const FREE_DIET_BLUEPRINTS: FreeDietBlueprint[] = [
       },
     ],
   },
-  {
-    id: 'diet-2000-recomp',
-    nameAr: 'نظام ١٩٥٠ سعرة — إعادة تشكيل الجسم (Body Recomp)',
-    nameEn: '1,950 kcal Body Recomposition (Lose Fat + Build Muscle)',
-    badgeAr: 'خسارة دهون + بناء عضل معاً',
-    badgeEn: 'BODY RECOMPOSITION',
-    targetKcal: 1950,
-    proteinG: 165,
-    carbsG: 195,
-    fatsG: 56,
-    waterLiters: 3.6,
-    bestForAr: 'مصمم لمن يتمرن مقاومة ٣-٥ أيام أسبوعياً ويريد شد الجسم وبناء عضل مع حرق الدهون.',
-    bestForEn: 'Designed for lifters training 3–5x/week to build lean muscle while dropping fat.',
-    coverImageUrl:
-      'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=800&q=80',
-    meals: [
-      {
-        timeAr: '٨:٣٠ صباحاً — وجبة الفطار المتكاملة',
-        timeEn: '08:30 AM — Muscle-Building Breakfast',
-        titleAr: 'بان كيك الشوفان بالبيض والجبن القريش والعسل',
-        titleEn: 'High-Protein Oat Pancakes & Cottage Cheese',
-        kcal: 510,
-        proteinG: 38,
-        itemsAr: [
-          '٦٠ جرام شوفان + ٣ بيضات كاملة + رشة فانيليا وقرفة في طاسة غير لاصقة',
-          '١٠٠ جرام جبنة قريش أو جبنة ملح خفيف بجانب الوجبة',
-          'ملعقة صغيرة عسل نحل طبيعي + نصف ثمرة موز',
-        ],
-        itemsEn: [
-          '60g oats blended with 3 whole eggs & cinnamon',
-          '100g cottage cheese on the side',
-          '1 tsp raw honey + half sliced banana',
-        ],
-        economicAltAr: 'بديل اقتصادي: ٣ بيضات أومليت + رغيف بلدي كامل + قطعة جبنة قريش.',
-        economicAltEn: 'Budget Swap: 3-egg omelette + 1 whole baladi flatbread + cottage cheese.',
-      },
-      {
-        timeAr: '١:٣٠ ظهراً — وجبة قبل التمرين (Pre-Workout Fuel)',
-        timeEn: '01:30 PM — Pre-Workout Carb & Protein Load',
-        titleAr: 'بطاطا حلوة مشوية بالقرفة مع صدور الديك الرومي أو البيض',
-        titleEn: 'Baked Sweet Potato with Smoked Turkey / Egg Whites',
-        kcal: 410,
-        proteinG: 32,
-        itemsAr: [
-          '٢٠٠ جرام بطاطا حلوة مشوية (كارب معقد يمدك بطاقة جبارة طوال التمرين)',
-          '١٠٠ جرام صدور رومي مدخن أو ٤ بياض بيض مسلوق',
-          'حفنة لوز نيء (١٥ جرام — حوالي ١٢ حبة)',
-        ],
-        itemsEn: [
-          '200g baked sweet potato with cinnamon',
-          '100g smoked turkey breast or 4 egg whites',
-          '15g raw almonds (approx. 12 almonds)',
-        ],
-        economicAltAr: 'بديل اقتصادي: ٢٠٠ جرام بطاطس مسلوقة أو بطاطا + ٢ بيضة مسلوقة + ١٠ حبات سوداني.',
-        economicAltEn: 'Budget Swap: 200g boiled potato/sweet potato + 2 boiled eggs.',
-      },
-      {
-        timeAr: '٥:٠٠ مساءً — وجبة بعد التمرين (الغداء)',
-        timeEn: '05:00 PM — Anabolic Post-Workout Lunch',
-        titleAr: 'ستيك لحم بقري صافي أو صدور دجاج مع الأرز والسلطة',
-        titleEn: 'Lean Sirloin Steak or Chicken Breast with Rice',
-        kcal: 640,
-        proteinG: 60,
-        itemsAr: [
-          '٢٢٠ جرام لحم بقري أحمر مشوي (أو ٢٥٠ جرام صدور دجاج)',
-          '١٨٠ جرام أرز أبيض أو بسمتي مطهو (حوالي ٩ ملاعق كبيرة)',
-          'طبق سلطة خضراء كبير بملعقة زيت زيتون بكر',
-        ],
-        itemsEn: [
-          '220g lean grilled beef steak or 250g chicken breast',
-          '180g cooked rice (approx. 9 tbsp)',
-          'Mixed salad with 1 tbsp extra-virgin olive oil',
-        ],
-        economicAltAr: 'بديل اقتصادي: ٢٥٠ جرام صدور دجاج أو سمك مشوي + ٩ ملاعق أرز أو مكرونة.',
-        economicAltEn: 'Budget Swap: 250g chicken breast or grilled fish + 9 tbsp rice/pasta.',
-      },
-      {
-        timeAr: '٩:٣٠ مساءً — وجبة العشاء بطيئة الامتصاص',
-        timeEn: '09:30 PM — Overnight Recovery Dinner',
-        titleAr: 'جبنة قريش بالزبادي اليوناني والخضروات الورقية',
-        titleEn: 'Casein-Rich Cottage Cheese & Greek Yogurt Bowl',
-        kcal: 390,
-        proteinG: 35,
-        itemsAr: [
-          '١٥٠ جرام جبنة قريش (غنية ببروتين الكازين الذي يغذي العضلات أثناء النوم)',
-          '١ علبة زبادي يوناني سادة + ملعقة بذور شيا أو زيت زيتون',
-          'نصف رغيف بلدي + خيار وطماطم',
-        ],
-        itemsEn: [
-          '150g cottage cheese (slow-digesting casein protein)',
-          '1 cup Greek yogurt + 1 tsp chia seeds',
-          'Half baladi flatbread + cucumber & tomatoes',
-        ],
-        economicAltAr: 'بديل اقتصادي: ٢٠٠ جرام جبنة قريش بزيت الزيتون + نصف رغيف بلدي.',
-        economicAltEn: 'Budget Swap: 200g cottage cheese with olive oil + half baladi bread.',
-      },
-    ],
-  },
-  {
-    id: 'diet-2600-bulk',
-    nameAr: 'نظام ٢٦٠٠ سعرة — ضخامة عضلية صافية (Clean Bulk)',
-    nameEn: '2,600 kcal Lean Mass & Clean Bulk Blueprint',
-    badgeAr: 'للنحافة وزيادة الكتلة العضلية',
-    badgeEn: 'LEAN MUSCLE BULK',
-    targetKcal: 2600,
-    proteinG: 190,
-    carbsG: 310,
-    fatsG: 68,
-    waterLiters: 4.0,
-    bestForAr: 'لزيادة الوزن والكتلة العضلية الصافية بدون تخزين دهون في منطقة البطن.',
-    bestForEn: 'For hardgainers looking to pack on lean muscle mass without belly fat.',
-    coverImageUrl:
-      'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=800&q=80',
-    meals: [
-      {
-        timeAr: '٨:٠٠ صباحاً — فطار الضخامة',
-        timeEn: '08:00 AM — High-Calorie Clean Breakfast',
-        titleAr: 'شوفان بالحليب وزبدة الفول السوداني + ٣ بيضات كاملة',
-        titleEn: 'Peanut Butter Banana Oats + 3 Whole Eggs',
-        kcal: 740,
-        proteinG: 44,
-        itemsAr: [
-          '٨٠ جرام شوفان مطهو في كوب حليب كامل الدسم + ثمرة موز + ملعقة كبيرة زبدة فول سوداني',
-          '٣ بيضات كاملة مسلوقة أو أومليت بجانب الشوفان',
-        ],
-        itemsEn: [
-          '80g oats cooked in 1 cup whole milk + 1 banana + 1 tbsp peanut butter',
-          '3 whole eggs on the side',
-        ],
-        economicAltAr: 'بديل اقتصادي: بليلة باللبن والعسل والسوداني + ٣ بيضات مسلوقة.',
-        economicAltEn: 'Budget Swap: Whole wheat belila with milk, honey & peanuts + 3 eggs.',
-      },
-      {
-        timeAr: '١:٠٠ ظهراً — وجبة وسط اليوم',
-        timeEn: '01:00 PM — Mid-Day Muscle Meal',
-        titleAr: 'مكرونة بالدجاج المفروم أو شاورما الدجاج المنزلية',
-        titleEn: 'Whole-Wheat Pasta with Chicken Breast Strips',
-        kcal: 680,
-        proteinG: 52,
-        itemsAr: [
-          '١٨٠ جرام صدور دجاج مقطعة شاورما بالفلفل والبصل',
-          '٢٠٠ جرام مكرونة مسلوقة بصلصة طماطم طبيعية',
-          'طبق سلطة خضراء',
-        ],
-        itemsEn: [
-          '180g chicken breast shawarma strips',
-          '200g cooked pasta with homemade tomato sauce',
-          'Green salad bowl',
-        ],
-        economicAltAr: 'بديل اقتصادي: كشري بيتي محسوب (عدس بجبّة + أرز + حمص) + ١٥٠ جرام صدور دجاج.',
-        economicAltEn: 'Budget Swap: Homemade high-protein lentil & rice bowl + 150g chicken.',
-      },
-      {
-        timeAr: '٥:٣٠ مساءً — وجبة بعد التمرين',
-        timeEn: '05:30 PM — Post-Workout Recovery Feast',
-        titleAr: 'أرز بسمتي مع صدور الدجاج والبطاطس المشوية',
-        titleEn: 'Chicken Breast, Basmati Rice & Roasted Potatoes',
-        kcal: 720,
-        proteinG: 58,
-        itemsAr: [
-          '٢٢٠ جرام صدور أو أوراك دجاج مخبوزة في الفرن',
-          '٢٠٠ جرام أرز + ١٠٠ جرام بطاطس مشوية',
-          'خضار سوتيه بملعقة زيت زيتون',
-        ],
-        itemsEn: [
-          '220g roasted chicken breast or thighs',
-          '200g cooked rice + 100g roasted potato wedges',
-          'Sautéed vegetables with 1 tbsp olive oil',
-        ],
-        economicAltAr: 'بديل اقتصادي: ربع فرخة مشوية + طبق أرز متوسط + بطاطس فرن.',
-        economicAltEn: 'Budget Swap: Quarter roasted chicken + medium rice plate + baked potato.',
-      },
-      {
-        timeAr: '١٠:٠٠ مساءً — سموذي وعشاء ما قبل النوم',
-        timeEn: '10:00 PM — Pre-Bed Mass Shake & Cottage Cheese',
-        titleAr: 'جبنة قريش بالمكسرات + كوب حليب بالتمر',
-        titleEn: 'Cottage Cheese, Nuts & Milk Date Shake',
-        kcal: 460,
-        proteinG: 36,
-        itemsAr: [
-          '١٥٠ جرام جبنة قريش + رغيف بلدي أسمر',
-          'كوب حليب دافئ + ٣ تمرات + ملعقة فول سوداني',
-        ],
-        itemsEn: [
-          '150g cottage cheese + 1 whole-grain flatbread',
-          '1 cup warm milk + 3 dates + 1 tbsp peanuts',
-        ],
-        economicAltAr: 'بديل اقتصادي: ١٥٠ جرام جبنة قريش + كوب لبن بالتمر.',
-        economicAltEn: 'Budget Swap: 150g cottage cheese + milk with 3 dates.',
-      },
-    ],
-  },
 ];
+
 
 export function FreeTrialWorkoutsAndDietsView({
   onSubscribeClick,
@@ -644,7 +274,6 @@ export function FreeTrialWorkoutsAndDietsView({
   const [completedExercises, setCompletedExercises] = useState<Record<string, number>>({});
   const [restSecondsLeft, setRestSecondsLeft] = useState<number>(0);
   const [showEconomicSwaps, setShowEconomicSwaps] = useState<boolean>(true);
-  const [videoMode, setVideoMode] = useState<'YOUTUBE' | 'DIRECT'>('YOUTUBE');
 
   const activeWorkout =
     FREE_VIDEO_WORKOUTS.find((w) => w.id === selectedWorkoutId) ?? FREE_VIDEO_WORKOUTS[0]!;
@@ -803,7 +432,7 @@ export function FreeTrialWorkoutsAndDietsView({
         </div>
 
         {/* 4 Video Workout Selector Cards */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 max-w-xl">
           {FREE_VIDEO_WORKOUTS.map((workout) => {
             const isSelected = workout.id === activeWorkout.id;
             return (
@@ -869,62 +498,26 @@ export function FreeTrialWorkoutsAndDietsView({
           <div className="space-y-4 lg:col-span-6">
             <div className="flex items-center justify-between pb-1">
               <span className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                {isAr ? 'مشغل الفيديو عالي الدقة (HD)' : 'HD Video Stream Player'}
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                {isAr ? 'مشغل الفيديو فائق الدقة (YouTube 1080p HD)' : 'Ultra HD Video Masterclass (1080p)'}
               </span>
-
-              {/* Toggle Video Stream Source */}
-              <div className="flex rounded-lg border border-slate-300 bg-slate-100 p-0.5 text-[11px] font-bold dark:border-slate-700 dark:bg-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setVideoMode('YOUTUBE')}
-                  className={`rounded-md px-2.5 py-1 transition ${
-                    videoMode === 'YOUTUBE'
-                      ? 'bg-amber-500 text-slate-950 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-                  }`}
-                >
-                  YouTube HD
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setVideoMode('DIRECT')}
-                  className={`rounded-md px-2.5 py-1 transition ${
-                    videoMode === 'DIRECT'
-                      ? 'bg-amber-500 text-slate-950 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-                  }`}
-                >
-                  Direct MP4
-                </button>
-              </div>
+              <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400">
+                {isAr ? 'بث مباشر فائق السرعة' : 'High-Speed Stream'}
+              </span>
             </div>
 
-            {/* Video Container (YouTube iframe or HTML5 video) */}
+            {/* Video Container (YouTube HD embed) */}
             <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-black shadow-lg dark:border-slate-800">
-              {videoMode === 'YOUTUBE' ? (
-                <div className="video-responsive-container">
-                  <iframe
-                    key={activeWorkout.youtubeId}
-                    src={`https://www.youtube-nocookie.com/embed/${activeWorkout.youtubeId}?autoplay=0&rel=0&modestbranding=1`}
-                    title={isAr ? activeWorkout.titleAr : activeWorkout.titleEn}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="h-full w-full"
-                  />
-                </div>
-              ) : (
-                <div className="video-responsive-container">
-                  <video
-                    key={activeWorkout.directVideoUrl}
-                    src={activeWorkout.directVideoUrl}
-                    poster={activeWorkout.thumbnailUrl}
-                    controls
-                    playsInline
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              )}
+              <div className="video-responsive-container">
+                <iframe
+                  key={activeWorkout.youtubeId}
+                  src={`https://www.youtube-nocookie.com/embed/${activeWorkout.youtubeId}?autoplay=0&rel=0&modestbranding=1`}
+                  title={isAr ? activeWorkout.titleAr : activeWorkout.titleEn}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="h-full w-full"
+                />
+              </div>
               <div className="flex items-center justify-between bg-slate-950 px-4 py-2.5 text-xs text-white">
                 <span className="font-bold text-slate-300">
                   {isAr ? activeWorkout.titleAr : activeWorkout.titleEn}
@@ -1095,7 +688,7 @@ export function FreeTrialWorkoutsAndDietsView({
         </div>
 
         {/* 3 Diet Plan Selector Tabs */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 max-w-xl">
           {FREE_DIET_BLUEPRINTS.map((diet) => {
             const isSelected = diet.id === activeDiet.id;
             return (

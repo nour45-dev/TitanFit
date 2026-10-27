@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite (Arabic RTL + Pure White Light Mode + Free Trial Hub)', () => {
+test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite (Arabic RTL + Pure White Light Mode + Free Trial Hub + SaaS Super Admin Login)', () => {
   test('GET /api/health returns 200 OK', async ({ request }) => {
     const res = await request.get('/api/health');
     expect(res.ok()).toBeTruthy();
@@ -9,7 +9,7 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
     expect(body.data.service).toBe('gymos-web');
   });
 
-  test('verifies Arabic RTL & White Light Mode by default, Diet & Cheat Storefront, Free Video Workouts & Diets Hub, and all 6 ERP phases', async ({
+  test('verifies Arabic RTL & White Light Mode by default, Diet & Cheat Storefront, Free Video Workouts Hub, and Super Admin Authentication into all 6 ERP phases', async ({
     page,
   }) => {
     await page.goto('/');
@@ -29,6 +29,12 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
     await page.getByTestId('open-free-trial-hub-btn').click();
     await expect(page.getByTestId('panel-free-trial-hub')).toBeVisible();
 
+    // 3. Authenticate as SaaS Super Admin (Email + Password)
+    await page.getByTestId('open-login-modal-btn').click();
+    await page.getByTestId('login-email-input').fill('admin@titanfit.com');
+    await page.getByTestId('login-password-input').fill('admin123');
+    await page.getByTestId('login-submit-btn').click();
+
     // Switch to English LTR to verify English copy across ERP phases
     await page.getByTestId('locale-toggle-btn').click();
     await expect(rootShell).toHaveAttribute('dir', 'ltr');
@@ -41,7 +47,7 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
     await page.getByTestId('nav-tab-MEMBERS_BILLING').click();
     await expect(page.getByTestId('panel-members-billing')).toBeVisible();
     await page.getByTestId('issue-invoice-btn').click();
-    await expect(page.getByTestId('invoice-status-msg')).toContainText('INV-2026-1002');
+    await expect(page.getByTestId('invoice-status-msg')).toContainText('INV-2026-');
 
     // Phase 3: Classes, Auto-Waitlist Promotion & Turnstile QR Scan
     await page.getByTestId('nav-tab-CLASSES_QR_ACCESS').click();

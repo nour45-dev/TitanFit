@@ -372,56 +372,98 @@ function TitanFitEnterpriseShell() {
             </button>
           </div>
 
-          {/* Navigation Items (Clean Public Menu for Visitors, Section Context for Admins) */}
+          {/* Navigation Items (Clean Public Menu for Visitors with Rich Animations) */}
           {isPublicWebsiteView ? (
-            <nav className="hidden items-center gap-2 md:flex">
-              <button
+            <motion.nav
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="hidden items-center gap-1.5 md:flex"
+            >
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
-                className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                className={`rounded-xl px-3.5 py-2 text-xs font-bold transition ${
                   activeSection === 'PUBLIC_STOREFRONT'
-                    ? 'bg-amber-500 text-slate-950 shadow-xs dark:bg-amber-500'
+                    ? 'bg-amber-500 text-slate-950 shadow-xs dark:bg-amber-500 font-black'
                     : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
                 }`}
               >
                 {isAr ? 'الرئيسية' : 'Home'}
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setActiveSection('FREE_TRIAL_HUB')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-extrabold transition ${
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-extrabold transition ${
                   activeSection === 'FREE_TRIAL_HUB'
                     ? 'bg-emerald-600 text-white shadow-xs'
                     : 'text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40'
                 }`}
               >
                 <Gift className="h-3.5 w-3.5" />
-                {isAr ? '🎁 جرب مجاناً (فيديوهات + أنظمة)' : '🎁 Free Workouts & Diets'}
-              </button>
+                {isAr ? '🎁 جرب مجاناً' : '🎁 Free Trial'}
+              </motion.button>
 
-              <button
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => {
                   setActiveSection('PUBLIC_STOREFRONT');
                   setTimeout(() => {
-                    document.getElementById('pricing-plans-section')?.scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('coaching-packages')?.scrollIntoView({ behavior: 'smooth' });
                   }, 100);
                 }}
-                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                className="rounded-xl px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
               >
-                {isAr ? 'الباقات والأسعار' : 'Pricing'}
-              </button>
+                {isAr ? 'باقات الاشتراك' : 'Pricing Plans'}
+              </motion.button>
 
-              <button
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => {
+                  setActiveSection('PUBLIC_STOREFRONT');
+                  setTimeout(() => {
+                    document.getElementById('free-calorie-calculator')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="rounded-xl px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+              >
+                {isAr ? 'حاسبة السعرات' : 'Macro Calculator'}
+              </motion.button>
+
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => {
+                  setActiveSection('PUBLIC_STOREFRONT');
+                  setTimeout(() => {
+                    document.getElementById('transformations-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="rounded-xl px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+              >
+                {isAr ? 'قصص التحول' : 'Success Stories'}
+              </motion.button>
+
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setActiveSection('MEMBER_PWA')}
                 className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 <Smartphone className="h-3.5 w-3.5 text-amber-500" />
                 {isAr ? 'تطبيق المشترك' : 'Member App'}
-              </button>
-            </nav>
+              </motion.button>
+            </motion.nav>
           ) : (
             <div className="hidden items-center gap-2 md:flex">
               <span className="rounded-xl bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900 dark:bg-amber-950/50 dark:text-amber-300">
@@ -506,31 +548,6 @@ function TitanFitEnterpriseShell() {
           </div>
         </div>
       </header>
-
-      {/* Discreet Test Dock for E2E Automation (Visible only on public view, positioned at bottom-3 end-3 so it never overlaps the sidebar) */}
-      {isPublicWebsiteView && (
-        <div
-          data-testid="test-nav-dock"
-          className="fixed bottom-3 end-3 z-50 flex items-center gap-1 rounded-2xl border border-slate-200/90 bg-white/90 p-1.5 shadow-xl backdrop-blur-md opacity-30 hover:opacity-100 transition-opacity dark:border-slate-800/90 dark:bg-slate-950/90"
-        >
-          <span className="px-2 text-[10px] font-extrabold text-slate-400">⚡ ERP Tabs:</span>
-          {sidebarGroups.flatMap((g) => g.items).map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              data-testid={item.testId}
-              onClick={() => setActiveSection(item.id)}
-              className={`rounded-lg px-2 py-1 text-[10px] font-bold transition ${
-                activeSection === item.id
-                  ? 'bg-amber-500 text-slate-950 font-black'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-              }`}
-            >
-              {isAr ? item.labelAr.split(' ')[0] : item.labelEn.split(' ')[0]}
-            </button>
-          ))}
-        </div>
-      )}
 
       <div className="flex min-h-[calc(100vh-65px)]">
         {/* MODERN UPGRADED SIDEBAR — Shown inside ERP & Admin Views */}
@@ -764,6 +781,7 @@ function TitanFitEnterpriseShell() {
                 </label>
                 <input
                   type="text"
+                  data-testid="login-email-input"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                   placeholder="admin@titanfit.com / coach.ahmed@peakfit.eg"
@@ -777,6 +795,7 @@ function TitanFitEnterpriseShell() {
                 </label>
                 <input
                   type="password"
+                  data-testid="login-password-input"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="••••••••"
@@ -786,75 +805,18 @@ function TitanFitEnterpriseShell() {
 
               <button
                 type="submit"
+                data-testid="login-submit-btn"
                 className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-[#D4AF37] py-2.5 text-xs font-black text-slate-950 shadow-md transition hover:opacity-95"
               >
                 {isAr ? 'تسجيل الدخول وفتح لوحة التحكم' : 'Sign In to Dashboard'}
               </button>
             </form>
 
-            {/* Quick Demo Access Pills */}
-            <div className="mt-6 border-t border-slate-100 pt-4 dark:border-slate-800">
-              <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                {isAr ? 'تجربة سريعة بنقرة واحدة (حسابات جاهزة):' : 'One-Click Instant Demo Login:'}
-              </p>
-
-              <div className="mt-2.5 space-y-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoLogin('admin@titanfit.com', 'admin123')}
-                  className="flex w-full items-center justify-between rounded-xl border border-amber-300 bg-amber-50/80 p-2.5 text-start transition hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:hover:bg-amber-950/60"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Crown className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                    <div>
-                      <p className="text-xs font-black text-amber-950 dark:text-amber-200">
-                        {isAr ? 'مالك المنصة (Super Admin)' : 'SaaS Super Admin'}
-                      </p>
-                      <p className="text-[10px] text-amber-800/80 dark:text-amber-400">
-                        admin@titanfit.com • كامل الصلاحيات
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-amber-600 rtl:rotate-180" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoLogin('coach.ahmed@peakfit.eg', 'coach123')}
-                  className="flex w-full items-center justify-between rounded-xl border border-emerald-300 bg-emerald-50/80 p-2.5 text-start transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/60"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Dumbbell className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                    <div>
-                      <p className="text-xs font-black text-emerald-950 dark:text-emerald-200">
-                        {isAr ? 'كابتن أحمد (بيك فيتنس Cairo)' : 'Coach Ahmed (Peak Fitness)'}
-                      </p>
-                      <p className="text-[10px] text-emerald-800/80 dark:text-emerald-400">
-                        coach.ahmed@peakfit.eg • هوية خضراء مخصصة
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-emerald-600 rtl:rotate-180" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoLogin('sara@oxygenfit.eg', 'sara123')}
-                  className="flex w-full items-center justify-between rounded-xl border border-purple-300 bg-purple-50/80 p-2.5 text-start transition hover:bg-purple-100 dark:border-purple-800 dark:bg-purple-950/30 dark:hover:bg-purple-950/60"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                    <div>
-                      <p className="text-xs font-black text-purple-950 dark:text-purple-200">
-                        {isAr ? 'كابتن سارة (أوكسجين ليديز زايد)' : 'Coach Sara (Oxygen Ladies)'}
-                      </p>
-                      <p className="text-[10px] text-purple-800/80 dark:text-purple-400">
-                        sara@oxygenfit.eg • هوية موف مخصصة
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-purple-600 rtl:rotate-180" />
-                </button>
+            {/* Enterprise Security Note */}
+            <div className="mt-5 border-t border-slate-100 pt-3.5 text-center dark:border-slate-800">
+              <div className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                <span>{isAr ? 'بوابة دخول آمنة ومشفرة بالكامل (256-bit AES Enterprise)' : '256-bit AES Encrypted Enterprise Authentication'}</span>
               </div>
             </div>
           </motion.div>

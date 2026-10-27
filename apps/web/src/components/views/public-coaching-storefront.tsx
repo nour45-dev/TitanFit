@@ -91,50 +91,6 @@ const TRANSFORMATION_STORIES: TransformationStory[] = [
     quoteEn:
       'I thought dieting meant starving, but with macro-balanced recipes and daily WhatsApp coaching I dropped 24kg with zero loose skin!',
   },
-  {
-    id: 'tr-2',
-    nameAr: 'د. سارة المنياوي',
-    nameEn: 'Dr. Sara El-Miniawy',
-    age: 28,
-    roleAr: 'طبيبة أسنان — الشيخ زايد',
-    roleEn: 'Dentist — Sheikh Zayed',
-    durationAr: '١٠ أسابيع متابعة',
-    durationEn: '10 Weeks',
-    weightBeforeKg: 79,
-    weightAfterKg: 63,
-    bodyFatBefore: '31%',
-    bodyFatAfter: '18%',
-    badgeAr: '-16 كجم ونحت القوام بالكامل',
-    badgeEn: '-16 kg & Complete Body Recomp',
-    photoUrl:
-      'https://images.unsplash.com/photo-1548690312-e3b507d8c110?auto=format&fit=crop&w=800&q=80',
-    quoteAr:
-      'وقتي في العيادة كان ضيق جداً، بس الوصفات السريعة اللي بتتحضر في ٢٠ دقيقة وتمارين البيت المصورة بالفيديو تحت إشراف دكتور علاج طبيعي غيرت حياتي وثقتي بنفسي ١٨٠ درجة.',
-    quoteEn:
-      'My clinic schedule was hectic, but the 20-minute recipes and structured 45-minute workouts completely transformed my energy and physique.',
-  },
-  {
-    id: 'tr-3',
-    nameAr: 'كابتن كريم فؤاد',
-    nameEn: 'Karim Fouad',
-    age: 25,
-    roleAr: 'رائد أعمال — المعادي',
-    roleEn: 'Entrepreneur — Maadi',
-    durationAr: '١٦ أسبوع متابعة',
-    durationEn: '16 Weeks',
-    weightBeforeKg: 66,
-    weightAfterKg: 77,
-    bodyFatBefore: '16%',
-    bodyFatAfter: '10%',
-    badgeAr: '+11 كجم ضخامة عضلية صافية',
-    badgeEn: '+11 kg Pure Muscular Hypertrophy',
-    photoUrl:
-      'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
-    quoteAr:
-      'كنت بعاني من النحافة وإصابة قديمة في الكتف. فريق العلاج الطبيعي والتغذية صمملي برنامج ضخامة عضلية زادني ١١ كيلو عضل صافي بدون أي ألم في المفاصل!',
-    quoteEn:
-      'With physical therapy supervision and progressive overload tracking, I gained 11kg of lean mass pain-free.',
-  },
 ];
 
 const COACHING_TIERS: CoachingTier[] = [
@@ -311,36 +267,6 @@ const HEALTHY_RECIPES = [
     tagEn: 'Fast High-Protein Lunch',
     imageUrl:
       'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 'rcp-2',
-    titleAr: 'توست فرنسي بالواي بروتين والقرفة والتوت',
-    titleEn: 'Cinnamon Whey Protein French Toast',
-    prepAr: '١٠ دقائق',
-    prepEn: '10 Mins',
-    kcal: 340,
-    proteinG: 34,
-    carbsG: 36,
-    fatsG: 6,
-    tagAr: 'فطار صحي لذيذ بدون حرمان',
-    tagEn: 'Sweet Craving Breakfast',
-    imageUrl:
-      'https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 'rcp-3',
-    titleAr: 'سالمون أو دجاج مشوي مع الأرز البسمتي والأفوكادو',
-    titleEn: 'Grilled Protein Bowl with Basmati Rice & Greens',
-    prepAr: '٢٥ دقيقة',
-    prepEn: '25 Mins',
-    kcal: 450,
-    proteinG: 48,
-    carbsG: 42,
-    fatsG: 11,
-    tagAr: 'غني بالبروتين والأوميجا',
-    tagEn: 'High-Protein Power Bowl',
-    imageUrl:
-      'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
   },
 ];
 
@@ -738,7 +664,7 @@ export function PublicCoachingStorefrontView({
           </a>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 max-w-xl">
           {TRANSFORMATION_STORIES.map((story, idx) => (
             <motion.div
               key={story.id}
