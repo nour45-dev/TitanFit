@@ -2,25 +2,19 @@
 
 import React, { useState } from 'react';
 import { PLATFORM_CONFIG, getLocaleDirection } from '@gymos/config';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Activity,
   Award,
   BarChart3,
-  Bell,
-  Building2,
   Calendar,
   CheckCircle2,
   CreditCard,
-  Dumbbell,
   Globe,
   KeyRound,
   LayoutDashboard,
-  Lock,
-  LogOut,
   Menu,
   Moon,
   QrCode,
-  Receipt,
   Settings,
   ShieldCheck,
   ShoppingBag,
@@ -55,6 +49,7 @@ import {
   SuperAdminConsoleView,
   TenantSettingsView,
 } from './views/member-pwa-and-admin';
+import { PublicCoachingStorefrontView } from './views/public-coaching-storefront';
 
 function TitanFitEnterpriseShell() {
   const {
@@ -95,8 +90,30 @@ function TitanFitEnterpriseShell() {
     }>;
   }> = [
     {
+      groupEn: 'PUBLIC TRAINEE STOREFRONT',
+      groupAr: 'واجهة الزوار والمتدربين (العامة)',
+      items: [
+        {
+          id: 'PUBLIC_STOREFRONT',
+          testId: 'nav-tab-PUBLIC_STOREFRONT',
+          labelEn: 'Trainee Storefront (Diet & Cheat)',
+          labelAr: 'واجهة المتدربين (Diet & Cheat)',
+          badge: 'LIVE',
+          icon: Sparkles,
+        },
+        {
+          id: 'MEMBER_PWA',
+          testId: 'nav-tab-MEMBER_PWA',
+          labelEn: 'Member App (PWA)',
+          labelAr: 'تطبيق المتدرب (PWA)',
+          badge: '1RM PR',
+          icon: Smartphone,
+        },
+      ],
+    },
+    {
       groupEn: 'CLUB OPERATIONS & CRM',
-      groupAr: 'إدارة النادي والأعضاء',
+      groupAr: 'إدارة النادي والكوتشينج',
       items: [
         {
           id: 'OVERVIEW',
@@ -108,7 +125,7 @@ function TitanFitEnterpriseShell() {
         {
           id: 'MEMBERS',
           labelEn: 'Members CRM & Vault',
-          labelAr: 'الأعضاء والملف الطبي',
+          labelAr: 'المتدربون والملف الطبي',
           badge: members.length,
           icon: Users,
         },
@@ -130,7 +147,7 @@ function TitanFitEnterpriseShell() {
         {
           id: 'STAFF_TRAINERS',
           labelEn: 'Trainers & Staff',
-          labelAr: 'المدربون والعمولات',
+          labelAr: 'المدربون والأطباء والعمولات',
           icon: UserCheck,
         },
       ],
@@ -169,17 +186,9 @@ function TitanFitEnterpriseShell() {
       ],
     },
     {
-      groupEn: 'MEMBER EXPERIENCE & SAAS',
-      groupAr: 'تطبيق العضو وإدارة المنصة',
+      groupEn: 'SAAS PLATFORM & WHITE-LABEL',
+      groupAr: 'بيع المنصة كـ SaaS والهوية',
       items: [
-        {
-          id: 'MEMBER_PWA',
-          testId: 'nav-tab-MEMBER_PWA',
-          labelEn: 'Member App (PWA)',
-          labelAr: 'تطبيق العضو (PWA)',
-          badge: '1RM PR',
-          icon: Smartphone,
-        },
         {
           id: 'SETTINGS',
           labelEn: 'Club & Brand Settings',
@@ -191,6 +200,7 @@ function TitanFitEnterpriseShell() {
           testId: 'nav-tab-SUPER_ADMIN',
           labelEn: 'Super Admin SaaS',
           labelAr: 'لوحة مالك المنصة (SaaS)',
+          badge: 'SaaS',
           icon: ShieldCheck,
         },
       ],
@@ -198,12 +208,49 @@ function TitanFitEnterpriseShell() {
   ];
 
   const roles: Array<{ id: UserRoleKey; labelEn: string; labelAr: string }> = [
-    { id: 'GYM_OWNER', labelEn: 'Gym Owner', labelAr: 'مالك النادي' },
+    { id: 'GYM_OWNER', labelEn: 'Gym Owner', labelAr: 'مالك النادي / الكوتش' },
     { id: 'BRANCH_MANAGER', labelEn: 'Branch Manager', labelAr: 'مدير فرع' },
     { id: 'RECEPTIONIST', labelEn: 'Receptionist', labelAr: 'موظف استقبال' },
-    { id: 'TRAINER', labelEn: 'Coach / Trainer', labelAr: 'مدرب (Trainer)' },
-    { id: 'MEMBER', labelEn: 'Member App', labelAr: 'عضو (Member)' },
-    { id: 'SUPER_ADMIN', labelEn: 'Super Admin', labelAr: 'مالك المنصة' },
+    { id: 'TRAINER', labelEn: 'Coach / Trainer', labelAr: 'مدرب / طبيب تغذية' },
+    { id: 'MEMBER', labelEn: 'Member App', labelAr: 'متدرب (Member)' },
+    { id: 'SUPER_ADMIN', labelEn: 'Super Admin', labelAr: 'مالك المنصة (SaaS)' },
+  ];
+
+  const quickPortalModes: Array<{
+    section: WorkspaceSection;
+    labelAr: string;
+    labelEn: string;
+    descAr: string;
+    descEn: string;
+  }> = [
+    {
+      section: 'PUBLIC_STOREFRONT',
+      labelAr: '🌟 صفحة المتدرب والزائر (Diet & Cheat)',
+      labelEn: '🌟 Public Trainee Storefront (Diet & Cheat)',
+      descAr: 'الصفحة التي تظهر لأي شخص غريب يريد الاشتراك',
+      descEn: 'What visitors see to calculate calories & subscribe',
+    },
+    {
+      section: 'MEMBER_PWA',
+      labelAr: '📱 تطبيق المتدرب بعد الاشتراك',
+      labelEn: '📱 Subscribed Member App (PWA)',
+      descAr: 'جدول التمارين، الماكروز، الشات، وباركود الدخول',
+      descEn: 'Workouts, macros, coach chat & QR pass',
+    },
+    {
+      section: 'OVERVIEW',
+      labelAr: '📊 لوحة تحكم صاحب الجيم / الكوتش',
+      labelEn: '📊 Gym Owner / Coach ERP Dashboard',
+      descAr: 'إدارة المتدربين، الفواتير، المبيعات، والمدربين',
+      descEn: 'Manage trainees, billing, POS & trainers',
+    },
+    {
+      section: 'SUPER_ADMIN',
+      labelAr: '🌐 لوحة بيع المنصة كـ SaaS',
+      labelEn: '🌐 Super Admin SaaS Console',
+      descAr: 'تفعيل المنصة لعميل جديد بضغطة زر وإدارة باقاتك',
+      descEn: 'Provision new gym/coach tenants in 1 click',
+    },
   ];
 
   return (
@@ -211,17 +258,24 @@ function TitanFitEnterpriseShell() {
       dir={dir}
       data-theme={theme}
       data-testid="gymos-root-shell"
-      className={`min-h-screen transition-colors duration-200 ${
-        theme === 'dark' ? 'bg-[#090C15] text-slate-100' : 'bg-slate-100 text-slate-900'
+      className={`min-h-screen transition-colors duration-300 ${
+        theme === 'dark' ? 'bg-[#090C15] text-slate-100' : 'bg-[#F8FAFC] text-slate-900'
       }`}
     >
       {/* Floating Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-6 end-6 z-50 flex max-w-md items-center gap-3 rounded-2xl border border-[#D4AF37] bg-[#121623] px-5 py-3.5 text-xs font-extrabold text-[#F3E5AB] shadow-2xl">
-          <CheckCircle2 className="h-5 w-5 shrink-0 text-[#D4AF37]" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-6 end-6 z-50 flex max-w-md items-center gap-3 rounded-2xl border border-[#D4AF37] bg-[#121623] px-5 py-3.5 text-xs font-extrabold text-[#F3E5AB] shadow-2xl"
+          >
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-[#D4AF37]" />
+            <span>{toastMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="flex min-h-screen">
         {/* Enterprise Sidebar Navigation */}
@@ -254,7 +308,7 @@ function TitanFitEnterpriseShell() {
                     {PLATFORM_CONFIG.appName}
                   </span>
                   <span className="rounded bg-[#D4AF37]/20 px-1.5 py-0.5 font-mono text-[10px] font-extrabold text-[#D4AF37]">
-                    PRO
+                    SaaS
                   </span>
                 </div>
                 <p className="text-[11px] font-semibold tracking-wider text-[#D4AF37]">
@@ -282,7 +336,7 @@ function TitanFitEnterpriseShell() {
               className="mt-1.5 w-full rounded-xl border border-slate-700/80 bg-[#141929] px-3 py-2 text-xs font-bold text-white focus:border-[#D4AF37] focus:outline-none"
             >
               <option value="ALL">
-                {isAr ? 'جميع الفروع (٣ فروع - مصر)' : 'All Branches (3 Clubs — Egypt)'}
+                {isAr ? 'جميع الفروع + الأونلاين كوتشينج' : 'All Branches + Online Coaching'}
               </option>
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -296,7 +350,7 @@ function TitanFitEnterpriseShell() {
           <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
             {sidebarGroups.map((grp) => (
               <div key={grp.groupEn}>
-                <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
                   {isAr ? grp.groupAr : grp.groupEn}
                 </p>
                 <div className="mt-1.5 space-y-1">
@@ -378,30 +432,30 @@ function TitanFitEnterpriseShell() {
                   <Menu className="h-5 w-5" />
                 </button>
 
-                {/* Role Switcher Pills */}
-                <div className="hidden items-center gap-1 rounded-xl border border-slate-800 bg-[#141929] p-1 xl:flex">
-                  {roles.map((r) => (
-                    <button
-                      key={r.id}
-                      type="button"
-                      onClick={() => {
-                        setActiveRole(r.id);
-                        if (r.id === 'MEMBER') setActiveSection('MEMBER_PWA');
-                        if (r.id === 'SUPER_ADMIN') setActiveSection('SUPER_ADMIN');
-                      }}
-                      className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${
-                        activeRole === r.id
-                          ? 'bg-[#D4AF37] text-slate-950 font-extrabold'
-                          : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      {isAr ? r.labelAr : r.labelEn}
-                    </button>
-                  ))}
+                {/* 4-Journey Switcher Pills (Storefront vs Member App vs Gym Admin vs SaaS Super Admin) */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {quickPortalModes.map((mode) => {
+                    const isCurrent = activeSection === mode.section;
+                    return (
+                      <button
+                        key={mode.section}
+                        type="button"
+                        onClick={() => setActiveSection(mode.section)}
+                        title={isAr ? mode.descAr : mode.descEn}
+                        className={`rounded-xl px-3 py-1.5 text-xs font-extrabold transition ${
+                          isCurrent
+                            ? 'bg-gradient-to-r from-[#D4AF37] to-[#b89322] text-slate-950 shadow-sm'
+                            : 'border border-slate-700/70 bg-slate-800/70 text-slate-200 hover:border-[#D4AF37]/50'
+                        }`}
+                      >
+                        {isAr ? mode.labelAr : mode.labelEn}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Right Controls: Auth Modal, Locale RTL/LTR, Theme Dark/Light */}
+              {/* Right Controls: Auth Modal, Locale RTL/LTR, Theme Light/Dark */}
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -410,7 +464,7 @@ function TitanFitEnterpriseShell() {
                 >
                   <ShieldCheck className="h-4 w-4" />
                   <span className="hidden sm:inline">
-                    {isAr ? 'بوابة الدخول والأمان (JWT/2FA)' : 'Auth & 2FA Portal'}
+                    {isAr ? 'الأدوار والأمان (JWT/2FA)' : 'Roles & 2FA'}
                   </span>
                 </button>
 
@@ -433,12 +487,12 @@ function TitanFitEnterpriseShell() {
                   {theme === 'dark' ? (
                     <>
                       <Sun className="h-4 w-4 text-amber-400" />
-                      <span className="hidden sm:inline">{isAr ? 'الوضع النهاري' : 'Light'}</span>
+                      <span className="hidden sm:inline">{isAr ? 'الوضع النهاري' : 'Light Mode'}</span>
                     </>
                   ) : (
                     <>
                       <Moon className="h-4 w-4 text-sky-400" />
-                      <span className="hidden sm:inline">{isAr ? 'الوضع الليلي' : 'Dark'}</span>
+                      <span className="hidden sm:inline">{isAr ? 'الوضع الليلي' : 'Dark Mode'}</span>
                     </>
                   )}
                 </button>
@@ -446,20 +500,37 @@ function TitanFitEnterpriseShell() {
             </div>
           </header>
 
-          {/* Active Module View */}
+          {/* Active Module View with Smooth Framer Motion Page Transitions */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
-            {activeSection === 'OVERVIEW' && <OverviewView />}
-            {activeSection === 'MEMBERS' && <MembersCrmView />}
-            {activeSection === 'SUBSCRIPTIONS' && <SubscriptionsView />}
-            {activeSection === 'PAYMENTS' && <PaymentsBillingView />}
-            {activeSection === 'CLASSES' && <ClassesScheduleView />}
-            {activeSection === 'ACCESS_CONTROL' && <AccessControlTurnstilesView />}
-            {activeSection === 'POS_INVENTORY' && <PosInventoryView />}
-            {activeSection === 'STAFF_TRAINERS' && <StaffTrainersView />}
-            {activeSection === 'MEMBER_PWA' && <MemberPwaPortalView />}
-            {activeSection === 'REPORTS' && <ReportsAnalyticsView />}
-            {activeSection === 'SETTINGS' && <TenantSettingsView />}
-            {activeSection === 'SUPER_ADMIN' && <SuperAdminConsoleView />}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSection}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                {activeSection === 'PUBLIC_STOREFRONT' && (
+                  <PublicCoachingStorefrontView
+                    onSwitchToDashboard={() => setActiveSection('OVERVIEW')}
+                    onSwitchToMemberApp={() => setActiveSection('MEMBER_PWA')}
+                    onSwitchToSaaSPricing={() => setActiveSection('SUPER_ADMIN')}
+                  />
+                )}
+                {activeSection === 'OVERVIEW' && <OverviewView />}
+                {activeSection === 'MEMBERS' && <MembersCrmView />}
+                {activeSection === 'SUBSCRIPTIONS' && <SubscriptionsView />}
+                {activeSection === 'PAYMENTS' && <PaymentsBillingView />}
+                {activeSection === 'CLASSES' && <ClassesScheduleView />}
+                {activeSection === 'ACCESS_CONTROL' && <AccessControlTurnstilesView />}
+                {activeSection === 'POS_INVENTORY' && <PosInventoryView />}
+                {activeSection === 'STAFF_TRAINERS' && <StaffTrainersView />}
+                {activeSection === 'MEMBER_PWA' && <MemberPwaPortalView />}
+                {activeSection === 'REPORTS' && <ReportsAnalyticsView />}
+                {activeSection === 'SETTINGS' && <TenantSettingsView />}
+                {activeSection === 'SUPER_ADMIN' && <SuperAdminConsoleView />}
+              </motion.div>
+            </AnimatePresence>
           </main>
         </div>
       </div>
@@ -498,6 +569,8 @@ function TitanFitEnterpriseShell() {
                       type="button"
                       onClick={() => {
                         setActiveRole(r.id);
+                        if (r.id === 'MEMBER') setActiveSection('MEMBER_PWA');
+                        if (r.id === 'SUPER_ADMIN') setActiveSection('SUPER_ADMIN');
                         showToast(
                           isAr
                             ? `تم التبديل إلى صلاحيات: ${r.labelAr}`
@@ -552,7 +625,7 @@ function TitanFitEnterpriseShell() {
 }
 
 export function DesignSystemShowcase({
-  initialLocale = 'en',
+  initialLocale = 'ar',
 }: {
   initialLocale?: 'en' | 'ar';
 }) {

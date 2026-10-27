@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite (LTR & RTL)', () => {
+test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite (Light Mode Default + Diet & Cheat Storefront)', () => {
   test('GET /api/health returns 200 OK', async ({ request }) => {
     const res = await request.get('/api/health');
     expect(res.ok()).toBeTruthy();
@@ -9,17 +9,24 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
     expect(body.data.service).toBe('gymos-web');
   });
 
-  test('verifies English LTR & Arabic RTL across all 6 phase workspaces (RBAC, Billing, Classes/QR, Member PWA, POS/Chat, Super Admin)', async ({
+  test('verifies Default Light Mode, Diet & Cheat Public Storefront, and all 6 enterprise phase workspaces', async ({
     page,
   }) => {
     await page.goto('/');
 
     const rootShell = page.getByTestId('gymos-root-shell');
     await expect(rootShell).toHaveAttribute('dir', 'ltr');
-    await expect(rootShell).toHaveAttribute('data-theme', 'dark');
+    await expect(rootShell).toHaveAttribute('data-theme', 'light');
 
     await expect(page.getByTestId('brand-app-name')).toHaveText('TitanFit');
     await expect(page.getByTestId('brand-logo-img')).toHaveAttribute('src', '/brand/logo.png');
+
+    // Public Storefront (Diet & Cheat style) opens by default for new visitors/trainees
+    await expect(page.getByTestId('panel-public-storefront')).toBeVisible();
+    await expect(page.getByTestId('free-calorie-calculator')).toBeVisible();
+
+    // Phase 1: Executive Overview
+    await page.getByTestId('nav-tab-ADMIN_OVERVIEW').click();
     await expect(page.getByTestId('panel-admin-overview')).toBeVisible();
 
     // Phase 2: Members & Egypt Billing
@@ -54,13 +61,13 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
       'AUDITED IMPERSONATION ACTIVE',
     );
 
-    // Switch to Arabic (RTL) and Light Mode and verify Executive Overview
+    // Switch to Arabic (RTL) and verify Executive Overview & Dark Mode toggle
     await page.getByTestId('locale-toggle-btn').click();
     await expect(rootShell).toHaveAttribute('dir', 'rtl');
     await page.getByTestId('nav-tab-ADMIN_OVERVIEW').click();
     await expect(page.getByTestId('hero-heading')).toContainText('للأندية الرياضية');
 
     await page.getByTestId('theme-toggle-btn').click();
-    await expect(rootShell).toHaveAttribute('data-theme', 'light');
+    await expect(rootShell).toHaveAttribute('data-theme', 'dark');
   });
 });

@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { SupportedLocale } from '@gymos/config';
 
 export type WorkspaceSection =
+  | 'PUBLIC_STOREFRONT'
   | 'OVERVIEW'
   | 'MEMBERS'
   | 'SUBSCRIPTIONS'
@@ -1033,8 +1034,8 @@ export function PlatformProvider({
   initialLocale?: SupportedLocale;
 }) {
   const [locale, setLocale] = useState<SupportedLocale>(initialLocale);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [activeSection, setActiveSection] = useState<WorkspaceSection>('OVERVIEW');
+  const [theme, setTheme] = useState<'dark' | 'light'>('light');
+  const [activeSection, setActiveSection] = useState<WorkspaceSection>('PUBLIC_STOREFRONT');
   const [activeRole, setActiveRole] = useState<UserRoleKey>('GYM_OWNER');
   const [selectedBranchId, setSelectedBranchId] = useState<string>('ALL');
   const [branches] = useState<BranchItem[]>(INITIAL_BRANCHES);
