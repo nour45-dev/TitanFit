@@ -63,15 +63,36 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.enableShutdownHooks();
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle(`${PLATFORM_CONFIG.appName} API`)
-    .setDescription(PLATFORM_CONFIG.tagline.en)
-    .setVersion('1.0.0')
-    .addBearerAuth()
-    .build();
+  try {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle(`${PLATFORM_CONFIG.appName} API`)
+      .setDescription(PLATFORM_CONFIG.tagline.en)
+      .setVersion('1.0.0')
+      .addBearerAuth()
+      .build();
 
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, document);
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document);
+  } catch (err) {
+    logger.warn(
+      { err: err instanceof Error ? err.message : String(err) },
+      'Skipping Swagger UI static mount',
+    );
+  }
+
+  const fastifyInstance = app.getHttpAdapter().getInstance();
+  fastifyInstance.get('/', async () => ({
+    success: true,
+    service: `${PLATFORM_CONFIG.appName} API`,
+    tagline: PLATFORM_CONFIG.brandSubtitle,
+    status: 'online',
+    endpoints: {
+      health: '/api/v1/health',
+      ready: '/api/v1/health/ready',
+      docs: '/api/docs',
+      dashboardSummary: '/api/v1/dashboard/summary',
+    },
+  }));
 
   const port = Number(process.env.PORT || apiPort);
   await app.listen(port, apiHost);
