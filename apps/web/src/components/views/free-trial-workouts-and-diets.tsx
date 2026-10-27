@@ -432,7 +432,7 @@ export function FreeTrialWorkoutsAndDietsView({
         </div>
 
         {/* 4 Video Workout Selector Cards */}
-        <div className="grid grid-cols-1 gap-4 max-w-xl">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FREE_VIDEO_WORKOUTS.map((workout) => {
             const isSelected = workout.id === activeWorkout.id;
             return (
@@ -688,7 +688,7 @@ export function FreeTrialWorkoutsAndDietsView({
         </div>
 
         {/* 3 Diet Plan Selector Tabs */}
-        <div className="grid grid-cols-1 gap-4 max-w-xl">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FREE_DIET_BLUEPRINTS.map((diet) => {
             const isSelected = diet.id === activeDiet.id;
             return (

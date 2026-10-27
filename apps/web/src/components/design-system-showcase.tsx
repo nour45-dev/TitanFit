@@ -710,10 +710,11 @@ function TitanFitEnterpriseShell() {
                     setLoginTab('TRAINEE_PIN');
                     setShowLoginModal(true);
                   }}
-                  className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-emerald-500/80 bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                  className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-emerald-500/80 bg-emerald-50 px-2.5 py-1.5 text-xs font-black text-emerald-800 transition hover:bg-emerald-100 sm:px-3 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
                 >
-                  <KeyRound className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  <span>{isAr ? 'دخول المتدربين (كود الجيم)' : 'Member PIN'}</span>
+                  <KeyRound className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <span className="hidden sm:inline">{isAr ? 'دخول المتدربين (كود الجيم)' : 'Member PIN'}</span>
+                  <span className="sm:hidden">{isAr ? 'كود الجيم' : 'PIN'}</span>
                 </button>
                 <button
                   type="button"
@@ -722,9 +723,9 @@ function TitanFitEnterpriseShell() {
                     setLoginTab('ADMIN_OWNER');
                     setShowLoginModal(true);
                   }}
-                  className="inline-flex min-h-[38px] items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#D4AF37] px-4 py-1.5 text-xs font-black text-slate-950 shadow-sm transition hover:opacity-95"
+                  className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-[#D4AF37] px-3 py-1.5 text-xs font-black text-slate-950 shadow-sm transition hover:opacity-95 sm:gap-2 sm:px-4"
                 >
-                  <LogIn className="h-4 w-4" />
+                  <LogIn className="h-4 w-4 shrink-0" />
                   <span>{isAr ? 'تسجيل الدخول' : 'Sign In'}</span>
                 </button>
               </div>
@@ -850,6 +851,19 @@ function TitanFitEnterpriseShell() {
       )}
 
       <div className="flex min-h-[calc(100vh-65px)]">
+        {/* Mobile Sidebar Backdrop Overlay */}
+        <AnimatePresence>
+          {mobileSidebarOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileSidebarOpen(false)}
+              className="fixed inset-0 z-30 bg-slate-950/60 backdrop-blur-xs lg:hidden"
+            />
+          )}
+        </AnimatePresence>
+
         {/* MODERN UPGRADED SIDEBAR — Shown inside ERP & Admin Views for Authenticated Admins and Gym Owners Only */}
         {isAuthenticated && !isPublicWebsiteView && activeRole !== 'MEMBER' && (
           <aside
@@ -1042,7 +1056,7 @@ function TitanFitEnterpriseShell() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
               <div className="flex items-center gap-3">
@@ -1216,7 +1230,7 @@ function TitanFitEnterpriseShell() {
       {/* 2FA TOTP & RBAC Switcher Modal */}
       {showAuthModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-800 dark:bg-slate-900 dark:text-white">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-800 dark:bg-slate-900 dark:text-white">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white">

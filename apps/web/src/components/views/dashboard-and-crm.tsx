@@ -740,7 +740,7 @@ export function MembersCrmView() {
       {/* Add Member Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-2xl border border-slate-700 bg-[#121623] p-6 text-white shadow-2xl">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-700 bg-[#121623] p-6 text-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div>
                 <h3 className="text-lg font-extrabold text-white">
@@ -1162,7 +1162,7 @@ export function SubscriptionsView() {
       {/* Create Plan Modal */}
       {showPlanModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-700 bg-[#121623] p-6 text-white">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-700 bg-[#121623] p-6 text-white">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-extrabold">
                 {isAr ? 'إنشاء باقة اشتراك جديدة' : 'Create New Subscription Plan'}
@@ -1531,7 +1531,7 @@ export function PaymentsBillingView() {
       {/* Printable Tax Invoice Modal */}
       {printableInvoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-[#D4AF37]/50 bg-[#121623] p-6 text-white shadow-2xl">
+          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-[#D4AF37]/50 bg-[#121623] p-6 text-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
                 <p className="text-xs font-extrabold text-[#D4AF37]">TITANFIT EGYPT — ETA TAX INVOICE</p>

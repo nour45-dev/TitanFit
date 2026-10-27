@@ -310,7 +310,7 @@ export function ClassesScheduleView() {
       {/* Add Class Modal */}
       {showAddClass && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-700 bg-[#121623] p-6 text-white">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-700 bg-[#121623] p-6 text-white">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-extrabold">
                 {isAr ? 'إضافة حصة تدريبية جديدة للجدول' : 'Schedule New Group Class'}
