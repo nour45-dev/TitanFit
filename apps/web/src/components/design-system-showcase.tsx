@@ -360,11 +360,12 @@ function TitanFitEnterpriseShell() {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           {/* Brand Logo & Name */}
           <div className="flex items-center gap-3">
-            {!isPublicWebsiteView && (
+            {isAuthenticated && activeRole !== 'MEMBER' && (
               <button
                 type="button"
                 onClick={() => setMobileSidebarOpen(true)}
                 className="rounded-xl border border-slate-200 bg-slate-50 p-2 text-slate-800 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 lg:hidden"
+                title={isAr ? 'القائمة الجانبية الكاملة' : 'Full Sidebar Menu'}
               >
                 <Menu className="h-5 w-5" />
               </button>
@@ -413,8 +414,169 @@ function TitanFitEnterpriseShell() {
             </button>
           </div>
 
-          {/* Navigation Items (Clean Public Menu for Visitors with Rich Animations) */}
-          {isPublicWebsiteView ? (
+          {/* TOP NAVIGATION BAR — PERMANENT & NEVER DISAPPEARS */}
+          {isAuthenticated && (activeRole === 'SUPER_ADMIN' || activeRole === 'GYM_OWNER') ? (
+            /* 1. Logged-in Admin / Gym Owner Primary Navigation Bar */
+            <motion.nav
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="hidden items-center gap-1 lg:flex"
+            >
+              {activeRole === 'SUPER_ADMIN' && (
+                <button
+                  type="button"
+                  data-testid="header-nav-SUPER_ADMIN"
+                  onClick={() => setActiveSection('SUPER_ADMIN')}
+                  className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-black transition ${
+                    activeSection === 'SUPER_ADMIN'
+                      ? 'bg-amber-500 text-slate-950 shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <Crown className="h-4 w-4 text-amber-600 dark:text-slate-950" />
+                  <span>{isAr ? 'لوحة المنصة (SaaS)' : 'SaaS Console'}</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                data-testid="header-nav-OVERVIEW"
+                onClick={() => setActiveSection('OVERVIEW')}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                  activeSection === 'OVERVIEW'
+                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+                }`}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span>{isAr ? 'لوحة القيادة' : 'Overview'}</span>
+              </button>
+
+              <button
+                type="button"
+                data-testid="header-nav-MEMBERS"
+                onClick={() => setActiveSection('MEMBERS')}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                  activeSection === 'MEMBERS' || activeSection === 'SUBSCRIPTIONS' || activeSection === 'PAYMENTS'
+                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+                }`}
+              >
+                <Users className="h-4 w-4" />
+                <span>{isAr ? 'المشتركون' : 'Members'}</span>
+              </button>
+
+              <button
+                type="button"
+                data-testid="header-nav-CLASSES"
+                onClick={() => setActiveSection('CLASSES')}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                  activeSection === 'CLASSES' || activeSection === 'ACCESS_CONTROL'
+                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+                }`}
+              >
+                <Calendar className="h-4 w-4" />
+                <span>{isAr ? 'الحصص والدخول' : 'Classes & Access'}</span>
+              </button>
+
+              <button
+                type="button"
+                data-testid="header-nav-POS"
+                onClick={() => setActiveSection('POS_INVENTORY')}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                  activeSection === 'POS_INVENTORY' || activeSection === 'REPORTS'
+                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+                }`}
+              >
+                <ShoppingBag className="h-4 w-4" />
+                <span>{isAr ? 'الـ POS والتقارير' : 'POS & Sales'}</span>
+              </button>
+
+              <button
+                type="button"
+                data-testid="header-nav-MEMBER_PWA"
+                onClick={() => setActiveSection('MEMBER_PWA')}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                  activeSection === 'MEMBER_PWA'
+                    ? 'bg-emerald-600 text-white shadow-xs font-black'
+                    : 'text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40'
+                }`}
+              >
+                <Smartphone className="h-4 w-4" />
+                <span>{isAr ? 'تطبيق المتدرب' : 'Member App'}</span>
+              </button>
+
+              <button
+                type="button"
+                data-testid="header-nav-PUBLIC_STOREFRONT"
+                onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                  activeSection === 'PUBLIC_STOREFRONT'
+                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800'
+                }`}
+              >
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                <span>{isAr ? 'موقع الزوار' : 'Storefront'}</span>
+              </button>
+
+              <button
+                type="button"
+                data-testid="header-nav-FREE_TRIAL_HUB"
+                onClick={() => setActiveSection('FREE_TRIAL_HUB')}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                  activeSection === 'FREE_TRIAL_HUB'
+                    ? 'bg-emerald-600 text-white shadow-xs font-black'
+                    : 'text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40'
+                }`}
+              >
+                <Gift className="h-4 w-4" />
+                <span>{isAr ? '🎁 جرب مجاناً' : 'Free Trial'}</span>
+              </button>
+            </motion.nav>
+          ) : isAuthenticated && activeRole === 'MEMBER' ? (
+            /* 2. Logged-in Trainee / Member Navigation Bar */
+            <motion.nav
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="hidden items-center gap-1.5 md:flex"
+            >
+              <button
+                type="button"
+                onClick={() => setActiveSection('MEMBER_PWA')}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-black transition ${
+                  activeSection === 'MEMBER_PWA'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300'
+                }`}
+              >
+                <Smartphone className="h-4 w-4" />
+                <span>{isAr ? 'تطبيقي الرياضي' : 'My Member App'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSection('FREE_TRIAL_HUB')}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition ${
+                  activeSection === 'FREE_TRIAL_HUB'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300'
+                }`}
+              >
+                <Gift className="h-4 w-4" />
+                <span>{isAr ? 'تمارين وفيديوهات مجانية' : 'Free Workouts'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
+                className="rounded-xl px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:text-slate-300"
+              >
+                {isAr ? 'موقع النادي' : 'Storefront'}
+              </button>
+            </motion.nav>
+          ) : (
+            /* 3. Unauthenticated Public Visitor Navigation */
             <motion.nav
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -494,20 +656,6 @@ function TitanFitEnterpriseShell() {
                 {isAr ? 'قصص التحول' : 'Success Stories'}
               </motion.button>
             </motion.nav>
-          ) : (
-            <div className="hidden items-center gap-2 md:flex">
-              <span className="rounded-xl bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900 dark:bg-amber-950/50 dark:text-amber-300">
-                {isAr ? 'القسم الحالي:' : 'Current View:'} {activeSection}
-              </span>
-              <button
-                type="button"
-                onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800"
-              >
-                <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                {isAr ? 'معاينة الموقع للزوار' : 'View Storefront'}
-              </button>
-            </div>
           )}
 
           {/* Right Action Controls: Lang, Theme & Login/Profile */}
@@ -604,6 +752,102 @@ function TitanFitEnterpriseShell() {
           </div>
         </div>
       </header>
+
+      {/* Mobile/Tablet Admin Quick Navigation Bar */}
+      {isAuthenticated && (activeRole === 'SUPER_ADMIN' || activeRole === 'GYM_OWNER') && (
+        <div className="sticky top-[65px] z-20 flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white/95 px-3 py-2 no-scrollbar backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 lg:hidden">
+          {activeRole === 'SUPER_ADMIN' && (
+            <button
+              type="button"
+              onClick={() => setActiveSection('SUPER_ADMIN')}
+              className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-black transition ${
+                activeSection === 'SUPER_ADMIN'
+                  ? 'bg-amber-500 text-slate-950 shadow-xs'
+                  : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+              }`}
+            >
+              👑 {isAr ? 'إدارة SaaS' : 'SaaS'}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setActiveSection('OVERVIEW')}
+            className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+              activeSection === 'OVERVIEW'
+                ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            📊 {isAr ? 'القيادة' : 'Overview'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection('MEMBERS')}
+            className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+              activeSection === 'MEMBERS' || activeSection === 'SUBSCRIPTIONS' || activeSection === 'PAYMENTS'
+                ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            👥 {isAr ? 'المشتركون' : 'Members'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection('CLASSES')}
+            className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+              activeSection === 'CLASSES' || activeSection === 'ACCESS_CONTROL'
+                ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            📅 {isAr ? 'الحصص' : 'Classes'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection('POS_INVENTORY')}
+            className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+              activeSection === 'POS_INVENTORY' || activeSection === 'REPORTS'
+                ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            💳 {isAr ? 'الـ POS' : 'POS'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection('MEMBER_PWA')}
+            className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+              activeSection === 'MEMBER_PWA'
+                ? 'bg-emerald-600 text-white shadow-xs font-black'
+                : 'bg-slate-100 text-emerald-800 dark:bg-slate-800 dark:text-emerald-300'
+            }`}
+          >
+            📱 {isAr ? 'تطبيق المتدرب' : 'Member App'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
+            className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+              activeSection === 'PUBLIC_STOREFRONT'
+                ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            🌐 {isAr ? 'موقع الزوار' : 'Storefront'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection('FREE_TRIAL_HUB')}
+            className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+              activeSection === 'FREE_TRIAL_HUB'
+                ? 'bg-emerald-600 text-white shadow-xs font-black'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            🎁 {isAr ? 'جرب مجاناً' : 'Free Trial'}
+          </button>
+        </div>
+      )}
 
       <div className="flex min-h-[calc(100vh-65px)]">
         {/* MODERN UPGRADED SIDEBAR — Shown inside ERP & Admin Views for Authenticated Admins and Gym Owners Only */}
