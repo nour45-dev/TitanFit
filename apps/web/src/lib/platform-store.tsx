@@ -198,6 +198,9 @@ export interface TenantSaaSItem {
   nameEn: string;
   nameAr: string;
   ownerEmail: string;
+  password?: string;
+  logoUrl?: string;
+  primaryColor?: string;
   planTier: 'STARTER' | 'PRO' | 'ENTERPRISE';
   status: 'ACTIVE' | 'TRIAL' | 'SUSPENDED';
   branchesCount: number;
@@ -871,6 +874,9 @@ const INITIAL_TENANTS: TenantSaaSItem[] = [
     nameEn: 'TitanFit Egypt (Flagship Group)',
     nameAr: 'مجموعة أندية تيتان فيت مصر',
     ownerEmail: 'owner@titanfit.eg',
+    password: 'owner123',
+    logoUrl: '/brand/logo.png',
+    primaryColor: '#D97706',
     planTier: 'ENTERPRISE',
     status: 'ACTIVE',
     branchesCount: 3,
@@ -881,31 +887,37 @@ const INITIAL_TENANTS: TenantSaaSItem[] = [
   },
   {
     id: 'ten-2',
-    slug: 'ironpulse-alex',
-    nameEn: 'IronPulse Athletics Alexandria',
-    nameAr: 'أيرون بالس أثليتكس الإسكندرية',
-    ownerEmail: 'ceo@ironpulse.eg',
+    slug: 'peak-fitness',
+    nameEn: 'Peak Fitness Cairo',
+    nameAr: 'بيك فيتنس القاهرة',
+    ownerEmail: 'coach.ahmed@peakfit.eg',
+    password: 'coach123',
+    logoUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=200&q=80',
+    primaryColor: '#059669',
     planTier: 'PRO',
     status: 'ACTIVE',
     branchesCount: 2,
     activeMembersCount: 1190,
     mrrEgp: 690000,
-    cityEn: 'Smouha & Kafr Abdo, Alexandria',
-    cityAr: 'سموحة وكفر عبده، الإسكندرية',
+    cityEn: 'New Cairo, Egypt',
+    cityAr: 'التجمع الخامس، القاهرة',
   },
   {
     id: 'ten-3',
-    slug: 'apex-riyadh',
-    nameEn: 'Apex Performance Club KSA',
-    nameAr: 'نادي أبيكس للأداء الرياضي - الرياض',
-    ownerEmail: 'admin@apexperformance.sa',
+    slug: 'oxygen-ladies',
+    nameEn: 'Oxygen Ladies Health & Fitness',
+    nameAr: 'أوكسجين ليديز كلوب',
+    ownerEmail: 'sara@oxygenfit.eg',
+    password: 'sara123',
+    logoUrl: 'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&w=200&q=80',
+    primaryColor: '#9333EA',
     planTier: 'ENTERPRISE',
     status: 'TRIAL',
-    branchesCount: 2,
+    branchesCount: 1,
     activeMembersCount: 940,
     mrrEgp: 1420000,
-    cityEn: 'Olaya, Riyadh',
-    cityAr: 'العليا، الرياض',
+    cityEn: 'Zayed, Giza',
+    cityAr: 'الشيخ زايد، الجيزة',
   },
 ];
 
@@ -971,6 +983,19 @@ export interface PlatformStoreContextValue {
   setBrandAccentHex: (hex: string) => void;
   toastMessage: string | null;
   showToast: (msg: string) => void;
+  // Auth & Multi-Tenant State
+  isAuthenticated: boolean;
+  currentUser: {
+    email: string;
+    name: string;
+    role: UserRoleKey;
+    tenantSlug?: string;
+    logoUrl?: string;
+    primaryColor?: string;
+  } | null;
+  activeTenantCustom: TenantSaaSItem | null;
+  login: (email: string, password?: string) => { success: boolean; role?: UserRoleKey; tenant?: TenantSaaSItem; message?: string };
+  logout: () => void;
   // Actions
   addMember: (data: {
     fullNameEn: string;
@@ -1021,7 +1046,17 @@ export interface PlatformStoreContextValue {
   ) => void;
   logWorkoutSet: (exerciseEn: string, exerciseAr: string, weightKg: number, reps: number, sets: number) => WorkoutLogEntry;
   sendChatMessage: (text: string, senderRole?: 'TRAINER' | 'MEMBER') => void;
-  addTenant: (nameEn: string, nameAr: string, ownerEmail: string, planTier: TenantSaaSItem['planTier'], cityEn: string) => void;
+  addTenant: (
+    nameEn: string,
+    nameAr: string,
+    ownerEmail: string,
+    planTier: TenantSaaSItem['planTier'],
+    cityEn: string,
+    password?: string,
+    logoUrl?: string,
+    primaryColor?: string,
+    slugCustom?: string,
+  ) => TenantSaaSItem;
   toggleTenantStatus: (tenantId: string) => void;
 }
 
@@ -1054,6 +1089,102 @@ export function PlatformProvider({
   const [impersonatedTenant, setImpersonatedTenantState] = useState<string | null>(null);
   const [brandAccentHex, setBrandAccentHex] = useState<string>('#D4AF37');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Authentication & Custom Tenant Branding State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<{
+    email: string;
+    name: string;
+    role: UserRoleKey;
+    tenantSlug?: string;
+    logoUrl?: string;
+    primaryColor?: string;
+  } | null>(null);
+
+  const activeTenantCustom =
+    tenants.find((t) => t.slug === (currentUser?.tenantSlug || impersonatedTenant)) ?? null;
+
+  const login: PlatformStoreContextValue['login'] = (email, password) => {
+    const trimmed = email.trim().toLowerCase();
+
+    // 1. Check Super Admin
+    if (trimmed.includes('admin') || trimmed === 'platform@titanfit.io') {
+      const user = {
+        email: trimmed,
+        name: locale === 'ar' ? 'كابتن نور الدين (مالك المنصة)' : 'Nour El-Din (Super Admin)',
+        role: 'SUPER_ADMIN' as UserRoleKey,
+        logoUrl: '/brand/logo.png',
+        primaryColor: '#D97706',
+      };
+      setIsAuthenticated(true);
+      setCurrentUser(user);
+      setActiveRole('SUPER_ADMIN');
+      setActiveSection('SUPER_ADMIN');
+      setBrandAccentHex('#D97706');
+      appendAudit('SUPER_ADMIN_LOGIN', 'Full SaaS Control Plane access granted');
+      showToast(
+        locale === 'ar'
+          ? 'مرحباً بك يا كابتن نور! تم فتح لوحة تحكم الـ SaaS بالكامل'
+          : 'Welcome Super Admin! Opened SaaS Control Plane',
+      );
+      return { success: true, role: 'SUPER_ADMIN' };
+    }
+
+    // 2. Check if registered Tenant Gym Owner
+    const tenantMatch = tenants.find(
+      (t) => t.ownerEmail.toLowerCase() === trimmed || t.slug.toLowerCase() === trimmed,
+    );
+
+    if (tenantMatch) {
+      const user = {
+        email: tenantMatch.ownerEmail,
+        name: locale === 'ar' ? tenantMatch.nameAr : tenantMatch.nameEn,
+        role: 'GYM_OWNER' as UserRoleKey,
+        tenantSlug: tenantMatch.slug,
+        logoUrl: tenantMatch.logoUrl || '/brand/logo.png',
+        primaryColor: tenantMatch.primaryColor || '#059669',
+      };
+      setIsAuthenticated(true);
+      setCurrentUser(user);
+      setActiveRole('GYM_OWNER');
+      setActiveSection('OVERVIEW');
+      if (tenantMatch.primaryColor) setBrandAccentHex(tenantMatch.primaryColor);
+      appendAudit('TENANT_OWNER_LOGIN', `Tenant logged in: ${tenantMatch.slug}`);
+      showToast(
+        locale === 'ar'
+          ? `مرحباً بك في لوحة تحكم نادي "${tenantMatch.nameAr}"!`
+          : `Welcome to ${tenantMatch.nameEn} Dashboard!`,
+      );
+      return { success: true, role: 'GYM_OWNER', tenant: tenantMatch };
+    }
+
+    // 3. Fallback Member
+    const memberUser = {
+      email: trimmed,
+      name: locale === 'ar' ? 'متدرب في النادي' : 'Club Member',
+      role: 'MEMBER' as UserRoleKey,
+    };
+    setIsAuthenticated(true);
+    setCurrentUser(memberUser);
+    setActiveRole('MEMBER');
+    setActiveSection('MEMBER_PWA');
+    showToast(locale === 'ar' ? 'تم تسجيل الدخول لتطبيق المتدرب!' : 'Logged in to Member App!');
+    return { success: true, role: 'MEMBER' };
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    setImpersonatedTenantState(null);
+    setActiveSection('PUBLIC_STOREFRONT');
+    setActiveRole('GYM_OWNER');
+    setBrandAccentHex('#D4AF37');
+    showToast(
+      locale === 'ar'
+        ? 'تم تسجيل الخروج بنجاح والعودة للموقع الرئيسي'
+        : 'Logged out successfully',
+    );
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -1561,29 +1692,37 @@ export function PlatformProvider({
     ownerEmail,
     planTier,
     cityEn,
+    password,
+    logoUrl,
+    primaryColor,
+    slugCustom,
   ) => {
-    const slug = nameEn.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const slug = slugCustom || nameEn.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const newTen: TenantSaaSItem = {
       id: `ten-${Date.now()}`,
       slug,
       nameEn,
       nameAr: nameAr || nameEn,
       ownerEmail,
+      password: password || 'pass123',
+      logoUrl: logoUrl || '/brand/logo.png',
+      primaryColor: primaryColor || '#059669',
       planTier,
       status: 'ACTIVE',
       branchesCount: 1,
-      activeMembersCount: 50,
+      activeMembersCount: 25,
       mrrEgp: planTier === 'ENTERPRISE' ? 950000 : planTier === 'PRO' ? 420000 : 150000,
-      cityEn,
-      cityAr: cityEn,
+      cityEn: cityEn || 'Cairo, Egypt',
+      cityAr: cityEn || 'القاهرة، مصر',
     };
     setTenants((prev) => [newTen, ...prev]);
-    appendAudit('SAAS_TENANT_PROVISIONED', `${slug} (${planTier})`);
+    appendAudit('SAAS_TENANT_PROVISIONED', `${slug} (${planTier}) with custom branding`);
     showToast(
       locale === 'ar'
-        ? `تم إنشاء وتفعيل المستأجر الجديد "${newTen.nameAr}" بعزل RLS مستقل`
-        : `Provisioned new gym tenant "${newTen.nameEn}" with isolated RLS policies`,
+        ? `🎉 تم إنشاء حساب النادي "${newTen.nameAr}" بنجاح! كلمة المرور: ${newTen.password}`
+        : `🎉 Created tenant "${newTen.nameEn}"! Password: ${newTen.password}`,
     );
+    return newTen;
   };
 
   const toggleTenantStatus = (tenantId: string) => {
@@ -1628,6 +1767,11 @@ export function PlatformProvider({
         setBrandAccentHex,
         toastMessage,
         showToast,
+        isAuthenticated,
+        currentUser,
+        activeTenantCustom,
+        login,
+        logout,
         addMember,
         toggleMemberFreeze,
         createInvoicePayment,

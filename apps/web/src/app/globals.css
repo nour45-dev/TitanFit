@@ -3,16 +3,15 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 :root {
-  --gymos-primary: #D4AF37;
-  --gymos-accent: #10B981;
+  --gymos-primary: #D97706;
+  --gymos-accent: #059669;
   --gymos-radius: 1rem;
 }
 
 html,
 body {
-  background-color: #FFFFFF;
-  color: #0F172A;
   scroll-behavior: smooth;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 html[dir="rtl"] body {
@@ -23,70 +22,102 @@ html[dir="ltr"] body {
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
-/* Pure White Daylight (Light Mode Default) Styling across all views */
-[data-theme="light"] {
+/* =========================================================
+   LIGHT MODE PALETTE (Pure White, Crisp Slate, Warm Gold)
+   ========================================================= */
+[data-theme="light"],
+[data-theme="light"] body {
   background-color: #FFFFFF !important;
   color: #0F172A !important;
 }
 
-[data-theme="light"] aside {
+[data-theme="light"] header.theme-header {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+[data-theme="light"] aside.theme-sidebar {
   background-color: #FFFFFF !important;
   border-color: #E2E8F0 !important;
   color: #0F172A !important;
-  box-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
 }
 
-[data-theme="light"] header {
-  background-color: rgba(255, 255, 255, 0.96) !important;
-  border-color: #E2E8F0 !important;
-  color: #0F172A !important;
-}
-
-[data-theme="light"] .bg-\[\#121623\],
-[data-theme="light"] .bg-\[\#0D111D\],
-[data-theme="light"] .bg-\[\#141929\],
-[data-theme="light"] .bg-\[\#090C15\] {
+[data-theme="light"] .theme-card {
   background-color: #FFFFFF !important;
   border-color: #E2E8F0 !important;
   color: #0F172A !important;
-  box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.05);
 }
 
-[data-theme="light"] .bg-slate-950,
-[data-theme="light"] .bg-slate-900,
-[data-theme="light"] .bg-slate-900\/60,
-[data-theme="light"] .bg-slate-900\/70,
-[data-theme="light"] .bg-slate-900\/80,
-[data-theme="light"] .bg-slate-900\/90,
-[data-theme="light"] .bg-slate-800,
-[data-theme="light"] .bg-slate-800\/70,
-[data-theme="light"] .bg-slate-800\/80 {
+[data-theme="light"] .theme-surface {
   background-color: #F8FAFC !important;
   border-color: #E2E8F0 !important;
   color: #0F172A !important;
 }
 
-[data-theme="light"] .text-white {
+[data-theme="light"] .theme-input {
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
   color: #0F172A !important;
 }
 
-[data-theme="light"] .text-slate-200,
-[data-theme="light"] .text-slate-300 {
-  color: #334155 !important;
+/* =========================================================
+   DARK MODE PALETTE (Obsidian Slate, Midnight Blue, Luxury Gold)
+   ========================================================= */
+[data-theme="dark"],
+[data-theme="dark"] body {
+  background-color: #090D16 !important;
+  color: #F8FAFC !important;
 }
 
-[data-theme="light"] .text-slate-400 {
-  color: #64748B !important;
+[data-theme="dark"] header.theme-header {
+  background-color: rgba(11, 15, 25, 0.95) !important;
+  border-color: #1E293B !important;
+  color: #F8FAFC !important;
 }
 
-[data-theme="light"] .text-\[\#F3E5AB\] {
-  color: #92400E !important;
+[data-theme="dark"] aside.theme-sidebar {
+  background-color: #0D121F !important;
+  border-color: #1E293B !important;
+  color: #E2E8F0 !important;
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.4);
 }
 
-[data-theme="light"] .border-slate-800,
-[data-theme="light"] .border-slate-800\/80,
-[data-theme="light"] .border-slate-700,
-[data-theme="light"] .border-slate-700\/70,
-[data-theme="light"] .border-slate-700\/80 {
-  border-color: #E2E8F0 !important;
+[data-theme="dark"] .theme-card {
+  background-color: #111726 !important;
+  border-color: #1E293B !important;
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .theme-surface {
+  background-color: #0B0F19 !important;
+  border-color: #1E293B !important;
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .theme-input {
+  background-color: #0D121F !important;
+  border-color: #334155 !important;
+  color: #FFFFFF !important;
+}
+
+/* Responsive video embed wrapper */
+.video-responsive-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  overflow: hidden;
+  border-radius: 1rem;
+}
+
+.video-responsive-container iframe,
+.video-responsive-container video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }

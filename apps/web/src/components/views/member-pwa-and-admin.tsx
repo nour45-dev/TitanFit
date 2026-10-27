@@ -6,6 +6,7 @@ import {
   Award,
   Building2,
   CheckCircle2,
+  Copy,
   Download,
   Droplets,
   Dumbbell,
@@ -636,23 +637,59 @@ export function SuperAdminConsoleView() {
     setImpersonatedTenant,
     addTenant,
     toggleTenantStatus,
+    login,
+    showToast,
   } = usePlatformStore();
   const isAr = locale === 'ar';
 
   const [showAddTenant, setShowAddTenant] = useState(false);
-  const [nameEn, setNameEn] = useState('');
+  const [createdTenantCredentials, setCreatedTenantCredentials] = useState<TenantSaaSItem | null>(null);
+
+  // Form states
   const [nameAr, setNameAr] = useState('');
+  const [nameEn, setNameEn] = useState('');
+  const [slug, setSlug] = useState('');
   const [ownerEmail, setOwnerEmail] = useState('');
-  const [planTier, setPlanTier] = useState<TenantSaaSItem['planTier']>('ENTERPRISE');
-  const [cityEn, setCityEn] = useState('Cairo, Egypt');
+  const [password, setPassword] = useState('pass123');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [primaryColor, setPrimaryColor] = useState('#059669');
+  const [planTier, setPlanTier] = useState<TenantSaaSItem['planTier']>('PRO');
+  const [cityEn, setCityEn] = useState('New Cairo, Egypt');
 
   const handleCreateTenant = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nameEn.trim() && !nameAr.trim()) return;
-    addTenant(nameEn || nameAr, nameAr || nameEn, ownerEmail || 'owner@gym.eg', planTier, cityEn);
-    setNameEn('');
-    setNameAr('');
+    const finalSlug = slug.trim() || (nameEn || nameAr).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const finalLogo = logoUrl.trim() || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=200&q=80';
+    const finalEmail = ownerEmail.trim() || `owner@${finalSlug}.eg`;
+
+    const newTenant = addTenant(
+      nameEn || nameAr,
+      nameAr || nameEn,
+      finalEmail,
+      planTier,
+      cityEn,
+      password,
+      finalLogo,
+      primaryColor,
+      finalSlug,
+    );
+
+    setCreatedTenantCredentials(newTenant);
     setShowAddTenant(false);
+    setNameAr('');
+    setNameEn('');
+    setSlug('');
+    setOwnerEmail('');
+    setLogoUrl('');
+  };
+
+  const copyCredentials = (ten: TenantSaaSItem) => {
+    const text = `🎉 بيانات تفعيل منصتك الخاصة (${ten.nameAr}):\n🌐 الرابط: https://titanfit.app/${ten.slug}\n📧 اسم المستخدم / الإيميل: ${ten.ownerEmail}\n🔑 كلمة المرور: ${ten.password || 'pass123'}\n🚀 يمكنك تسجيل الدخول الآن وإدارة ناديك ومتدربيك بالكامل!`;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text).catch(() => {});
+    }
+    showToast(isAr ? 'تم نسخ بيانات الاعتماد لمشاركتها مع العميل!' : 'Copied credentials to clipboard!');
   };
 
   return (
@@ -660,7 +697,7 @@ export function SuperAdminConsoleView() {
       {impersonatedTenant && (
         <div
           data-testid="impersonation-banner"
-          className="flex items-center justify-between rounded-2xl border border-amber-500/60 bg-amber-500/15 px-6 py-4 text-xs font-extrabold text-amber-200"
+          className="flex items-center justify-between rounded-2xl border border-amber-500/60 bg-amber-500/15 px-6 py-4 text-xs font-extrabold text-amber-900 dark:text-amber-200"
         >
           <span>
             🛡️ AUDITED IMPERSONATION ACTIVE — Viewing tenant &quot;{impersonatedTenant}&quot; (Logged in
@@ -669,106 +706,176 @@ export function SuperAdminConsoleView() {
           <button
             type="button"
             onClick={() => setImpersonatedTenant(null)}
-            className="rounded-lg bg-amber-400 px-3 py-1 text-slate-950"
+            className="rounded-lg bg-amber-500 px-3 py-1 font-black text-slate-950"
           >
             {isAr ? 'إنهاء جلسة الدعم' : 'Exit Impersonation'}
           </button>
         </div>
       )}
 
-      <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-800/80 bg-[#121623] p-6 sm:flex-row sm:items-center">
+      {/* Created Tenant Success Card Alert */}
+      {createdTenantCredentials && (
+        <div className="theme-card relative overflow-hidden rounded-3xl border-2 border-emerald-500 bg-emerald-500/10 p-6 shadow-lg">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <img
+                src={createdTenantCredentials.logoUrl}
+                alt={createdTenantCredentials.nameAr}
+                className="h-16 w-16 rounded-2xl border-2 border-emerald-500 object-cover bg-white"
+              />
+              <div>
+                <span className="rounded-md bg-emerald-600 px-2 py-0.5 text-[10px] font-extrabold text-white">
+                  {isAr ? 'تم تفعيل العميل الجديد بنجاح' : 'TENANT ONBOARDED'}
+                </span>
+                <h3 className="mt-1 text-lg font-black text-slate-900 dark:text-white">
+                  {isAr ? createdTenantCredentials.nameAr : createdTenantCredentials.nameEn}
+                </h3>
+                <p className="font-mono text-xs text-slate-600 dark:text-slate-300">
+                  {isAr ? 'الرابط: ' : 'URL: '} https://titanfit.app/{createdTenantCredentials.slug} •{' '}
+                  {createdTenantCredentials.ownerEmail} • 🔑 {createdTenantCredentials.password}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => copyCredentials(createdTenantCredentials)}
+                className="rounded-xl border border-emerald-600 bg-emerald-600 px-4 py-2 text-xs font-black text-white hover:bg-emerald-700"
+              >
+                {isAr ? '📋 نسخ بيانات الدخول للواتساب' : 'Copy Credentials'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  login(createdTenantCredentials.ownerEmail, createdTenantCredentials.password);
+                  setCreatedTenantCredentials(null);
+                }}
+                className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-black text-white hover:bg-slate-800 dark:bg-slate-800"
+              >
+                {isAr ? '🚀 تسجيل الدخول الآن بحسابه' : 'Login as this Tenant'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setCreatedTenantCredentials(null)}
+                className="rounded-xl border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="theme-card flex flex-col justify-between gap-4 rounded-3xl border border-slate-200 bg-white p-6 sm:flex-row sm:items-center dark:border-slate-800 dark:bg-slate-900">
         <div>
-          <h1 className="text-xl font-extrabold text-white">
+          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
             {isAr
               ? 'لوحة مالك المنصة (Super Admin SaaS Multi-Tenant Control Plane)'
               : 'Super Admin SaaS Control Plane & Immutable Audit Explorer'}
           </h1>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             {isAr
-              ? 'إدارة الأندية المشتركة في المنصة، باقات SaaS، عزل PostgreSQL RLS، وسجل التدقيق غير القابل للتعديل'
-              : 'Manage gym tenants, SaaS tiers, PostgreSQL FORCE RLS isolation, and append-only audit logs'}
+              ? 'إضافة عملاء جدد (White-Label)، تعيين الشعارات وكلمات المرور، وإدارة الاشتراكات'
+              : 'Onboard gym/coach tenants, assign custom logos & passwords, and manage SaaS tiers'}
           </p>
         </div>
         <button
           type="button"
           onClick={() => setShowAddTenant(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#D4AF37] px-4 py-2.5 text-xs font-extrabold text-slate-950"
+          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 px-5 py-3 text-xs font-black text-slate-950 shadow-md transition hover:scale-[1.02]"
         >
           <Plus className="h-4 w-4" />
-          {isAr ? '+ إضافة نادي / مستأجر جديد' : '+ Onboard New Gym Tenant'}
+          {isAr ? '+ إضافة نادي / مستأجر جديد (White-Label)' : '+ Onboard New Gym Tenant'}
         </button>
       </div>
 
       {/* Tenants Grid */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         {tenants.map((ten, idx) => (
           <div
             key={ten.id}
-            className="flex flex-col justify-between rounded-2xl border border-slate-800/80 bg-[#121623] p-6"
+            className="theme-card flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
           >
             <div>
               <div className="flex items-center justify-between">
-                <span className="rounded-lg bg-[#D4AF37]/15 px-2.5 py-0.5 font-mono text-xs font-extrabold text-[#D4AF37]">
+                <span className="rounded-lg bg-amber-500/15 px-2.5 py-0.5 font-mono text-xs font-extrabold text-amber-700 dark:text-amber-400">
                   {ten.planTier}
                 </span>
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-xs font-extrabold ${
                     ten.status === 'ACTIVE'
-                      ? 'bg-emerald-500/15 text-emerald-300'
+                      ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                       : ten.status === 'TRIAL'
-                        ? 'bg-sky-500/15 text-sky-300'
-                        : 'bg-rose-500/15 text-rose-300'
+                        ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400'
+                        : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
                   }`}
                 >
                   {ten.status}
                 </span>
               </div>
-              <h3 className="mt-3 text-base font-extrabold text-white">
-                {isAr ? ten.nameAr : ten.nameEn}
-              </h3>
-              <p className="font-mono text-xs text-slate-400">
-                {ten.slug} • {ten.ownerEmail}
-              </p>
 
-              <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-800 pt-3 text-xs">
+              <div className="mt-4 flex items-center gap-3">
+                {ten.logoUrl ? (
+                  <img
+                    src={ten.logoUrl}
+                    alt={ten.nameAr}
+                    className="h-12 w-12 rounded-xl object-cover border border-slate-200 bg-white"
+                  />
+                ) : (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-amber-400 font-black">
+                    TF
+                  </div>
+                )}
+                <div>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">
+                    {isAr ? ten.nameAr : ten.nameEn}
+                  </h3>
+                  <p className="font-mono text-xs text-slate-500 dark:text-slate-400">
+                    /{ten.slug} • {ten.cityAr || ten.cityEn}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3 rounded-xl border border-slate-100 bg-slate-50 p-2.5 font-mono text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300">
+                <p>📧 {ten.ownerEmail}</p>
+                <p className="mt-1">🔑 {ten.password || 'pass123'}</p>
+              </div>
+
+              <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
                 <div>
                   <span className="text-slate-400">{isAr ? 'الفروع' : 'Branches'}</span>
-                  <p className="font-extrabold text-white">{ten.branchesCount}</p>
+                  <p className="font-extrabold text-slate-900 dark:text-white">{ten.branchesCount}</p>
                 </div>
                 <div>
                   <span className="text-slate-400">{isAr ? 'الأعضاء' : 'Members'}</span>
-                  <p className="font-extrabold text-white">{ten.activeMembersCount}</p>
+                  <p className="font-extrabold text-slate-900 dark:text-white">{ten.activeMembersCount}</p>
                 </div>
                 <div>
                   <span className="text-slate-400">MRR</span>
-                  <p className="font-mono font-extrabold text-[#D4AF37]">
+                  <p className="font-mono font-extrabold text-amber-600 dark:text-amber-400">
                     {(ten.mrrEgp / 1000).toFixed(0)}k EGP
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 flex gap-2 border-t border-slate-800 pt-4">
+            <div className="mt-5 flex gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
               <button
                 type="button"
                 data-testid={idx === 0 ? 'impersonate-btn-titanfit-cairo' : undefined}
                 onClick={() => setImpersonatedTenant(ten.slug)}
-                className="flex-1 rounded-xl bg-[#D4AF37] py-2 text-xs font-extrabold text-slate-950"
+                className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 py-2.5 text-xs font-black text-slate-950 shadow-xs"
               >
                 {isAr ? 'دخول دعم مسجل (Impersonate)' : 'Audited Impersonate'}
               </button>
               <button
                 type="button"
-                onClick={() => toggleTenantStatus(ten.id)}
-                className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-bold text-slate-200"
+                onClick={() => copyCredentials(ten)}
+                title={isAr ? 'نسخ بيانات الدخول' : 'Copy Credentials'}
+                className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
               >
-                {ten.status === 'SUSPENDED'
-                  ? isAr
-                    ? 'تفعيل'
-                    : 'Activate'
-                  : isAr
-                    ? 'إيقاف مؤقت'
-                    : 'Suspend'}
+                <Copy className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -776,27 +883,27 @@ export function SuperAdminConsoleView() {
       </div>
 
       {/* Immutable Audit Logs Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-800/80 bg-[#121623]">
-        <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+      <div className="theme-card overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
           <div>
-            <h3 className="text-base font-extrabold text-white">
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
               {isAr
                 ? 'سجل التدقيق الأمني غير القابل للتعديل (Append-Only Audit Log)'
                 : 'Append-Only Security Audit Log (trg_audit_logs_immutable)'}
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {isAr
                 ? 'محمي بواسطة Trigger في PostgreSQL يمنع أي عملية UPDATE أو DELETE'
                 : 'Protected by PostgreSQL BEFORE UPDATE OR DELETE trigger'}
             </p>
           </div>
-          <span className="rounded-lg bg-emerald-500/15 px-3 py-1 font-mono text-xs font-bold text-emerald-300">
+          <span className="rounded-lg bg-emerald-500/15 px-3 py-1 font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
             FORCE RLS + IMMUTABLE
           </span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-start text-sm">
-            <thead className="border-b border-slate-800 bg-slate-900/80 text-xs uppercase text-slate-400">
+          <table className="w-full text-start text-xs">
+            <thead className="border-b border-slate-100 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
               <tr>
                 <th className="px-4 py-3 text-start">{isAr ? 'التوقيت' : 'Timestamp'}</th>
                 <th className="px-4 py-3 text-start">{isAr ? 'المستخدم والدور' : 'Actor / Role'}</th>
@@ -805,21 +912,21 @@ export function SuperAdminConsoleView() {
                 <th className="px-4 py-3 text-start">IP</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-100 text-slate-700 dark:divide-slate-800 dark:text-slate-300">
               {auditLogs.map((aud) => (
-                <tr key={aud.id} className="hover:bg-slate-900/40">
-                  <td className="px-4 py-3 font-mono text-xs text-slate-400">{aud.timestamp}</td>
-                  <td className="px-4 py-3 text-xs">
-                    <span className="font-bold text-white">{aud.actorEmail}</span>{' '}
-                    <span className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] text-[#D4AF37]">
+                <tr key={aud.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <td className="px-4 py-3 font-mono">{aud.timestamp}</td>
+                  <td className="px-4 py-3">
+                    <span className="font-bold text-slate-900 dark:text-white">{aud.actorEmail}</span>{' '}
+                    <span className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] text-slate-800 dark:bg-slate-800 dark:text-amber-400">
                       {aud.actorRole}
                     </span>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs font-bold text-emerald-300">
+                  <td className="px-4 py-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">
                     {aud.action}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-300">{aud.target}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-400">{aud.ipAddress}</td>
+                  <td className="px-4 py-3">{aud.target}</td>
+                  <td className="px-4 py-3 font-mono">{aud.ipAddress}</td>
                 </tr>
               ))}
             </tbody>
@@ -827,55 +934,178 @@ export function SuperAdminConsoleView() {
         </div>
       </div>
 
-      {/* Add Tenant Modal */}
+      {/* Add Tenant Modal with White-Label Logo & Password */}
       {showAddTenant && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-[#121623] p-6 text-white">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-extrabold">
-                {isAr ? 'إضافة نادي / مستأجر جديد للمنصة' : 'Provision New Gym Tenant'}
-              </h3>
-              <button type="button" onClick={() => setShowAddTenant(false)}>
-                <X className="h-5 w-5 text-slate-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="theme-card w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
+              <div>
+                <h3 className="text-base font-black text-slate-900 dark:text-white">
+                  {isAr ? 'إضافة نادي / كوتش جديد للمنصة (White-Label SaaS)' : 'Onboard New Gym / Coach Tenant'}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  {isAr ? 'إنشاء مساحة معزولة بهوية بصرية وشعار وبيانات دخول خاصة' : 'Provision isolated space with custom branding'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddTenant(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="h-5 w-5" />
               </button>
             </div>
-            <form onSubmit={handleCreateTenant} className="mt-4 space-y-3">
-              <input
-                type="text"
-                required
-                placeholder={isAr ? 'اسم النادي بالعربية' : 'Gym Name (Arabic)'}
-                value={nameAr}
-                onChange={(e) => setNameAr(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
-              />
-              <input
-                type="text"
-                required
-                placeholder="Gym Name (English, e.g. Gold's Elite Heliopolis)"
-                value={nameEn}
-                onChange={(e) => setNameEn(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
-              />
-              <input
-                type="email"
-                placeholder="Owner Email (owner@gym.eg)"
-                value={ownerEmail}
-                onChange={(e) => setOwnerEmail(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
-              />
-              <div className="flex justify-end gap-2 pt-2">
+
+            <form onSubmit={handleCreateTenant} className="mt-4 space-y-3.5 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'اسم النادي / الكوتش (بالعربية)' : 'Gym Name (Arabic)'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder={isAr ? 'مثال: باور جيم المعادي' : 'Power Gym Maadi'}
+                    value={nameAr}
+                    onChange={(e) => {
+                      setNameAr(e.target.value);
+                      if (!slug) setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+                    }}
+                    className="theme-input mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'اسم النادي (بالإنجليزية)' : 'Gym Name (English)'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Power Gym"
+                    value={nameEn}
+                    onChange={(e) => {
+                      setNameEn(e.target.value);
+                      if (!slug) setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+                    }}
+                    className="theme-input mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'الرابط المخصص (Slug)' : 'Tenant Slug'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. power-gym"
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                    className="theme-input mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 font-mono text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'الباقة (SaaS Tier)' : 'Subscription Tier'}
+                  </label>
+                  <select
+                    value={planTier}
+                    onChange={(e) => setPlanTier(e.target.value as typeof planTier)}
+                    className="theme-input mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                    <option value="STARTER">{isAr ? 'STARTER (مدرب فردي)' : 'STARTER (Coach)'}</option>
+                    <option value="PRO">{isAr ? 'PRO (نادي متوسط)' : 'PRO (Medium Gym)'}</option>
+                    <option value="ENTERPRISE">{isAr ? 'ENTERPRISE (سلسلة أندية)' : 'ENTERPRISE (Multi-Branch)'}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'اسم المستخدم / الإيميل للمالك' : 'Owner Email / Username'}
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="owner@gym.eg"
+                    value={ownerEmail}
+                    onChange={(e) => setOwnerEmail(e.target.value)}
+                    className="theme-input mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'كلمة المرور الخاصة به' : 'Owner Password'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. gym2026"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="theme-input mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 font-mono text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'رابط شعار النادي (Logo URL)' : 'Custom Gym Logo URL'}
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://example.com/logo.png"
+                  value={logoUrl}
+                  onChange={(e) => setLogoUrl(e.target.value)}
+                  className="theme-input mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'لون الهوية البصرية الرئيسية' : 'Brand Primary Color'}
+                </label>
+                <div className="mt-1.5 flex gap-2">
+                  {[
+                    { name: 'Gold', hex: '#D97706' },
+                    { name: 'Emerald', hex: '#059669' },
+                    { name: 'Blue', hex: '#2563EB' },
+                    { name: 'Purple', hex: '#7C3AED' },
+                    { name: 'Crimson', hex: '#E11D48' },
+                  ].map((c) => (
+                    <button
+                      key={c.hex}
+                      type="button"
+                      onClick={() => setPrimaryColor(c.hex)}
+                      className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 font-bold ${
+                        primaryColor === c.hex
+                          ? 'border-slate-900 bg-slate-100 dark:border-white dark:bg-slate-800'
+                          : 'border-slate-200'
+                      }`}
+                    >
+                      <span className="h-3 w-3 rounded-full" style={{ backgroundColor: c.hex }} />
+                      <span>{c.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setShowAddTenant(false)}
-                  className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-bold"
+                  className="rounded-xl border border-slate-300 px-4 py-2.5 text-xs font-bold text-slate-700 dark:border-slate-700 dark:text-slate-300"
                 >
                   {isAr ? 'إلغاء' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-[#D4AF37] px-4 py-2 text-xs font-extrabold text-slate-950"
+                  className="rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-2.5 text-xs font-black text-slate-950 shadow-md"
                 >
-                  {isAr ? 'إنشاء وتفعيل العزل' : 'Provision Tenant'}
+                  {isAr ? 'إنشاء العميل وإصدار بيانات الدخول' : 'Create Tenant & Credentials'}
                 </button>
               </div>
             </form>
@@ -885,3 +1115,4 @@ export function SuperAdminConsoleView() {
     </div>
   );
 }
+
