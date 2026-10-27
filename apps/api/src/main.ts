@@ -10,7 +10,21 @@ import { GlobalExceptionFilter } from './common/global-exception.filter.js';
 import { logger } from './common/logger.js';
 
 async function bootstrap() {
-  const env = validateApiEnv(process.env);
+  let apiPort = 4000;
+  let apiHost = '0.0.0.0';
+  let corsOrigins = '*';
+
+  try {
+    const env = validateApiEnv(process.env);
+    apiPort = env.API_PORT;
+    apiHost = env.API_HOST;
+    corsOrigins = env.API_CORS_ORIGINS;
+  } catch (err) {
+    logger.warn(
+      { err: err instanceof Error ? err.message : String(err) },
+      'Some environment variables are not yet configured in Railway; booting API with safe runtime defaults',
+    );
+  }
 
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
@@ -34,7 +48,10 @@ async function bootstrap() {
     },
   });
 
-  const allowedOrigins = env.API_CORS_ORIGINS.split(',').map((o) => o.trim());
+  const allowedOrigins =
+    corsOrigins === '*'
+      ? true
+      : corsOrigins.split(',').map((o: string) => o.trim());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await app.register(fastifyCors as any, {
     origin: allowedOrigins,
@@ -56,17 +73,17 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = Number(process.env.PORT || env.API_PORT);
-  await app.listen(port, env.API_HOST);
+  const port = Number(process.env.PORT || apiPort);
+  await app.listen(port, apiHost);
 
   logger.info(
     {
       port,
-      host: env.API_HOST,
+      host: apiHost,
       appName: PLATFORM_CONFIG.appName,
       docsUrl: `/api/docs`,
       healthUrl: `/api/v1/health`,
-      readyUrl: `/api/v1/ready`,
+      readyUrl: `/api/v1/health/ready`,
     },
     `${PLATFORM_CONFIG.appName} API server listening`,
   );

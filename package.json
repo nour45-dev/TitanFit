@@ -9,6 +9,7 @@
     "pnpm": ">=9.0.0"
   },
   "scripts": {
+    "postinstall": "pnpm --filter @gymos/config build && pnpm --filter @gymos/contracts build && pnpm --filter @gymos/database build && pnpm --filter @gymos/ui build",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
