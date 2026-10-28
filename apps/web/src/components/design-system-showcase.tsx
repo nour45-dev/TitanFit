@@ -356,10 +356,10 @@ function TitanFitEnterpriseShell() {
       </AnimatePresence>
 
       {/* TOP HEADER: Dynamic Clean Storefront for Visitors vs Sleek Management Bar for Logged-In Admins */}
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 px-4 py-3 shadow-xs backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 lg:px-8">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+      <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 px-3 py-2.5 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 sm:px-6 sm:py-3">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 sm:gap-4">
           {/* Brand Logo & Name */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {isAuthenticated && activeRole !== 'MEMBER' && (
               <button
                 type="button"
@@ -374,9 +374,9 @@ function TitanFitEnterpriseShell() {
             <button
               type="button"
               onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
-              className="flex items-center gap-3 text-start"
+              className="flex items-center gap-2.5 text-start sm:gap-3"
             >
-              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-amber-400/80 bg-slate-950 shadow-xs">
+              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-amber-400/40 bg-slate-950 shadow-2xs sm:h-10 sm:w-10">
                 <img
                   src={brandDisplayLogo}
                   alt={brandDisplayName}
@@ -388,24 +388,24 @@ function TitanFitEnterpriseShell() {
                 <div className="flex items-center gap-2">
                   <span
                     data-testid="brand-app-name"
-                    className="text-lg font-black tracking-tight text-slate-900 dark:text-white"
+                    className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white"
                   >
                     {activeTenantCustom ? brandDisplayName : PLATFORM_CONFIG.appName}
                   </span>
                   {activeTenantCustom ? (
                     <span
                       style={{ backgroundColor: `${activeTenantCustom.primaryColor || '#D97706'}20`, color: activeTenantCustom.primaryColor || '#D97706' }}
-                      className="rounded-md px-1.5 py-0.5 font-mono text-[10px] font-black uppercase"
+                      className="hidden sm:inline-flex rounded-md px-1.5 py-0.5 font-mono text-[10px] font-black uppercase"
                     >
                       {activeTenantCustom.planTier}
                     </span>
                   ) : (
-                    <span className="rounded-md bg-amber-100 px-1.5 py-0.5 font-mono text-[10px] font-extrabold text-amber-800 dark:bg-amber-950/60 dark:text-amber-400">
+                    <span className="hidden sm:inline-flex rounded-md bg-amber-100 px-1.5 py-0.5 font-mono text-[10px] font-extrabold text-amber-800 dark:bg-amber-950/60 dark:text-amber-400">
                       SaaS & Coaching
                     </span>
                   )}
                 </div>
-                <p className="hidden text-[11px] font-medium text-slate-500 dark:text-slate-400 sm:block">
+                <p className="hidden text-[11px] font-medium text-slate-500 dark:text-slate-400 lg:block">
                   {isAr
                     ? 'منصة إدارة الأندية الرياضية والتغذية والتدريب الأونلاين'
                     : 'Smart Gym Management & Online Coaching Platform'}
@@ -659,16 +659,17 @@ function TitanFitEnterpriseShell() {
           )}
 
           {/* Right Action Controls: Lang, Theme & Login/Profile */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Language Toggle */}
             <button
               type="button"
               data-testid="locale-toggle-btn"
               onClick={() => setLocale(locale === 'en' ? 'ar' : 'en')}
-              className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 transition hover:border-amber-500 hover:bg-amber-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="inline-flex min-h-[34px] sm:min-h-[38px] items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-2 sm:px-3 py-1.5 text-xs font-bold text-slate-800 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 shrink-0"
             >
-              <Globe className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              <span>{locale === 'en' ? 'العربية' : 'EN'}</span>
+              <Globe className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+              <span className="hidden sm:inline">{locale === 'en' ? 'العربية' : 'EN'}</span>
+              <span className="sm:hidden font-mono uppercase text-[11px]">{locale === 'en' ? 'AR' : 'EN'}</span>
             </button>
 
             {/* Dark / Light Mode Toggle */}
@@ -676,16 +677,16 @@ function TitanFitEnterpriseShell() {
               type="button"
               data-testid="theme-toggle-btn"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:border-amber-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+              className="inline-flex min-h-[34px] w-9 sm:w-auto sm:min-h-[38px] items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-2 sm:px-3 py-1.5 text-xs font-bold text-slate-700 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 shrink-0"
             >
               {theme === 'dark' ? (
                 <>
-                  <Sun className="h-4 w-4 text-amber-400" />
+                  <Sun className="h-3.5 w-3.5 text-amber-400 shrink-0" />
                   <span className="hidden sm:inline">{isAr ? 'النهاري' : 'Light'}</span>
                 </>
               ) : (
                 <>
-                  <Moon className="h-4 w-4 text-slate-600" />
+                  <Moon className="h-3.5 w-3.5 text-slate-600 shrink-0" />
                   <span className="hidden sm:inline">{isAr ? 'الليلي' : 'Dark'}</span>
                 </>
               )}
@@ -693,14 +694,14 @@ function TitanFitEnterpriseShell() {
 
             {/* Auth Button: Login vs User Profile & Logout */}
             {!isAuthenticated ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   data-testid="header-free-trial-btn"
                   onClick={() => setActiveSection('FREE_TRIAL_HUB')}
-                  className="hidden sm:inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                  className="hidden md:inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
                 >
-                  <Gift className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <Gift className="h-3.5 w-3.5 text-amber-500" />
                   <span>{isAr ? 'الحساب المجاني' : 'Free Trial'}</span>
                 </button>
                 <button
@@ -710,9 +711,9 @@ function TitanFitEnterpriseShell() {
                     setLoginTab('TRAINEE_PIN');
                     setShowLoginModal(true);
                   }}
-                  className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-emerald-500/80 bg-emerald-50 px-2.5 py-1.5 text-xs font-black text-emerald-800 transition hover:bg-emerald-100 sm:px-3 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                  className="inline-flex min-h-[34px] sm:min-h-[38px] items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-2 sm:px-3 py-1.5 text-xs font-bold text-slate-800 transition hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 shrink-0"
                 >
-                  <KeyRound className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <KeyRound className="h-3.5 w-3.5 shrink-0 text-amber-500" />
                   <span className="hidden sm:inline">{isAr ? 'دخول المتدربين (كود الجيم)' : 'Member PIN'}</span>
                   <span className="sm:hidden">{isAr ? 'كود الجيم' : 'PIN'}</span>
                 </button>
@@ -723,9 +724,9 @@ function TitanFitEnterpriseShell() {
                     setLoginTab('ADMIN_OWNER');
                     setShowLoginModal(true);
                   }}
-                  className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-[#D4AF37] px-3 py-1.5 text-xs font-black text-slate-950 shadow-sm transition hover:opacity-95 sm:gap-2 sm:px-4"
+                  className="inline-flex min-h-[34px] sm:min-h-[38px] items-center gap-1.5 rounded-xl bg-slate-950 text-white dark:bg-amber-500 dark:text-slate-950 px-3 py-1.5 text-xs font-black shadow-xs transition hover:bg-slate-850 dark:hover:bg-amber-400 sm:px-4 shrink-0"
                 >
-                  <LogIn className="h-4 w-4 shrink-0" />
+                  <LogIn className="h-3.5 w-3.5 shrink-0" />
                   <span>{isAr ? 'تسجيل الدخول' : 'Sign In'}</span>
                 </button>
               </div>

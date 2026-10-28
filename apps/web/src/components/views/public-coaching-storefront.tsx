@@ -629,8 +629,9 @@ startxref
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="relative overflow-hidden rounded-3xl border border-amber-200/80 bg-gradient-to-bl from-white via-amber-50/40 to-emerald-50/40 p-6 shadow-lg sm:p-12"
+        className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#0E131F] sm:p-12"
       >
+        <div className="pointer-events-none absolute -top-40 start-1/2 -translate-x-1/2 h-80 w-full max-w-4xl rounded-full bg-amber-500/10 blur-3xl" />
         <div className="relative grid grid-cols-1 items-center gap-10 lg:grid-cols-12">
           {/* Right Text Column (in RTL) */}
           <div className="space-y-6 lg:col-span-7">
@@ -638,27 +639,30 @@ startxref
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-100/80 px-4 py-1.5 text-xs font-extrabold text-amber-900"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-slate-50/80 px-3.5 py-1 text-xs font-bold text-slate-700 shadow-2xs dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
             >
-              <Sparkles className="h-4 w-4 text-amber-600" />
-              {isAr
-                ? 'أفضل وقت للبداية كان من سنة.. وتاني أفضل وقت هو الآن!'
-                : 'THE BEST TIME TO START WAS A YEAR AGO — THE SECOND BEST TIME IS NOW!'}
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              <span>
+                {isAr
+                  ? 'أفضل وقت للبداية كان من سنة.. وتاني أفضل وقت هو الآن!'
+                  : 'THE BEST TIME TO START WAS A YEAR AGO — THE SECOND BEST TIME IS NOW!'}
+              </span>
             </motion.div>
 
-            <h1 className="text-3xl font-black leading-tight tracking-tight text-slate-900 sm:text-5xl">
+            <h1 className="text-3xl font-black leading-[1.22] tracking-tight text-slate-950 sm:text-5xl lg:text-6xl dark:text-white">
               {isAr ? (
                 <>
                   إنسى نظام الدايت الممل..{' '}
-                  <span className="bg-gradient-to-l from-amber-600 to-emerald-600 bg-clip-text text-transparent">
-                    وإبني لنفسك نمط حياة صحي
+                  <span className="text-amber-500">
+                    وابنِ لنفسك نمط حياة صحي
                   </span>{' '}
                   وجسم مثالي بدون حرمان!
                 </>
               ) : (
                 <>
                   Forget Boring Diets —{' '}
-                  <span className="bg-gradient-to-r from-amber-600 to-emerald-600 bg-clip-text text-transparent">
+                  <span className="text-amber-500">
                     Build Your Dream Physique
                   </span>{' '}
                   With Science & Medical Supervision
@@ -666,20 +670,20 @@ startxref
               )}
             </h1>
 
-            <p className="max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
+            <p className="max-w-2xl text-sm font-normal leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
               {isAr
                 ? 'أكثر من +12,500 مشترك غيروا حياتهم بالكامل ووصلوا لشكل جسمهم المثالي من خلال خطط تغذية بوصفات مصورة، برامج تدريبية بالفيديو من الجيم أو البيت تحت إشراف أطباء علاج طبيعي، ومتابعة يومية خطوة بخطوة.'
                 : 'Over 12,500+ members transformed their bodies and lives through tailored video-recipe nutrition, physical-therapist-supervised training, and daily 1-on-1 WhatsApp & app coaching.'}
             </p>
 
             {/* Primary CTA Buttons including the FREE TRIAL WORKOUTS & DIETS Button */}
-            <div className="flex flex-wrap items-center gap-3 pt-1">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2">
               <a
                 href="#coaching-packages"
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-[#D4AF37] px-7 py-4 text-sm font-black text-slate-950 shadow-lg shadow-amber-500/25 transition hover:scale-[1.02]"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-7 py-3.5 text-sm font-black text-white shadow-md shadow-slate-950/10 transition hover:bg-slate-850 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
               >
-                <Zap className="h-4 w-4" />
-                {isAr ? 'اشترك الآن وابدأ التغيير' : 'Subscribe & Start Now'}
+                <Zap className="h-4 w-4 text-amber-400 dark:text-slate-950" />
+                <span>{isAr ? 'اشترك الآن وابدأ التغيير' : 'Subscribe & Start Now'}</span>
               </a>
 
               {onOpenFreeTrialHub && (
@@ -687,42 +691,40 @@ startxref
                   type="button"
                   data-testid="open-free-trial-hub-btn"
                   onClick={onOpenFreeTrialHub}
-                  className="inline-flex items-center gap-2 rounded-2xl border-2 border-emerald-500 bg-emerald-50 px-6 py-3.5 text-sm font-black text-emerald-900 shadow-sm transition hover:bg-emerald-600 hover:text-white"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-900 shadow-2xs transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
                 >
-                  <Gift className="h-4 w-4 text-emerald-600" />
-                  {isAr
-                    ? '🎁 جرب مجاناً الآن (تمارين فيديو + أنظمة غذائية)'
-                    : '🎁 Try Free Workouts & Meal Plans'}
+                  <Gift className="h-4 w-4 text-amber-500" />
+                  <span>{isAr ? 'جرب مجاناً (تمارين فيديو + أنظمة)' : 'Try Free Workouts & Meal Plans'}</span>
                 </button>
               )}
 
               <a
                 href="#free-calorie-calculator"
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3.5 text-xs font-extrabold text-slate-800 shadow-sm transition hover:border-amber-500"
+                className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 transition py-2 sm:ps-2"
               >
-                <Calculator className="h-4 w-4 text-amber-600" />
-                {isAr ? 'حاسبة السعرات المجانية' : 'Free Calorie Calculator'}
+                <Calculator className="h-4 w-4 text-amber-500" />
+                <span>{isAr ? 'حاسبة السعرات المجانية ←' : 'Free Calorie Calculator →'}</span>
               </a>
             </div>
 
             {/* Trust Metrics */}
-            <div className="grid grid-cols-3 gap-4 border-t border-slate-200/90 pt-6">
+            <div className="grid grid-cols-3 gap-3 border-t border-slate-100 pt-6 sm:gap-6 dark:border-slate-800">
               <div>
-                <p className="font-mono text-2xl font-black text-amber-600 sm:text-3xl">+12,500</p>
-                <p className="text-xs font-bold text-slate-600">
+                <p className="font-mono text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">+12,500</p>
+                <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
                   {isAr ? 'قصة نجاح وتحول حقيقي' : 'Verified Transformations'}
                 </p>
               </div>
-              <div>
-                <p className="font-mono text-2xl font-black text-emerald-600 sm:text-3xl">100%</p>
-                <p className="text-xs font-bold text-slate-600">
+              <div className="border-s border-slate-100 ps-3 sm:ps-6 dark:border-slate-800">
+                <p className="font-mono text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">100%</p>
+                <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
                   {isAr ? 'تحت إشراف طبي ورياضي' : 'Medical & PT Supervised'}
                 </p>
               </div>
-              <div>
-                <p className="font-mono text-2xl font-black text-sky-600 sm:text-3xl">24/7</p>
-                <p className="text-xs font-bold text-slate-600">
-                  {isAr ? 'متابعة واتساب وتطبيق ذكي' : 'WhatsApp & App Support'}
+              <div className="border-s border-slate-100 ps-3 sm:ps-6 dark:border-slate-800">
+                <p className="font-mono text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">24/7</p>
+                <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                  {isAr ? 'متابعة يومية بالواتساب' : 'Daily 1-on-1 WhatsApp'}
                 </p>
               </div>
             </div>
@@ -800,23 +802,23 @@ startxref
           initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="rounded-3xl border-2 border-emerald-200 bg-gradient-to-r from-emerald-50/90 via-white to-amber-50/80 p-6 shadow-md sm:p-8"
+          className="rounded-3xl border border-slate-200/80 bg-slate-50/70 p-6 shadow-2xs dark:border-slate-800 dark:bg-slate-900/60 sm:p-8"
         >
           <div className="flex flex-wrap items-center justify-between gap-6">
             <div className="flex items-start gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md">
-                <Video className="h-7 w-7" />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-xs dark:bg-amber-500 dark:text-slate-950">
+                <Video className="h-6 w-6" />
               </div>
               <div className="space-y-1">
-                <span className="inline-block rounded-full bg-emerald-100 px-3 py-0.5 text-[11px] font-extrabold text-emerald-800">
+                <span className="inline-block rounded-full border border-slate-200 bg-white px-3 py-0.5 text-[11px] font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
                   {isAr ? 'جديد ومجاني ١٠٠٪ لزوار الموقع' : 'NEW & 100% FREE FOR VISITORS'}
                 </span>
-                <h2 className="text-xl font-black text-slate-900 sm:text-2xl">
+                <h2 className="text-xl font-black text-slate-900 dark:text-white sm:text-2xl">
                   {isAr
                     ? 'داخل تجرب الأول؟ افتح مكتبة التمارين بالفيديو والأنظمة الغذائية المجانية!'
                     : 'Want to Try First? Open Our Free Video Workouts & Meal Plans Hub!'}
                 </h2>
-                <p className="text-xs text-slate-600 sm:text-sm">
+                <p className="text-xs text-slate-600 dark:text-slate-400 sm:text-sm">
                   {isAr
                     ? 'شاهد فيديوهات التمارين مع نصائح أطباء العلاج الطبيعي، شغل تايمر التمرين التفاعلي، وحمل ٣ أنظمة غذائية كاملة بالجرامات والبدائل الاقتصادية مجاناً.'
                     : 'Watch HD exercise demos with PT safety cues, use our interactive set & rest timer, and grab 3 complete meal plans for free.'}
@@ -827,9 +829,9 @@ startxref
             <button
               type="button"
               onClick={onOpenFreeTrialHub}
-              className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-7 py-4 text-sm font-black text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700"
+              className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-7 py-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-850 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
             >
-              <Play className="h-4 w-4 fill-white" />
+              <Play className="h-4 w-4 fill-current" />
               {isAr
                 ? 'افتح التمارين والأنظمة المجانية الآن ←'
                 : 'Open Free Workouts & Diets Now →'}
@@ -1471,26 +1473,26 @@ startxref
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Free E-Book Lead Magnet with Real Download & Interactive Reader */}
         <motion.div
-          whileHover={{ y: -6 }}
-          transition={{ duration: 0.3 }}
-          className="relative overflow-hidden rounded-3xl border-2 border-amber-300/80 bg-gradient-to-br from-amber-50/90 via-white to-amber-100/30 p-6 shadow-md sm:p-8"
+          whileHover={{ y: -4 }}
+          transition={{ duration: 0.25 }}
+          className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-6 shadow-2xs dark:border-slate-800 dark:bg-slate-900 sm:p-8"
         >
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-100/80 px-3.5 py-1 text-xs font-extrabold text-amber-900">
-              <BookOpen className="h-4 w-4 text-amber-600 animate-pulse" />
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1 text-xs font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200">
+              <BookOpen className="h-3.5 w-3.5 text-amber-500" />
               {isAr ? 'هدية مجانية موثقة للزوار' : 'FREE VERIFIED TRAINING E-BOOK'}
             </span>
-            <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-extrabold text-emerald-700">
+            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
               {isAr ? 'تحميل فوري مباشر' : 'Instant Direct Download'}
             </span>
           </div>
 
-          <h3 className="mt-3 text-xl font-black text-slate-900 sm:text-2xl">
+          <h3 className="mt-3 text-xl font-black text-slate-900 dark:text-white sm:text-2xl">
             {isAr
               ? 'حمل مجاناً كتاب "الدليل الشامل لاحتراف التمرين بدون إصابات"'
               : 'Download "The Complete Injury-Free Hypertrophy Guide" For Free'}
           </h3>
-          <p className="mt-2 text-xs leading-relaxed text-slate-600 sm:text-sm">
+          <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400 sm:text-sm">
             {isAr
               ? 'دليل عملي معتمد أعده فريق العلاج الطبيعي والتغذية الرياضية يشمل المبادئ الميكانيكية لحماية المفاصل، جدول تمارين Push/Pull/Legs، حساب الماكروز، والبدائل الاقتصادية المصرية.'
               : 'Complete practical handbook written by certified physiotherapists & sports nutritionists covering joint safety biomechanics, PPL splits, macros, and smart budget swaps.'}
@@ -1504,18 +1506,18 @@ startxref
                 value={ebookEmail}
                 onChange={(e) => setEbookEmail(e.target.value)}
                 placeholder={isAr ? 'أدخل بريدك الإلكتروني لاستلام الكتاب...' : 'Enter your email for instant access...'}
-                className="flex-1 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-xs font-bold text-slate-900 shadow-xs focus:border-amber-500 focus:outline-none"
+                className="flex-1 rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-xs font-bold text-slate-900 shadow-2xs focus:border-amber-500 focus:bg-white focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-white"
               />
               <button
                 type="submit"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-[#D4AF37] px-6 py-3 text-xs font-black text-slate-950 shadow-md transition hover:scale-[1.03]"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 py-3 text-xs font-black text-white shadow-xs transition hover:bg-slate-850 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
               >
                 <Download className="h-4 w-4" />
                 {isAr ? 'تحميل واستلام الكتاب الآن' : 'Download Free E-Book'}
               </button>
             </div>
-            <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-500">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+            <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
               <span>{isAr ? 'يتم إرسال نسخة إلى بريدك الإلكتروني ويبدأ التحميل المباشر فوراً على جهازك.' : 'Dispatched to your email and begins immediate direct device download.'}</span>
             </div>
           </form>
@@ -1523,44 +1525,44 @@ startxref
 
         {/* B2B SaaS Callout: For Gym Owners & Coaches with Direct WhatsApp */}
         <motion.div
-          whileHover={{ y: -6 }}
-          transition={{ duration: 0.3 }}
-          className="relative overflow-hidden rounded-3xl border-2 border-emerald-300/80 bg-gradient-to-br from-emerald-50/90 via-white to-emerald-100/30 p-6 shadow-md sm:p-8"
+          whileHover={{ y: -4 }}
+          transition={{ duration: 0.25 }}
+          className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-slate-50/70 p-6 shadow-2xs dark:border-slate-800 dark:bg-slate-900/60 sm:p-8"
         >
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-100/80 px-3.5 py-1 text-xs font-extrabold text-emerald-900">
-              <ShieldCheck className="h-4 w-4 text-emerald-700 animate-pulse" />
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1 text-xs font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200">
+              <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />
               {isAr ? 'لأصحاب الجيمات والمدربين (B2B SaaS White-Label)' : 'FOR GYM OWNERS & ONLINE COACHES'}
             </span>
-            <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-extrabold text-emerald-700">
+            <span className="flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
               {isAr ? 'متاح للتعاقد الفوري' : 'Available Now'}
             </span>
           </div>
 
-          <h3 className="mt-3 text-xl font-black text-slate-900 sm:text-2xl">
+          <h3 className="mt-3 text-xl font-black text-slate-900 dark:text-white sm:text-2xl">
             {isAr
               ? 'هل أنت صاحب جيم أو مدرب أونلاين؟ امتلك منصتك الخاصة باسمك وشعارك!'
               : 'Own a Gym or Coaching Brand? Launch Your White-Label SaaS Platform'}
           </h3>
-          <p className="mt-2 text-xs leading-relaxed text-slate-600 sm:text-sm">
+          <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400 sm:text-sm">
             {isAr
               ? 'احصل على نسخة كاملة بهويتك البصرية (White-Label) تشمل موقع المتدربين، تطبيق العضو، بوابات الدخول بالـ QR، والربط مع فوري وإنستاباي و Paymob.'
               : 'Get your full white-label fitness ecosystem: member PWA, QR turnstiles, and Egypt payment gateways with your brand colors and domain.'}
           </p>
 
           {/* WhatsApp Direct Contact Highlight Box */}
-          <div className="mt-4 rounded-2xl border border-emerald-200 bg-white/90 p-3.5 shadow-xs">
+          <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#25D366] text-white shadow-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#25D366] text-white shadow-xs">
                   <MessageSquare className="h-5 w-5 fill-white" />
                 </div>
                 <div>
-                  <p className="text-[11px] font-extrabold text-slate-500">
+                  <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
                     {isAr ? 'تواصل مع كابتن نور الدين مباشرة (مالك المنصة)' : 'Direct WhatsApp with Platform Owner'}
                   </p>
-                  <p className="font-mono text-sm font-black text-slate-900 dir-ltr">
+                  <p className="font-mono text-sm font-black text-slate-900 dark:text-white dir-ltr">
                     +20 155 994 9271
                   </p>
                 </div>
@@ -1570,7 +1572,7 @@ startxref
                 href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D9%86%D8%A7%20%D8%B5%D8%A7%D8%AD%D8%A8%20%D8%AC%D9%8A%D9%85/%D9%83%D9%88%D8%AA%D8%B4%20%D9%88%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%B4%D8%B1%D8%A7%D8%A1%20%D9%85%D9%86%D8%B5%D8%A9%20TitanFit%20White-Label"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-xs font-black text-white shadow-md shadow-[#25D366]/20 transition hover:scale-105 hover:bg-[#20bd5a]"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-xs font-black text-white shadow-xs transition hover:bg-[#20bd5a]"
               >
                 <MessageSquare className="h-4 w-4 fill-white" />
                 <span>{isAr ? 'محادثة واتساب الآن' : 'Chat via WhatsApp'}</span>

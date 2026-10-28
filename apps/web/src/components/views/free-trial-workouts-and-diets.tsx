@@ -332,15 +332,17 @@ export function FreeTrialWorkoutsAndDietsView({
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="theme-card relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-l from-emerald-500/10 via-transparent to-amber-500/10 p-6 shadow-sm sm:p-10"
+        className="theme-card relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-6 shadow-2xs dark:border-slate-800 dark:bg-slate-900 sm:p-10"
       >
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="max-w-2xl space-y-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-4 py-1 text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
-              <Sparkles className="h-4 w-4" />
-              {isAr
-                ? '🎁 هدية مجانية لكل زائر — فيديوهات تدريبية وأنظمة غذائية كاملة'
-                : '🎁 100% FREE EXPERIENCE FOR VISITORS — NO CARD REQUIRED'}
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1 text-xs font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200">
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              <span>
+                {isAr
+                  ? '🎁 هدية مجانية لكل زائر — فيديوهات تدريبية وأنظمة غذائية كاملة'
+                  : '🎁 100% FREE EXPERIENCE FOR VISITORS — NO CARD REQUIRED'}
+              </span>
             </span>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white sm:text-4xl">
               {isAr
@@ -358,17 +360,17 @@ export function FreeTrialWorkoutsAndDietsView({
             <button
               type="button"
               onClick={onSubscribeClick}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-3.5 text-sm font-black text-slate-950 shadow-md transition hover:scale-[1.02]"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 py-3.5 text-sm font-black text-white shadow-xs transition hover:bg-slate-850 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
             >
-              <Zap className="h-4 w-4" />
-              {isAr ? 'اشترك في المتابعة الشخصية الكاملة' : 'Upgrade to 1-on-1 Coaching'}
+              <Zap className="h-4 w-4 text-amber-400 dark:text-slate-950" />
+              <span>{isAr ? 'اشترك في المتابعة الشخصية الكاملة' : 'Upgrade to 1-on-1 Coaching'}</span>
             </button>
             <button
               type="button"
               onClick={onBackToHome}
-              className="theme-surface inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-3.5 text-xs font-extrabold text-slate-800 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-xs font-bold text-slate-800 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
             >
-              {isAr ? '← العودة للصفحة الرئيسية' : '← Back to Main Storefront'}
+              <span>{isAr ? '← العودة للصفحة الرئيسية' : '← Back to Main Storefront'}</span>
             </button>
           </div>
         </div>
