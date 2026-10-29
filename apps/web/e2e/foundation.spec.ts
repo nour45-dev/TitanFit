@@ -33,6 +33,7 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
 
     // 3. Authenticate as SaaS Super Admin (Email + Password)
     await page.getByTestId('open-login-modal-btn').click();
+    await page.getByTestId('tab-admin-owner').click();
     await page.getByTestId('login-email-input').fill('noureldin');
     await page.getByTestId('login-password-input').fill('010023');
     await page.getByTestId('login-submit-btn').click();
@@ -91,7 +92,8 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
     page,
   }) => {
     await page.goto('/');
-    await page.getByTestId('open-trainee-login-btn').click();
+    // Trainee login is the default tab in the login modal
+    await page.getByTestId('open-login-modal-btn').click();
     await page.getByTestId('trainee-gym-code-input').fill('TF-7711');
     await page.getByTestId('trainee-submit-btn').click();
     await expect(page.getByTestId('panel-member-pwa')).toBeVisible();
@@ -104,6 +106,7 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
 
     // 1. Invalid Admin / Gym Owner credentials rejection
     await page.getByTestId('open-login-modal-btn').click();
+    await page.getByTestId('tab-admin-owner').click();
     await page.getByTestId('login-email-input').fill('unknown_user@random.com');
     await page.getByTestId('login-password-input').fill('wrongpass');
     await page.getByTestId('login-submit-btn').click();
@@ -123,5 +126,16 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
     await page.goto('/');
     await page.getByTestId('header-free-trial-btn').click();
     await expect(page.getByTestId('panel-free-trial-hub')).toBeVisible();
+  });
+
+  test('verifies Mifflin-St Jeor calorie calculator and dynamic meal recipe planning', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await expect(page.getByTestId('free-calorie-calculator')).toBeVisible();
+    await page.getByTestId('calc-weight').fill('90');
+    await page.getByTestId('calc-goal-CUT').click();
+    await expect(page.getByTestId('calc-result-kcal')).toBeVisible();
+    await expect(page.getByTestId('meal-planner')).toBeVisible();
   });
 });

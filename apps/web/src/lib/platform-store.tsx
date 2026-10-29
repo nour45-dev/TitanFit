@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type { SupportedLocale } from '@gymos/config';
 
 export type WorkspaceSection =
@@ -637,6 +637,10 @@ export interface PlatformStoreContextValue {
     gymSecretCodeCustom?: string,
   ) => TenantSaaSItem;
   toggleTenantStatus: (tenantId: string) => void;
+  updateTenantBranding: (
+    tenantId: string,
+    changes: { logoUrl?: string; primaryColor?: string },
+  ) => void;
 }
 
 const PlatformContext = createContext<PlatformStoreContextValue | null>(null);
@@ -664,6 +668,30 @@ export function PlatformProvider({
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLogEntry[]>(INITIAL_WORKOUT_LOGS);
   const [chatMessages, setChatMessages] = useState<ChatMessageItem[]>(INITIAL_CHAT);
   const [tenants, setTenants] = useState<TenantSaaSItem[]>(INITIAL_TENANTS);
+  const tenantsHydrated = useRef(false);
+
+  // Persist gym tenants in the browser so created gyms (and their logos) survive a refresh
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem('titanfit.tenants.v1');
+      if (raw) {
+        const parsed = JSON.parse(raw) as TenantSaaSItem[];
+        if (Array.isArray(parsed) && parsed.length > 0) setTenants(parsed);
+      }
+    } catch {
+      /* ignore corrupted storage */
+    }
+    tenantsHydrated.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!tenantsHydrated.current) return;
+    try {
+      window.localStorage.setItem('titanfit.tenants.v1', JSON.stringify(tenants));
+    } catch {
+      /* storage full or unavailable */
+    }
+  }, [tenants]);
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>(INITIAL_AUDITS);
   const [impersonatedTenant, setImpersonatedTenantState] = useState<string | null>(null);
   const [brandAccentHex, setBrandAccentHex] = useState<string>('#D4AF37');
@@ -1365,6 +1393,21 @@ export function PlatformProvider({
     return newTen;
   };
 
+  const updateTenantBranding: PlatformStoreContextValue['updateTenantBranding'] = (tenantId, changes) => {
+    setTenants((prev) =>
+      prev.map((t) =>
+        t.id === tenantId
+          ? {
+              ...t,
+              ...(changes.logoUrl !== undefined ? { logoUrl: changes.logoUrl } : {}),
+              ...(changes.primaryColor !== undefined ? { primaryColor: changes.primaryColor } : {}),
+            }
+          : t,
+      ),
+    );
+    appendAudit('SAAS_TENANT_BRANDING_UPDATED', tenantId);
+  };
+
   const toggleTenantStatus = (tenantId: string) => {
     setTenants((prev) =>
       prev.map((t) => {
@@ -1427,6 +1470,7 @@ export function PlatformProvider({
         sendChatMessage,
         addTenant,
         toggleTenantStatus,
+        updateTenantBranding,
       }}
     >
       {children}

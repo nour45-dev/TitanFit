@@ -28,6 +28,7 @@ import {
   UserCheck,
   X,
 } from 'lucide-react';
+import { LogoPicker } from '../logo-picker';
 import {
   type TenantSaaSItem,
   type WorkoutLogEntry,
@@ -545,7 +546,15 @@ export function ReportsAnalyticsView() {
 }
 
 export function TenantSettingsView() {
-  const { locale, branches, brandAccentHex, setBrandAccentHex, showToast } = usePlatformStore();
+  const {
+    locale,
+    branches,
+    brandAccentHex,
+    setBrandAccentHex,
+    showToast,
+    activeTenantCustom,
+    updateTenantBranding,
+  } = usePlatformStore();
   const isAr = locale === 'ar';
 
   return (
@@ -561,6 +570,45 @@ export function TenantSettingsView() {
             ? 'تخصيص ألوان الهوية البصرية للمستأجر، مواعيد عمل الفروع، وقوالب رسائل واتساب التلقائية'
             : 'Customize tenant white-label theme tokens, branch working hours, Egypt 14% VAT, and WhatsApp templates'}
         </p>
+      </div>
+
+      <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6" data-testid="settings-logo-card">
+        <h3 className="text-base font-extrabold text-white">
+          {isAr ? 'شعار ناديك' : 'Your Gym Logo'}
+        </h3>
+        {activeTenantCustom ? (
+          <>
+            <p className="mt-1 text-xs text-slate-400">
+              {isAr
+                ? `اختر صورة الشعار من جهازك لتظهر في أعلى منصة "${activeTenantCustom.nameAr}" ولدى متدربيك.`
+                : `Pick your logo from your device — it appears across "${activeTenantCustom.nameEn}" and for your members.`}
+            </p>
+            <LogoPicker
+              value={activeTenantCustom.logoUrl && activeTenantCustom.logoUrl !== '/brand/logo.png' ? activeTenantCustom.logoUrl : ''}
+              onChange={(url) => {
+                updateTenantBranding(activeTenantCustom.id, { logoUrl: url || '/brand/logo.png' });
+                showToast(
+                  url
+                    ? isAr
+                      ? 'تم تحديث شعار النادي بنجاح'
+                      : 'Gym logo updated'
+                    : isAr
+                      ? 'تمت إزالة الشعار والعودة للشعار الافتراضي'
+                      : 'Logo removed — default restored',
+                );
+              }}
+              isAr={isAr}
+              testId="settings-logo"
+              fallbackLabel={isAr ? 'الافتراضي' : 'Default'}
+            />
+          </>
+        ) : (
+          <p className="mt-1 text-xs text-slate-400">
+            {isAr
+              ? 'يتم تحديد شعار كل نادٍ من حساب صاحب النادي، أو من لوحة المنصة عند إنشاء النادي.'
+              : 'Each gym logo is set from the gym owner account, or when the gym is created from the platform console.'}
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -661,7 +709,7 @@ export function SuperAdminConsoleView() {
     e.preventDefault();
     if (!nameEn.trim() && !nameAr.trim()) return;
     const finalSlug = slug.trim() || (nameEn || nameAr).toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const finalLogo = logoUrl.trim() || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=200&q=80';
+    const finalLogo = logoUrl.trim() || '/brand/logo.png';
     const finalEmail = ownerEmail.trim() || `owner@${finalSlug}.eg`;
 
     const newTenant = addTenant(
@@ -1072,15 +1120,9 @@ export function SuperAdminConsoleView() {
 
               <div>
                 <label className="block font-bold text-slate-700 dark:text-slate-300">
-                  {isAr ? 'رابط شعار النادي (Logo URL)' : 'Custom Gym Logo URL'}
+                  {isAr ? 'شعار النادي (اختر من جهازك)' : 'Gym Logo (pick from your device)'}
                 </label>
-                <input
-                  type="url"
-                  placeholder="https://example.com/logo.png"
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  className="theme-input mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                />
+                <LogoPicker value={logoUrl} onChange={setLogoUrl} isAr={isAr} testId="add-tenant-logo" />
               </div>
 
               <div>

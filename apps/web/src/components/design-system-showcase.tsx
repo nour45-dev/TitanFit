@@ -94,7 +94,7 @@ function TitanFitEnterpriseShell() {
   const [totpCode, setTotpCode] = useState('482910');
 
   // Login form state
-  const [loginTab, setLoginTab] = useState<'ADMIN_OWNER' | 'TRAINEE_PIN'>('ADMIN_OWNER');
+  const [loginTab, setLoginTab] = useState<'ADMIN_OWNER' | 'TRAINEE_PIN'>('TRAINEE_PIN');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [traineeGymCode, setTraineeGymCode] = useState('');
@@ -359,7 +359,7 @@ function TitanFitEnterpriseShell() {
       <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 px-3 py-2.5 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 sm:px-6 sm:py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 sm:gap-4">
           {/* Brand Logo & Name */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {isAuthenticated && activeRole !== 'MEMBER' && (
               <button
                 type="button"
@@ -374,7 +374,7 @@ function TitanFitEnterpriseShell() {
             <button
               type="button"
               onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
-              className="flex items-center gap-2.5 text-start sm:gap-3"
+              className="flex min-w-0 items-center gap-2.5 text-start sm:gap-3"
             >
               <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-amber-400/40 bg-slate-950 shadow-2xs sm:h-10 sm:w-10">
                 <img
@@ -388,7 +388,7 @@ function TitanFitEnterpriseShell() {
                 <div className="flex items-center gap-2">
                   <span
                     data-testid="brand-app-name"
-                    className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white"
+                    className="block max-w-[112px] truncate text-base font-black tracking-tight text-slate-900 dark:text-white sm:max-w-none sm:text-lg"
                   >
                     {activeTenantCustom ? brandDisplayName : PLATFORM_CONFIG.appName}
                   </span>
@@ -618,21 +618,6 @@ function TitanFitEnterpriseShell() {
                 onClick={() => {
                   setActiveSection('PUBLIC_STOREFRONT');
                   setTimeout(() => {
-                    document.getElementById('coaching-packages')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
-                className="rounded-xl px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-              >
-                {isAr ? 'باقات الاشتراك' : 'Pricing Plans'}
-              </motion.button>
-
-              <motion.button
-                type="button"
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => {
-                  setActiveSection('PUBLIC_STOREFRONT');
-                  setTimeout(() => {
                     document.getElementById('free-calorie-calculator')?.scrollIntoView({ behavior: 'smooth' });
                   }, 100);
                 }}
@@ -706,25 +691,13 @@ function TitanFitEnterpriseShell() {
                 </button>
                 <button
                   type="button"
-                  data-testid="open-trainee-login-btn"
-                  onClick={() => {
-                    setLoginTab('TRAINEE_PIN');
-                    setShowLoginModal(true);
-                  }}
-                  className="inline-flex min-h-[34px] sm:min-h-[38px] items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-2 sm:px-3 py-1.5 text-xs font-bold text-slate-800 transition hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 shrink-0"
-                >
-                  <KeyRound className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-                  <span className="hidden sm:inline">{isAr ? 'دخول المتدربين (كود الجيم)' : 'Member PIN'}</span>
-                  <span className="sm:hidden">{isAr ? 'كود الجيم' : 'PIN'}</span>
-                </button>
-                <button
-                  type="button"
                   data-testid="open-login-modal-btn"
                   onClick={() => {
-                    setLoginTab('ADMIN_OWNER');
+                    setLoginTab('TRAINEE_PIN');
+                    setLoginError('');
                     setShowLoginModal(true);
                   }}
-                  className="inline-flex min-h-[34px] sm:min-h-[38px] items-center gap-1.5 rounded-xl bg-slate-950 text-white dark:bg-amber-500 dark:text-slate-950 px-3 py-1.5 text-xs font-black shadow-xs transition hover:bg-slate-850 dark:hover:bg-amber-400 sm:px-4 shrink-0"
+                  className="inline-flex min-h-[36px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-slate-950 px-3.5 py-1.5 text-xs font-black text-white shadow-xs transition hover:bg-slate-800 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400 sm:min-h-[38px] sm:px-4"
                 >
                   <LogIn className="h-3.5 w-3.5 shrink-0" />
                   <span>{isAr ? 'تسجيل الدخول' : 'Sign In'}</span>
@@ -1082,23 +1055,8 @@ function TitanFitEnterpriseShell() {
               </button>
             </div>
 
-            {/* Multi-Tenant Dual Tab Selector */}
+            {/* Multi-Tenant Dual Tab Selector — trainees first (default) */}
             <div className="mt-4 flex rounded-2xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-800 dark:bg-slate-800">
-              <button
-                type="button"
-                data-testid="tab-admin-owner"
-                onClick={() => {
-                  setLoginTab('ADMIN_OWNER');
-                  setLoginError('');
-                }}
-                className={`flex-1 rounded-xl py-2 text-xs font-black transition ${
-                  loginTab === 'ADMIN_OWNER'
-                    ? 'bg-white text-slate-950 shadow-xs dark:bg-slate-900 dark:text-white'
-                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
-                }`}
-              >
-                {isAr ? '👑 مالك المنصة / صاحب جيم' : '👑 Super Admin / Owner'}
-              </button>
               <button
                 type="button"
                 data-testid="tab-trainee-pin"
@@ -1106,13 +1064,28 @@ function TitanFitEnterpriseShell() {
                   setLoginTab('TRAINEE_PIN');
                   setLoginError('');
                 }}
-                className={`flex-1 rounded-xl py-2 text-xs font-black transition ${
+                className={`flex-1 rounded-xl px-2 py-2 text-xs font-black transition ${
                   loginTab === 'TRAINEE_PIN'
                     ? 'bg-emerald-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
                 }`}
               >
-                {isAr ? '🏋️‍♂️ المتدربون (كود الجيم)' : '🏋️‍♂️ Trainee (Gym PIN)'}
+                {isAr ? '🏋️‍♂️ المتدربون' : '🏋️‍♂️ Trainees'}
+              </button>
+              <button
+                type="button"
+                data-testid="tab-admin-owner"
+                onClick={() => {
+                  setLoginTab('ADMIN_OWNER');
+                  setLoginError('');
+                }}
+                className={`flex-1 rounded-xl px-2 py-2 text-xs font-black transition ${
+                  loginTab === 'ADMIN_OWNER'
+                    ? 'bg-white text-slate-950 shadow-xs dark:bg-slate-900 dark:text-white'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
+                }`}
+              >
+                {isAr ? '👑 الأدمن / صاحب الجيم' : '👑 Admin / Gym Owner'}
               </button>
             </div>
 
