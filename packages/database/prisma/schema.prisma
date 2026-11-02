@@ -58,6 +58,7 @@ model Tenant {
   branches Branch[]
   users    User[]
   roles    Role[]
+  sessions Session[]
 
   @@index([status])
   @@map("tenants")
@@ -103,7 +104,8 @@ model User {
   updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  sessions Session[]
 
   @@unique([tenantId, phone])
   @@index([tenantId, email])
@@ -286,4 +288,23 @@ model AttendanceLog {
   @@index([tenantId, branchId, checkedInAt])
   @@index([tenantId, memberId, checkedInAt])
   @@map("attendance_logs")
+}
+
+model Session {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  refreshTokenHash String    @map("refresh_token_hash") @db.Text
+  userAgent        String?   @map("user_agent") @db.Text
+  ipAddress        String?   @map("ip_address") @db.VarChar(64)
+  expiresAt        DateTime  @map("expires_at") @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  revokedAt        DateTime? @map("revoked_at") @db.Timestamptz(6)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([tenantId, expiresAt])
+  @@map("sessions")
 }
