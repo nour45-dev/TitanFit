@@ -220,7 +220,7 @@ export function OverviewView() {
             </span>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <p className="text-2xl font-extrabold text-amber-400">
+            <p className="text-2xl font-extrabold text-amber-700 dark:text-amber-400">
               {isAr ? (38 + expiringCount).toLocaleString('ar-EG') : 38 + expiringCount}
             </p>
             <button
@@ -232,7 +232,7 @@ export function OverviewView() {
                     : 'Dispatched WhatsApp renewal reminders with instant Paymob/InstaPay links to 39 members!',
                 )
               }
-              className="rounded-lg bg-amber-500/20 px-2.5 py-1 text-xs font-bold text-amber-300 transition hover:bg-amber-500/30"
+              className="rounded-lg bg-amber-500/20 px-2.5 py-1 text-xs font-bold text-amber-200 transition hover:bg-amber-500/30"
             >
               {isAr ? 'إرسال تذكير واتساب' : 'Send WhatsApp Blast'}
             </button>
@@ -267,7 +267,7 @@ export function OverviewView() {
                   className={`rounded-lg px-3 py-1 text-xs font-bold transition ${
                     chartPeriod === period
                       ? 'bg-[#D4AF37] text-slate-950'
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-200 hover:text-white'
                   }`}
                 >
                   {period}

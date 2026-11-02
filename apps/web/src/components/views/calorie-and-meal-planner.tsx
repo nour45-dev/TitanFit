@@ -343,7 +343,7 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-800">
                     <span>{label.emoji}</span>
                     {isAr ? label.ar : label.en}
-                    <span className="font-mono text-[10px] font-bold text-slate-500">
+                    <span className="font-mono text-[10px] font-bold text-slate-700">
                       • {mealBudget(t, meal)} kcal
                     </span>
                   </span>

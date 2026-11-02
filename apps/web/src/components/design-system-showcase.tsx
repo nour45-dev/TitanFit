@@ -662,6 +662,7 @@ function TitanFitEnterpriseShell() {
             <button
               type="button"
               data-testid="theme-toggle-btn"
+              aria-label={theme === 'dark' ? (isAr ? 'التحويل إلى الوضع النهاري' : 'Switch to light mode') : (isAr ? 'التحويل إلى الوضع الليلي' : 'Switch to dark mode')}
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="inline-flex min-h-[34px] w-9 sm:w-auto sm:min-h-[38px] items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-2 sm:px-3 py-1.5 text-xs font-bold text-slate-700 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 shrink-0"
             >

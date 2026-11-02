@@ -209,10 +209,12 @@ export function MemberPwaPortalView() {
 
             <div className="mt-4 space-y-3">
               <div>
-                <label className="block text-xs font-bold text-slate-300">
+                <label htmlFor="pwa-exercise-select" className="block text-xs font-bold text-slate-300">
                   {isAr ? 'التمرين' : 'Exercise'}
                 </label>
                 <select
+                  id="pwa-exercise-select"
+                  aria-label={isAr ? 'التمرين' : 'Exercise'}
                   value={exerciseEn}
                   onChange={(e) => setExerciseEn(e.target.value)}
                   className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-white"
@@ -226,8 +228,10 @@ export function MemberPwaPortalView() {
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="text-[11px] text-slate-400">{isAr ? 'الوزن (كجم)' : 'Weight (kg)'}</label>
+                  <label htmlFor="pwa-weight-input" className="text-[11px] text-slate-400">{isAr ? 'الوزن (كجم)' : 'Weight (kg)'}</label>
                   <input
+                    id="pwa-weight-input"
+                    aria-label={isAr ? 'الوزن بالكيلوجرام' : 'Weight in kilograms'}
                     type="number"
                     value={weightKg}
                     onChange={(e) => setWeightKg(Number(e.target.value))}
@@ -235,8 +239,10 @@ export function MemberPwaPortalView() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-slate-400">{isAr ? 'العدات' : 'Reps'}</label>
+                  <label htmlFor="pwa-reps-input" className="text-[11px] text-slate-400">{isAr ? 'العدات' : 'Reps'}</label>
                   <input
+                    id="pwa-reps-input"
+                    aria-label={isAr ? 'عدد العدات' : 'Reps count'}
                     type="number"
                     value={reps}
                     onChange={(e) => setReps(Number(e.target.value))}
@@ -244,8 +250,10 @@ export function MemberPwaPortalView() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-slate-400">{isAr ? 'المجموعات' : 'Sets'}</label>
+                  <label htmlFor="pwa-sets-input" className="text-[11px] text-slate-400">{isAr ? 'المجموعات' : 'Sets'}</label>
                   <input
+                    id="pwa-sets-input"
+                    aria-label={isAr ? 'عدد المجموعات' : 'Sets count'}
                     type="number"
                     value={sets}
                     onChange={(e) => setSets(Number(e.target.value))}
@@ -408,6 +416,7 @@ export function MemberPwaPortalView() {
               />
               <button
                 type="button"
+                aria-label={isAr ? 'إرسال الرسالة للمدرب' : 'Send message to coach'}
                 onClick={() => {
                   sendChatMessage(chatInput, 'MEMBER');
                   setChatInput('');

@@ -322,7 +322,7 @@ export function PublicCoachingStorefrontView({
                 <div className="absolute top-4 end-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-400">
                   <Trophy className="h-6 w-6 text-amber-400" />
                 </div>
-                <span className="relative z-10 w-fit rounded-full bg-emerald-600 px-3.5 py-1 text-xs font-extrabold text-white shadow">
+                <span className="relative z-10 w-fit rounded-full bg-emerald-700 px-3.5 py-1 text-xs font-extrabold text-white shadow">
                   {isAr ? '🔥 مثال توضيحي لرحلة تحوّل متدرب' : '🔥 Illustrative Transformation Example'}
                 </span>
                 <div className="relative z-10 mt-3 flex items-center justify-between text-white">
@@ -544,7 +544,7 @@ export function PublicCoachingStorefrontView({
                   <div className="absolute top-3 end-3 flex h-11 w-11 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-400">
                     <Trophy className="h-5 w-5 text-amber-400" />
                   </div>
-                  <span className="relative z-10 w-fit rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-extrabold text-white shadow">
+                  <span className="relative z-10 w-fit rounded-full bg-emerald-700 px-3 py-1 text-[11px] font-extrabold text-white shadow">
                     {isAr ? story.badgeAr : story.badgeEn}
                   </span>
                   <div className="relative z-10 mt-2 flex items-center justify-between text-white">
