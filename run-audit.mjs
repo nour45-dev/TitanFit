@@ -48,8 +48,9 @@ async function main() {
     await waitForServer('http://localhost:3000');
     console.log('✅ Next.js server is ready! Executing Playwright + Axe QA Suite...');
 
-    // Execute titanfit-test.mjs
-    const testRunner = spawn('node', ['titanfit-test.mjs'], {
+    // Execute test script (defaults to titanfit-test.mjs)
+    const targetScript = process.argv[2] || 'titanfit-test.mjs';
+    const testRunner = spawn('node', [targetScript], {
       cwd: __dirname,
       shell: true,
       stdio: 'inherit',
