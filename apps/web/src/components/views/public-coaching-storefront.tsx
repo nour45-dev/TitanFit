@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Activity,
@@ -145,6 +145,18 @@ export function PublicCoachingStorefrontView({
   const [sentEbookEmail, setSentEbookEmail] = useState('');
 
   const [ebookBusy, setEbookBusy] = useState(false);
+
+  // Close ebook modal on Escape key press
+  useEffect(() => {
+    if (!showEbookModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowEbookModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showEbookModal]);
 
   const generateEbook = async (email: string): Promise<boolean> => {
     setEbookBusy(true);
@@ -767,12 +779,20 @@ export function PublicCoachingStorefrontView({
       {/* INTERACTIVE E-BOOK PREVIEW & READER MODAL */}
       <AnimatePresence>
         {showEbookModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm">
+          <div
+            onClick={() => setShowEbookModal(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm cursor-pointer"
+            role="presentation"
+          >
             <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="ebook-modal-title"
+              onClick={(e) => e.stopPropagation()}
               initial={{ opacity: 0, scale: 0.94, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: 16 }}
-              className="w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden rounded-3xl border border-amber-300 bg-white text-slate-900 shadow-2xl"
+              className="w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden rounded-3xl border border-amber-300 bg-white text-slate-900 shadow-2xl cursor-default"
             >
               <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-amber-500/15 via-transparent to-emerald-500/15 p-6">
                 <div className="flex items-center gap-3">
@@ -784,13 +804,14 @@ export function PublicCoachingStorefrontView({
                       <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                       {isAr ? 'تم تجهيز الكتاب وبدء التحميل' : 'Book ready — download started'}
                     </span>
-                    <h3 className="text-base font-black text-slate-900 sm:text-lg">
+                    <h3 id="ebook-modal-title" className="text-base font-black text-slate-900 sm:text-lg">
                       {isAr ? 'الدليل الشامل لاحتراف التمرين والتغذية بدون إصابات' : 'The Complete Injury-Free Hypertrophy Guide'}
                     </h3>
                   </div>
                 </div>
                 <button
                   type="button"
+                  aria-label={isAr ? 'إغلاق نافذة الكتاب' : 'Close modal'}
                   onClick={() => setShowEbookModal(false)}
                   className="rounded-xl p-2 text-slate-400 hover:bg-slate-100"
                 >
@@ -884,6 +905,7 @@ export function PublicCoachingStorefrontView({
                   </a>
                   <button
                     type="button"
+                    aria-label={isAr ? 'إغلاق نافذة الكتاب' : 'Close modal'}
                     onClick={() => setShowEbookModal(false)}
                     className="rounded-xl border border-slate-300 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
                   >
