@@ -30,6 +30,7 @@ import {
   Video,
   Zap,
   X,
+  Trophy,
 } from 'lucide-react';
 import { usePlatformStore } from '../../lib/platform-store';
 import { downloadEbookPdf } from '../../lib/pdf-docs';
@@ -52,7 +53,8 @@ interface TransformationStory {
   quoteEn: string;
   badgeAr: string;
   badgeEn: string;
-  photoUrl: string;
+  photoUrl?: string;
+  isIllustrativeExample?: boolean;
 }
 
 
@@ -70,14 +72,13 @@ const TRANSFORMATION_STORIES: TransformationStory[] = [
     weightAfterKg: 84,
     bodyFatBefore: '29%',
     bodyFatAfter: '12%',
-    badgeAr: '-24 كجم دهون صافية + بناء عضل',
-    badgeEn: '-24 kg Fat Loss + Lean Muscle',
-    photoUrl:
-      'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=80',
+    badgeAr: '-24 كجم وزن إجمالي (-21.2 كجم دهون) مع نحت القوام',
+    badgeEn: '-24 kg Total (-21.2 kg Fat) + Body Sculpting',
+    isIllustrativeExample: true,
     quoteAr:
-      'كنت فاكر إن الدايت يعني حرمان وجوع، لكن مع وصفات الفيديو المحسوبة بالماكروز والمتابعة اليومية على الواتساب خسيت ٢٤ كيلو بدون أي ترهلات وبأكل كل اللي بحبه!',
+      'كنت فاكر إن الدايت يعني حرمان وجوع، لكن مع وصفات الفيديو المحسوبة بالماكروز والمتابعة اليومية على الواتساب نزلت ٢٤ كيلو مع نحت الجسم وبأكل أكل مشبع وصحي!',
     quoteEn:
-      'I thought dieting meant starving, but with macro-balanced recipes and daily WhatsApp coaching I dropped 24kg with zero loose skin!',
+      'I thought dieting meant starving, but with macro-balanced recipes and daily WhatsApp coaching I dropped 24kg and sculpted my physique while eating filling, delicious meals!',
   },
 ];
 
@@ -302,24 +303,22 @@ export function PublicCoachingStorefrontView({
             transition={{ duration: 0.5, delay: 0.15 }}
             className="lg:col-span-5"
           >
-            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
-              <div className="relative h-56 w-full overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1000&q=80"
-                  alt="Personal Trainer & Nutrition Coaching"
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-                <span className="absolute top-4 start-4 rounded-full bg-emerald-500 px-3.5 py-1 text-xs font-extrabold text-white shadow">
-                  {isAr ? '🔥 نتيجة الأسبوع الموثقة' : '🔥 FEATURED TRANSFORMATION'}
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
+              <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 flex flex-col justify-end p-5">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.22),transparent_70%)]" />
+                <div className="absolute top-4 end-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-400">
+                  <Trophy className="h-6 w-6 text-amber-400" />
+                </div>
+                <span className="relative z-10 w-fit rounded-full bg-emerald-600 px-3.5 py-1 text-xs font-extrabold text-white shadow">
+                  {isAr ? '🔥 مثال توضيحي لرحلة تحوّل متدرب' : '🔥 Illustrative Transformation Example'}
                 </span>
-                <div className="absolute bottom-3 start-4 end-4 flex items-center justify-between text-white">
+                <div className="relative z-10 mt-3 flex items-center justify-between text-white">
                   <div>
                     <p className="text-sm font-black">
                       {isAr ? 'م. أحمد عبد اللطيف' : 'Eng. Ahmed Abdellatif'}
                     </p>
                     <p className="text-[11px] text-amber-300">
-                      {isAr ? 'خلال ١٢ أسبوع متابعة في باقة تيتان إيليت' : '12 Weeks on Titan Elite'}
+                      {isAr ? 'خلال ١٢ أسبوع متابعة — نحت القوام وخسارة دهون' : '12 Weeks Coaching — Sculpting & Fat Loss'}
                     </p>
                   </div>
                   <div className="flex gap-0.5 text-amber-400">
@@ -333,27 +332,27 @@ export function PublicCoachingStorefrontView({
               </div>
 
               <div className="p-6">
-                <div className="grid grid-cols-2 gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-center">
-                  <div className="border-e border-slate-200 pe-2">
-                    <p className="text-[11px] font-bold text-slate-500">
+                <div className="grid grid-cols-2 gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-center dark:border-slate-800 dark:bg-slate-950">
+                  <div className="border-e border-slate-200 pe-2 dark:border-slate-800">
+                    <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
                       {isAr ? 'قبل الاشتراك' : 'Before'}
                     </p>
                     <p className="mt-1 font-mono text-2xl font-black text-rose-600">108 kg</p>
-                    <p className="text-[11px] font-semibold text-slate-500">Body Fat: 29%</p>
+                    <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Body Fat: 29%</p>
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold text-emerald-700">
+                    <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">
                       {isAr ? 'بعد ١٢ أسبوع' : 'After 12 Wks'}
                     </p>
-                    <p className="mt-1 font-mono text-2xl font-black text-emerald-600">84 kg</p>
-                    <p className="text-[11px] font-bold text-emerald-700">Body Fat: 12% (-24kg)</p>
+                    <p className="mt-1 font-mono text-2xl font-black text-emerald-700 dark:text-emerald-400">84 kg</p>
+                    <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">Body Fat: 12% (-24kg)</p>
                   </div>
                 </div>
 
-                <blockquote className="mt-4 text-xs leading-relaxed font-semibold text-slate-600">
+                <blockquote className="mt-4 text-xs leading-relaxed font-semibold text-slate-700 dark:text-slate-300">
                   {isAr
-                    ? '“خسيت ٢٤ كيلو دهون وزدت كتلة عضلية من غير ما أحرم نفسي من الأكل اللي بحبه، والكوتش والدكتور كانوا معايا يوم بيوم على الواتساب!”'
-                    : '“Lost 24kg of fat while eating delicious macro-friendly meals with daily doctor & coach check-ins!”'}
+                    ? '“خسيت ٢١.٢ كيلو دهون صافية ونزلت من ١٠٨ إلى ٨٤ كجم مع الحفاظ على القوام العضلي بنظام مرن وبدون حرمان، والكوتش والدكتور كانوا معايا يوم بيوم!”'
+                    : '“Dropped 21.2kg of pure fat and trimmed down from 108kg to 84kg while sculpting my physique with flexible nutrition and daily coach support!”'}
                 </blockquote>
               </div>
             </div>
@@ -527,50 +526,53 @@ export function PublicCoachingStorefrontView({
               className="flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:shadow-lg"
             >
               <div>
-                <div className="relative h-52 w-full overflow-hidden bg-slate-100">
-                  <img
-                    src={story.photoUrl}
-                    alt={isAr ? story.nameAr : story.nameEn}
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                  <span className="absolute top-3 start-3 rounded-full bg-emerald-500 px-3 py-1 text-[11px] font-extrabold text-white shadow">
+                <div className="relative h-52 w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 p-5 flex flex-col justify-end">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.2),transparent_70%)]" />
+                  <div className="absolute top-3 end-3 flex h-11 w-11 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-400">
+                    <Trophy className="h-5 w-5 text-amber-400" />
+                  </div>
+                  <span className="relative z-10 w-fit rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-extrabold text-white shadow">
                     {isAr ? story.badgeAr : story.badgeEn}
                   </span>
-                  <span className="absolute bottom-3 end-3 rounded-lg bg-white/95 px-2.5 py-1 font-mono text-[11px] font-extrabold text-slate-900">
-                    {isAr ? story.durationAr : story.durationEn}
-                  </span>
+                  <div className="relative z-10 mt-2 flex items-center justify-between text-white">
+                    <span className="rounded-lg bg-black/40 px-2.5 py-1 font-mono text-[11px] font-extrabold text-amber-300 border border-amber-500/20">
+                      {isAr ? 'مثال توضيحي لرحلة تحوّل' : 'Illustrative Transformation'}
+                    </span>
+                    <span className="rounded-lg bg-white/95 px-2.5 py-1 font-mono text-[11px] font-extrabold text-slate-900">
+                      {isAr ? story.durationAr : story.durationEn}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="p-6">
-                  <div className="grid grid-cols-3 gap-2 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-center">
+                  <div className="grid grid-cols-3 gap-2 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-center dark:border-slate-800 dark:bg-slate-950">
                     <div>
-                      <span className="text-[10px] font-bold text-slate-500">
+                      <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
                         {isAr ? 'الوزن السابق' : 'Before'}
                       </span>
                       <p className="font-mono text-base font-black text-rose-600">
                         {story.weightBeforeKg} kg
                       </p>
                     </div>
-                    <div className="border-x border-slate-200">
-                      <span className="text-[10px] font-bold text-emerald-700">
+                    <div className="border-x border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-400">
                         {isAr ? 'الوزن الحالي' : 'After'}
                       </span>
-                      <p className="font-mono text-base font-black text-emerald-600">
+                      <p className="font-mono text-base font-black text-emerald-700 dark:text-emerald-400">
                         {story.weightAfterKg} kg
                       </p>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-slate-500">
+                      <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
                         {isAr ? 'نسبة الدهون' : 'Body Fat'}
                       </span>
-                      <p className="font-mono text-xs font-extrabold text-amber-700">
+                      <p className="font-mono text-xs font-extrabold text-amber-800 dark:text-amber-400">
                         {story.bodyFatBefore} ← {story.bodyFatAfter}
                       </p>
                     </div>
                   </div>
 
-                  <p className="mt-4 text-xs leading-relaxed text-slate-600">
+                  <p className="mt-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
                     “{isAr ? story.quoteAr : story.quoteEn}”
                   </p>
                 </div>
