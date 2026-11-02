@@ -42,16 +42,99 @@ describe('Mifflin-St Jeor & Nutrition Engine', () => {
     expect(res.flooredForSafety).toBe(false);
   });
 
-  it('enforces clinical minimum safety floor (never below 1500 kcal for men or 1200 for women)', () => {
-    const extremeDeficit = calcNutrition({
+  it('enforces clinical minimum safety floor without exceeding maintenance in cutting', () => {
+    // Normal adult male cut where floor (1500) < TDEE (1716)
+    const adultMale = calcNutrition({
       gender: 'MALE',
       age: 25,
-      weightKg: 60,
-      heightCm: 165,
-      activity: 1.2, // sedentary
+      weightKg: 55,
+      heightCm: 160,
+      activity: 1.2,
       goal: 'CUT',
     });
-    expect(extremeDeficit.kcal).toBeGreaterThanOrEqual(1500);
+    expect(adultMale.kcal).toBe(1500);
+    expect(adultMale.kcal).toBeLessThanOrEqual(adultMale.tdee);
+    expect(adultMale.flooredForSafety).toBe(true);
+
+    // 14yo female where floor (1200) > TDEE (983):
+    // Under-18 restriction forces maintenance, preventing an unintended surplus of 1200 > 983
+    const teenFemale = calcNutrition({
+      gender: 'FEMALE',
+      age: 14,
+      weightKg: 30,
+      heightCm: 120,
+      activity: 1.2,
+      goal: 'CUT',
+    });
+    expect(teenFemale.effectiveGoal).toBe('MAINTAIN');
+    expect(teenFemale.isGoalOverridden).toBe(true);
+    expect(teenFemale.warningCode).toBe('UNDERAGE_RESTRICTION');
+    expect(teenFemale.kcal).toBe(teenFemale.tdee);
+    expect(teenFemale.kcal).toBeLessThanOrEqual(teenFemale.tdee);
+  });
+
+  it('restricts aggressive cutting or bulking for adolescents under 18 years old', () => {
+    const teen = calcNutrition({
+      gender: 'MALE',
+      age: 16,
+      weightKg: 65,
+      heightCm: 170,
+      activity: 1.55,
+      goal: 'CUT',
+    });
+    expect(teen.effectiveGoal).toBe('MAINTAIN');
+    expect(teen.isGoalOverridden).toBe(true);
+    expect(teen.warningCode).toBe('UNDERAGE_RESTRICTION');
+    expect(teen.warningAr).toContain('دون 18 سنة');
+  });
+
+  it('strictly disallows cutting for underweight individuals (BMI < 18.5)', () => {
+    const underweightAdult = calcNutrition({
+      gender: 'FEMALE',
+      age: 24,
+      weightKg: 40,
+      heightCm: 165, // BMI ≈ 14.7
+      activity: 1.375,
+      goal: 'CUT',
+    });
+    expect(underweightAdult.bmi).toBeLessThan(18.5);
+    expect(underweightAdult.effectiveGoal).toBe('MAINTAIN');
+    expect(underweightAdult.isGoalOverridden).toBe(true);
+    expect(underweightAdult.warningCode).toBe('UNDERWEIGHT_CUT_RESTRICTED');
+    expect(underweightAdult.warningAr).toContain('BMI < 18.5');
+  });
+
+  it('verifies 60-case matrix against an independent calculation oracle', () => {
+    const genders = ['MALE', 'FEMALE'] as const;
+    const goals = ['CUT', 'MAINTAIN', 'BULK'] as const;
+    const activities = [1.2, 1.375, 1.55, 1.725, 1.9];
+    const ages = [20, 35]; // Adult matrix: 2 * 3 * 5 * 2 = 60 cases
+
+    let evaluated = 0;
+    for (const g of genders) {
+      for (const goal of goals) {
+        for (const act of activities) {
+          for (const a of ages) {
+            const w = g === 'MALE' ? 80 : 60;
+            const h = g === 'MALE' ? 178 : 165;
+            const res = calcNutrition({ gender: g, age: a, weightKg: w, heightCm: h, activity: act, goal });
+
+            // Independent Oracle calculation
+            const independentBmr = 10 * w + 6.25 * h - 5 * a + (g === 'MALE' ? 5 : -161);
+            const independentTdee = independentBmr * act;
+            expect(res.bmr).toBe(Math.round(independentBmr));
+            expect(res.tdee).toBe(Math.round(independentTdee));
+
+            // Invariant: In CUT, kcal must never exceed TDEE
+            if (res.effectiveGoal === 'CUT') {
+              expect(res.kcal).toBeLessThanOrEqual(res.tdee);
+            }
+            evaluated++;
+          }
+        }
+      }
+    }
+    expect(evaluated).toBe(60);
   });
 
   it('sanitizes out-of-range user inputs gracefully', () => {
