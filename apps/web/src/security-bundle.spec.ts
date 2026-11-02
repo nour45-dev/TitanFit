@@ -5,9 +5,7 @@ import path from 'node:path';
 describe('Client Bundle Security & Credential Leak Prevention', () => {
   const nextStaticDir = path.resolve(__dirname, '../.next/static');
 
-  // TODO [SECURITY-P0]: In branch 'security/server-auth', switch this to normal it()
-  // once apps/web client bundle is purged and auth moves completely to apps/api.
-  it.fails('detects client-bundle leaks (expected to fail until server-auth migration lands)', () => {
+  it('enforces zero credential or PIN leaks in client production static bundle', () => {
     // 1. Must fail clearly if build has not been generated
     if (!fs.existsSync(nextStaticDir)) {
       throw new Error(
