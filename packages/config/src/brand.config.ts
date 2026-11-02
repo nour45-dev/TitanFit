@@ -17,6 +17,10 @@ export interface PlatformBrandConfig {
     readonly en: string;
     readonly ar: string;
   };
+  readonly claims: {
+    readonly activeMembersCount: string;
+    readonly medicalSupervisionPercent: string;
+  };
   readonly defaultLocale: SupportedLocale;
   readonly supportedLocales: readonly SupportedLocale[];
   readonly defaultCurrency: SupportedCurrency;
@@ -48,11 +52,15 @@ export function getPlatformConfig(
 
   return {
     appName,
-    brandSubtitle: env.NEXT_PUBLIC_BRAND_SUBTITLE?.trim() || 'ROOTED PERFORMANCE',
+    brandSubtitle: env.NEXT_PUBLIC_BRAND_SUBTITLE?.trim() || 'ENTERPRISE FITNESS OS',
     logoPath: env.NEXT_PUBLIC_BRAND_LOGO_PATH?.trim() || '/brand/logo.png',
     tagline: {
-      en: `${appName} (Rooted Performance) — Enterprise Multi-Branch Gym & Fitness Operating System`,
-      ar: `${appName} (Rooted Performance) — نظام الإدارة المتكامل للأندية الرياضية والفروع`,
+      en: `${appName} — Enterprise Multi-Branch Gym & Fitness Operating System`,
+      ar: `${appName} — نظام الإدارة المتكامل للأندية الرياضية والفروع`,
+    },
+    claims: {
+      activeMembersCount: env.NEXT_PUBLIC_BRAND_MEMBERS_COUNT?.trim() || '+12,500',
+      medicalSupervisionPercent: env.NEXT_PUBLIC_BRAND_MEDICAL_PERCENT?.trim() || '100%',
     },
     defaultLocale,
     supportedLocales: SUPPORTED_LOCALES,
@@ -60,7 +68,7 @@ export function getPlatformConfig(
     defaultTimezone,
     supportEmail: env.SUPPORT_EMAIL?.trim() || 'support@titanfit.eg',
     themeDefaults: {
-      primaryHex: '#D4AF37', // Royal Gold — Rooted Performance Crest
+      primaryHex: '#D4AF37', // Royal Gold — TitanFit Crest
       accentHex: '#10B981', // Performance Emerald
       memberAppDefaultMode: 'dark',
       adminDashboardDefaultMode: 'dark',

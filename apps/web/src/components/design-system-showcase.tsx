@@ -649,12 +649,13 @@ function TitanFitEnterpriseShell() {
             <button
               type="button"
               data-testid="locale-toggle-btn"
+              aria-label={locale === 'en' ? 'التحويل إلى اللغة العربية' : 'Switch to English'}
               onClick={() => setLocale(locale === 'en' ? 'ar' : 'en')}
               className="inline-flex min-h-[34px] sm:min-h-[38px] items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-2 sm:px-3 py-1.5 text-xs font-bold text-slate-800 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 shrink-0"
             >
-              <Globe className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-              <span className="hidden sm:inline">{locale === 'en' ? 'العربية' : 'EN'}</span>
-              <span className="sm:hidden font-mono uppercase text-[11px]">{locale === 'en' ? 'AR' : 'EN'}</span>
+              <Globe className="h-3.5 w-3.5 text-amber-500 shrink-0" aria-hidden="true" />
+              <span aria-hidden="true" className="hidden sm:inline">{locale === 'en' ? 'العربية' : 'EN'}</span>
+              <span aria-hidden="true" className="sm:hidden font-mono uppercase text-[11px]">{locale === 'en' ? 'AR' : 'EN'}</span>
             </button>
 
             {/* Dark / Light Mode Toggle */}
