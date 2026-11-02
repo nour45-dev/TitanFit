@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Calculator, ChevronDown, Clock, Download, Droplets, Flame, Gift } from 'lucide-react';
+import { Calculator, ChevronDown, Clock, Download, Droplets, Flame, Gift, ShieldAlert } from 'lucide-react';
 import { usePlatformStore } from '../../lib/platform-store';
 import {
   ACTIVITY_LEVELS,
@@ -101,7 +101,7 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
           <div className="space-y-4 lg:col-span-6">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1 text-xs font-bold text-slate-800">
               <Calculator className="h-3.5 w-3.5 text-amber-500" />
-              {isAr ? 'أداة علمية مجانية 100%' : 'FREE SCIENTIFIC CALCULATOR'}
+              {isAr ? 'أداة علمية مجانية' : 'FREE SCIENTIFIC CALCULATOR'}
             </span>
             <h2 className="text-2xl font-black text-slate-900">
               {isAr ? 'احسب سعراتك وماكروزك بدقة' : 'Calculate Your Exact Calories & Macros'}
@@ -114,8 +114,10 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
 
             <div className="grid grid-cols-2 gap-3 pt-1 sm:grid-cols-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700">{isAr ? 'النوع' : 'Gender'}</label>
+                <label htmlFor="calc-gender-select" className="block text-xs font-bold text-slate-700">{isAr ? 'النوع' : 'Gender'}</label>
                 <select
+                  id="calc-gender-select"
+                  aria-label={isAr ? 'النوع' : 'Gender'}
                   data-testid="calc-gender"
                   value={gender}
                   onChange={(e) => setGender(e.target.value as Gender)}
@@ -126,10 +128,18 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700">{isAr ? 'السن (سنة)' : 'Age (years)'}</label>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="calc-age-input" className="block text-xs font-bold text-slate-700">{isAr ? 'السن (سنة)' : 'Age (years)'}</label>
+                  <span className="text-[10px] font-semibold text-slate-500">14–90</span>
+                </div>
                 <input
+                  id="calc-age-input"
+                  aria-label={isAr ? 'السن بالسنوات' : 'Age in years'}
                   data-testid="calc-age"
                   type="number"
+                  min={14}
+                  max={90}
+                  placeholder="25"
                   inputMode="numeric"
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
@@ -137,10 +147,18 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700">{isAr ? 'الوزن (كجم)' : 'Weight (kg)'}</label>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="calc-weight-input" className="block text-xs font-bold text-slate-700">{isAr ? 'الوزن (كجم)' : 'Weight (kg)'}</label>
+                  <span className="text-[10px] font-semibold text-slate-500">30–250</span>
+                </div>
                 <input
+                  id="calc-weight-input"
+                  aria-label={isAr ? 'الوزن بالكيلوجرام' : 'Weight in kilograms'}
                   data-testid="calc-weight"
                   type="number"
+                  min={30}
+                  max={250}
+                  placeholder="75"
                   inputMode="decimal"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
@@ -148,10 +166,18 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700">{isAr ? 'الطول (سم)' : 'Height (cm)'}</label>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="calc-height-input" className="block text-xs font-bold text-slate-700">{isAr ? 'الطول (سم)' : 'Height (cm)'}</label>
+                  <span className="text-[10px] font-semibold text-slate-500">120–230</span>
+                </div>
                 <input
+                  id="calc-height-input"
+                  aria-label={isAr ? 'الطول بالسنتيمتر' : 'Height in centimeters'}
                   data-testid="calc-height"
                   type="number"
+                  min={120}
+                  max={230}
+                  placeholder="175"
                   inputMode="numeric"
                   value={height}
                   onChange={(e) => setHeight(e.target.value)}
@@ -159,8 +185,10 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                 />
               </div>
               <div className="col-span-2 sm:col-span-2">
-                <label className="block text-xs font-bold text-slate-700">{isAr ? 'مستوى النشاط' : 'Activity level'}</label>
+                <label htmlFor="calc-activity-select" className="block text-xs font-bold text-slate-700">{isAr ? 'مستوى النشاط' : 'Activity level'}</label>
                 <select
+                  id="calc-activity-select"
+                  aria-label={isAr ? 'مستوى النشاط اليومي' : 'Daily activity level'}
                   data-testid="calc-activity"
                   value={activity}
                   onChange={(e) => setActivity(Number(e.target.value))}
@@ -216,7 +244,11 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
             <div className="rounded-3xl border border-slate-200 bg-slate-950 p-5 text-white shadow-xl sm:p-7" data-testid="calc-results">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-bold text-slate-400">{goalLabel}</p>
+                  <p className="text-[11px] font-bold text-slate-400">
+                    {t.isGoalOverridden
+                      ? `${goalLabel} • (${isAr ? 'تم الضبط للثبات طبياً' : 'Clinically adjusted to Maintenance'})`
+                      : goalLabel}
+                  </p>
                   <p className="mt-1 flex items-baseline gap-2">
                     <span data-testid="calc-result-kcal" className="font-mono text-5xl font-black tracking-tight text-amber-400">
                       {t.kcal.toLocaleString('en-US')}
@@ -226,6 +258,22 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                 </div>
                 <Flame className="h-8 w-8 shrink-0 text-amber-400" />
               </div>
+
+              {t.warningCode && (
+                <div
+                  role="alert"
+                  data-testid="calc-safety-warning"
+                  className="mt-3.5 rounded-2xl border border-rose-500/50 bg-rose-950/60 p-3.5 text-xs shadow-md"
+                >
+                  <div className="flex items-center gap-2 font-black text-rose-300">
+                    <ShieldAlert className="h-4 w-4 shrink-0 text-rose-400" />
+                    <span>{isAr ? 'توجيه سريري لحماية صحتك' : 'Clinical Safety Notice'}</span>
+                  </div>
+                  <p className="mt-1 leading-relaxed text-[11px] text-rose-200">
+                    {isAr ? t.warningAr : t.warningEn}
+                  </p>
+                </div>
+              )}
 
               <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                 {[
@@ -305,7 +353,7 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
       {/* ======================= MEAL PLANNER ======================= */}
       <section id="recipes-section" data-testid="meal-planner" className="scroll-mt-24 space-y-6">
         <div className="text-center">
-          <span className="text-xs font-extrabold uppercase tracking-wider text-amber-600">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-400">
             {isAr ? 'وصفات مبنية على سعراتك' : 'RECIPES BUILT ON YOUR CALORIES'}
           </span>
           <h2 className="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">
@@ -333,7 +381,7 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-800">
                     <span>{label.emoji}</span>
                     {isAr ? label.ar : label.en}
-                    <span className="font-mono text-[10px] font-bold text-slate-500">
+                    <span className="font-mono text-[10px] font-bold text-slate-700">
                       • {mealBudget(t, meal)} kcal
                     </span>
                   </span>
@@ -377,19 +425,19 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                     <p data-testid={`meal-kcal-${meal}`} className="font-mono text-sm font-black text-amber-400">
                       {scaled.macros.kcal}
                     </p>
-                    <p className="text-[9px] font-semibold text-slate-400">kcal</p>
+                    <p className="text-[9px] font-bold text-slate-300">kcal</p>
                   </div>
                   <div className="rounded-xl bg-slate-50 px-1 py-2">
-                    <p className="font-mono text-sm font-black text-emerald-600">{scaled.macros.proteinG}</p>
-                    <p className="text-[9px] font-semibold text-slate-500">{isAr ? 'بروتين' : 'Protein'}</p>
+                    <p className="font-mono text-sm font-black text-emerald-800 dark:text-emerald-400">{scaled.macros.proteinG}</p>
+                    <p className="text-[9px] font-bold text-slate-600 dark:text-slate-400">{isAr ? 'بروتين' : 'Protein'}</p>
                   </div>
                   <div className="rounded-xl bg-slate-50 px-1 py-2">
-                    <p className="font-mono text-sm font-black text-sky-600">{scaled.macros.carbsG}</p>
-                    <p className="text-[9px] font-semibold text-slate-500">{isAr ? 'كارب' : 'Carbs'}</p>
+                    <p className="font-mono text-sm font-black text-sky-800 dark:text-sky-400">{scaled.macros.carbsG}</p>
+                    <p className="text-[9px] font-bold text-slate-600 dark:text-slate-400">{isAr ? 'كارب' : 'Carbs'}</p>
                   </div>
                   <div className="rounded-xl bg-slate-50 px-1 py-2">
-                    <p className="font-mono text-sm font-black text-amber-600">{scaled.macros.fatsG}</p>
-                    <p className="text-[9px] font-semibold text-slate-500">{isAr ? 'دهون' : 'Fats'}</p>
+                    <p className="font-mono text-sm font-black text-amber-800 dark:text-amber-400">{scaled.macros.fatsG}</p>
+                    <p className="text-[9px] font-bold text-slate-600 dark:text-slate-400">{isAr ? 'دهون' : 'Fats'}</p>
                   </div>
                 </div>
 

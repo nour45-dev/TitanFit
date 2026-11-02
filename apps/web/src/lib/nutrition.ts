@@ -26,6 +26,11 @@ export interface Macros {
   fatsG: number;
 }
 
+export type NutritionWarningCode =
+  | 'UNDERAGE_RESTRICTION'
+  | 'UNDERWEIGHT_CUT_RESTRICTED'
+  | 'CUT_EXCEEDS_TDEE_RESTRICTED';
+
 export interface NutritionTargets extends Macros {
   bmr: number;
   tdee: number;
@@ -36,6 +41,11 @@ export interface NutritionTargets extends Macros {
   bmiLabelEn: string;
   adjustmentKcal: number;
   flooredForSafety: boolean;
+  effectiveGoal: Goal;
+  isGoalOverridden: boolean;
+  warningCode: NutritionWarningCode | null;
+  warningAr: string | null;
+  warningEn: string | null;
 }
 
 export const ACTIVITY_LEVELS: Array<{ value: number; ar: string; en: string }> = [
@@ -64,38 +74,6 @@ export function sanitizeCalcInput(i: CalcInput): CalcInput {
 export function calcNutrition(raw: CalcInput): NutritionTargets {
   const i = sanitizeCalcInput(raw);
 
-  // Mifflin-St Jeor (the most validated predictive equation for healthy adults)
-  const bmr =
-    10 * i.weightKg + 6.25 * i.heightCm - 5 * i.age + (i.gender === 'MALE' ? 5 : -161);
-  const tdee = bmr * i.activity;
-
-  // Goal adjustment as a percentage of TDEE (scales with the person, not a flat number)
-  const factor = i.goal === 'CUT' ? 0.8 : i.goal === 'BULK' ? 1.1 : 1;
-  let kcal = tdee * factor;
-
-  // Safety floor: never prescribe below the common clinical minimum or 90% of BMR
-  const clinicalFloor = i.gender === 'MALE' ? 1500 : 1200;
-  const floor = Math.max(clinicalFloor, bmr * 0.9);
-  let flooredForSafety = false;
-  if (i.goal === 'CUT' && kcal < floor) {
-    kcal = floor;
-    flooredForSafety = true;
-  }
-  kcal = Math.round(kcal);
-
-  // Protein by body weight (g/kg), capped at 35% of calories
-  const proteinPerKg = i.goal === 'CUT' ? 2.2 : i.goal === 'BULK' ? 2.0 : 1.8;
-  let proteinG = Math.round(i.weightKg * proteinPerKg);
-  proteinG = Math.min(proteinG, Math.round((kcal * 0.35) / 4));
-
-  // Fat: 0.8–0.9 g/kg but never below 20% of calories (hormonal health)
-  const fatPerKg = i.goal === 'CUT' ? 0.8 : 0.9;
-  let fatsG = Math.round(i.weightKg * fatPerKg);
-  fatsG = Math.max(fatsG, Math.round((kcal * 0.2) / 9));
-
-  // Carbs: whatever calories remain
-  const carbsG = Math.max(0, Math.round((kcal - proteinG * 4 - fatsG * 9) / 4));
-
   const heightM = i.heightCm / 100;
   const bmi = Math.round((i.weightKg / (heightM * heightM)) * 10) / 10;
   const [bmiLabelAr, bmiLabelEn] =
@@ -106,6 +84,84 @@ export function calcNutrition(raw: CalcInput): NutritionTargets {
         : bmi < 30
           ? ['زيادة وزن', 'Overweight']
           : ['سمنة', 'Obesity'];
+
+  // Mifflin-St Jeor (the most validated predictive equation for healthy adults)
+  const bmr =
+    10 * i.weightKg + 6.25 * i.heightCm - 5 * i.age + (i.gender === 'MALE' ? 5 : -161);
+  const tdee = bmr * i.activity;
+
+  let effectiveGoal: Goal = i.goal;
+  let isGoalOverridden = false;
+  let warningCode: NutritionWarningCode | null = null;
+  let warningAr: string | null = null;
+  let warningEn: string | null = null;
+
+  // 1. Under-18 restriction: prevent aggressive cutting or bulking
+  if (i.age < 18 && (i.goal === 'CUT' || i.goal === 'BULK')) {
+    effectiveGoal = 'MAINTAIN';
+    isGoalOverridden = true;
+    warningCode = 'UNDERAGE_RESTRICTION';
+    warningAr =
+      'للمتدربين دون 18 سنة، لا يُنصح باتباع حميات تنشيف قاسية أو تضخيم مكثف دون استشارة طبيب أو أخصائي تغذية رياضية. تم ضبط السعرات تلقائياً على مستوى الثبات والنمو الطبيعي.';
+    warningEn =
+      'For trainees under 18, cutting deficits or aggressive bulks are not advised without consulting a sports physician or nutritionist. Targets adjusted to maintenance.';
+  } else if (bmi < 18.5 && i.goal === 'CUT') {
+    // 2. BMI < 18.5 (underweight): strictly disallow cutting
+    effectiveGoal = 'MAINTAIN';
+    isGoalOverridden = true;
+    warningCode = 'UNDERWEIGHT_CUT_RESTRICTED';
+    warningAr =
+      'مؤشر كتلة جسمك يقع ضمن نطاق النحافة (BMI < 18.5). يُمنع التنشيف لتفادي المخاطر الصحية ونقص المناعة؛ تم تحويل الهدف تلقائياً إلى الثبات/البناء.';
+    warningEn =
+      'Your BMI indicates underweight (BMI < 18.5). Cutting is clinically restricted; targets adjusted to healthy maintenance.';
+  }
+
+  // Calculate target calories based on effectiveGoal
+  let kcal: number;
+  let flooredForSafety = false;
+
+  if (effectiveGoal === 'CUT') {
+    const rawCutKcal = tdee * 0.8;
+    const clinicalFloor = i.gender === 'MALE' ? 1500 : 1200;
+    const minSafetyFloor = Math.max(clinicalFloor, bmr * 0.9);
+
+    // If the clinical floor itself is greater than or equal to TDEE, cutting is contraindicated!
+    // Never allow a cut to exceed TDEE (which would turn deficit into surplus).
+    if (minSafetyFloor >= tdee) {
+      effectiveGoal = 'MAINTAIN';
+      isGoalOverridden = true;
+      kcal = Math.round(tdee);
+      warningCode = 'CUT_EXCEEDS_TDEE_RESTRICTED';
+      warningAr =
+        'سعرات الثبات لديك أقل من الحد الأدنى الطبي الآمن للتنشيف. لا يُنصح بالتنشيف بدون إشراف طبي متخصص؛ تم ضبط السعرات على الثبات لحمايتك من الفائض العكسي.';
+      warningEn =
+        'Your maintenance calories are below the safe clinical cutting floor. Cutting is not recommended; targets set to maintenance.';
+      flooredForSafety = true;
+    } else if (rawCutKcal < minSafetyFloor) {
+      // Safety floor active, but strictly capped at TDEE so it remains a deficit or maintenance
+      kcal = Math.round(Math.min(minSafetyFloor, tdee));
+      flooredForSafety = true;
+    } else {
+      kcal = Math.round(rawCutKcal);
+    }
+  } else if (effectiveGoal === 'BULK') {
+    kcal = Math.round(tdee * 1.1);
+  } else {
+    kcal = Math.round(tdee);
+  }
+
+  // Protein by body weight (g/kg), capped at 35% of calories
+  const proteinPerKg = effectiveGoal === 'CUT' ? 2.2 : effectiveGoal === 'BULK' ? 2.0 : 1.8;
+  let proteinG = Math.round(i.weightKg * proteinPerKg);
+  proteinG = Math.min(proteinG, Math.round((kcal * 0.35) / 4));
+
+  // Fat: 0.8–0.9 g/kg but never below 20% of calories (hormonal health)
+  const fatPerKg = effectiveGoal === 'CUT' ? 0.8 : 0.9;
+  let fatsG = Math.round(i.weightKg * fatPerKg);
+  fatsG = Math.max(fatsG, Math.round((kcal * 0.2) / 9));
+
+  // Carbs: whatever calories remain
+  const carbsG = Math.max(0, Math.round((kcal - proteinG * 4 - fatsG * 9) / 4));
 
   return {
     kcal,
@@ -121,6 +177,11 @@ export function calcNutrition(raw: CalcInput): NutritionTargets {
     bmiLabelEn,
     adjustmentKcal: kcal - Math.round(tdee),
     flooredForSafety,
+    effectiveGoal,
+    isGoalOverridden,
+    warningCode,
+    warningAr,
+    warningEn,
   };
 }
 

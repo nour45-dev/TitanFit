@@ -7,10 +7,12 @@ import {
 } from './index.js';
 
 describe('@gymos/config', () => {
-  it('returns default TitanFit (Rooted Performance) brand configuration when env is empty', () => {
+  it('returns default TitanFit brand configuration when env is empty', () => {
     const cfg = getPlatformConfig({});
     expect(cfg.appName).toBe('TitanFit');
-    expect(cfg.brandSubtitle).toBe('ROOTED PERFORMANCE');
+    expect(cfg.brandSubtitle).toBe('ENTERPRISE FITNESS OS');
+    expect(cfg.claims.activeMembersCount).toBe('[MEMBERS_COUNT]');
+    expect(cfg.claims.medicalSupervisionPercent).toBe('[SUPERVISION_LEVEL]');
     expect(cfg.logoPath).toBe('/brand/logo.png');
     expect(cfg.defaultCurrency).toBe('EGP');
     expect(cfg.defaultLocale).toBe('en');

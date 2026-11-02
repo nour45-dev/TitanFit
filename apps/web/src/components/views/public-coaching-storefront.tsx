@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Activity,
@@ -30,7 +30,9 @@ import {
   Video,
   Zap,
   X,
+  Trophy,
 } from 'lucide-react';
+import { PLATFORM_CONFIG } from '@gymos/config';
 import { usePlatformStore } from '../../lib/platform-store';
 import { downloadEbookPdf } from '../../lib/pdf-docs';
 import { CalorieAndMealPlanner } from './calorie-and-meal-planner';
@@ -39,9 +41,9 @@ interface TransformationStory {
   id: string;
   nameAr: string;
   nameEn: string;
-  age: number;
-  roleAr: string;
-  roleEn: string;
+  age?: number;
+  roleAr?: string;
+  roleEn?: string;
   durationAr: string;
   durationEn: string;
   weightBeforeKg: number;
@@ -52,32 +54,31 @@ interface TransformationStory {
   quoteEn: string;
   badgeAr: string;
   badgeEn: string;
-  photoUrl: string;
+  photoUrl?: string;
+  isIllustrativeExample?: boolean;
 }
 
 
 const TRANSFORMATION_STORIES: TransformationStory[] = [
   {
     id: 'tr-1',
-    nameAr: 'م. أحمد عبد اللطيف',
-    nameEn: 'Eng. Ahmed Abdellatif',
-    age: 32,
-    roleAr: 'مهندس برمجيات — التجمع الخامس',
-    roleEn: 'Software Engineer — New Cairo',
-    durationAr: '١٢ أسبوع متابعة',
-    durationEn: '12 Weeks',
+    nameAr: 'نموذج محاكاة رقمي (مثال توضيحي)',
+    nameEn: 'Simulated Digital Model (Illustrative Case)',
+    roleAr: 'محاكاة حسابية لرحلة نحت وخسارة دهون (ليس عميلاً حقيقياً)',
+    roleEn: 'Mathematical simulation of fat-loss & recomposition (Not a real person)',
+    durationAr: '١٢ أسبوع متابعة افتراضية',
+    durationEn: '12 Weeks Projected',
     weightBeforeKg: 108,
     weightAfterKg: 84,
     bodyFatBefore: '29%',
     bodyFatAfter: '12%',
-    badgeAr: '-24 كجم دهون صافية + بناء عضل',
-    badgeEn: '-24 kg Fat Loss + Lean Muscle',
-    photoUrl:
-      'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=80',
+    badgeAr: '-24 كجم وزن إجمالي (-21.2 كجم دهون صافية) وفق الماكروز',
+    badgeEn: '-24 kg Total (-21.2 kg Fat) based on macro deficit',
+    isIllustrativeExample: true,
     quoteAr:
-      'كنت فاكر إن الدايت يعني حرمان وجوع، لكن مع وصفات الفيديو المحسوبة بالماكروز والمتابعة اليومية على الواتساب خسيت ٢٤ كيلو بدون أي ترهلات وبأكل كل اللي بحبه!',
+      'مثال توضيحي بالأرقام: نزول من ١٠٨ كجم (٢٩٪ دهون) إلى ٨٤ كجم (١٢٪ دهون) مع المحافظة على الكتلة العضلية بتطبيق عجز سعرات تدريجي ٢٠٪ ونظام بروتين عالي ٢ جم/كجم.',
     quoteEn:
-      'I thought dieting meant starving, but with macro-balanced recipes and daily WhatsApp coaching I dropped 24kg with zero loose skin!',
+      'Numerical illustrative simulation: dropping from 108kg (29% body fat) to 84kg (12% body fat) by maintaining lean mass through a controlled 20% deficit and 2.0g/kg protein.',
   },
 ];
 
@@ -144,6 +145,18 @@ export function PublicCoachingStorefrontView({
   const [sentEbookEmail, setSentEbookEmail] = useState('');
 
   const [ebookBusy, setEbookBusy] = useState(false);
+
+  // Close ebook modal on Escape key press
+  useEffect(() => {
+    if (!showEbookModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowEbookModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showEbookModal]);
 
   const generateEbook = async (email: string): Promise<boolean> => {
     setEbookBusy(true);
@@ -237,8 +250,8 @@ export function PublicCoachingStorefrontView({
 
             <p className="max-w-2xl text-sm font-normal leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
               {isAr
-                ? 'أكثر من +12,500 مشترك غيروا حياتهم بالكامل ووصلوا لشكل جسمهم المثالي من خلال خطط تغذية بوصفات مصورة، برامج تدريبية بالفيديو من الجيم أو البيت تحت إشراف أطباء علاج طبيعي، ومتابعة يومية خطوة بخطوة.'
-                : 'Over 12,500+ members transformed their bodies and lives through tailored video-recipe nutrition, physical-therapist-supervised training, and daily 1-on-1 WhatsApp & app coaching.'}
+                ? `متدربون ومشتركون غيروا حياتهم بالكامل ووصلوا لشكل جسمهم المثالي من خلال خطط تغذية بوصفات مصورة، برامج تدريبية بالفيديو من الجيم أو البيت تحت إشراف أطباء علاج طبيعي، ومتابعة يومية خطوة بخطوة.`
+                : `Members transformed their bodies and lives through tailored video-recipe nutrition, physical-therapist-supervised training, and daily 1-on-1 WhatsApp & app coaching.`}
             </p>
 
             {/* Primary CTA Buttons including the FREE TRIAL WORKOUTS & DIETS Button */}
@@ -272,27 +285,52 @@ export function PublicCoachingStorefrontView({
               </a>
             </div>
 
-            {/* Trust Metrics */}
-            <div className="grid grid-cols-3 gap-3 border-t border-slate-100 pt-6 sm:gap-6 dark:border-slate-800">
-              <div>
-                <p className="font-mono text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">+12,500</p>
-                <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {isAr ? 'قصة نجاح وتحول حقيقي' : 'Verified Transformations'}
-                </p>
-              </div>
-              <div className="border-s border-slate-100 ps-3 sm:ps-6 dark:border-slate-800">
-                <p className="font-mono text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">100%</p>
-                <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {isAr ? 'تحت إشراف طبي ورياضي' : 'Medical & PT Supervised'}
-                </p>
-              </div>
-              <div className="border-s border-slate-100 ps-3 sm:ps-6 dark:border-slate-800">
-                <p className="font-mono text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">24/7</p>
-                <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {isAr ? 'متابعة يومية بالواتساب' : 'Daily 1-on-1 WhatsApp'}
-                </p>
-              </div>
-            </div>
+            {/* Trust Metrics - Only renders verified, non-placeholder metrics */}
+            {(() => {
+              const metrics: Array<{ val: string; ar: string; en: string }> = [];
+              const rawCount = PLATFORM_CONFIG.claims.activeMembersCount?.trim();
+              if (rawCount && !rawCount.startsWith('[')) {
+                metrics.push({
+                  val: rawCount,
+                  ar: 'قصة نجاح وتحول حقيقي',
+                  en: 'Verified Transformations',
+                });
+              }
+              const rawMed = PLATFORM_CONFIG.claims.medicalSupervisionPercent?.trim();
+              if (rawMed && !rawMed.startsWith('[')) {
+                metrics.push({
+                  val: rawMed,
+                  ar: 'تحت إشراف طبي ورياضي',
+                  en: 'Medical & PT Supervised',
+                });
+              }
+              metrics.push({
+                val: '24/7',
+                ar: 'متابعة يومية بالواتساب',
+                en: 'Daily 1-on-1 WhatsApp Support',
+              });
+
+              return (
+                <div
+                  data-testid="hero-trust-metrics"
+                  className={`grid grid-cols-${metrics.length === 1 ? '1' : metrics.length === 2 ? '2' : '3'} gap-3 border-t border-slate-100 pt-6 sm:gap-6 dark:border-slate-800`}
+                >
+                  {metrics.map((m, idx) => (
+                    <div
+                      key={m.en}
+                      className={idx > 0 ? 'border-s border-slate-100 ps-3 sm:ps-6 dark:border-slate-800' : ''}
+                    >
+                      <p className="font-mono text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+                        {m.val}
+                      </p>
+                      <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                        {isAr ? m.ar : m.en}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Left Visual Column — White Card with Real Fitness Photo + Before/After Transformation */}
@@ -302,24 +340,22 @@ export function PublicCoachingStorefrontView({
             transition={{ duration: 0.5, delay: 0.15 }}
             className="lg:col-span-5"
           >
-            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
-              <div className="relative h-56 w-full overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1000&q=80"
-                  alt="Personal Trainer & Nutrition Coaching"
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-                <span className="absolute top-4 start-4 rounded-full bg-emerald-500 px-3.5 py-1 text-xs font-extrabold text-white shadow">
-                  {isAr ? '🔥 نتيجة الأسبوع الموثقة' : '🔥 FEATURED TRANSFORMATION'}
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
+              <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 flex flex-col justify-end p-5">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.22),transparent_70%)]" />
+                <div className="absolute top-4 end-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-400">
+                  <Trophy className="h-6 w-6 text-amber-400" />
+                </div>
+                <span className="relative z-10 w-fit rounded-full bg-emerald-700 px-3.5 py-1 text-xs font-extrabold text-white shadow">
+                  {isAr ? '🔥 مثال توضيحي لرحلة تحوّل متدرب' : '🔥 Illustrative Transformation Example'}
                 </span>
-                <div className="absolute bottom-3 start-4 end-4 flex items-center justify-between text-white">
+                <div className="relative z-10 mt-3 flex items-center justify-between text-white">
                   <div>
                     <p className="text-sm font-black">
-                      {isAr ? 'م. أحمد عبد اللطيف' : 'Eng. Ahmed Abdellatif'}
+                      {isAr ? 'نموذج محاكاة رقمي (مثال توضيحي)' : 'Simulated Macro Case Model'}
                     </p>
                     <p className="text-[11px] text-amber-300">
-                      {isAr ? 'خلال ١٢ أسبوع متابعة في باقة تيتان إيليت' : '12 Weeks on Titan Elite'}
+                      {isAr ? 'محاكاة علمية لنحت القوام وخسارة دهون (ليس عميلاً حقيقياً)' : 'Scientific recomp projection (Illustrative - not a real client)'}
                     </p>
                   </div>
                   <div className="flex gap-0.5 text-amber-400">
@@ -333,27 +369,27 @@ export function PublicCoachingStorefrontView({
               </div>
 
               <div className="p-6">
-                <div className="grid grid-cols-2 gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-center">
-                  <div className="border-e border-slate-200 pe-2">
-                    <p className="text-[11px] font-bold text-slate-500">
+                <div className="grid grid-cols-2 gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-center dark:border-slate-800 dark:bg-slate-950">
+                  <div className="border-e border-slate-200 pe-2 dark:border-slate-800">
+                    <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
                       {isAr ? 'قبل الاشتراك' : 'Before'}
                     </p>
                     <p className="mt-1 font-mono text-2xl font-black text-rose-600">108 kg</p>
-                    <p className="text-[11px] font-semibold text-slate-500">Body Fat: 29%</p>
+                    <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Body Fat: 29%</p>
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold text-emerald-700">
+                    <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">
                       {isAr ? 'بعد ١٢ أسبوع' : 'After 12 Wks'}
                     </p>
-                    <p className="mt-1 font-mono text-2xl font-black text-emerald-600">84 kg</p>
-                    <p className="text-[11px] font-bold text-emerald-700">Body Fat: 12% (-24kg)</p>
+                    <p className="mt-1 font-mono text-2xl font-black text-emerald-700 dark:text-emerald-400">84 kg</p>
+                    <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">Body Fat: 12% (-24kg)</p>
                   </div>
                 </div>
 
-                <blockquote className="mt-4 text-xs leading-relaxed font-semibold text-slate-600">
+                <blockquote className="mt-4 text-xs leading-relaxed font-semibold text-slate-700 dark:text-slate-300">
                   {isAr
-                    ? '“خسيت ٢٤ كيلو دهون وزدت كتلة عضلية من غير ما أحرم نفسي من الأكل اللي بحبه، والكوتش والدكتور كانوا معايا يوم بيوم على الواتساب!”'
-                    : '“Lost 24kg of fat while eating delicious macro-friendly meals with daily doctor & coach check-ins!”'}
+                    ? '“مثال توضيحي بالأرقام: نزول ٢١.٢ كجم دهون صافية من إجمالي ٢٤ كجم مع الحفاظ على الكتلة الخالية من الدهون عبر حساب الماكروز والتدرج في الأحمال بدون حرمان.”'
+                    : '“Illustrative calculation: 21.2kg of pure fat loss out of 24kg total while preserving lean mass via calculated macros and progressive overload.”'}
                 </blockquote>
               </div>
             </div>
@@ -376,7 +412,7 @@ export function PublicCoachingStorefrontView({
               </div>
               <div className="space-y-1">
                 <span className="inline-block rounded-full border border-slate-200 bg-white px-3 py-0.5 text-[11px] font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-                  {isAr ? 'جديد ومجاني ١٠٠٪ لزوار الموقع' : 'NEW & 100% FREE FOR VISITORS'}
+                  {isAr ? 'تجربة مجانية لزوار الموقع' : 'FREE ACCESS FOR VISITORS'}
                 </span>
                 <h2 className="text-xl font-black text-slate-900 dark:text-white sm:text-2xl">
                   {isAr
@@ -408,7 +444,7 @@ export function PublicCoachingStorefrontView({
       {/* 3. HOW IT WORKS IN 4 STEPS — "إنت مش لوحدك" */}
       <section className="space-y-8">
         <div className="text-center">
-          <span className="text-xs font-extrabold uppercase tracking-wider text-amber-600">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-400">
             {isAr ? 'رحلتك معانا خطوة بخطوة' : 'HOW YOUR TRANSFORMATION WORKS'}
           </span>
           <h2 className="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">
@@ -509,7 +545,7 @@ export function PublicCoachingStorefrontView({
           </div>
           <a
             href="#free-calorie-calculator"
-            className="text-xs font-extrabold text-amber-600 hover:underline"
+            className="text-xs font-extrabold text-amber-800 dark:text-amber-400 hover:underline"
           >
             {isAr ? 'ابدأ قصتك بحساب سعراتك ←' : 'Start your story — calculate your calories →'}
           </a>
@@ -527,50 +563,53 @@ export function PublicCoachingStorefrontView({
               className="flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:shadow-lg"
             >
               <div>
-                <div className="relative h-52 w-full overflow-hidden bg-slate-100">
-                  <img
-                    src={story.photoUrl}
-                    alt={isAr ? story.nameAr : story.nameEn}
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                  <span className="absolute top-3 start-3 rounded-full bg-emerald-500 px-3 py-1 text-[11px] font-extrabold text-white shadow">
+                <div className="relative h-52 w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 p-5 flex flex-col justify-end">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.2),transparent_70%)]" />
+                  <div className="absolute top-3 end-3 flex h-11 w-11 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-400">
+                    <Trophy className="h-5 w-5 text-amber-400" />
+                  </div>
+                  <span className="relative z-10 w-fit rounded-full bg-emerald-700 px-3 py-1 text-[11px] font-extrabold text-white shadow">
                     {isAr ? story.badgeAr : story.badgeEn}
                   </span>
-                  <span className="absolute bottom-3 end-3 rounded-lg bg-white/95 px-2.5 py-1 font-mono text-[11px] font-extrabold text-slate-900">
-                    {isAr ? story.durationAr : story.durationEn}
-                  </span>
+                  <div className="relative z-10 mt-2 flex items-center justify-between text-white">
+                    <span className="rounded-lg bg-black/40 px-2.5 py-1 font-mono text-[11px] font-extrabold text-amber-300 border border-amber-500/20">
+                      {isAr ? 'مثال توضيحي لرحلة تحوّل' : 'Illustrative Transformation'}
+                    </span>
+                    <span className="rounded-lg bg-white/95 px-2.5 py-1 font-mono text-[11px] font-extrabold text-slate-900">
+                      {isAr ? story.durationAr : story.durationEn}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="p-6">
-                  <div className="grid grid-cols-3 gap-2 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-center">
+                  <div className="grid grid-cols-3 gap-2 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-center dark:border-slate-800 dark:bg-slate-950">
                     <div>
-                      <span className="text-[10px] font-bold text-slate-500">
+                      <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
                         {isAr ? 'الوزن السابق' : 'Before'}
                       </span>
                       <p className="font-mono text-base font-black text-rose-600">
                         {story.weightBeforeKg} kg
                       </p>
                     </div>
-                    <div className="border-x border-slate-200">
-                      <span className="text-[10px] font-bold text-emerald-700">
+                    <div className="border-x border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-400">
                         {isAr ? 'الوزن الحالي' : 'After'}
                       </span>
-                      <p className="font-mono text-base font-black text-emerald-600">
+                      <p className="font-mono text-base font-black text-emerald-700 dark:text-emerald-400">
                         {story.weightAfterKg} kg
                       </p>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-slate-500">
+                      <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
                         {isAr ? 'نسبة الدهون' : 'Body Fat'}
                       </span>
-                      <p className="font-mono text-xs font-extrabold text-amber-700">
+                      <p className="font-mono text-xs font-extrabold text-amber-800 dark:text-amber-400">
                         {story.bodyFatBefore} ← {story.bodyFatAfter}
                       </p>
                     </div>
                   </div>
 
-                  <p className="mt-4 text-xs leading-relaxed text-slate-600">
+                  <p className="mt-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
                     “{isAr ? story.quoteAr : story.quoteEn}”
                   </p>
                 </div>
@@ -597,7 +636,7 @@ export function PublicCoachingStorefrontView({
         {/* "الحقيقة أو الدايت؟" Interactive Accordion */}
         <div className="mx-auto w-full max-w-3xl space-y-4">
           <div>
-            <span className="text-xs font-extrabold uppercase tracking-wider text-amber-600">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-400">
               {isAr ? 'الحقيقة العلمية بدون خرافات' : 'SCIENCE VS. DIET MYTHS'}
             </span>
             <h3 className="mt-1 text-xl font-black text-slate-900">
@@ -622,7 +661,7 @@ export function PublicCoachingStorefrontView({
                   >
                     <span>{isAr ? faq.qAr : faq.qEn}</span>
                     <ChevronDown
-                      className={`h-4 w-4 shrink-0 text-amber-600 transition-transform ${
+                      className={`h-4 w-4 shrink-0 text-amber-700 dark:text-amber-400 transition-transform ${
                         isOpen ? 'rotate-180' : ''
                       }`}
                     />
@@ -765,12 +804,20 @@ export function PublicCoachingStorefrontView({
       {/* INTERACTIVE E-BOOK PREVIEW & READER MODAL */}
       <AnimatePresence>
         {showEbookModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm">
+          <div
+            onClick={() => setShowEbookModal(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm cursor-pointer"
+            role="presentation"
+          >
             <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="ebook-modal-title"
+              onClick={(e) => e.stopPropagation()}
               initial={{ opacity: 0, scale: 0.94, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: 16 }}
-              className="w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden rounded-3xl border border-amber-300 bg-white text-slate-900 shadow-2xl"
+              className="w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden rounded-3xl border border-amber-300 bg-white text-slate-900 shadow-2xl cursor-default"
             >
               <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-amber-500/15 via-transparent to-emerald-500/15 p-6">
                 <div className="flex items-center gap-3">
@@ -782,13 +829,14 @@ export function PublicCoachingStorefrontView({
                       <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                       {isAr ? 'تم تجهيز الكتاب وبدء التحميل' : 'Book ready — download started'}
                     </span>
-                    <h3 className="text-base font-black text-slate-900 sm:text-lg">
+                    <h3 id="ebook-modal-title" className="text-base font-black text-slate-900 sm:text-lg">
                       {isAr ? 'الدليل الشامل لاحتراف التمرين والتغذية بدون إصابات' : 'The Complete Injury-Free Hypertrophy Guide'}
                     </h3>
                   </div>
                 </div>
                 <button
                   type="button"
+                  aria-label={isAr ? 'إغلاق نافذة الكتاب' : 'Close modal'}
                   onClick={() => setShowEbookModal(false)}
                   className="rounded-xl p-2 text-slate-400 hover:bg-slate-100"
                 >
@@ -882,6 +930,7 @@ export function PublicCoachingStorefrontView({
                   </a>
                   <button
                     type="button"
+                    aria-label={isAr ? 'إغلاق نافذة الكتاب' : 'Close modal'}
                     onClick={() => setShowEbookModal(false)}
                     className="rounded-xl border border-slate-300 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
                   >

@@ -220,7 +220,7 @@ export function OverviewView() {
             </span>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <p className="text-2xl font-extrabold text-amber-400">
+            <p className="text-2xl font-extrabold text-amber-700 dark:text-amber-400">
               {isAr ? (38 + expiringCount).toLocaleString('ar-EG') : 38 + expiringCount}
             </p>
             <button
@@ -232,7 +232,7 @@ export function OverviewView() {
                     : 'Dispatched WhatsApp renewal reminders with instant Paymob/InstaPay links to 39 members!',
                 )
               }
-              className="rounded-lg bg-amber-500/20 px-2.5 py-1 text-xs font-bold text-amber-300 transition hover:bg-amber-500/30"
+              className="rounded-lg bg-amber-500/20 px-2.5 py-1 text-xs font-bold text-amber-200 transition hover:bg-amber-500/30"
             >
               {isAr ? 'إرسال تذكير واتساب' : 'Send WhatsApp Blast'}
             </button>
@@ -267,7 +267,7 @@ export function OverviewView() {
                   className={`rounded-lg px-3 py-1 text-xs font-bold transition ${
                     chartPeriod === period
                       ? 'bg-[#D4AF37] text-slate-950'
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-200 hover:text-white'
                   }`}
                 >
                   {period}
@@ -813,10 +813,12 @@ export function MembersCrmView() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-300">
+                <label htmlFor="member-plan-select" className="block text-xs font-bold text-slate-300">
                   {isAr ? 'باقة الاشتراك' : 'Subscription Plan'}
                 </label>
                 <select
+                  id="member-plan-select"
+                  aria-label={isAr ? 'باقة الاشتراك' : 'Subscription Plan'}
                   value={planId}
                   onChange={(e) => setPlanId(e.target.value)}
                   className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
@@ -829,10 +831,12 @@ export function MembersCrmView() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-300">
+                <label htmlFor="member-branch-select" className="block text-xs font-bold text-slate-300">
                   {isAr ? 'الفرع الأساسي' : 'Home Branch'}
                 </label>
                 <select
+                  id="member-branch-select"
+                  aria-label={isAr ? 'الفرع الأساسي' : 'Home Branch'}
                   value={branchId}
                   onChange={(e) => setBranchId(e.target.value)}
                   className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
@@ -862,6 +866,7 @@ export function MembersCrmView() {
                 </label>
                 <div className="mt-1 flex gap-2">
                   <select
+                    aria-label={isAr ? 'النوع' : 'Gender'}
                     value={gender}
                     onChange={(e) => setGender(e.target.value as 'MALE' | 'FEMALE')}
                     className="w-1/2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
@@ -870,6 +875,7 @@ export function MembersCrmView() {
                     <option value="FEMALE">{isAr ? 'أنثى' : 'Female'}</option>
                   </select>
                   <select
+                    aria-label={isAr ? 'فصيلة الدم' : 'Blood Type'}
                     value={bloodType}
                     onChange={(e) => setBloodType(e.target.value)}
                     className="w-1/2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
@@ -1297,10 +1303,12 @@ export function PaymentsBillingView() {
 
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-bold text-slate-300">
+              <label htmlFor="checkout-member-select" className="block text-xs font-bold text-slate-300">
                 {isAr ? 'اختر العضو' : 'Select Member'}
               </label>
               <select
+                id="checkout-member-select"
+                aria-label={isAr ? 'اختر العضو' : 'Select Member'}
                 value={selectedMemberId}
                 onChange={(e) => setSelectedMemberId(e.target.value)}
                 className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-white"
@@ -1314,10 +1322,12 @@ export function PaymentsBillingView() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300">
+              <label htmlFor="checkout-plan-select" className="block text-xs font-bold text-slate-300">
                 {isAr ? 'باقة الاشتراك' : 'Subscription Plan'}
               </label>
               <select
+                id="checkout-plan-select"
+                aria-label={isAr ? 'باقة الاشتراك' : 'Subscription Plan'}
                 value={selectedPlanId}
                 onChange={(e) => setSelectedPlanId(e.target.value)}
                 className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-white"
