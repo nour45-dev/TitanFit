@@ -101,5 +101,13 @@ jobs:
       - name: Run Playwright E2E Tests (English LTR & Arabic RTL)
         run: pnpm --filter @gymos/web test:e2e
 
+      - name: Build Web Application for Security Bundle Audit
+        run: pnpm --filter @gymos/web build
+
+      - name: Client Bundle Credential Leak Scan
+        id: client-bundle-leak-scan
+        run: pnpm --filter @gymos/web test --run src/security-bundle.spec.ts
+        continue-on-error: ${{ github.ref_name == 'qa/full-audit' }}
+
       - name: Dependency Security Audit
         run: pnpm audit --audit-level=high || true

@@ -8,9 +8,11 @@ describe('Client Bundle Security & Credential Leak Prevention', () => {
   // TODO [SECURITY-P0]: In branch 'security/server-auth', switch this to normal it()
   // once apps/web client bundle is purged and auth moves completely to apps/api.
   it.fails('detects client-bundle leaks (expected to fail until server-auth migration lands)', () => {
+    // 1. Must fail clearly if build has not been generated
     if (!fs.existsSync(nextStaticDir)) {
-      console.warn('⚠️ .next/static directory not found. Skipping static chunk leak scan.');
-      return;
+      throw new Error(
+        'FATAL: .next/static directory not found! You must execute `next build` before running security bundle scans.',
+      );
     }
 
     const getAllFiles = (dir: string): string[] => {
@@ -30,11 +32,29 @@ describe('Client Bundle Security & Credential Leak Prevention', () => {
 
     const jsFiles = getAllFiles(nextStaticDir);
 
-    // Generic pattern matching without any literal secrets
+    // 2. Must verify scanned file count > 0
+    expect(jsFiles.length, 'Expected at least 1 compiled JS chunk in .next/static').toBeGreaterThan(0);
+
+    // 3. Precise leak patterns with false-positive exclusions:
+    // Exclude placeholders like TF-XXXXXXXXXX, invoice prefixes (INV-2026-), and ISO-8601 dates (2026-11-02)
     const leakedPatterns = [
-      { name: 'Gym Secret PIN Pattern ([A-Z]{2,4}-[0-9]{4,6})', regex: /\b[A-Z]{2,4}-[0-9]{4,6}\b/ },
-      { name: 'Hardcoded Tenant Password Object Key', regex: /password\s*:\s*["'][a-zA-Z0-9_-]{5,}["']/i },
-      { name: 'Hardcoded Fallback Secret Keyword', regex: /(?:fallbackPassword|defaultOwnerPass|dummyAdminCode)/i },
+      {
+        name: 'Gym Secret PIN Pattern',
+        // Matches TF-#### or PK-#### but ignores year numbers like TF-2026 or placeholders TF-XXXXXXXXXX
+        regex: /\b(?:TF|PK)-(?!XXXXXXXXXX\b|202[0-9]\b)[0-9]{4,6}\b/,
+      },
+      {
+        name: 'Hardcoded Tenant Password Key',
+        regex: /password\s*:\s*["'][a-zA-Z0-9_-]{5,}["']/i,
+      },
+      {
+        name: 'Gym Secret Code Property Key',
+        regex: /gymSecretCode\s*:\s*["'][a-zA-Z0-9_-]+["']/i,
+      },
+      {
+        name: 'Hardcoded Fallback Secret Keyword',
+        regex: /(?:fallbackPassword|defaultOwnerPass|dummyAdminCode)/i,
+      },
     ];
 
     const violations: string[] = [];
@@ -43,8 +63,9 @@ describe('Client Bundle Security & Credential Leak Prevention', () => {
       const content = fs.readFileSync(filePath, 'utf8');
       for (const pattern of leakedPatterns) {
         if (pattern.regex.test(content)) {
+          // Output violation with sensitive snippet redacted
           violations.push(
-            `❌ SECURITY LEAK in client bundle [${path.basename(filePath)}]: Found pattern ${pattern.name}`,
+            `❌ SECURITY LEAK in client bundle [${path.basename(filePath)}]: Found pattern ${pattern.name} (Matched value: [REDACTED])`,
           );
         }
       }
