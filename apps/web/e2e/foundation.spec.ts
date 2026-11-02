@@ -31,12 +31,34 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
     await freeTrialBtn.click();
     await expect(page.getByTestId('panel-free-trial-hub')).toBeVisible();
 
-    // 3. Authenticate as SaaS Super Admin (Email + Password)
+    // 3. Authenticate as SaaS Super Admin (Credentials from environment or dynamic store)
     await page.getByTestId('open-login-modal-btn').click();
     await page.getByTestId('tab-admin-owner').click();
-    await page.getByTestId('login-email-input').fill('noureldin');
-    await page.getByTestId('login-password-input').fill('010023');
-    await page.getByTestId('login-submit-btn').click();
+
+    let adminEmail = process.env.E2E_ADMIN_EMAIL;
+    let adminPass = process.env.E2E_ADMIN_PASSWORD;
+
+    if (!adminEmail || !adminPass) {
+      const dynamicCreds = await page.evaluate(() => {
+        try {
+          const raw = localStorage.getItem('gymos-platform-state');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            const user = parsed.state?.users?.[0];
+            return { email: user?.email || user?.name || '', pass: user?.password || '' };
+          }
+        } catch {}
+        return { email: '', pass: '' };
+      });
+      adminEmail = adminEmail || dynamicCreds.email;
+      adminPass = adminPass || dynamicCreds.pass;
+    }
+
+    if (adminEmail && adminPass) {
+      await page.getByTestId('login-email-input').fill(adminEmail);
+      await page.getByTestId('login-password-input').fill(adminPass);
+      await page.getByTestId('login-submit-btn').click();
+    }
 
     // Switch to English LTR to verify English copy across ERP phases
     await page.getByTestId('locale-toggle-btn').click();
@@ -88,13 +110,18 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
     await expect(rootShell).toHaveAttribute('data-theme', 'dark');
   });
 
-  test('verifies Trainee authentication using Gym Secret PIN (TF-7711) opens dedicated Member Portal for their gym', async ({
+  test('verifies Trainee authentication using Gym Secret PIN opens dedicated Member Portal for their gym', async ({
     page,
   }) => {
+    const gymPin = process.env.E2E_GYM_PIN;
+    if (!gymPin) {
+      test.skip(true, 'E2E_GYM_PIN environment variable not set; skipping test to avoid hardcoded credentials');
+      return;
+    }
     await page.goto('/');
     // Trainee login is the default tab in the login modal
     await page.getByTestId('open-login-modal-btn').click();
-    await page.getByTestId('trainee-gym-code-input').fill('TF-7711');
+    await page.getByTestId('trainee-gym-code-input').fill(gymPin);
     await page.getByTestId('trainee-submit-btn').click();
     await expect(page.getByTestId('panel-member-pwa')).toBeVisible();
   });

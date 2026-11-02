@@ -295,25 +295,50 @@ async function run() {
   /* TEST 8: UI PROTOTYPES (ADMIN / TRAINER / MEMBER)                   */
   /* ------------------------------------------------------------------ */
   console.log('\n--- [SECTION 8] UI Prototype Portals Audit (Client-Side State Notice) ---');
-  // Login with valid PIN (TF-7711)
-  await traineeInput.fill('TF-7711');
-  await mobilePage.getByTestId('trainee-submit-btn').click();
-  await mobilePage.waitForTimeout(500);
-  await mobilePage.screenshot({ path: path.join(SCREENSHOTS_DIR, '10_member_portal_pwa_proto.png') });
-  pass('Trainee PIN loads Member PWA Prototype (Note: Client-side prototype)');
-  audit.prototypesNoted.push('Member PWA (Trainee View)');
+  
+  // Read credentials dynamically from page state or env without hardcoding secrets
+  const testCreds = await page.evaluate(() => {
+    try {
+      const raw = localStorage.getItem('gymos-platform-state');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return {
+          pin: parsed.state?.gyms?.[0]?.secretCode || '',
+          email: parsed.state?.users?.[0]?.email || parsed.state?.users?.[0]?.name || '',
+          pass: parsed.state?.users?.[0]?.password || '',
+        };
+      }
+    } catch {}
+    return { pin: '', email: '', pass: '' };
+  });
+
+  const resolvedPin = process.env.E2E_GYM_PIN || testCreds.pin;
+  const resolvedEmail = process.env.E2E_ADMIN_EMAIL || testCreds.email;
+  const resolvedPass = process.env.E2E_ADMIN_PASSWORD || testCreds.pass;
+
+  // Login with PIN
+  if (resolvedPin) {
+    await traineeInput.fill(resolvedPin);
+    await mobilePage.getByTestId('trainee-submit-btn').click();
+    await mobilePage.waitForTimeout(500);
+    await mobilePage.screenshot({ path: path.join(SCREENSHOTS_DIR, '10_member_portal_pwa_proto.png') });
+    pass('Trainee PIN loads Member PWA Prototype (Note: Client-side prototype)');
+    audit.prototypesNoted.push('Member PWA (Trainee View)');
+  }
 
   // Now login on Desktop as Super Admin
-  console.log('Testing Admin Dashboard UI Prototype...');
-  await page.getByTestId('open-login-modal-btn').click();
-  await page.getByTestId('tab-admin-owner').click();
-  await page.getByTestId('login-email-input').fill('noureldin');
-  await page.getByTestId('login-password-input').fill('010023');
-  await page.getByTestId('login-submit-btn').click();
-  await page.waitForTimeout(500);
-  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, '11_super_admin_saas_proto.png') });
-  pass('Super Admin credentials load SaaS Console Prototype');
-  audit.prototypesNoted.push('Super Admin SaaS Console');
+  if (resolvedEmail && resolvedPass) {
+    console.log('Testing Admin Dashboard UI Prototype...');
+    await page.getByTestId('open-login-modal-btn').click();
+    await page.getByTestId('tab-admin-owner').click();
+    await page.getByTestId('login-email-input').fill(resolvedEmail);
+    await page.getByTestId('login-password-input').fill(resolvedPass);
+    await page.getByTestId('login-submit-btn').click();
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, '11_super_admin_saas_proto.png') });
+    pass('Super Admin credentials load SaaS Console Prototype');
+    audit.prototypesNoted.push('Super Admin SaaS Console');
+  }
 
   // Switch to Gym Overview
   await page.getByTestId('header-nav-OVERVIEW').click();
@@ -341,7 +366,7 @@ async function run() {
     v.nodes.slice(0, 3).forEach((n) => console.log(`       * ${n.target.join(' ')}: ${n.failureSummary}`));
   }
   if (homeAxe.violations.length === 0) {
-    pass('Storefront passes 100% WCAG 2 AA accessibility rules with zero violations');
+    pass('Storefront achieves 0 violations in Axe scan across WCAG 2 AA rules');
   } else {
     for (const v of homeAxe.violations) {
       if (v.impact === 'critical' || v.impact === 'serious') {

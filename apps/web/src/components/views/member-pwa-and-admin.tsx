@@ -1120,7 +1120,7 @@ export function SuperAdminConsoleView() {
                 </label>
                 <input
                   type="text"
-                  placeholder={isAr ? "مثال: TF-7711 (أو اتركه فارغاً لإنشائه تلقائياً)" : "e.g. TF-7711 (or leave blank to auto-generate)"}
+                  placeholder={isAr ? "مثال: TF-XXXXXXXXXX (أو اتركه فارغاً لإنشائه تلقائياً)" : "e.g. TF-XXXXXXXXXX (or leave blank to auto-generate)"}
                   value={gymSecretCodeInput}
                   onChange={(e) => setGymSecretCodeInput(e.target.value.toUpperCase())}
                   className="theme-input mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 font-mono uppercase text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
