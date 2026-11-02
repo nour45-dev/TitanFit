@@ -1,6 +1,6 @@
 # ADR 0001: Server-Side Authentication, Multi-Tenant RLS & Zero-Client-Leak Architecture
 
-- **Status:** Proposed (Awaiting Owner Review & Approval)
+- **Status:** Revised & Proposed (Awaiting Final Approval before PR 1)
 - **Date:** 2026-11-02
 - **Author:** Senior Full-Stack & QA Engineer
 - **Target Branch:** `security/server-auth`
@@ -9,11 +9,11 @@
 
 ## 1. السياق والمشكلة (Context & Problem Statement)
 
-أثبت الفحص المعماري واختبار الأمان الآلي (`security-bundle.spec.ts`) وجود ثغرة معمارية من الدرجة الأولى (**P0 Critical**):
+أثبت الفحص المعماري واختبار الأمان الآلي وجود ثغرة معمارية من الدرجة الأولى (**P0 Critical**):
 1. **التحقق من الهوية يتم على المتصفح فقط (Client-Side Auth):**
-   ملف `apps/web/src/lib/platform-store.tsx` يحمل تعليمة `'use client'` ويقوم بمطابقة بيانات الدخول والـ PIN محلياً دون أي اتصال بسيرفر الباك إند.
-2. **تسريب بيانات الأندية والـ Credentials في الـ Client Bundle:**
-   يتم تضمين مصفوفة الأندية والـ PINs السريّة وقوالب الحسابات داخل ملفات الـ JavaScript الثابتة (`.next/static/chunks/page-*.js`) التي يتم إرسالها لمتصفح أي زائر، بالإضافة إلى استخدام كلمة سر افتراضية fallback (`coach123`).
+   ملف `apps/web/src/lib/platform-store.tsx` يحمل تعليمة `'use client'` ويقوم بمطابقة بيانات الدخول محلياً دون أي اتصال بسيرفر الباك إند.
+2. **تسريب بيانات الأندية في الـ Client Bundle:**
+   يتم تضمين مصفوفة الأندية وأكواد الدخول وقوالب الحسابات داخل ملفات الـ JavaScript الثابتة (`.next/static/chunks/page-*.js`) التي يتم إرسالها لمتصفح الزوار، مع وجود كلمات سر fallback.
 3. **حفظ بيانات الأندية والمستخدمين في LocalStorage:**
    يتم تخزين بيانات الأندية والملاك في المتصفح (`titanfit.tenants.v1`)، مما يتيح التلاعب بها وتجاوز العزل.
 
@@ -24,43 +24,68 @@
 سيتوقف المتصفح تماماً عن الاحتفاظ بأي أسرار أو أكواد أو منطق تحقق، ويتحول إلى واجهة عرض وتفاعل نظيفة:
 
 $$\begin{aligned}
-\text{متصفح المستخدم (Browser)} &\xrightarrow{\text{HTTP POST (Credentials / PIN)}} \text{Next.js BFF / API Route} \\
-&\xrightarrow{\text{Internal REST with Header Validation}} \text{apps/api (NestJS Core Engine)} \\
+\text{متصفح المستخدم (Browser)} &\xrightarrow{\text{HTTP POST (Credentials / Code)}} \text{Next.js BFF / API Route} \\
+&\xrightarrow{\text{Internal REST / Reverse Proxy}} \text{apps/api (NestJS Core Engine)} \\
 &\xrightarrow{\text{PostgreSQL Session with RLS}} \text{PostgreSQL (Multi-Tenant DB)}
 \end{aligned}$$
 
-- **إلغاء تخزين الأندية في LocalStorage:** لن يتم تخزين سوى تفضيلات الواجهة العامة للمستخدم (مثل اللغة المختارة `ar/en` والثيم `light/dark`).
-- **حالة الجلسة:** تُحفظ فقط في الذاكرة الحية (React Memory State) وتُستعلم عند تحميل الصفحة من السيرفر عبر `/api/v1/auth/me`.
+- **مسح الـ LocalStorage القديم تلقائياً:** عند تحميل التطبيق لأول مرة في الإصدار الجديد، يقوم الكود بمسح مفاتيح `titanfit.tenants.v1` و `titanfit.auth.*` تلقائياً من متصفح المستخدم لمنع أي تعارض.
+- **تخزين تفضيلات العرض فقط:** لا يُحفظ في المتصفح سوى اللغة المختارة (`ar`/`en`) والثيم (`light`/`dark`).
 
 ---
 
-## 3. معمارية المصادقة وحماية الجلسات (Server-Side Auth & Session Architecture)
+## 3. معمارية المصادقة وحماية الجلسات (Server-Side Auth & Sessions)
 
 1. **تشفير كلمات المرور (Password Hashing):**
-   - استخدام خوارزمية **`Argon2id`** (المعيار الذهبي ضد هجمات الـ GPU والـ Rainbow Tables).
-   - إلغاء أي باسورد افتراضي نهائياً (إزالة `coach123` و `owner123` fallback).
-2. **إدارة الـ Tokens والجلسات:**
-   - **Access Token:** مدة صلاحية قصيرة (15 دقيقة) يحتوي على المعرف المجهول `userId`، ومعرف النادي `tenantId`، وصلاحيات الدور `permissions`.
-   - **تخزين الـ Token:** داخل **`HttpOnly + Secure + SameSite=Strict` Cookie**، مما يمنع نهائياً سرقته بواسطة هجمات XSS في المتصفح.
-   - **Refresh Token Rotation:** تجديد الـ Access Token تلقائياً، مع إبطال الـ Token القديم وتخزينه كـ Hash في قاعدة البيانات لمنع إعادة استخدامه (Replay Attack Prevention).
-   - **حماية CSRF:** استخدام تقنية Double-Submit Cookie أو توقيع CSRF Header للعمليات المعدلة (POST/PUT/DELETE).
+   - استخدام خوارزمية **`Argon2id`** (المعيار الموصى به من OWASP).
+   - منع وإلغاء أي كلمات سر افتراضية (Fallback) نهائياً؛ لا يمكن تسجيل الدخول إلا ببيانات معتمدة ومسجلة في قاعدة البيانات.
+2. **جدول الجلسات المركزي (`sessions` Table):**
+   - إضافة جدول `sessions` في قاعدة البيانات:
+     ```prisma
+     model Session {
+       id           String   @id @default(uuid())
+       userId       String
+       tenantId     String
+       refreshTokenHash String
+       userAgent    String?
+       ipAddress    String?
+       expiresAt    DateTime
+       createdAt    DateTime @default(now())
+       revokedAt    DateTime?
+       user         User     @relation(fields: [userId], references: [id])
+       tenant       Tenant   @relation(fields: [tenantId], references: [id])
+     }
+     ```
+   - **ميزة الإلغاء الشامل (Revocation):** إمكانية عمل "تسجيل الخروج من جميع الأجهزة الأخرى" فوراً بإلغاء كل الجلسات في الجدول للمستخدم المعني.
+3. **إدارة الـ Tokens:**
+   - **Access Token:** مدة صلاحية قصيرة (15 دقيقة) موقع بـ Secret قوي من الـ `env` فقط، مشفر داخل **`HttpOnly + Secure + SameSite=Strict` Cookie** لمنع سرقته عبر هجمات XSS.
+   - **Refresh Token Rotation:** كل طلب تجديد يصدر Token جديد ويبطل القديم تلقائياً في جدول الجلسات لمنع هجمات الـ Token Replay.
+   - **حماية CSRF:** استخدام Double-Submit CSRF Token أو توقيع Header في جميع طلبات التعديل (POST/PUT/DELETE).
 
 ---
 
-## 4. تصميم التحقق من الـ PIN واقتراح بديل للمتدربين
+## 4. معمارية هوية المتدرب ودخول النادي (المرحلة الأولى + التوسع)
 
-### الوضع المطلوب للـ Gym PIN:
-- لا يُخزن الـ PIN كنص صريح (Plaintext) أبداً؛ بل يُخزن كـ **Salted Hash (Argon2id)** في جدول النادي `tenants`.
-- التحقق يتم حصراً في السيرفر عبر `apps/api`.
-- حماية ضد التخمين: تفعيل **Rate Limiting** عبر `@nestjs/throttler` (بحد أقصى 5 محاولات خاطئة لكل دقيقة)، مع **Lockout** مؤقت للـ IP عند تكرار الفشل.
+بناءً على القرار المعتمد (**الخيار ب: هوية مستقلة لكل عضو**):
 
-### دراسة مقترح: (دخول المتدرب بالموبايل + OTP مقابل كود الـ PIN السري):
+### أ) المرحلة الأولى (Phase 1):
+1. **كود انضمام النادي الطويل (Club Joining Code):**
+   - إلغاء الأكواد القصيرة والضعيفة.
+   - كود النادي يصبح كوداً عشوائياً قوياً $\ge 10$ أحرف وأرقام مشفر (Cryptographically Secure Random String).
+   - **عداد محاولات على مستوى النادي (Tenant-Level Rate Limiter):** حماية من التخمين ليس فقط على مستوى الـ IP، بل عداد على مستوى النادي يوقف استقبال محاولات الانضمام مؤقتاً في حال تكرار 5 محاولات فاشلة متتالية خلال 10 دقائق لحماية اسم النادي ورمزه.
+2. **تسجيل العضو بالهاتف وكود التفعيل الشخصي:**
+   - يدخل المتدرب كود انضمام ناديه مرة واحدة لربط جهازه بالنادي.
+   - يُسجل برقم هاتفه، ويحصل على كود تفعيل شخصي مشفر (Personal Activation Code) يُنشئه موظف الاستقبال أو النظام عند سداد الاشتراك بالصالة.
 
-| المعيار | الخيار أ: الدخول بالـ PIN السري للنادي فقط (الحالي) | الخيار ب: كود الـ PIN كود انضمام + الدخول برقم الموبايل و OTP (المقترح) |
-| :--- | :--- | :--- |
-| **المزايا (Pros)** | • تجربة مستخدم سريعة وفورية بدون إدخال بيانات معقدة.<br>• لا يتطلب تكلفة بوابة رسائل SMS.<br>• ممتاز للنوادي الصغيرة وتجربة التطبيق بدون شروط. | • **هوية فردية موثقة لكل متدرب:** يرى كل متدرب بياناته الخاصة فقط (وزنه، قياساته، سجله الطبي) ولا يشاركه أحد.<br>• **منع مشاركة الحسابات:** يمنع متدرب غير مشترك من استخدام PIN الجيم.<br>• متوافق مع معايير حماية البيانات الطبية والخصوصية. |
-| **العيوب (Cons)** | • **انعدام الخصوصية الفردية:** جميع المتدربين في نفس الجيم يدخلون بنفس الكود، مما يجعل بيانات التمارين مشتركة أو تابعة لمتصفح محلي فقط.<br>• إذا تسرب الـ PIN لأي شخص يمكنه فتح بوابة النادي. | • يتطلب وجود بوابة إرسال SMS (أو WhatsApp OTP API مثل Twilio / Infobip) وتكلفتها لكل رسالة.<br>• خطوة إضافية أثناء تسجيل الدخول لأول مرة. |
-| **التوصية الهندسية** | مناسب كـ Guest/Demo Mode أو عند فتح تطبيق الجيم على شاشة مشتركة بالصالة. | **هو الخيار الموصى به لمنصة SaaS إنتاجية احترافية.** حيث يدخل المتدرب كود النادي مرة واحدة لربط اشتراكه بناديه، ثم يوثق حسابه برقم هاتفه. |
+### ب) معمارية الـ OTP Provider Interface القابلة للتوسع (Phase 2):
+- تصميم واجهة برمجية موحدة في `apps/api`:
+  ```typescript
+  export interface OtpProvider {
+    sendOtp(phone: string, code: string, template: 'AR' | 'EN'): Promise<boolean>;
+    verifyOtp(phone: string, code: string): Promise<boolean>;
+  }
+  ```
+- تتيح الواجهة تبديل المزود مستقبلاً بسلاسة (WhatsApp Business Cloud API، أو SMS عبر Twilio / Infobip / Vodafone Misr) دون تعديل كود الـ Auth الأساسي.
 
 ---
 
@@ -70,7 +95,7 @@ $$\begin{aligned}
 - **تنفيذ الـ RLS على مستوى قاعدة البيانات:**
   في كل Transaction ومعاملة في قاعدة البيانات يتم تنفيذ:
   ```sql
-  SET LOCAL app.tenant_id = 'cairo-titans';
+  SET LOCAL app.tenant_id = 'current-tenant-uuid';
   ```
   حيث تمنع سياسات RLS في PostgreSQL قراءة أو تعديل أي سطر لا يتطابق فيه `tenant_id` مع سياق الجلسة، حتى لو تم استدعاء الـ Query مباشرة من الباك إند.
 
@@ -87,23 +112,51 @@ $$\begin{aligned}
 
 ---
 
-## 7. أمان الـ API والعقود
+## 7. أمان الـ API وإعدادات النشر على Railway
 
+- **إعدادات CORS والكوكيز بين Web و API:**
+  - يتم ضبط CORS في `apps/api` بدقة لاستقبال الطلبات من نطاق الويب فقط:
+    ```typescript
+    origin: [process.env.NEXT_PUBLIC_WEB_URL, 'https://titanfit.up.railway.app'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    ```
+  - الكوكيز تُضبط بـ `domain: '.railway.app'` (أو Custom Domain المشترك) لتبادل جلسات الـ Auth الآمنة بين الـ Subdomains.
 - **حماية الترويسات (Helmet & CSP):** استخدام `@fastify/helmet` لفرض `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `HSTS`, وترويسة `Content-Security-Policy` بوضع `Report-Only` أولاً لمراجعة الـ Console قبل التفعيل الصارم.
-- **إحكام CORS:** تقييد الأصول المسموح بها بدقة لنطاق المنصة فقط (`NEXT_PUBLIC_WEB_URL` ولا يُسمح بـ `*`).
-- **التحقق بـ Zod:** ربط جميع طلبات الـ HTTP والـ Payloads بمخططات Zod المعرفة في `packages/contracts` على السيرفر لرفض أي حقول إضافية أو حقن نصوص ضارة.
-- **تطبيق الـ RBAC:** تطبيق حارس الصلاحيات `AuthRbacGuard` للتحقق من `hasAllPermissions` لكل endpoint بناءً على الصلاحيات الـ 71 المعرفة في `packages/contracts`.
+- **النسخ الاحتياطي وإدارة الـ Migrations:**
+  - استخدام `prisma migrate deploy` في خطوة الـ Pre-deploy على السيرفر بصلاحية `DATABASE_MIGRATION_URL`.
+  - تفعيل سكريبت النسخ الاحتياطي التلقائي اليومي لقاعدة البيانات `infra/scripts/pg-backup-to-s3.mjs` على S3-compatible storage مشفر.
 
 ---
 
-## 8. خطة مراحل التنفيذ التدريجي (Phased Rollout Plan — منفصلة في فرع `security/server-auth`)
+## 8. خطوات نشر `apps/api` و PostgreSQL على Railway
+
+1. **إنشاء خدمة PostgreSQL على Railway:**
+   - إضافة خدمة Database من نوع PostgreSQL 16 على مشروع Railway.
+   - إنشاء قاعدة البيانات وتعيين المتغير السري `DATABASE_URL` و `DATABASE_MIGRATION_URL`.
+2. **نشر خدمة `apps/api`:**
+   - إنشاء خدمة جديدة في Railway وربطها بنفس الـ GitHub Repo.
+   - تعيين Root Directory إلى `apps/api`.
+   - ضبط أمر البناء: `pnpm --filter @gymos/config build && pnpm --filter @gymos/contracts build && pnpm --filter @gymos/database build && pnpm --filter @gymos/api build`.
+   - ضبط أمر التشغيل: `pnpm --filter @gymos/api start`.
+   - ربط متغيرات البيئة السرية من Railway:
+     - `DATABASE_URL`, `DATABASE_MIGRATION_URL`
+     - `JWT_SECRET`, `JWT_REFRESH_SECRET`
+     - `CORS_ORIGIN=https://titanfit.up.railway.app`
+3. **تحديث خدمة `apps/web` على Railway:**
+   - إضافة متغير البيئة: `NEXT_PUBLIC_API_URL=https://api-titanfit.up.railway.app/api/v1`.
+   - إعادة نشر الـ Web تلقائياً.
+
+---
+
+## 9. خطة مراحل التنفيذ التدريجي (Phased PR Plan)
 
 | المرحلة (PR) | نطاق العمل | معايير القبول والاختبار |
 | :--- | :--- | :--- |
-| **PR 1: Core Auth, Tenants & Server Sessions** | • إنشاء مسارات `/api/v1/auth/login` و `/logout` و `/me` في `apps/api`.<br>• تشفير الباسوردات بـ Argon2id.<br>• إرسال الـ JWT في HttpOnly Cookie.<br>• إزالة `INITIAL_TENANTS` من `apps/web`. | نجاح `security-bundle.spec.ts` مع صفر تسريبات، واجتياز اختبارات تسجيل دخول الأدمن وصاحب الجيم. |
-| **PR 2: Member Joining (PIN / OTP) & Trainees Portal** | • إنشاء مسار الانضمام وتوثيق المتدرب.<br>• تطبيق الـ Throttler على مدخلات الـ PIN لمنع التخمين.<br>• ربط تطبيق المتدرب PWA ببيانات عضويته الخاصة. | منع أي كود خاطئ بعد 5 محاولات، ودخول المتدرب لناديه فقط. |
-| **PR 3: Members CRM, Subscriptions & Staff Modules** | • تفعيل عزل الـ RLS على جداول الأعضاء والاشتراكات والحصص.<br>• ربط شاشات لوحة صاحب الجيم بالـ API الحقيقي. | محاولة Tenant A طلب أعضاء Tenant B ترجع 403 Forbidden دائماً. |
-| **PR 4: Billing, Egyptian Gateways & Webhooks** | • محاكاة بوابات الدفع (فوري، Paymob، إنستاباي).<br>• التحقق الصارم من توقيع الـ Webhooks (HMAC SHA-256).<br>• حماية العمليات المتكررة عبر `Idempotency-Key`. | رفض أي Webhook بدون توقيع سليم، ومنع تكرار تحصيل نفس الفاتورة. |
+| **PR 1: Core Auth, Tenants, Sessions Table & Server Endpoints** | • إنشاء مسارات `/api/v1/auth/login` و `/logout` و `/me` و `/sessions/revoke` في `apps/api`.<br>• تشفير الباسوردات بـ Argon2id.<br>• إرسال الـ JWT في HttpOnly Cookie.<br>• إزالة `INITIAL_TENANTS` من `apps/web` ومسح localStorage القديم. | اجتياز `security-bundle.spec.ts` مع صفر تسريبات، واجتياز اختبارات تسجيل دخول الأدمن وصاحب الجيم. |
+| **PR 2: Member Unique Identity (Long Code + Personal Code + OTP Interface)** | • إنشاء مسار الانضمام وتوثيق المتدرب برقم الهاتف.<br>• تطبيق الـ Throttler على مستوى النادي لمنع التخمين.<br>• واجهة `OtpProvider` الجاهزة لربط الرسائل لاحقاً.<br>• ربط تطبيق المتدرب PWA ببيانات عضويته الخاصة. | منع أي كود خاطئ بعد 5 محاولات على مستوى النادي، ودخول المتدرب لبياناته فقط. |
+| **PR 3: Members CRM, Subscriptions & Staff Modules with Server RLS** | • تفعيل عزل الـ RLS على جداول الأعضاء والاشتراكات والحصص.<br>• ربط شاشات لوحة صاحب الجيم بـ API السيرفر الحقيقي. | محاولة Tenant A طلب أعضاء Tenant B ترجع 403 Forbidden دائماً. |
+| **PR 4: Billing, Egyptian Gateways & Signed Webhooks** | • محاكاة بوابات الدفع (فوري، Paymob، إنستاباي).<br>• التحقق الصارم من توقيع الـ Webhooks (HMAC SHA-256).<br>• حماية العمليات المتكررة عبر `Idempotency-Key`. | رفض أي Webhook بدون توقيع سليم، ومنع تكرار تحصيل نفس الفاتورة. |
 
 ---
-**في انتظار موافقتك الصريحة على هذه الوثيقة قبل الشروع في كتابة أي سطر كود على فرع `security/server-auth`.**
+**في انتظار موافقتك الصريحة على هذه النسخة المعدلة من ADR 0001 قبل البدء في PR 1.**
