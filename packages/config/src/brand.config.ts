@@ -59,8 +59,8 @@ export function getPlatformConfig(
       ar: `${appName} — نظام الإدارة المتكامل للأندية الرياضية والفروع`,
     },
     claims: {
-      activeMembersCount: env.NEXT_PUBLIC_BRAND_MEMBERS_COUNT?.trim() || '+12,500',
-      medicalSupervisionPercent: env.NEXT_PUBLIC_BRAND_MEDICAL_PERCENT?.trim() || '100%',
+      activeMembersCount: env.NEXT_PUBLIC_BRAND_MEMBERS_COUNT?.trim() || '[MEMBERS_COUNT]',
+      medicalSupervisionPercent: env.NEXT_PUBLIC_BRAND_MEDICAL_PERCENT?.trim() || '[SUPERVISION_LEVEL]',
     },
     defaultLocale,
     supportedLocales: SUPPORTED_LOCALES,

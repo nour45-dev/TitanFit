@@ -11,8 +11,8 @@ describe('@gymos/config', () => {
     const cfg = getPlatformConfig({});
     expect(cfg.appName).toBe('TitanFit');
     expect(cfg.brandSubtitle).toBe('ENTERPRISE FITNESS OS');
-    expect(cfg.claims.activeMembersCount).toBe('+12,500');
-    expect(cfg.claims.medicalSupervisionPercent).toBe('100%');
+    expect(cfg.claims.activeMembersCount).toBe('[MEMBERS_COUNT]');
+    expect(cfg.claims.medicalSupervisionPercent).toBe('[SUPERVISION_LEVEL]');
     expect(cfg.logoPath).toBe('/brand/logo.png');
     expect(cfg.defaultCurrency).toBe('EGP');
     expect(cfg.defaultLocale).toBe('en');

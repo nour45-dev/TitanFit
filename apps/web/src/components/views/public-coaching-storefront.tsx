@@ -62,24 +62,23 @@ interface TransformationStory {
 const TRANSFORMATION_STORIES: TransformationStory[] = [
   {
     id: 'tr-1',
-    nameAr: 'م. أحمد عبد اللطيف',
-    nameEn: 'Eng. Ahmed Abdellatif',
-    age: 32,
-    roleAr: 'مهندس برمجيات — التجمع الخامس',
-    roleEn: 'Software Engineer — New Cairo',
-    durationAr: '١٢ أسبوع متابعة',
-    durationEn: '12 Weeks',
+    nameAr: 'نموذج محاكاة رقمي (مثال توضيحي)',
+    nameEn: 'Simulated Digital Model (Illustrative Case)',
+    roleAr: 'محاكاة حسابية لرحلة نحت وخسارة دهون (ليس عميلاً حقيقياً)',
+    roleEn: 'Mathematical simulation of fat-loss & recomposition (Not a real person)',
+    durationAr: '١٢ أسبوع متابعة افتراضية',
+    durationEn: '12 Weeks Projected',
     weightBeforeKg: 108,
     weightAfterKg: 84,
     bodyFatBefore: '29%',
     bodyFatAfter: '12%',
-    badgeAr: '-24 كجم وزن إجمالي (-21.2 كجم دهون) مع نحت القوام',
-    badgeEn: '-24 kg Total (-21.2 kg Fat) + Body Sculpting',
+    badgeAr: '-24 كجم وزن إجمالي (-21.2 كجم دهون صافية) وفق الماكروز',
+    badgeEn: '-24 kg Total (-21.2 kg Fat) based on macro deficit',
     isIllustrativeExample: true,
     quoteAr:
-      'كنت فاكر إن الدايت يعني حرمان وجوع، لكن مع وصفات الفيديو المحسوبة بالماكروز والمتابعة اليومية على الواتساب نزلت ٢٤ كيلو مع نحت الجسم وبأكل أكل مشبع وصحي!',
+      'مثال توضيحي بالأرقام: نزول من ١٠٨ كجم (٢٩٪ دهون) إلى ٨٤ كجم (١٢٪ دهون) مع المحافظة على الكتلة العضلية بتطبيق عجز سعرات تدريجي ٢٠٪ ونظام بروتين عالي ٢ جم/كجم.',
     quoteEn:
-      'I thought dieting meant starving, but with macro-balanced recipes and daily WhatsApp coaching I dropped 24kg and sculpted my physique while eating filling, delicious meals!',
+      'Numerical illustrative simulation: dropping from 108kg (29% body fat) to 84kg (12% body fat) by maintaining lean mass through a controlled 20% deficit and 2.0g/kg protein.',
   },
 ];
 
@@ -251,8 +250,8 @@ export function PublicCoachingStorefrontView({
 
             <p className="max-w-2xl text-sm font-normal leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
               {isAr
-                ? `أكثر من ${PLATFORM_CONFIG.claims.activeMembersCount} مشترك غيروا حياتهم بالكامل ووصلوا لشكل جسمهم المثالي من خلال خطط تغذية بوصفات مصورة، برامج تدريبية بالفيديو من الجيم أو البيت تحت إشراف أطباء علاج طبيعي، ومتابعة يومية خطوة بخطوة.`
-                : `Over ${PLATFORM_CONFIG.claims.activeMembersCount} members transformed their bodies and lives through tailored video-recipe nutrition, physical-therapist-supervised training, and daily 1-on-1 WhatsApp & app coaching.`}
+                ? `متدربون ومشتركون غيروا حياتهم بالكامل ووصلوا لشكل جسمهم المثالي من خلال خطط تغذية بوصفات مصورة، برامج تدريبية بالفيديو من الجيم أو البيت تحت إشراف أطباء علاج طبيعي، ومتابعة يومية خطوة بخطوة.`
+                : `Members transformed their bodies and lives through tailored video-recipe nutrition, physical-therapist-supervised training, and daily 1-on-1 WhatsApp & app coaching.`}
             </p>
 
             {/* Primary CTA Buttons including the FREE TRIAL WORKOUTS & DIETS Button */}
@@ -328,10 +327,10 @@ export function PublicCoachingStorefrontView({
                 <div className="relative z-10 mt-3 flex items-center justify-between text-white">
                   <div>
                     <p className="text-sm font-black">
-                      {isAr ? 'م. أحمد عبد اللطيف' : 'Eng. Ahmed Abdellatif'}
+                      {isAr ? 'نموذج محاكاة رقمي (مثال توضيحي)' : 'Simulated Macro Case Model'}
                     </p>
                     <p className="text-[11px] text-amber-300">
-                      {isAr ? 'خلال ١٢ أسبوع متابعة — نحت القوام وخسارة دهون' : '12 Weeks Coaching — Sculpting & Fat Loss'}
+                      {isAr ? 'محاكاة علمية لنحت القوام وخسارة دهون (ليس عميلاً حقيقياً)' : 'Scientific recomp projection (Illustrative - not a real client)'}
                     </p>
                   </div>
                   <div className="flex gap-0.5 text-amber-400">
@@ -364,8 +363,8 @@ export function PublicCoachingStorefrontView({
 
                 <blockquote className="mt-4 text-xs leading-relaxed font-semibold text-slate-700 dark:text-slate-300">
                   {isAr
-                    ? '“خسيت ٢١.٢ كيلو دهون صافية ونزلت من ١٠٨ إلى ٨٤ كجم مع الحفاظ على القوام العضلي بنظام مرن وبدون حرمان، والكوتش والدكتور كانوا معايا يوم بيوم!”'
-                    : '“Dropped 21.2kg of pure fat and trimmed down from 108kg to 84kg while sculpting my physique with flexible nutrition and daily coach support!”'}
+                    ? '“مثال توضيحي بالأرقام: نزول ٢١.٢ كجم دهون صافية من إجمالي ٢٤ كجم مع الحفاظ على الكتلة الخالية من الدهون عبر حساب الماكروز والتدرج في الأحمال بدون حرمان.”'
+                    : '“Illustrative calculation: 21.2kg of pure fat loss out of 24kg total while preserving lean mass via calculated macros and progressive overload.”'}
                 </blockquote>
               </div>
             </div>

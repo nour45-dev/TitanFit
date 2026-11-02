@@ -151,9 +151,20 @@ async function run() {
 
   // Transformation Story Inspection
   console.log('\n--- [SECTION 3] Transformation Story & Marketing Claims ---');
-  const transStorySection = page.locator('text=أحمد عبد اللطيف');
+  const fakePersona = page.locator('text=أحمد عبد اللطيف');
+  if (await fakePersona.count() > 0) {
+    fail(
+      'Transformation Story Uses Fictional Identity',
+      'Storefront uses a specific person identity (أحمد عبد اللطيف) instead of an anonymized illustrative numerical simulation.',
+      '04_trans_story.png'
+    );
+  } else {
+    pass('Transformation story is properly anonymized as an illustrative numerical simulation with zero fake personal attribution');
+  }
+
+  const transStorySection = page.locator('#transformations-section');
   if (await transStorySection.count() > 0) {
-    const storyText = await page.locator('#transformations-section').first().innerText().catch(() => '');
+    const storyText = await transStorySection.first().innerText().catch(() => '');
     const hasUnrealisticClaim = storyText.includes('بناء عضل') || storyText.includes('بدون ترهلات');
     if (hasUnrealisticClaim) {
       fail(
@@ -162,7 +173,7 @@ async function run() {
         '04_trans_story.png'
       );
     } else {
-      pass('Transformation story accurately states fat loss math (-21.2kg fat) and is labeled as an illustrative example');
+      pass('Transformation story accurately states fat loss math (-21.2kg fat) as a macro model');
     }
     await transStorySection.first().screenshot({ path: path.join(SCREENSHOTS_DIR, '04_trans_story.png') }).catch(() => {});
 
