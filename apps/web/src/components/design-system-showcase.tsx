@@ -94,8 +94,24 @@ function TitanFitEnterpriseShell() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [totpCode, setTotpCode] = useState('482910');
 
-  // Login form state
-  const [showDemoBanner, setShowDemoBanner] = useState(true);
+  // Banner state: session-dismissible ONLY on public storefront, permanently fixed on all portals & login
+  const [publicBannerDismissed, setPublicBannerDismissed] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('titanfit-public-banner-dismissed') === 'true') {
+        setPublicBannerDismissed(true);
+      }
+    } catch {}
+  }, []);
+
+  const handleDismissPublicBanner = () => {
+    setPublicBannerDismissed(true);
+    try {
+      sessionStorage.setItem('titanfit-public-banner-dismissed', 'true');
+    } catch {}
+  };
+
   const [loginTab, setLoginTab] = useState<'ADMIN_OWNER' | 'TRAINEE_PIN'>('TRAINEE_PIN');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -357,33 +373,47 @@ function TitanFitEnterpriseShell() {
         )}
       </AnimatePresence>
 
-      {/* DEMO PROTOTYPE DISCLAIMER BANNER */}
-      {showDemoBanner && (
-        <aside
-          role="region"
-          aria-label={isAr ? 'تنبيه النسخة التجريبية' : 'Demo Prototype Notice'}
-          className="relative z-40 border-b border-amber-600 bg-amber-500 px-3 py-2 text-slate-950 dark:border-amber-500 dark:bg-amber-500 dark:text-slate-950 sm:px-6"
-        >
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 text-xs font-black">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 shrink-0 text-slate-950" aria-hidden="true" />
-              <span>
-                {isAr
-                  ? '⚠️ نسخة تجريبية (Demo Prototype) — المنصة حالياً قيد الاختبار الفني والمعماري. يُرجى عدم إدخال أي بيانات حقيقية أو كلمات مرور شخصية.'
-                  : '⚠️ Demo Prototype — This platform is currently undergoing technical & security audit. Do not enter real personal data or production credentials.'}
-              </span>
+      {/* DEMO PROTOTYPE DISCLAIMER BANNER: Permanent on all portals & login; session-dismissible only on public homepage */}
+      {(() => {
+        const isPortalOrAuth = isAuthenticated || !isPublicWebsiteView || showLoginModal;
+        const showBanner = isPortalOrAuth || !publicBannerDismissed;
+        const isDismissible = isPublicWebsiteView && !isAuthenticated && !showLoginModal;
+
+        if (!showBanner) return null;
+
+        return (
+          <aside
+            role="region"
+            aria-label={isAr ? 'تنبيه النسخة التجريبية' : 'Demo Prototype Notice'}
+            className="relative z-40 border-b border-amber-600 bg-amber-500 px-3 py-2 text-slate-950 dark:border-amber-500 dark:bg-amber-500 dark:text-slate-950 sm:px-6"
+          >
+            <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 text-xs font-black">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-slate-950" aria-hidden="true" />
+                <span>
+                  {isAr
+                    ? '⚠️ نسخة تجريبية (Demo Prototype) — المنصة حالياً قيد الاختبار الفني والمعماري. يُرجى عدم إدخال أي بيانات حقيقية أو كلمات مرور شخصية.'
+                    : '⚠️ Demo Prototype — This platform is currently undergoing technical & security audit. Do not enter real personal data or production credentials.'}
+                </span>
+              </div>
+              {isDismissible ? (
+                <button
+                  type="button"
+                  onClick={handleDismissPublicBanner}
+                  aria-label={isAr ? 'إغلاق تنبيه النسخة التجريبية' : 'Dismiss demo prototype banner for this session'}
+                  className="rounded-lg p-1 text-slate-950 transition hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-slate-950"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              ) : (
+                <span className="rounded-full bg-slate-950/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-950">
+                  {isAr ? 'تنبيه إلزامي' : 'Mandatory Notice'}
+                </span>
+              )}
             </div>
-            <button
-              type="button"
-              onClick={() => setShowDemoBanner(false)}
-              aria-label={isAr ? 'إغلاق تنبيه النسخة التجريبية' : 'Dismiss demo prototype banner'}
-              className="rounded-lg p-1 text-slate-950 transition hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-slate-950"
-            >
-              <X className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
-        </aside>
-      )}
+          </aside>
+        );
+      })()}
 
       {/* TOP HEADER: Dynamic Clean Storefront for Visitors vs Sleek Management Bar for Logged-In Admins */}
       <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 px-3 py-2.5 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 sm:px-6 sm:py-3">
