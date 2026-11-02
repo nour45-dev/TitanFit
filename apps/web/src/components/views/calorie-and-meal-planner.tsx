@@ -114,8 +114,10 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
 
             <div className="grid grid-cols-2 gap-3 pt-1 sm:grid-cols-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700">{isAr ? 'النوع' : 'Gender'}</label>
+                <label htmlFor="calc-gender-select" className="block text-xs font-bold text-slate-700">{isAr ? 'النوع' : 'Gender'}</label>
                 <select
+                  id="calc-gender-select"
+                  aria-label={isAr ? 'النوع' : 'Gender'}
                   data-testid="calc-gender"
                   value={gender}
                   onChange={(e) => setGender(e.target.value as Gender)}
@@ -126,8 +128,10 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700">{isAr ? 'السن (سنة)' : 'Age (years)'}</label>
+                <label htmlFor="calc-age-input" className="block text-xs font-bold text-slate-700">{isAr ? 'السن (سنة)' : 'Age (years)'}</label>
                 <input
+                  id="calc-age-input"
+                  aria-label={isAr ? 'السن بالسنوات' : 'Age in years'}
                   data-testid="calc-age"
                   type="number"
                   inputMode="numeric"
@@ -137,8 +141,10 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700">{isAr ? 'الوزن (كجم)' : 'Weight (kg)'}</label>
+                <label htmlFor="calc-weight-input" className="block text-xs font-bold text-slate-700">{isAr ? 'الوزن (كجم)' : 'Weight (kg)'}</label>
                 <input
+                  id="calc-weight-input"
+                  aria-label={isAr ? 'الوزن بالكيلوجرام' : 'Weight in kilograms'}
                   data-testid="calc-weight"
                   type="number"
                   inputMode="decimal"
@@ -148,8 +154,10 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700">{isAr ? 'الطول (سم)' : 'Height (cm)'}</label>
+                <label htmlFor="calc-height-input" className="block text-xs font-bold text-slate-700">{isAr ? 'الطول (سم)' : 'Height (cm)'}</label>
                 <input
+                  id="calc-height-input"
+                  aria-label={isAr ? 'الطول بالسنتيمتر' : 'Height in centimeters'}
                   data-testid="calc-height"
                   type="number"
                   inputMode="numeric"
@@ -159,8 +167,10 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                 />
               </div>
               <div className="col-span-2 sm:col-span-2">
-                <label className="block text-xs font-bold text-slate-700">{isAr ? 'مستوى النشاط' : 'Activity level'}</label>
+                <label htmlFor="calc-activity-select" className="block text-xs font-bold text-slate-700">{isAr ? 'مستوى النشاط' : 'Activity level'}</label>
                 <select
+                  id="calc-activity-select"
+                  aria-label={isAr ? 'مستوى النشاط اليومي' : 'Daily activity level'}
                   data-testid="calc-activity"
                   value={activity}
                   onChange={(e) => setActivity(Number(e.target.value))}
@@ -305,7 +315,7 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
       {/* ======================= MEAL PLANNER ======================= */}
       <section id="recipes-section" data-testid="meal-planner" className="scroll-mt-24 space-y-6">
         <div className="text-center">
-          <span className="text-xs font-extrabold uppercase tracking-wider text-amber-600">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-400">
             {isAr ? 'وصفات مبنية على سعراتك' : 'RECIPES BUILT ON YOUR CALORIES'}
           </span>
           <h2 className="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">
@@ -377,19 +387,19 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                     <p data-testid={`meal-kcal-${meal}`} className="font-mono text-sm font-black text-amber-400">
                       {scaled.macros.kcal}
                     </p>
-                    <p className="text-[9px] font-semibold text-slate-400">kcal</p>
+                    <p className="text-[9px] font-bold text-slate-300">kcal</p>
                   </div>
                   <div className="rounded-xl bg-slate-50 px-1 py-2">
-                    <p className="font-mono text-sm font-black text-emerald-600">{scaled.macros.proteinG}</p>
-                    <p className="text-[9px] font-semibold text-slate-500">{isAr ? 'بروتين' : 'Protein'}</p>
+                    <p className="font-mono text-sm font-black text-emerald-800 dark:text-emerald-400">{scaled.macros.proteinG}</p>
+                    <p className="text-[9px] font-bold text-slate-600 dark:text-slate-400">{isAr ? 'بروتين' : 'Protein'}</p>
                   </div>
                   <div className="rounded-xl bg-slate-50 px-1 py-2">
-                    <p className="font-mono text-sm font-black text-sky-600">{scaled.macros.carbsG}</p>
-                    <p className="text-[9px] font-semibold text-slate-500">{isAr ? 'كارب' : 'Carbs'}</p>
+                    <p className="font-mono text-sm font-black text-sky-800 dark:text-sky-400">{scaled.macros.carbsG}</p>
+                    <p className="text-[9px] font-bold text-slate-600 dark:text-slate-400">{isAr ? 'كارب' : 'Carbs'}</p>
                   </div>
                   <div className="rounded-xl bg-slate-50 px-1 py-2">
-                    <p className="font-mono text-sm font-black text-amber-600">{scaled.macros.fatsG}</p>
-                    <p className="text-[9px] font-semibold text-slate-500">{isAr ? 'دهون' : 'Fats'}</p>
+                    <p className="font-mono text-sm font-black text-amber-800 dark:text-amber-400">{scaled.macros.fatsG}</p>
+                    <p className="text-[9px] font-bold text-slate-600 dark:text-slate-400">{isAr ? 'دهون' : 'Fats'}</p>
                   </div>
                 </div>
 

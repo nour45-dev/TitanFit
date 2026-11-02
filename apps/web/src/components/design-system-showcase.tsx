@@ -709,7 +709,7 @@ function TitanFitEnterpriseShell() {
                   <p className="text-xs font-extrabold text-slate-900 dark:text-white">
                     {currentUser?.name || (isAr ? 'مدير النظام' : 'Manager')}
                   </p>
-                  <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                  <p className="text-[10px] font-extrabold text-amber-800 dark:text-amber-300">
                     {activeRole}
                   </p>
                 </div>
@@ -864,7 +864,7 @@ function TitanFitEnterpriseShell() {
                     <p className="text-xs font-black text-slate-900 dark:text-white line-clamp-1">
                       {brandDisplayName}
                     </p>
-                    <p className="font-mono text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                    <p className="font-mono text-[10px] font-extrabold text-amber-800 dark:text-amber-300">
                       {activeRole}
                     </p>
                   </div>
@@ -880,10 +880,12 @@ function TitanFitEnterpriseShell() {
 
               {/* Branch Selector (For Gym Owners) */}
               <div className="mt-3">
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                <label htmlFor="admin-branch-select" className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                   {isAr ? 'الفرع النشط' : 'Active Branch'}
                 </label>
                 <select
+                  id="admin-branch-select"
+                  aria-label={isAr ? 'الفرع النشط' : 'Active Branch'}
                   value={selectedBranchId}
                   onChange={(e) => setSelectedBranchId(e.target.value)}
                   className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
@@ -956,7 +958,7 @@ function TitanFitEnterpriseShell() {
                   <p className="text-xs font-extrabold text-slate-900 dark:text-white line-clamp-1">
                     {currentUser?.name || (isAr ? 'كابتن نور الدين' : 'Nour El-Din')}
                   </p>
-                  <p className="font-mono text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                  <p className="font-mono text-[10px] font-extrabold text-amber-800 dark:text-amber-300">
                     2FA ACTIVE • TLS 1.3
                   </p>
                 </div>
@@ -965,7 +967,7 @@ function TitanFitEnterpriseShell() {
                     type="button"
                     onClick={() => setShowAuthModal(true)}
                     title={isAr ? 'إعدادات الجلسة والأمان 2FA' : 'Auth & 2FA'}
-                    className="rounded-lg p-1.5 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-slate-800"
+                    className="rounded-lg p-1.5 text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-slate-800"
                   >
                     <KeyRound className="h-4 w-4" />
                   </button>

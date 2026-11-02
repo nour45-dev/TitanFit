@@ -419,7 +419,7 @@ export function PublicCoachingStorefrontView({
       {/* 3. HOW IT WORKS IN 4 STEPS — "إنت مش لوحدك" */}
       <section className="space-y-8">
         <div className="text-center">
-          <span className="text-xs font-extrabold uppercase tracking-wider text-amber-600">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-400">
             {isAr ? 'رحلتك معانا خطوة بخطوة' : 'HOW YOUR TRANSFORMATION WORKS'}
           </span>
           <h2 className="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">
@@ -520,7 +520,7 @@ export function PublicCoachingStorefrontView({
           </div>
           <a
             href="#free-calorie-calculator"
-            className="text-xs font-extrabold text-amber-600 hover:underline"
+            className="text-xs font-extrabold text-amber-800 dark:text-amber-400 hover:underline"
           >
             {isAr ? 'ابدأ قصتك بحساب سعراتك ←' : 'Start your story — calculate your calories →'}
           </a>
@@ -611,7 +611,7 @@ export function PublicCoachingStorefrontView({
         {/* "الحقيقة أو الدايت؟" Interactive Accordion */}
         <div className="mx-auto w-full max-w-3xl space-y-4">
           <div>
-            <span className="text-xs font-extrabold uppercase tracking-wider text-amber-600">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-400">
               {isAr ? 'الحقيقة العلمية بدون خرافات' : 'SCIENCE VS. DIET MYTHS'}
             </span>
             <h3 className="mt-1 text-xl font-black text-slate-900">
@@ -636,7 +636,7 @@ export function PublicCoachingStorefrontView({
                   >
                     <span>{isAr ? faq.qAr : faq.qEn}</span>
                     <ChevronDown
-                      className={`h-4 w-4 shrink-0 text-amber-600 transition-transform ${
+                      className={`h-4 w-4 shrink-0 text-amber-700 dark:text-amber-400 transition-transform ${
                         isOpen ? 'rotate-180' : ''
                       }`}
                     />
