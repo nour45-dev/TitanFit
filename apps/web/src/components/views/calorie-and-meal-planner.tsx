@@ -101,7 +101,7 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
           <div className="space-y-4 lg:col-span-6">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1 text-xs font-bold text-slate-800">
               <Calculator className="h-3.5 w-3.5 text-amber-500" />
-              {isAr ? 'أداة علمية مجانية 100%' : 'FREE SCIENTIFIC CALCULATOR'}
+              {isAr ? 'أداة علمية مجانية' : 'FREE SCIENTIFIC CALCULATOR'}
             </span>
             <h2 className="text-2xl font-black text-slate-900">
               {isAr ? 'احسب سعراتك وماكروزك بدقة' : 'Calculate Your Exact Calories & Macros'}

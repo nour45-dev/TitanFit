@@ -285,27 +285,52 @@ export function PublicCoachingStorefrontView({
               </a>
             </div>
 
-            {/* Trust Metrics */}
-            <div className="grid grid-cols-3 gap-3 border-t border-slate-100 pt-6 sm:gap-6 dark:border-slate-800">
-              <div>
-                <p className="font-mono text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">+12,500</p>
-                <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {isAr ? 'قصة نجاح وتحول حقيقي' : 'Verified Transformations'}
-                </p>
-              </div>
-              <div className="border-s border-slate-100 ps-3 sm:ps-6 dark:border-slate-800">
-                <p className="font-mono text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">100%</p>
-                <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {isAr ? 'تحت إشراف طبي ورياضي' : 'Medical & PT Supervised'}
-                </p>
-              </div>
-              <div className="border-s border-slate-100 ps-3 sm:ps-6 dark:border-slate-800">
-                <p className="font-mono text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">24/7</p>
-                <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {isAr ? 'متابعة يومية بالواتساب' : 'Daily 1-on-1 WhatsApp'}
-                </p>
-              </div>
-            </div>
+            {/* Trust Metrics - Only renders verified, non-placeholder metrics */}
+            {(() => {
+              const metrics: Array<{ val: string; ar: string; en: string }> = [];
+              const rawCount = PLATFORM_CONFIG.claims.activeMembersCount?.trim();
+              if (rawCount && !rawCount.startsWith('[')) {
+                metrics.push({
+                  val: rawCount,
+                  ar: 'قصة نجاح وتحول حقيقي',
+                  en: 'Verified Transformations',
+                });
+              }
+              const rawMed = PLATFORM_CONFIG.claims.medicalSupervisionPercent?.trim();
+              if (rawMed && !rawMed.startsWith('[')) {
+                metrics.push({
+                  val: rawMed,
+                  ar: 'تحت إشراف طبي ورياضي',
+                  en: 'Medical & PT Supervised',
+                });
+              }
+              metrics.push({
+                val: '24/7',
+                ar: 'متابعة يومية بالواتساب',
+                en: 'Daily 1-on-1 WhatsApp Support',
+              });
+
+              return (
+                <div
+                  data-testid="hero-trust-metrics"
+                  className={`grid grid-cols-${metrics.length === 1 ? '1' : metrics.length === 2 ? '2' : '3'} gap-3 border-t border-slate-100 pt-6 sm:gap-6 dark:border-slate-800`}
+                >
+                  {metrics.map((m, idx) => (
+                    <div
+                      key={m.en}
+                      className={idx > 0 ? 'border-s border-slate-100 ps-3 sm:ps-6 dark:border-slate-800' : ''}
+                    >
+                      <p className="font-mono text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+                        {m.val}
+                      </p>
+                      <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                        {isAr ? m.ar : m.en}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Left Visual Column — White Card with Real Fitness Photo + Before/After Transformation */}
@@ -387,7 +412,7 @@ export function PublicCoachingStorefrontView({
               </div>
               <div className="space-y-1">
                 <span className="inline-block rounded-full border border-slate-200 bg-white px-3 py-0.5 text-[11px] font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-                  {isAr ? 'جديد ومجاني ١٠٠٪ لزوار الموقع' : 'NEW & 100% FREE FOR VISITORS'}
+                  {isAr ? 'تجربة مجانية لزوار الموقع' : 'FREE ACCESS FOR VISITORS'}
                 </span>
                 <h2 className="text-xl font-black text-slate-900 dark:text-white sm:text-2xl">
                   {isAr
