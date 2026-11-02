@@ -745,7 +745,7 @@ export function SuperAdminConsoleView() {
   };
 
   const copyCredentials = (ten: TenantSaaSItem) => {
-    const text = `🎉 بيانات تفعيل منصتك الخاصة (${ten.nameAr}):\n🌐 الرابط: https://titanfit.app/${ten.slug}\n📧 اسم مستخدم المالك: ${ten.ownerEmail}\n🔑 كلمة مرور المالك: ${ten.password || 'pass123'}\n🏷️ كود دخول المتدربين السري: ${ten.gymSecretCode}\n🚀 يمكنك تسجيل الدخول الآن وإدارة ناديك ومتدربيك بالكامل!`;
+    const text = `🎉 بيانات تفعيل منصتك الخاصة (${ten.nameAr}):\n🌐 الرابط: https://titanfit.app/${ten.slug}\n📧 اسم مستخدم المالك: ${ten.ownerEmail}\n🔑 كلمة مرور المالك: [تم إرسالها في رسالة SMS خاصة]\n🏷️ كود دخول المتدربين السري: ${ten.gymSecretCode}\n🚀 يمكنك تسجيل الدخول الآن وإدارة ناديك ومتدربيك بالكامل!`;
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(text).catch(() => {});
     }
@@ -792,7 +792,7 @@ export function SuperAdminConsoleView() {
                 </h3>
                 <p className="font-mono text-xs text-slate-600 dark:text-slate-300">
                   {isAr ? 'الرابط: ' : 'URL: '} https://titanfit.app/{createdTenantCredentials.slug} •{' '}
-                  {createdTenantCredentials.ownerEmail} • 🔑 {createdTenantCredentials.password} • 🏷️ كود المتدربين: <span className="font-black text-emerald-600 dark:text-emerald-400">{createdTenantCredentials.gymSecretCode}</span>
+                  {createdTenantCredentials.ownerEmail}  • 🏷️ كود المتدربين: <span className="font-black text-emerald-600 dark:text-emerald-400">{createdTenantCredentials.gymSecretCode}</span>
                 </p>
               </div>
             </div>
@@ -808,7 +808,7 @@ export function SuperAdminConsoleView() {
               <button
                 type="button"
                 onClick={() => {
-                  login(createdTenantCredentials.ownerEmail, createdTenantCredentials.password);
+                  login(createdTenantCredentials.ownerEmail);
                   setCreatedTenantCredentials(null);
                 }}
                 className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-black text-white hover:bg-slate-800 dark:bg-slate-800"
@@ -899,9 +899,9 @@ export function SuperAdminConsoleView() {
 
               <div className="mt-3 rounded-xl border border-slate-100 bg-slate-50 p-2.5 font-mono text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300">
                 <p>📧 {ten.ownerEmail}</p>
-                <p className="mt-1">🔑 {ten.password || 'pass123'}</p>
+                <p className="mt-1">🔑 {isAr ? 'كلمة المرور: [مُشفرة بالسيرفر]' : 'Password: [Server-Encrypted]'}</p>
                 <p className="mt-1 font-bold text-emerald-700 dark:text-emerald-400">
-                  🏷️ {isAr ? 'كود المتدربين السري:' : 'Gym PIN:'} <span className="underline">{ten.gymSecretCode}</span>
+                  🏷️ {isAr ? 'كود المتدربين السري:' : 'Gym PIN:'} <span className="underline">{ten.gymSecretCode || 'TF-JOIN'}</span>
                 </p>
               </div>
 

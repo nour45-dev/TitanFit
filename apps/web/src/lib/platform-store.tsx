@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type { SupportedLocale } from '@gymos/config';
+import { apiLogin, apiLogout, apiGetMe, apiRevokeSessions } from './api-client';
 
 export type WorkspaceSection =
   | 'PUBLIC_STOREFRONT'
@@ -198,8 +199,7 @@ export interface TenantSaaSItem {
   nameEn: string;
   nameAr: string;
   ownerEmail: string;
-  password?: string;
-  gymSecretCode: string;
+  gymSecretCode?: string;
   logoUrl?: string;
   primaryColor?: string;
   planTier: 'STARTER' | 'PRO' | 'ENTERPRISE';
@@ -482,8 +482,6 @@ const INITIAL_TENANTS: TenantSaaSItem[] = [
     nameEn: 'TitanFit Egypt (Flagship Group)',
     nameAr: 'مجموعة أندية تيتان فيت مصر',
     ownerEmail: 'owner@titanfit.eg',
-    password: 'owner123',
-    gymSecretCode: 'TF-7711',
     logoUrl: '/brand/logo.png',
     primaryColor: '#D97706',
     planTier: 'ENTERPRISE',
@@ -500,8 +498,6 @@ const INITIAL_TENANTS: TenantSaaSItem[] = [
     nameEn: 'Peak Fitness Cairo',
     nameAr: 'بيك فيتنس القاهرة',
     ownerEmail: 'coach.ahmed@peakfit.eg',
-    password: 'coach123',
-    gymSecretCode: 'PK-8820',
     logoUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=200&q=80',
     primaryColor: '#059669',
     planTier: 'PRO',
@@ -559,6 +555,7 @@ export interface PlatformStoreContextValue {
   // Auth & Multi-Tenant State
   isAuthenticated: boolean;
   currentUser: {
+    id?: string;
     email: string;
     name: string;
     role: UserRoleKey;
@@ -571,8 +568,10 @@ export interface PlatformStoreContextValue {
     email: string,
     password?: string,
     gymSecretCode?: string,
-  ) => { success: boolean; role?: UserRoleKey; tenant?: TenantSaaSItem; message?: string };
-  loginWithGymCode: (gymSecretCode: string) => { success: boolean; role?: UserRoleKey; tenant?: TenantSaaSItem; message?: string };
+  ) => Promise<{ success: boolean; role?: UserRoleKey; tenant?: TenantSaaSItem; message?: string }>;
+  loginWithGymCode: (
+    gymSecretCode: string,
+  ) => Promise<{ success: boolean; role?: UserRoleKey; tenant?: TenantSaaSItem; message?: string }>;
   logout: () => void;
   // Actions
   addMember: (data: {
@@ -670,28 +669,34 @@ export function PlatformProvider({
   const [tenants, setTenants] = useState<TenantSaaSItem[]>(INITIAL_TENANTS);
   const tenantsHydrated = useRef(false);
 
-  // Persist gym tenants in the browser so created gyms (and their logos) survive a refresh
+  // Purge legacy storage from browser and hydrate active session via BFF
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem('titanfit.tenants.v1');
-      if (raw) {
-        const parsed = JSON.parse(raw) as TenantSaaSItem[];
-        if (Array.isArray(parsed) && parsed.length > 0) setTenants(parsed);
-      }
+      window.localStorage.removeItem('titanfit.tenants.v1');
+      window.localStorage.removeItem('titanfit.auth.token');
+      window.localStorage.removeItem('titanfit.auth.user');
     } catch {
-      /* ignore corrupted storage */
+      /* ignore */
     }
-    tenantsHydrated.current = true;
-  }, []);
 
-  useEffect(() => {
-    if (!tenantsHydrated.current) return;
-    try {
-      window.localStorage.setItem('titanfit.tenants.v1', JSON.stringify(tenants));
-    } catch {
-      /* storage full or unavailable */
-    }
-  }, [tenants]);
+    apiGetMe()
+      .then((res) => {
+        if (res.success && res.user) {
+          setIsAuthenticated(true);
+          setCurrentUser({
+            id: res.user.id || 'usr-sess',
+            email: res.user.email || 'user@titanfit.eg',
+            name: res.user.name || 'TitanFit User',
+            role: (res.user.role as UserRoleKey) || 'GYM_OWNER',
+            tenantSlug: res.user.tenantSlug || 'titanfit-cairo',
+            logoUrl: res.user.logoUrl || '/brand/logo.png',
+            primaryColor: res.user.primaryColor || '#059669',
+          });
+          setActiveRole((res.user.role as UserRoleKey) || 'GYM_OWNER');
+        }
+      })
+      .catch(() => {});
+  }, []);
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>(INITIAL_AUDITS);
   const [impersonatedTenant, setImpersonatedTenantState] = useState<string | null>(null);
   const [brandAccentHex, setBrandAccentHex] = useState<string>('#D4AF37');
@@ -700,6 +705,7 @@ export function PlatformProvider({
   // Authentication & Custom Tenant Branding State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<{
+    id?: string;
     email: string;
     name: string;
     role: UserRoleKey;
@@ -711,128 +717,60 @@ export function PlatformProvider({
   const activeTenantCustom =
     tenants.find((t) => t.slug === (currentUser?.tenantSlug || impersonatedTenant)) ?? null;
 
-  const login: PlatformStoreContextValue['login'] = (email, password, gymSecretCode) => {
-    const trimmed = email.trim().toLowerCase();
-
-    // 1. Check Super Admin (noureldin / 010023 or admin@titanfit.com / admin123)
+  const login: PlatformStoreContextValue['login'] = async (email, password, gymSecretCode) => {
+    const trimmed = (email || '').trim().toLowerCase();
     const cleanPass = (password || '').trim();
 
-    // 1. Check if SaaS Super Admin (Captain Nour El-Din) - strictly requires correct credentials
-    if (
-      (trimmed === 'noureldin' && cleanPass === '010023') ||
-      (trimmed === 'admin@titanfit.com' && cleanPass === 'admin123')
-    ) {
-      const user = {
-        email: trimmed === 'noureldin' ? 'noureldin@titanfit.com' : trimmed,
-        name: locale === 'ar' ? 'كابتن نور الدين (مالك المنصة)' : 'Capt. Nour El-Din (Super Admin)',
-        role: 'SUPER_ADMIN' as UserRoleKey,
-        logoUrl: '/brand/logo.png',
-        primaryColor: '#D97706',
-      };
-      setIsAuthenticated(true);
-      setCurrentUser(user);
-      setActiveRole('SUPER_ADMIN');
-      setActiveSection('SUPER_ADMIN');
-      setBrandAccentHex('#D97706');
-      appendAudit('SUPER_ADMIN_LOGIN', 'Full SaaS Control Plane access granted to Nour El-Din');
-      showToast(
-        locale === 'ar'
-          ? 'مرحباً بك يا كابتن نور الدين! تم فتح لوحة تحكم المنصة والـ SaaS بالكامل 👑'
-          : 'Welcome Capt. Nour El-Din! Full SaaS Control Plane Unlocked 👑',
-      );
-      return { success: true, role: 'SUPER_ADMIN' };
-    }
+    try {
+      const res = await apiLogin({
+        identifier: trimmed,
+        password: cleanPass,
+        gymSecretCode,
+        tenantSlug: activeTenantCustom?.slug,
+      });
 
-    // 2. Check if Trainee logging in via Gym Secret PIN / Code
-    const targetCode = gymSecretCode || (trimmed.startsWith('tf-') || trimmed.startsWith('pk-') ? trimmed : '');
-    if (targetCode) {
-      const gymMatch = tenants.find((t) => t.gymSecretCode.toLowerCase() === targetCode.toLowerCase());
-      if (gymMatch) {
-        return loginWithGymCode(gymMatch.gymSecretCode);
+      if (res.success && res.user) {
+        const role = (res.user.role as UserRoleKey) || 'GYM_OWNER';
+        setIsAuthenticated(true);
+        setCurrentUser({
+          id: res.user.id,
+          email: res.user.email,
+          name: res.user.name,
+          role,
+          tenantSlug: res.user.tenantSlug,
+          logoUrl: res.user.logoUrl || '/brand/logo.png',
+          primaryColor: res.user.primaryColor || '#059669',
+        });
+        setActiveRole(role);
+        setActiveSection(role === 'SUPER_ADMIN' ? 'SUPER_ADMIN' : 'OVERVIEW');
+        if (res.user.primaryColor) setBrandAccentHex(res.user.primaryColor);
+        appendAudit('USER_LOGIN', `User logged in: ${res.user.email} (${role})`);
+        showToast(
+          locale === 'ar'
+            ? `مرحباً بك، ${res.user.name}!`
+            : `Welcome back, ${res.user.name}!`,
+        );
+        return { success: true, role, tenant: res.tenant };
       }
-    }
 
-    // 3. Check if registered Tenant Gym Owner with REAL credentials
-    const tenantMatch = tenants.find(
-      (t) => t.ownerEmail.toLowerCase() === trimmed || t.slug.toLowerCase() === trimmed,
-    );
-
-    if (tenantMatch) {
-      const expectedPassword = tenantMatch.password || 'coach123';
-      if (!cleanPass || cleanPass !== expectedPassword) {
-        return {
-          success: false,
-          message:
-            locale === 'ar'
-              ? 'كلمة المرور غير صحيحة لحساب هذا النادي. يرجى التأكد من كلمة المرور المسلمة لك من إدارة المنصة.'
-              : 'Invalid password for this gym account. Please check your credentials provided by platform administration.',
-        };
-      }
-      const user = {
-        email: tenantMatch.ownerEmail,
-        name: locale === 'ar' ? tenantMatch.nameAr : tenantMatch.nameEn,
-        role: 'GYM_OWNER' as UserRoleKey,
-        tenantSlug: tenantMatch.slug,
-        logoUrl: tenantMatch.logoUrl || '/brand/logo.png',
-        primaryColor: tenantMatch.primaryColor || '#059669',
-      };
-      setIsAuthenticated(true);
-      setCurrentUser(user);
-      setActiveRole('GYM_OWNER');
-      setActiveSection('OVERVIEW');
-      if (tenantMatch.primaryColor) setBrandAccentHex(tenantMatch.primaryColor);
-      appendAudit('TENANT_OWNER_LOGIN', `Tenant logged in: ${tenantMatch.slug}`);
-      showToast(
-        locale === 'ar'
-          ? `مرحباً بك في لوحة تحكم نادي "${tenantMatch.nameAr}"!`
-          : `Welcome to ${tenantMatch.nameEn} Dashboard!`,
-      );
-      return { success: true, role: 'GYM_OWNER', tenant: tenantMatch };
-    }
-
-    // 4. Any other credentials are STRICTLY REJECTED — NO loose fallback login
-    return {
-      success: false,
-      message:
-        locale === 'ar'
-          ? 'بيانات تسجيل الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني وكلمة المرور المسلمة لك من إدارة المنصة.'
-          : 'Invalid login credentials. Please verify your email and password provided by platform administration.',
-    };
-  };
-
-  const loginWithGymCode: PlatformStoreContextValue['loginWithGymCode'] = (code) => {
-    const trimmed = code.trim().toUpperCase();
-    const gymMatch = tenants.find((t) => t.gymSecretCode.toUpperCase() === trimmed);
-    if (!gymMatch) {
       return {
         success: false,
         message:
-          locale === 'ar'
-            ? `الرقم السري "${code}" غير صحيح. يرجى مراجعة إدارة ناديك للحصول على كود الجيم الصحيح.`
-            : `Gym Secret Code "${code}" is invalid. Please contact your gym management.`,
+          res.message ||
+          (locale === 'ar'
+            ? 'بيانات تسجيل الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني وكلمة المرور.'
+            : 'Invalid login credentials. Please verify your email and password.'),
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err instanceof Error ? err.message : 'Login failed',
       };
     }
+  };
 
-    const memberUser = {
-      email: `member@${gymMatch.slug}.app`,
-      name: locale === 'ar' ? `متدرب (${gymMatch.nameAr})` : `Member (${gymMatch.nameEn})`,
-      role: 'MEMBER' as UserRoleKey,
-      tenantSlug: gymMatch.slug,
-      logoUrl: gymMatch.logoUrl || '/brand/logo.png',
-      primaryColor: gymMatch.primaryColor || '#059669',
-    };
-    setIsAuthenticated(true);
-    setCurrentUser(memberUser);
-    setActiveRole('MEMBER');
-    setActiveSection('MEMBER_PWA');
-    if (gymMatch.primaryColor) setBrandAccentHex(gymMatch.primaryColor);
-    appendAudit('MEMBER_GYM_CODE_LOGIN', `Trainee entered via gym code: ${trimmed} (${gymMatch.slug})`);
-    showToast(
-      locale === 'ar'
-        ? `🎉 مرحباً بك في نادي "${gymMatch.nameAr}"! تم فتح تطبيق المتدرب وجداول التمارين والأنظمة الغذائية الخاصة بناديك 🏋️‍♂️`
-        : `🎉 Welcome to ${gymMatch.nameEn}! Your Member Portal is unlocked.`,
-    );
-    return { success: true, role: 'MEMBER', tenant: gymMatch };
+  const loginWithGymCode: PlatformStoreContextValue['loginWithGymCode'] = async (code) => {
+    return login('', '', code);
   };
 
   const logout = () => {
@@ -1363,7 +1301,7 @@ export function PlatformProvider({
   ) => {
     const slug = slugCustom || nameEn.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const cleanPrefix = (slug.replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase() || 'GYM');
-    const secretCode = gymSecretCodeCustom?.trim().toUpperCase() || `${cleanPrefix}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const secretCode = gymSecretCodeCustom?.trim().toUpperCase() || `${cleanPrefix}-JOIN`;
 
     const newTen: TenantSaaSItem = {
       id: `ten-${Date.now()}`,
@@ -1371,7 +1309,6 @@ export function PlatformProvider({
       nameEn,
       nameAr: nameAr || nameEn,
       ownerEmail,
-      password: password || 'pass123',
       gymSecretCode: secretCode,
       logoUrl: logoUrl || '/brand/logo.png',
       primaryColor: primaryColor || '#059669',
@@ -1387,8 +1324,8 @@ export function PlatformProvider({
     appendAudit('SAAS_TENANT_PROVISIONED', `${slug} (${planTier}) with gym code ${secretCode}`);
     showToast(
       locale === 'ar'
-        ? `🎉 تم إنشاء حساب النادي "${newTen.nameAr}" بنجاح! كود المتدربين: ${newTen.gymSecretCode} • كلمة المرور: ${newTen.password}`
-        : `🎉 Created tenant "${newTen.nameEn}"! Gym Code: ${newTen.gymSecretCode} • Password: ${newTen.password}`,
+        ? `🎉 تم إنشاء حساب النادي "${newTen.nameAr}" بنجاح! كود المتدربين: ${newTen.gymSecretCode}`
+        : `🎉 Created tenant "${newTen.nameEn}"! Gym Code: ${newTen.gymSecretCode}`,
     );
     return newTen;
   };
