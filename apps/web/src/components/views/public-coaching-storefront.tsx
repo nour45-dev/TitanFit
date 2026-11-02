@@ -32,6 +32,7 @@ import {
   X,
   Trophy,
 } from 'lucide-react';
+import { PLATFORM_CONFIG } from '@gymos/config';
 import { usePlatformStore } from '../../lib/platform-store';
 import { downloadEbookPdf } from '../../lib/pdf-docs';
 import { CalorieAndMealPlanner } from './calorie-and-meal-planner';
@@ -250,8 +251,8 @@ export function PublicCoachingStorefrontView({
 
             <p className="max-w-2xl text-sm font-normal leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
               {isAr
-                ? 'أكثر من +12,500 مشترك غيروا حياتهم بالكامل ووصلوا لشكل جسمهم المثالي من خلال خطط تغذية بوصفات مصورة، برامج تدريبية بالفيديو من الجيم أو البيت تحت إشراف أطباء علاج طبيعي، ومتابعة يومية خطوة بخطوة.'
-                : 'Over 12,500+ members transformed their bodies and lives through tailored video-recipe nutrition, physical-therapist-supervised training, and daily 1-on-1 WhatsApp & app coaching.'}
+                ? `أكثر من ${PLATFORM_CONFIG.claims.activeMembersCount} مشترك غيروا حياتهم بالكامل ووصلوا لشكل جسمهم المثالي من خلال خطط تغذية بوصفات مصورة، برامج تدريبية بالفيديو من الجيم أو البيت تحت إشراف أطباء علاج طبيعي، ومتابعة يومية خطوة بخطوة.`
+                : `Over ${PLATFORM_CONFIG.claims.activeMembersCount} members transformed their bodies and lives through tailored video-recipe nutrition, physical-therapist-supervised training, and daily 1-on-1 WhatsApp & app coaching.`}
             </p>
 
             {/* Primary CTA Buttons including the FREE TRIAL WORKOUTS & DIETS Button */}
