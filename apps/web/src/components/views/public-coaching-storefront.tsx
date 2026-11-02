@@ -41,9 +41,9 @@ interface TransformationStory {
   id: string;
   nameAr: string;
   nameEn: string;
-  age: number;
-  roleAr: string;
-  roleEn: string;
+  age?: number;
+  roleAr?: string;
+  roleEn?: string;
   durationAr: string;
   durationEn: string;
   weightBeforeKg: number;

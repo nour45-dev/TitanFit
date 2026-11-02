@@ -299,13 +299,14 @@ async function run() {
   // Read credentials dynamically from page state or env without hardcoding secrets
   const testCreds = await page.evaluate(() => {
     try {
-      const raw = localStorage.getItem('gymos-platform-state');
+      const raw = localStorage.getItem('titanfit.tenants.v1');
       if (raw) {
         const parsed = JSON.parse(raw);
+        const tenant = parsed[0];
         return {
-          pin: parsed.state?.gyms?.[0]?.secretCode || '',
-          email: parsed.state?.users?.[0]?.email || parsed.state?.users?.[0]?.name || '',
-          pass: parsed.state?.users?.[0]?.password || '',
+          pin: tenant?.gymSecretCode || '',
+          email: tenant?.ownerEmail || '',
+          pass: tenant?.password || '',
         };
       }
     } catch {}
