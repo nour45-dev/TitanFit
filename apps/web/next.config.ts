@@ -3,7 +3,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(__dirname, '../../'),
-  output: 'standalone',
+  output: process.env.NEXT_STANDALONE === 'true' ? 'standalone' : undefined,
   reactStrictMode: true,
   transpilePackages: ['@gymos/config', '@gymos/contracts', '@gymos/ui'],
   poweredByHeader: false,
