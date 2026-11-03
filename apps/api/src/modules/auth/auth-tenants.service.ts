@@ -533,6 +533,17 @@ export class AuthTenantsService {
     return this.issueSessionTokens(user, tenant, ipAddress, 'RefreshTokenRotation', record.familyId);
   }
 
+  revokeAllSessionsForUser(userId: string): number {
+    let count = 0;
+    for (const token of this.refreshTokens.values()) {
+      if (token.userId === userId && !token.revoked) {
+        token.revoked = true;
+        count++;
+      }
+    }
+    return count;
+  }
+
   requestOtp(tenantSlug: string, phoneOrEmail: string): { expiresInSeconds: number; demoOtpCode: string } {
     const tenant = this.getTenantBySlug(tenantSlug);
     const key = `${tenant.id}:${phoneOrEmail.toLowerCase()}`;

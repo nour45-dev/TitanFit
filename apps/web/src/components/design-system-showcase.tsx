@@ -294,13 +294,13 @@ function TitanFitEnterpriseShell() {
     { id: 'SUPER_ADMIN', labelEn: 'Super Admin', labelAr: 'مالك المنصة (SaaS)' },
   ];
 
-  const handleLoginSubmit = (e?: React.FormEvent) => {
+  const handleLoginSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!loginEmail.trim()) {
       setLoginError(isAr ? 'يرجى إدخال البريد الإلكتروني أو اسم المستخدم' : 'Please enter email');
       return;
     }
-    const res = login(loginEmail, loginPassword);
+    const res = await login(loginEmail, loginPassword);
     if (res.success) {
       setShowLoginModal(false);
       setLoginEmail('');
@@ -316,13 +316,13 @@ function TitanFitEnterpriseShell() {
     }
   };
 
-  const handleTraineeSubmit = (e?: React.FormEvent) => {
+  const handleTraineeSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!traineeGymCode.trim()) {
       setLoginError(isAr ? 'يرجى إدخال كود الجيم السري' : 'Please enter gym secret code');
       return;
     }
-    const res = loginWithGymCode(traineeGymCode);
+    const res = await loginWithGymCode(traineeGymCode);
     if (res.success) {
       setShowLoginModal(false);
       setTraineeGymCode('');
@@ -332,10 +332,10 @@ function TitanFitEnterpriseShell() {
     }
   };
 
-  const handleQuickDemoLogin = (email: string, pass: string) => {
+  const handleQuickDemoLogin = async (email: string, pass: string) => {
     setLoginEmail(email);
     setLoginPassword(pass);
-    const res = login(email, pass);
+    const res = await login(email, pass);
     if (res.success) {
       setShowLoginModal(false);
       setLoginError('');

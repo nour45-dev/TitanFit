@@ -169,6 +169,35 @@ describe('TitanFit Complete End-to-End API, Security, RBAC & Tenant Isolation Su
     expect(ownerHealthRes.json().data.bloodType).toBe('O+');
   });
 
+  it('Phase 1.3b: Inspects authenticated identity (/auth/me), revokes sessions across devices, and collects CSP telemetry', async () => {
+    // 1. Inspect session claims via /auth/me
+    const meRes = await app.inject({
+      method: 'GET',
+      url: '/api/v1/auth/me',
+      headers: { authorization: `Bearer ${cairoOwnerToken}` },
+    });
+    expect(meRes.statusCode).toBe(200);
+    expect(meRes.json().data.roleKeys).toContain('GYM_OWNER');
+    expect(meRes.json().data.tenantSlug).toBe('titanfit-cairo');
+
+    // 2. Revoke all active sessions for user across all devices
+    const revokeRes = await app.inject({
+      method: 'POST',
+      url: '/api/v1/auth/sessions/revoke',
+      headers: { authorization: `Bearer ${cairoOwnerToken}` },
+    });
+    expect(revokeRes.statusCode).toBe(200);
+    expect(typeof revokeRes.json().data.revokedCount).toBe('number');
+
+    // 3. Collect CSP violation telemetry (public route)
+    const cspRes = await app.inject({
+      method: 'POST',
+      url: '/api/v1/telemetry/csp-report',
+      payload: { 'csp-report': { 'violated-directive': 'script-src' } },
+    });
+    expect(cspRes.statusCode).toBe(204);
+  });
+
   it('Phase 1.4: Enforces strict Tenant Isolation (Alexandria Tenant B cannot see or access Cairo Tenant A members or branches)', async () => {
     const alexMembersRes = await app.inject({
       method: 'GET',

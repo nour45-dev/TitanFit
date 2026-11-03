@@ -139,6 +139,34 @@ export class PlatformController {
     return createSuccessResponse({ verified }, reqId || 'req-otp-verify');
   }
 
+  @Post('auth/sessions/revoke')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Revoke all active sessions for authenticated user across all devices' })
+  revokeSessions(
+    @Req() req: AuthenticatedFastifyRequest,
+    @Headers('x-request-id') reqId?: string,
+  ) {
+    const count = this.authTenants.revokeAllSessionsForUser(req.user!.sub);
+    return createSuccessResponse({ revokedCount: count }, reqId || 'req-revoke');
+  }
+
+  @PublicRoute()
+  @Post('telemetry/csp-report')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Collect Content Security Policy violation reports' })
+  collectCspReport(@Body() _body: unknown) {
+    return null;
+  }
+
+  @Get('auth/me')
+  @ApiOperation({ summary: 'Retrieve currently authenticated session claims' })
+  getMe(
+    @Req() req: AuthenticatedFastifyRequest,
+    @Headers('x-request-id') reqId?: string,
+  ) {
+    return createSuccessResponse(req.user, reqId || 'req-me');
+  }
+
   @Get('branches')
   @RequirePermissions('branches:read')
   @ApiOperation({ summary: 'List branches for the authenticated tenant' })

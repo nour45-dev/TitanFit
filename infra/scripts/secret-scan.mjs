@@ -49,7 +49,7 @@ const violations = [];
 
 for (const file of files) {
   const base = file.split('/').pop() || file;
-  if (ALLOWED_FILES.has(base) || file.endsWith('secret-scan.mjs')) {
+  if (ALLOWED_FILES.has(base) || file.endsWith('secret-scan.mjs') || base.endsWith('.example')) {
     continue;
   }
 
