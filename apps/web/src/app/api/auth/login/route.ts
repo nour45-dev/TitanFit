@@ -101,9 +101,10 @@ export async function POST(req: NextRequest) {
       return res;
     }
 
-    // Gym Code / PIN Login
-    if (gymSecretCode || lowerId.startsWith('tf-') || lowerId.startsWith('pk-')) {
-      const code = (gymSecretCode || lowerId).toUpperCase();
+    // Gym Code / PIN Login (Only accepted for valid gym code formats e.g. TF-#### or PK-####)
+    const upperGym = gymSecretCode.toUpperCase();
+    if (upperGym.startsWith('TF-') || upperGym.startsWith('PK-') || lowerId.startsWith('tf-') || lowerId.startsWith('pk-')) {
+      const code = (upperGym || lowerId).toUpperCase();
       const res = NextResponse.json({
         success: true,
         user: {
