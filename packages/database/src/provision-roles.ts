@@ -7,7 +7,7 @@
  */
 import { PrismaClient } from '@prisma/client';
 
-async function provisionRuntimeRoles() {
+export async function provisionRuntimeRoles() {
   const migrationUrl = process.env.DATABASE_MIGRATION_URL || process.env.DATABASE_URL;
   if (!migrationUrl) {
     console.log('[provision-roles] No DATABASE_MIGRATION_URL or DATABASE_URL provided; skipping.');
@@ -53,11 +53,10 @@ async function provisionRuntimeRoles() {
       await ownerClient.$executeRawUnsafe(`ALTER ROLE gymos_worker WITH PASSWORD '${escaped}';`);
     }
 
-    await ownerClient.$executeRawUnsafe(`
-      GRANT USAGE ON SCHEMA public TO gymos_app, gymos_worker;
-      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO gymos_app, gymos_worker;
-      ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO gymos_app, gymos_worker;
-    `);
+    // Execute separate statements to prevent PostgreSQL 42601 multiple commands error in prepared statements
+    await ownerClient.$executeRawUnsafe(`GRANT USAGE ON SCHEMA public TO gymos_app, gymos_worker;`);
+    await ownerClient.$executeRawUnsafe(`GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO gymos_app, gymos_worker;`);
+    await ownerClient.$executeRawUnsafe(`ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO gymos_app, gymos_worker;`);
 
     console.log('✅ [provision-roles] Verified gymos_app and gymos_worker roles (NOSUPERUSER, NOBYPASSRLS).');
   } finally {
