@@ -373,46 +373,92 @@ function TitanFitEnterpriseShell() {
         )}
       </AnimatePresence>
 
-      {/* DEMO PROTOTYPE DISCLAIMER BANNER: Permanent on all portals & login; session-dismissible only on public homepage */}
+      {/* TOP ANNOUNCEMENT BANNER: Controlled by NEXT_PUBLIC_DEMO_NOTICE or sleek commercial announcement */}
       {(() => {
-        const isPortalOrAuth = isAuthenticated || !isPublicWebsiteView || showLoginModal;
-        const showBanner = isPortalOrAuth || !publicBannerDismissed;
-        const isDismissible = isPublicWebsiteView && !isAuthenticated && !showLoginModal;
+        const isDemoNoticeEnabled = process.env.NEXT_PUBLIC_DEMO_NOTICE === 'true';
 
-        if (!showBanner) return null;
+        if (isDemoNoticeEnabled) {
+          const isPortalOrAuth = isAuthenticated || !isPublicWebsiteView || showLoginModal;
+          const showBanner = isPortalOrAuth || !publicBannerDismissed;
+          const isDismissible = isPublicWebsiteView && !isAuthenticated && !showLoginModal;
 
-        return (
-          <aside
-            role="region"
-            aria-label={isAr ? 'تنبيه النسخة التجريبية' : 'Demo Prototype Notice'}
-            className="relative z-40 border-b border-amber-600 bg-amber-500 px-3 py-2 text-slate-950 dark:border-amber-500 dark:bg-amber-500 dark:text-slate-950 sm:px-6"
-          >
-            <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 text-xs font-black">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 shrink-0 text-slate-950" aria-hidden="true" />
-                <span>
-                  {isAr
-                    ? '⚠️ نسخة تجريبية (Demo Prototype) — المنصة حالياً قيد الاختبار الفني والمعماري. يُرجى عدم إدخال أي بيانات حقيقية أو كلمات مرور شخصية.'
-                    : '⚠️ Demo Prototype — This platform is currently undergoing technical & security audit. Do not enter real personal data or production credentials.'}
-                </span>
+          if (!showBanner) return null;
+
+          return (
+            <aside
+              role="region"
+              aria-label={isAr ? 'تنبيه النسخة التجريبية' : 'Demo Prototype Notice'}
+              className="relative z-40 border-b border-amber-600 bg-amber-500 px-3 py-2 text-slate-950 dark:border-amber-500 dark:bg-amber-500 dark:text-slate-950 sm:px-6"
+            >
+              <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 text-xs font-black">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-slate-950" aria-hidden="true" />
+                  <span>
+                    {isAr
+                      ? '⚠️ نسخة تجريبية (Demo Prototype) — المنصة حالياً قيد الاختبار الفني والمعماري. يُرجى عدم إدخال أي بيانات حقيقية أو كلمات مرور شخصية.'
+                      : '⚠️ Demo Prototype — This platform is currently undergoing technical & security audit. Do not enter real personal data or production credentials.'}
+                  </span>
+                </div>
+                {isDismissible ? (
+                  <button
+                    type="button"
+                    onClick={handleDismissPublicBanner}
+                    aria-label={isAr ? 'إغلاق تنبيه النسخة التجريبية' : 'Dismiss demo prototype banner for this session'}
+                    className="rounded-lg p-1 text-slate-950 transition hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-slate-950"
+                  >
+                    <X className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                ) : (
+                  <span className="rounded-full bg-slate-950/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-950">
+                    {isAr ? 'تنبيه إلزامي' : 'Mandatory Notice'}
+                  </span>
+                )}
               </div>
-              {isDismissible ? (
-                <button
-                  type="button"
-                  onClick={handleDismissPublicBanner}
-                  aria-label={isAr ? 'إغلاق تنبيه النسخة التجريبية' : 'Dismiss demo prototype banner for this session'}
-                  className="rounded-lg p-1 text-slate-950 transition hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-slate-950"
-                >
-                  <X className="h-4 w-4" aria-hidden="true" />
-                </button>
-              ) : (
-                <span className="rounded-full bg-slate-950/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-950">
-                  {isAr ? 'تنبيه إلزامي' : 'Mandatory Notice'}
-                </span>
-              )}
-            </div>
-          </aside>
-        );
+            </aside>
+          );
+        }
+
+        // Commercial Production Announcement Banner for Storefront Visitors
+        if (isPublicWebsiteView && !publicBannerDismissed && !isAuthenticated) {
+          return (
+            <aside
+              role="region"
+              aria-label={isAr ? 'إعلان المنصة الرسمية' : 'Official Platform Announcement'}
+              className="relative z-40 border-b border-emerald-600 bg-emerald-600 px-3 py-2 text-white sm:px-6"
+            >
+              <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 text-xs font-black">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 shrink-0 text-amber-300" aria-hidden="true" />
+                  <span>
+                    {isAr
+                      ? '🚀 TitanFit — المنصة الرسمية المتكاملة لإدارة الأندية الرياضية والتغذية والتدريب في مصر • اطلب نسختك الخاصة الآن'
+                      : '🚀 TitanFit — The Official Gym Management & Nutrition Operating System in Egypt • Get Your Club Setup Now'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <a
+                    href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B4%D8%AA%D8%B1%D8%A7%D9%83%20%D9%81%D9%8A%20%D9%85%D9%86%D8%B5%D8%A9%20TitanFit%20%D9%84%D8%A5%D8%AF%D8%A7%D8%B1%D8%A9%20%D8%AC%D9%8A%D9%85"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg bg-white px-2.5 py-1 text-[11px] font-black text-emerald-900 transition hover:bg-slate-100"
+                  >
+                    {isAr ? 'تواصل معنا واتساب' : 'WhatsApp Us'}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleDismissPublicBanner}
+                    aria-label={isAr ? 'إغلاق الإعلان' : 'Dismiss announcement'}
+                    className="rounded-lg p-1 text-white transition hover:bg-white/20 focus:outline-none"
+                  >
+                    <X className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+            </aside>
+          );
+        }
+
+        return null;
       })()}
 
       {/* TOP HEADER: Dynamic Clean Storefront for Visitors vs Sleek Management Bar for Logged-In Admins */}
