@@ -18,6 +18,7 @@ RUN pnpm install --frozen-lockfile=false
 
 FROM deps AS builder
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_STANDALONE=true
 COPY packages ./packages
 COPY apps/web ./apps/web
 RUN pnpm --filter @gymos/web... build
