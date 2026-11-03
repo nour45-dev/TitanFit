@@ -651,7 +651,7 @@ export function MembersCrmView() {
                         {m.avatarInitials}
                       </div>
                       <div>
-                        <p className="font-bold text-white">
+                        <p className="font-bold text-slate-900 dark:text-white">
                           {isAr ? m.fullNameAr : m.fullNameEn}
                         </p>
                         <p className="font-mono text-xs text-slate-500 dark:text-slate-400">
@@ -967,13 +967,13 @@ export function MembersCrmView() {
                     {selectedMember.status}
                   </span>
                 </div>
-                <p className="mt-2 text-base font-bold text-white">
+                <p className="mt-2 text-base font-bold text-slate-900 dark:text-white">
                   {isAr ? selectedMember.planNameAr : selectedMember.planNameEn}
                 </p>
                 <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
                   <div className="rounded-lg bg-slate-900/70 p-2.5">
                     <span className="text-slate-400">{isAr ? 'البداية' : 'Start'}</span>
-                    <p className="mt-0.5 font-mono font-bold text-white">{selectedMember.startDate}</p>
+                    <p className="mt-0.5 font-mono font-bold text-slate-900 dark:text-white">{selectedMember.startDate}</p>
                   </div>
                   <div className="rounded-lg bg-slate-900/70 p-2.5">
                     <span className="text-slate-400">{isAr ? 'الانتهاء' : 'Expires'}</span>
@@ -1486,18 +1486,18 @@ export function PaymentsBillingView() {
                   <td className="px-4 py-3 font-mono text-xs font-bold text-[#F3E5AB]">
                     {inv.invoiceNumber}
                   </td>
-                  <td className="px-4 py-3 font-bold text-white">
+                  <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">
                     {isAr ? inv.memberNameAr : inv.memberNameEn}
                   </td>
                   <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-300">
                     {isAr ? inv.planNameAr : inv.planNameEn}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="rounded-lg bg-slate-800 px-2.5 py-1 font-mono text-xs text-slate-200">
+                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 font-mono text-xs text-slate-800 dark:bg-slate-800 dark:text-slate-200">
                       {inv.method}
                     </span>
                   </td>
-                  <td className="px-4 py-3 font-mono font-bold text-white">
+                  <td className="px-4 py-3 font-mono font-bold text-slate-900 dark:text-white">
                     {inv.totalEgp.toLocaleString()} EGP
                   </td>
                   <td className="px-4 py-3">
@@ -1584,7 +1584,7 @@ export function PaymentsBillingView() {
             </div>
             <div className="mt-5 flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 p-3">
               <div className="text-[11px] text-slate-400">
-                <p className="font-bold text-white">ETA Digital Tax Signature</p>
+                <p className="font-bold text-slate-900 dark:text-white">ETA Digital Tax Signature</p>
                 <p className="font-mono">SHA256: 9F82A1C0...TitanFit</p>
               </div>
               <QrCode className="h-12 w-12 text-[#D4AF37]" />
