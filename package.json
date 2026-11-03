@@ -22,7 +22,8 @@
     "db:migrate:deploy": "pnpm --filter @gymos/database db:migrate:deploy",
     "db:seed": "pnpm --filter @gymos/database db:seed",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\""
+    "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
+    "start": "pnpm --filter @gymos/web start"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
