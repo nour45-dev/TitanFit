@@ -232,7 +232,7 @@ export function PublicCoachingStorefrontView({
               {isAr ? (
                 <>
                   إنسى نظام الدايت الممل..{' '}
-                  <span className="text-amber-500">
+                  <span className="text-amber-700 dark:text-amber-400">
                     وابنِ لنفسك نمط حياة صحي
                   </span>{' '}
                   وجسم مثالي بدون حرمان!
@@ -240,7 +240,7 @@ export function PublicCoachingStorefrontView({
               ) : (
                 <>
                   Forget Boring Diets —{' '}
-                  <span className="text-amber-500">
+                  <span className="text-amber-700 dark:text-amber-400">
                     Build Your Dream Physique
                   </span>{' '}
                   With Science & Medical Supervision

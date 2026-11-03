@@ -34,6 +34,7 @@ import {
   Wallet,
   X,
 } from 'lucide-react';
+import { downloadInvoicePdf } from '../../lib/pdf-docs';
 import {
   type InvoiceItem,
   type MemberItem,
@@ -1247,7 +1248,7 @@ export function SubscriptionsView() {
 }
 
 export function PaymentsBillingView() {
-  const { locale, members, plans, invoices, createInvoicePayment, refundInvoice } =
+  const { locale, members, plans, invoices, createInvoicePayment, refundInvoice, activeTenantCustom } =
     usePlatformStore();
   const isAr = locale === 'ar';
 
@@ -1590,12 +1591,37 @@ export function PaymentsBillingView() {
             </div>
             <button
               type="button"
-              onClick={() => {
-                window.print();
+              onClick={async () => {
+                try {
+                  const gymName =
+                    isAr && activeTenantCustom?.nameAr
+                      ? activeTenantCustom.nameAr
+                      : activeTenantCustom?.nameEn || 'TitanFit Club';
+                  await downloadInvoicePdf(
+                    {
+                      invoiceNumber: printableInvoice.invoiceNumber,
+                      memberName: isAr ? printableInvoice.memberNameAr : printableInvoice.memberNameEn,
+                      planName: isAr ? printableInvoice.planNameAr : printableInvoice.planNameEn,
+                      subtotalEgp: printableInvoice.subtotalEgp,
+                      discountEgp: printableInvoice.discountEgp,
+                      vatEgp: printableInvoice.vatEgp,
+                      totalEgp: printableInvoice.totalEgp,
+                      method: printableInvoice.method,
+                      referenceCode: printableInvoice.referenceCode,
+                      createdAt: printableInvoice.createdAt,
+                      cashierName: printableInvoice.cashierName,
+                    },
+                    gymName,
+                    isAr,
+                  );
+                } catch {
+                  window.print();
+                }
               }}
-              className="mt-4 w-full rounded-xl bg-[#D4AF37] py-2.5 text-xs font-extrabold text-slate-950"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#D4AF37] py-2.5 text-xs font-extrabold text-slate-950 transition hover:bg-amber-400"
             >
-              {isAr ? 'طباعة / حفظ كملف PDF' : 'Print / Save as PDF'}
+              <Download className="h-4 w-4" />
+              {isAr ? 'تحميل فاتورة PDF رسمية' : 'Download Official PDF Invoice'}
             </button>
           </div>
         </div>

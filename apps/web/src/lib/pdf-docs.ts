@@ -295,4 +295,113 @@ export async function downloadDayPlanPdf(
   downloadBlob(blob, `TitanFit_Daily_Meal_Plan_${targets.kcal}kcal.pdf`);
 }
 
+export interface InvoicePdfData {
+  invoiceNumber: string;
+  memberName: string;
+  planName: string;
+  subtotalEgp: number;
+  discountEgp: number;
+  vatEgp: number;
+  totalEgp: number;
+  method: string;
+  referenceCode: string;
+  createdAt: string;
+  cashierName?: string;
+}
+
+export function invoicePdfBlocks(
+  inv: InvoicePdfData,
+  gymName: string,
+  isAr: boolean,
+): PdfBlock[] {
+  return [
+    {
+      t: 'title',
+      text: isAr ? 'فاتورة اشتراك ضريبية رسمية' : 'Official Tax Subscription Invoice',
+      sub: `${gymName}  •  ${inv.invoiceNumber}  •  ${inv.createdAt}`,
+    },
+    {
+      t: 'stats',
+      items: [
+        { value: `${inv.totalEgp.toLocaleString()} EGP`, label: isAr ? 'الإجمالي المدفوع' : 'Total Paid' },
+        { value: `${inv.vatEgp.toLocaleString()} EGP`, label: isAr ? 'ض.ق.م 14%' : '14% VAT' },
+        { value: inv.method, label: isAr ? 'طريقة السداد' : 'Payment Method' },
+        { value: inv.referenceCode || 'REF-OK', label: isAr ? 'رقم العملية' : 'Reference' },
+      ],
+    },
+    {
+      t: 'h1',
+      text: isAr ? 'بيانات المشترك والاشتراك' : 'Member & Subscription Details',
+    },
+    {
+      t: 'li',
+      text: isAr ? `اسم المشترك: ${inv.memberName}` : `Member Name: ${inv.memberName}`,
+    },
+    {
+      t: 'li',
+      text: isAr ? `الباقة / الاشتراك: ${inv.planName}` : `Plan: ${inv.planName}`,
+    },
+    {
+      t: 'li',
+      text: isAr ? `مسؤول الخزينة / الاستقبال: ${inv.cashierName || 'كابتن الاستقبال'}` : `Cashier: ${inv.cashierName || 'Reception'}`,
+    },
+    {
+      t: 'gap',
+      h: 8,
+    },
+    {
+      t: 'h1',
+      text: isAr ? 'تفاصيل السداد والضريبة (ETA Compliant)' : 'Payment & Tax Breakdown',
+    },
+    {
+      t: 'li',
+      text: isAr
+        ? `المبلغ الأساسي (قبل الخصم والضريبة): ${inv.subtotalEgp.toLocaleString()} جنيه مصري`
+        : `Subtotal: ${inv.subtotalEgp.toLocaleString()} EGP`,
+    },
+    {
+      t: 'li',
+      text: isAr
+        ? `الخصم التجاري المطبق: -${inv.discountEgp.toLocaleString()} جنيه مصري`
+        : `Discount Applied: -${inv.discountEgp.toLocaleString()} EGP`,
+    },
+    {
+      t: 'li',
+      text: isAr
+        ? `ضريبة القيمة المضافة (14% VAT): +${inv.vatEgp.toLocaleString()} جنيه مصري`
+        : `VAT (14%): +${inv.vatEgp.toLocaleString()} EGP`,
+    },
+    {
+      t: 'li',
+      text: isAr
+        ? `صافي المبلغ المسدد بالكامل: ${inv.totalEgp.toLocaleString()} جنيه مصري`
+        : `Net Total Paid: ${inv.totalEgp.toLocaleString()} EGP`,
+    },
+    {
+      t: 'gap',
+      h: 12,
+    },
+    {
+      t: 'note',
+      text: isAr
+        ? `هذه الفاتورة إلكترونية معتمدة صادرة من نظام ${gymName} وموثقة برقم ضريبي وتشمل ضريبة القيمة المضافة المصرية (14%). صالحة لكافة أغراض إثبات السداد.`
+        : `Official electronic invoice issued by ${gymName}. Valid for all payment confirmation purposes with 14% Egyptian VAT included.`,
+    },
+  ];
+}
+
+export async function downloadInvoicePdf(
+  inv: InvoicePdfData,
+  gymName: string,
+  isAr: boolean,
+): Promise<void> {
+  const blob = await buildPdfBlob(invoicePdfBlocks(inv, gymName, isAr), {
+    dir: isAr ? 'rtl' : 'ltr',
+    brand: `${gymName} — ${isAr ? 'فاتورة اشتراك' : 'Invoice'}`,
+    footer: `${gymName} Financial Ledger`,
+    title: `Invoice ${inv.invoiceNumber}`,
+  });
+  downloadBlob(blob, `Invoice_${inv.invoiceNumber}.pdf`);
+}
+
 export { MEAL_ORDER, macrosOf };

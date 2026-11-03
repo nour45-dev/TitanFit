@@ -8,6 +8,7 @@ import {
   INGREDIENTS,
 } from './lib/nutrition';
 import { buildPdfBlob, downloadBlob } from './lib/pdf-builder';
+import { invoicePdfBlocks } from './lib/pdf-docs';
 
 describe('@gymos/web bilingual dictionaries', () => {
   it('provides complete English and Arabic translation keys', () => {
@@ -173,6 +174,30 @@ describe('PDF Document Assembler', () => {
   it('exports valid builder and download functions', () => {
     expect(typeof buildPdfBlob).toBe('function');
     expect(typeof downloadBlob).toBe('function');
+  });
+
+  it('assembles complete official invoice PDF blocks with Egyptian VAT and totals', () => {
+    const blocks = invoicePdfBlocks(
+      {
+        invoiceNumber: 'INV-2026-001',
+        memberName: 'Ahmed Hassan',
+        planName: 'VIP Annual',
+        subtotalEgp: 10000,
+        discountEgp: 1000,
+        vatEgp: 1260,
+        totalEgp: 10260,
+        method: 'PAYMOB_CARD',
+        referenceCode: 'TXN-9988',
+        createdAt: '2026-11-03',
+        cashierName: 'Captain Reception',
+      },
+      'TitanFit Flagship',
+      true,
+    );
+
+    expect(blocks.length).toBeGreaterThan(5);
+    expect(blocks[0]?.t).toBe('title');
+    expect(blocks[0]?.text).toContain('فاتورة اشتراك ضريبية رسمية');
   });
 
   it('safely guards against running in server/non-browser environment without DOM', async () => {
