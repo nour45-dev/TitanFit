@@ -86,6 +86,8 @@ jobs:
 
       - name: Run Pre-Deploy Database Migrations & Provision Non-Bypassable RLS Roles
         run: pnpm db:migrate:deploy
+        env:
+          DATABASE_URL: ${{ env.DATABASE_MIGRATION_URL }}
 
       - name: Lint & Strict Typecheck
         run: |
