@@ -375,7 +375,8 @@ function TitanFitEnterpriseShell() {
 
       {/* TOP ANNOUNCEMENT BANNER: Controlled by NEXT_PUBLIC_DEMO_NOTICE or sleek commercial announcement */}
       {(() => {
-        const isDemoNoticeEnabled = process.env.NEXT_PUBLIC_DEMO_NOTICE === 'true';
+        // Phase 4 Commercial Launch: Disclaimers removed for official commercial sales
+        const isDemoNoticeEnabled = false;
 
         if (isDemoNoticeEnabled) {
           const isPortalOrAuth = isAuthenticated || !isPublicWebsiteView || showLoginModal;

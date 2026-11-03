@@ -137,3 +137,33 @@ export async function apiPushSyncAction(action: SyncActionPayload) {
     return null;
   }
 }
+
+
+export interface CheckoutPayload {
+  tenantSlug?: string;
+  memberId: string;
+  memberNameAr: string;
+  memberNameEn: string;
+  planId: string;
+  planNameAr: string;
+  planNameEn: string;
+  amountEgp: number;
+  paymentProvider: 'PAYMOB_CARD' | 'FAWRY' | 'INSTAPAY' | 'CASH';
+  phone: string;
+  instaPayReference?: string;
+}
+
+export async function apiProcessCheckout(payload: CheckoutPayload) {
+  try {
+    const res = await fetch('/api/payments/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
