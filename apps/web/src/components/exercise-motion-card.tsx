@@ -13,6 +13,11 @@ import {
   ShieldCheck,
   Dumbbell,
   Flame,
+  Zap,
+  Activity,
+  Info,
+  Layers,
+  HeartPulse,
 } from 'lucide-react';
 
 export type ExerciseMotionType =
@@ -46,230 +51,571 @@ export interface ExerciseMotionItem {
   difficultyEn?: string;
 }
 
+export interface BodyImpactInfo {
+  muscleRegion: 'CHEST' | 'BACK' | 'LEGS' | 'SHOULDERS' | 'ARMS';
+  primaryTarget: { nameAr: string; nameEn: string; activationPct: number; color: string };
+  secondaryTargets: Array<{ nameAr: string; nameEn: string; activationPct: number; color: string }>;
+  bodyBenefitsAr: string[];
+  bodyBenefitsEn: string[];
+  postureImpactAr: string;
+  postureImpactEn: string;
+  dailyFunctionalBenefitAr: string;
+  dailyFunctionalBenefitEn: string;
+}
+
+export const EXERCISE_BODY_IMPACT_MAP: Record<ExerciseMotionType, BodyImpactInfo> = {
+  BENCH_PRESS: {
+    muscleRegion: 'CHEST',
+    primaryTarget: { nameAr: 'عضلة الصدر الرئيسية (Pectoralis Major)', nameEn: 'Pectoralis Major (Mid & Lower Chest)', activationPct: 96, color: '#EF4444' },
+    secondaryTargets: [
+      { nameAr: 'عضلة الترايسبس الخلفية للذراع', nameEn: 'Triceps Brachii', activationPct: 78, color: '#F59E0B' },
+      { nameAr: 'الكتف الأمامي (Anterior Deltoid)', nameEn: 'Anterior Deltoid', activationPct: 72, color: '#38BDF8' },
+    ],
+    bodyBenefitsAr: [
+      'يمنح الصدر حجماً وضخامة عضلية واضحة ومظهراً رياضياً مشدوداً.',
+      'يقوي عضلات الدفع العلوية ويزيد القدرة على حمل ودفع الأشياء الثقيلة.',
+      'يحسن كثافة عظام القفص الصدري ومفاصل الكتف والكوع.',
+    ],
+    bodyBenefitsEn: [
+      'Builds maximum upper-body pushing power and dense chest musculature.',
+      'Strengthens shoulder and elbow joint stability against strain.',
+      'Accelerates metabolic calorie burn through compound multi-joint recruitment.',
+    ],
+    postureImpactAr: 'يوازن عضلات الجزء العلوي عند دمجه مع تمارين السحب لمنع استدارة الكتفين.',
+    postureImpactEn: 'Firms chest wall and balances anterior chain when paired with back rows.',
+    dailyFunctionalBenefitAr: 'يسهل أي نشاط يتطلب دفع الأبواب أو الأثاث أو رفع الأشياء للأمام.',
+    dailyFunctionalBenefitEn: 'Improves everyday pushing power, sports performance, and self-defense posture.',
+  },
+  INCLINE_PRESS: {
+    muscleRegion: 'CHEST',
+    primaryTarget: { nameAr: 'الصدر العلوي (Clavicular Head)', nameEn: 'Upper Pectorals (Clavicular Head)', activationPct: 94, color: '#EF4444' },
+    secondaryTargets: [
+      { nameAr: 'الكتف الأمامي (Anterior Delts)', nameEn: 'Anterior Deltoids', activationPct: 82, color: '#F59E0B' },
+      { nameAr: 'الترايسبس الثلاثية (Triceps)', nameEn: 'Triceps Brachii', activationPct: 68, color: '#38BDF8' },
+    ],
+    bodyBenefitsAr: [
+      'يملأ الفراغ أسفل عظمة الترقوة ليعطي الصدر مظهراً مرفوعاً وممتلئاً حتى مع ارتداء الملابس.',
+      'يقلل الضغط على مفصل الكتف مقارنة بالبنش المستوي بزاوية 30 درجة.',
+      'يبني التناسق الهندسي للصدر العلوي والرقبة.',
+    ],
+    bodyBenefitsEn: [
+      'Fills upper-chest fibers creating an athletic, high-armor chest profile.',
+      'Safer glenohumeral pressing angle preserving the rotator cuff.',
+      'Enhances shoulder vertical power output.',
+    ],
+    postureImpactAr: 'يرفع عضلات الصدر ويمنع ترهل الألياف العلوية.',
+    postureImpactEn: 'Elevates pectoral insertion line for a prominent muscular silhouette.',
+    dailyFunctionalBenefitAr: 'رفع الأغراض الثقيلة للأرفف العالية وحمل الأطفال أو الحقائب.',
+    dailyFunctionalBenefitEn: 'Lifting objects to high shelves and overhead luggage loading.',
+  },
+  CABLE_FLY: {
+    muscleRegion: 'CHEST',
+    primaryTarget: { nameAr: 'منتصف الصدر والألياف الداخلية', nameEn: 'Inner Sternal Pectoral Fibers', activationPct: 92, color: '#EF4444' },
+    secondaryTargets: [
+      { nameAr: 'الكتف الأمامي والأوتار الصدرية', nameEn: 'Anterior Delts & Tendons', activationPct: 58, color: '#F59E0B' },
+      { nameAr: 'عضلة المنشارية الأمامية (Serratus)', nameEn: 'Serratus Anterior', activationPct: 45, color: '#38BDF8' },
+    ],
+    bodyBenefitsAr: [
+      'يمنح الصدر تقسيماً وتشريحاً خطياً بارزاً (خط منتصف الصدر).',
+      'يوفر شداً مستمراً على الألياف الصدرية في كل درجات زاوية الحركة دون انقطاع.',
+      'يساعد في استطالة وتوسيع القفص الصدري وتحسين سعة التنفس.',
+    ],
+    bodyBenefitsEn: [
+      'Provides peak tension at full adduction creating sharp mid-chest striations.',
+      'Expands thoracic flexibility and chest muscle fascia.',
+      'Zero dead-spots compared to dumbbell flys due to constant cable tension.',
+    ],
+    postureImpactAr: 'يفرد الألياف الصدرية المشدودة ويحسن مرونة مفصل الكتف.',
+    postureImpactEn: 'Elongates pectoral tendons while maintaining constant tension.',
+    dailyFunctionalBenefitAr: 'تحسين حركة المعانقة وحمل الأجسام العريضة بكفاءة وثبات.',
+    dailyFunctionalBenefitEn: 'Hugging, carrying large boxes, and lateral arm control.',
+  },
+  BARBELL_SQUAT: {
+    muscleRegion: 'LEGS',
+    primaryTarget: { nameAr: 'عضلات الفخذ الأمامية (Quadriceps)', nameEn: 'Quadriceps Femoris (4 Heads)', activationPct: 98, color: '#10B981' },
+    secondaryTargets: [
+      { nameAr: 'عضلات المؤخرة والأرداف (Glutes)', nameEn: 'Gluteus Maximus', activationPct: 90, color: '#F59E0B' },
+      { nameAr: 'عضلات الجذع وأسفل الظهر (Core & Lower Back)', nameEn: 'Core & Spinal Erectors', activationPct: 82, color: '#38BDF8' },
+    ],
+    bodyBenefitsAr: [
+      'ملك تمارين بناء القوة: يحفز إفراز هرمون التستوستيرون والنمو لبناء الجسم كاملاً.',
+      'يحرق كميات هائلة من السعرات الحرارية والدهون لاستهلاكه أكبر كتلة عضلية بالجسم.',
+      'يقوي الركبتين والأربطة الصليبية وأوتار الحوض ويحمي من آلام الشيخوخة.',
+    ],
+    bodyBenefitsEn: [
+      'King of compound exercises: stimulates systemic anabolic hormone production.',
+      'Torches maximum calories by engaging the human body’s largest muscle groups.',
+      'Fortifies knee cartilage, patellar tendons, and hip bone mineral density.',
+    ],
+    postureImpactAr: 'يصحح ميل الحوض ويقوي حزام البطن والقطنية لحماية العمود الفقري.',
+    postureImpactEn: 'Aligns pelvis and spinal column, building unbreakable foundational posture.',
+    dailyFunctionalBenefitAr: 'صعود السلالم بسهولة فائقة، الجري، والوقوف والنهوض دون أي إجهاد.',
+    dailyFunctionalBenefitEn: 'Stair climbing, sprinting, sitting-to-standing transitions with zero fatigue.',
+  },
+  ROMANIAN_DEADLIFT: {
+    muscleRegion: 'LEGS',
+    primaryTarget: { nameAr: 'عضلات الفخذ الخلفية (Hamstrings)', nameEn: 'Hamstrings & Biceps Femoris', activationPct: 95, color: '#EF4444' },
+    secondaryTargets: [
+      { nameAr: 'المؤخرة وتقاطع الفخذ الخلفي (Glute-Ham Tie-in)', nameEn: 'Gluteus Maximus & Medius', activationPct: 88, color: '#F59E0B' },
+      { nameAr: 'عضلات القطنية وأسفل الظهر (Erector Spinae)', nameEn: 'Lower Back & Spinal Erectors', activationPct: 79, color: '#38BDF8' },
+    ],
+    bodyBenefitsAr: [
+      'يقضي تماماً على ترهل الفخذ الخلفي ويمنحه تقسيماً ومظهراً مشدوداً وقوياً.',
+      'أفضل تمرين للوقاية من آلام الديسك والانزلاق الغضروفي بتقوية عضلات الحوض والظهر.',
+      'يزيد السرعة الانفجارية في الجري والقفز الرياضي.',
+    ],
+    bodyBenefitsEn: [
+      'Sculpts the posterior chain, eliminating hamstring slack and tightening glutes.',
+      'Top evidence-based exercise for lower back pain prevention through hip-hinging.',
+      'Dramatically elevates athletic sprint speed and jump takeoff power.',
+    ],
+    postureImpactAr: 'يمنع تقوس الظهر الأمامي (Kyphosis) ويحافظ على استقامة القامة الشامخة.',
+    postureImpactEn: 'Counters anterior pelvic tilt and computer-desk slouching.',
+    dailyFunctionalBenefitAr: 'التقاط الأشياء من الأرض بأمان تام وبدون تحميل على فقرات الظهر.',
+    dailyFunctionalBenefitEn: 'Safe bending and heavy object lifting from the floor without spinal strain.',
+  },
+  LAT_PULLDOWN: {
+    muscleRegion: 'BACK',
+    primaryTarget: { nameAr: 'عضلة الظهر العريضة (Latissimus Dorsi)', nameEn: 'Latissimus Dorsi (Lats)', activationPct: 95, color: '#38BDF8' },
+    secondaryTargets: [
+      { nameAr: 'عضلات البايسبس الأمامية للذراع', nameEn: 'Biceps Brachii', activationPct: 75, color: '#F59E0B' },
+      { nameAr: 'عضلات ما بين لوحي الكتف (Rhomboids)', nameEn: 'Rhomboids & Mid-Traps', activationPct: 70, color: '#10B981' },
+    ],
+    bodyBenefitsAr: [
+      'يمنح الظهر شكل حرف V الشهير (V-Taper) الذي يجعل الخصر يبدو أنحف وأجمل.',
+      'يخفف الضغط عن فقرات الرقبة وأعلى الظهر الناتجة عن الجلوس الطويل أمام الشاشات.',
+      'يقوي قبضة اليد والذراعين بشكل ملحوظ.',
+    ],
+    bodyBenefitsEn: [
+      'Carves the iconic V-Taper silhouette making waist appear dramatically narrower.',
+      'Relieves upper-back and cervical spine tension caused by desk work and smartphone hunching.',
+      'Builds crushing pulling strength and forearm grip endurance.',
+    ],
+    postureImpactAr: 'يسحب الكتفين للخلف ويفتح الصدر لمظهر واثق ومستقيم.',
+    postureImpactEn: 'Pulls scapulae downward and backward, instantly curing rounded shoulders.',
+    dailyFunctionalBenefitAr: 'التسلق، سحب الأبواب الثقيلة، وحمل الحقائب والمستلزمات لمسافات طويلة.',
+    dailyFunctionalBenefitEn: 'Pulling actions, climbing, and carrying heavy groceries easily.',
+  },
+  BARBELL_ROW: {
+    muscleRegion: 'BACK',
+    primaryTarget: { nameAr: 'منتصف الظهر والترابيس (Mid-Traps & Rhomboids)', nameEn: 'Mid-Back, Rhomboids & Traps', activationPct: 93, color: '#38BDF8' },
+    secondaryTargets: [
+      { nameAr: 'عضلة الظهر العريضة (Lats)', nameEn: 'Latissimus Dorsi', activationPct: 85, color: '#10B981' },
+      { nameAr: 'القطنية وعضلات التثبيت (Lower Back & Core)', nameEn: 'Spinal Erectors & Core', activationPct: 78, color: '#F59E0B' },
+    ],
+    bodyBenefitsAr: [
+      'يبني سمك وعمق عضلات الظهر ثلاثية الأبعاد وليس فقط العرض.',
+      'يقوي عضلات العمود الفقري بالكامل لتتحمل الجهد العالي والعمل البدني.',
+      'يزيد ثبات لوح الكتف مما يحمي من إصابات خلع وتمزق أوتار الكتف.',
+    ],
+    bodyBenefitsEn: [
+      'Builds 3D back muscle thickness and density between the shoulder blades.',
+      'Strengthens the full spinal kinetic chain for heavy physical stamina.',
+      'Stabilizes scapular movement, bulletproofing shoulder joints from impingement.',
+    ],
+    postureImpactAr: 'يحارب حدبة الظهر ويمنحك وقفة عسكرية مستقيمة وثابتة.',
+    postureImpactEn: 'Combats thoracic kyphosis, yielding a proud upright military posture.',
+    dailyFunctionalBenefitAr: 'سحب وسحب الأشياء نحوك والسيطرة على الأجسام غير المستقرة.',
+    dailyFunctionalBenefitEn: 'Rowing boats, pulling heavy ropes, and moving luggage.',
+  },
+  LATERAL_RAISE: {
+    muscleRegion: 'SHOULDERS',
+    primaryTarget: { nameAr: 'عضلة الكتف الجانبية (Lateral Deltoid)', nameEn: 'Lateral / Medial Deltoid Head', activationPct: 96, color: '#F59E0B' },
+    secondaryTargets: [
+      { nameAr: 'الترابيس العلوية (Upper Trapezius)', nameEn: 'Upper Trapezius', activationPct: 45, color: '#EF4444' },
+      { nameAr: 'الساعد ومعصم اليد (Forearm Stabilizers)', nameEn: 'Forearms & Wrist Stabilizers', activationPct: 40, color: '#38BDF8' },
+    ],
+    bodyBenefitsAr: [
+      'التمرين رقم 1 لتعريض الأكتاف ومنح الجسم عرضاً هيبياً واضحاً من الجانبين.',
+      'يجعل التيشيرتات والبدلات الرياضية تبدو مفصلة بدقة بفضل كروية الكتف (Boulder Shoulders).',
+      'يقوي عضلات التثبيت الجانبية للكتف.',
+    ],
+    bodyBenefitsEn: [
+      'The #1 exercise for shoulder width, sculpting 3D capped "cannonball" deltoids.',
+      'Creates instant visual shoulder flare making clothes fit athletic silhouettes.',
+      'Strengthens glenohumeral lateral stabilization.',
+    ],
+    postureImpactAr: 'يبرز عرض الكتفين ويعوض انكماش الجزء العلوي.',
+    postureImpactEn: 'Widens shoulder span creating athletic horizontal frame.',
+    dailyFunctionalBenefitAr: 'رفع الأذرع جانباً وتناول الأشياء في الأماكن الضيقة بدون إجهاد.',
+    dailyFunctionalBenefitEn: 'Lifting and balancing objects outward laterally.',
+  },
+  TRICEPS_PUSHDOWN: {
+    muscleRegion: 'ARMS',
+    primaryTarget: { nameAr: 'عضلة الترايسبس الخارجية والطويلة (Triceps Lateral & Long)', nameEn: 'Triceps Brachii (All 3 Heads)', activationPct: 95, color: '#10B981' },
+    secondaryTargets: [
+      { nameAr: 'عضلات الساعد ومعصم اليد (Forearms)', nameEn: 'Forearm Flexors & Extensors', activationPct: 50, color: '#38BDF8' },
+      { nameAr: 'عضلات البطن والجذع لتثبيت الحركة', nameEn: 'Core Stabilizers', activationPct: 35, color: '#F59E0B' },
+    ],
+    bodyBenefitsAr: [
+      'عضلة الترايسبس تشكل 65% من حجم الذراع بالكامل — هذا التمرين يضخم الذراع سريعاً.',
+      'يقضي على ترهلات خلف الذراع تماماً ويمنحه شكلاً مشدوداً بشكل حدوة الحصان (Horseshoe Triceps).',
+      'يقوي مفصل الكوع وأربطته ويحمي من إصابات لاعبي التنس والأثقال.',
+    ],
+    bodyBenefitsEn: [
+      'Triceps comprise 65% of upper arm mass; this movement delivers rapid arm fullness.',
+      'Eliminates arm flab, sculpting the defined horseshoe triceps profile.',
+      'Fortifies elbow tendons and protects against tendonitis.',
+    ],
+    postureImpactAr: 'يشد ألياف الذراع الخلفية ويثبت المعصم.',
+    postureImpactEn: 'Firms rear arm line, establishing solid elbow extension balance.',
+    dailyFunctionalBenefitAr: 'فرد الذراع بقوة، رمي الكرات، والدفع ضد الأسطح عند النهوض من الكرسي.',
+    dailyFunctionalBenefitEn: 'Pushing out of deep armchairs, throwing sports, and lockout power.',
+  },
+  BICEPS_CURL: {
+    muscleRegion: 'ARMS',
+    primaryTarget: { nameAr: 'عضلة البايسبس الأمامية (Biceps Brachii & Peak)', nameEn: 'Biceps Brachii (Long & Short Heads)', activationPct: 96, color: '#EF4444' },
+    secondaryTargets: [
+      { nameAr: 'عضلة البراكياليس العميقة (Brachialis)', nameEn: 'Brachialis (Arm Thickness)', activationPct: 75, color: '#F59E0B' },
+      { nameAr: 'عضلات الساعد والقبضة (Forearm Brachioradialis)', nameEn: 'Brachioradialis & Forearms', activationPct: 65, color: '#38BDF8' },
+    ],
+    bodyBenefitsAr: [
+      'يبني قمة البايسبس الشهيرة (Biceps Peak) ويعطي الذراع كروية وبروزاً رياضياً جذاباً.',
+      'يقوي مفصل الكوع وأوتار حمل الأوزان للأمام.',
+      'يحسن قوة قبضة اليد بشكل كبير.',
+    ],
+    bodyBenefitsEn: [
+      'Maximizes the iconic biceps peak and arm curvature.',
+      'Increases bicep thickness via deep brachialis engagement.',
+      'Improves crushing grip strength and wrist endurance.',
+    ],
+    postureImpactAr: 'يوازن عضلات الذراع الأمامية مع الترايسبس لحركة كوع طبيعية.',
+    postureImpactEn: 'Balances arm flexors with extensors maintaining elbow joint neutrality.',
+    dailyFunctionalBenefitAr: 'حمل الأشياء والمشتريات، حمل الأطفال، وثني الذراع بقوة وسلاسة.',
+    dailyFunctionalBenefitEn: 'Carrying grocery bags, holding luggage, and manual lifting.',
+  },
+};
+
 /**
- * Animated SVG Vector Engine demonstrating precise human biomechanical trajectory
+ * High-definition Cartoon Athletic Character Visual Engine
+ * Renders charming 2D/3D-styled athlete with real biomechanics, headband, training tank, shorts & gym gear
  */
-function ExerciseMotionVisualCanvas({
+function CartoonAthleteVisualCanvas({
   motionType,
   isPlaying,
   speedMultiplier = 1,
+  isAr = true,
 }: {
   motionType: ExerciseMotionType;
   isPlaying: boolean;
   speedMultiplier?: number;
+  isAr?: boolean;
 }) {
-  const baseDuration = 3.5 / speedMultiplier;
+  const baseDuration = 3.2 / speedMultiplier;
+  const impact = EXERCISE_BODY_IMPACT_MAP[motionType] ?? EXERCISE_BODY_IMPACT_MAP.BENCH_PRESS;
 
-  // Render dedicated vector motion illustration per exercise
   switch (motionType) {
-    case 'INCLINE_PRESS':
     case 'BENCH_PRESS':
+    case 'INCLINE_PRESS': {
+      const isIncline = motionType === 'INCLINE_PRESS';
       return (
-        <svg viewBox="0 0 240 180" className="w-full h-full drop-shadow-md select-none">
+        <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
           <defs>
-            <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#F59E0B" />
-              <stop offset="100%" stopColor="#D97706" />
+            <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FDBA74" />
+              <stop offset="100%" stopColor="#FB923C" />
             </linearGradient>
-            <linearGradient id="chestGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#EF4444" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#D97706" stopOpacity="0.4" />
+            <linearGradient id="tankGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#0F172A" />
+              <stop offset="100%" stopColor="#1E293B" />
             </linearGradient>
+            <linearGradient id="goldPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FCD34D" />
+              <stop offset="50%" stopColor="#F59E0B" />
+              <stop offset="100%" stopColor="#B45309" />
+            </linearGradient>
+            <radialGradient id="targetGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#EF4444" stopOpacity="0.95" />
+              <stop offset="60%" stopColor="#F59E0B" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
+            </radialGradient>
+            <filter id="glowFilter" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="3.5" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
           </defs>
 
-          {/* Bench Frame */}
-          <rect x="40" y="140" width="160" height="8" rx="4" fill="#334155" />
-          <path d="M 50 140 L 40 165" stroke="#475569" strokeWidth="6" strokeLinecap="round" />
-          <path d="M 190 140 L 200 165" stroke="#475569" strokeWidth="6" strokeLinecap="round" />
-          <rect x="55" y="105" width="130" height="12" rx="4" fill="#1E293B" transform="rotate(-15 55 105)" />
+          {/* Gym Floor Shadow */}
+          <ellipse cx="140" cy="180" rx="90" ry="10" fill="#000000" opacity="0.18" />
 
-          {/* Torso & Head */}
-          <ellipse cx="70" cy="85" rx="12" ry="12" fill="#E2E8F0" />
-          <rect x="78" y="85" width="70" height="20" rx="8" fill="#3B82F6" transform="rotate(-15 78 85)" />
+          {/* Heavy Duty Gym Bench */}
+          <g transform={isIncline ? 'rotate(-16 70 120)' : ''}>
+            <rect x="50" y="125" width="145" height="14" rx="5" fill="#1E293B" stroke="#334155" strokeWidth="2" />
+            <rect x="52" y="122" width="141" height="5" rx="2" fill="#D4AF37" opacity="0.6" />
+            {/* Bench Steel Legs */}
+            <path d="M 65 139 L 55 178" stroke="#475569" strokeWidth="8" strokeLinecap="round" />
+            <path d="M 175 139 L 185 178" stroke="#475569" strokeWidth="8" strokeLinecap="round" />
+          </g>
 
-          {/* Target Pectorals Activation Pulse */}
-          <motion.circle
-            cx="115"
-            cy="84"
-            r="16"
-            fill="url(#chestGlow)"
+          {/* Cartoon Athletic Character - Lying Down */}
+          {/* Athlete Muscular Legs & Shoes */}
+          <path d="M 175 128 Q 195 135 205 160 L 205 178" stroke="#0F172A" strokeWidth="14" strokeLinecap="round" fill="none" />
+          <ellipse cx="205" cy="178" rx="10" ry="5" fill="#F59E0B" />
+
+          {/* Athlete Torso with Athletic Singlet */}
+          <path
+            d={isIncline ? 'M 75 110 Q 115 100 150 115 L 145 135 L 75 125 Z' : 'M 75 115 Q 115 110 155 115 L 150 135 L 75 135 Z'}
+            fill="url(#tankGrad)"
+            stroke="#D4AF37"
+            strokeWidth="1.5"
+          />
+
+          {/* Cartoon Character Head & Hair with Gold Headband */}
+          <circle cx="70" cy="108" r="16" fill="url(#skinGrad)" />
+          {/* Athletic Hair */}
+          <path d="M 58 102 Q 68 85 82 98 Q 78 106 72 104 Z" fill="#1E1B4B" />
+          {/* TitanFit Golden Headband */}
+          <path d="M 60 104 Q 72 98 84 104" stroke="#D4AF37" strokeWidth="4" strokeLinecap="round" />
+          {/* Cartoon Focused Eye & Brow */}
+          <circle cx="74" cy="107" r="2" fill="#0F172A" />
+          <path d="M 71 103 L 77 104" stroke="#0F172A" strokeWidth="1.5" strokeLinecap="round" />
+          {/* Strong Jawline */}
+          <path d="M 68 116 Q 76 118 82 112" stroke="#EA580C" strokeWidth="1.2" fill="none" />
+
+          {/* Target Activated Pectorals Heatmap Zone (Glowing Chest) */}
+          <motion.ellipse
+            cx="118"
+            cy="110"
+            rx="18"
+            ry="12"
+            fill="url(#targetGlow)"
+            filter="url(#glowFilter)"
             animate={
               isPlaying
                 ? {
-                    scale: [1, 1.45, 1],
-                    opacity: [0.3, 0.9, 0.3],
+                    scale: [1, 1.35, 1],
+                    opacity: [0.45, 0.95, 0.45],
                   }
                 : {}
             }
-            transition={{
-              duration: baseDuration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
           />
 
-          {/* Arms & Dumbbell Movement */}
+          {/* Chest Muscle Contours */}
+          <path d="M 108 112 Q 118 118 128 112" stroke="#EF4444" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+
+          {/* Biomechanical Moving Barbell & Strong Cartoon Arms */}
           <motion.g
             animate={
               isPlaying
                 ? {
-                    y: [0, -32, 0],
-                    x: [0, -6, 0],
+                    y: [0, -38, 0],
+                    x: isIncline ? [0, -6, 0] : [0, 0, 0],
                   }
                 : {}
             }
-            transition={{
-              duration: baseDuration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
           >
-            {/* Forearm & Hand */}
-            <path d="M 105 84 L 115 55 L 125 50" stroke="#CBD5E1" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
-            {/* Dumbbell / Barbell Bar */}
-            <line x1="100" y1="46" x2="140" y2="46" stroke="#94A3B8" strokeWidth="5" strokeLinecap="round" />
-            {/* Weight Plates */}
-            <rect x="94" y="36" width="8" height="20" rx="3" fill="url(#goldGradient)" />
-            <rect x="138" y="36" width="8" height="20" rx="3" fill="url(#goldGradient)" />
+            {/* Muscular Biceps / Triceps & Forearms */}
+            <path
+              d="M 100 114 Q 106 90 118 68"
+              stroke="url(#skinGrad)"
+              strokeWidth="11"
+              strokeLinecap="round"
+              fill="none"
+            />
+            {/* Titan Wrist Wraps */}
+            <rect x="113" y="62" width="10" height="7" rx="2" fill="#D4AF37" />
+            {/* Hands Gripping Bar */}
+            <circle cx="118" cy="65" r="5" fill="#FDBA74" />
+
+            {/* Olympic Steel Barbell with Textured Knurling */}
+            <line x1="45" y1="65" x2="215" y2="65" stroke="#CBD5E1" strokeWidth="6" strokeLinecap="round" />
+            <line x1="45" y1="63" x2="215" y2="63" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
+            {/* Chrome Barbell Collars */}
+            <rect x="62" y="57" width="6" height="16" rx="2" fill="#94A3B8" />
+            <rect x="192" y="57" width="6" height="16" rx="2" fill="#94A3B8" />
+
+            {/* Embossed 20 KG Golden Bumper Plates */}
+            <rect x="52" y="38" width="11" height="54" rx="4" fill="url(#goldPlate)" stroke="#78350F" strokeWidth="1.5" />
+            <rect x="197" y="38" width="11" height="54" rx="4" fill="url(#goldPlate)" stroke="#78350F" strokeWidth="1.5" />
+            <text x="57" y="68" fontSize="7" fontWeight="bold" fill="#78350F" textAnchor="middle" transform="rotate(-90 57 68)">
+              20 KG
+            </text>
+            <text x="202" y="68" fontSize="7" fontWeight="bold" fill="#78350F" textAnchor="middle" transform="rotate(90 202 68)">
+              20 KG
+            </text>
           </motion.g>
 
-          {/* Concentric / Eccentric Trajectory Indicator Path */}
-          <path
-            d="M 120 78 L 115 46"
-            stroke="#D97706"
-            strokeWidth="2"
-            strokeDasharray="3 3"
-            strokeLinecap="round"
-            opacity="0.6"
-          />
+          {/* Visual Target Activation Radar Callout Pin (علامة العضلة المستهدفة) */}
+          <g transform="translate(118, 110)">
+            <motion.circle
+              r="7"
+              fill="none"
+              stroke="#EF4444"
+              strokeWidth="2"
+              animate={isPlaying ? { scale: [1, 2.2], opacity: [1, 0] } : {}}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
+            />
+            <circle r="3.5" fill="#EF4444" stroke="#FFFFFF" strokeWidth="1.5" />
+            {/* Connector Line to Callout Pill */}
+            <path d="M 0 0 L 25 -28 L 85 -28" stroke="#EF4444" strokeWidth="1.5" strokeDasharray="3 2" fill="none" />
+            <g transform="translate(25, -39)">
+              <rect width="80" height="20" rx="6" fill="#0F172A" stroke="#EF4444" strokeWidth="1.2" />
+              <text x="40" y="13" fill="#FEE2E2" fontSize="9" fontWeight="900" textAnchor="middle">
+                {isAr ? '🔥 الصدر: +96% تنشيط' : '🔥 Chest: +96% Act.'}
+              </text>
+            </g>
+          </g>
         </svg>
       );
+    }
 
-    case 'BARBELL_SQUAT':
+    case 'BARBELL_SQUAT': {
       return (
-        <svg viewBox="0 0 240 180" className="w-full h-full drop-shadow-md select-none">
+        <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
           <defs>
             <linearGradient id="squatGold" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#F59E0B" />
-              <stop offset="100%" stopColor="#D97706" />
+              <stop offset="0%" stopColor="#FCD34D" />
+              <stop offset="100%" stopColor="#B45309" />
             </linearGradient>
-            <linearGradient id="quadGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#10B981" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#059669" stopOpacity="0.3" />
-            </linearGradient>
+            <radialGradient id="quadGlowRadar" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#10B981" stopOpacity="0.95" />
+              <stop offset="60%" stopColor="#059669" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
+            </radialGradient>
           </defs>
 
-          {/* Gym Floor Ground Line */}
-          <line x1="20" y1="160" x2="220" y2="160" stroke="#334155" strokeWidth="4" strokeLinecap="round" />
+          {/* Floor & Platform */}
+          <rect x="30" y="180" width="220" height="8" rx="4" fill="#334155" />
+          <ellipse cx="140" cy="180" rx="80" ry="8" fill="#000000" opacity="0.2" />
 
-          {/* Feet */}
-          <ellipse cx="100" cy="158" rx="10" ry="4" fill="#64748B" />
-          <ellipse cx="140" cy="158" rx="10" ry="4" fill="#64748B" />
+          {/* Athletic Training Shoes on Platform */}
+          <ellipse cx="112" cy="178" rx="14" ry="6" fill="#D4AF37" stroke="#0F172A" strokeWidth="1.5" />
+          <ellipse cx="168" cy="178" rx="14" ry="6" fill="#D4AF37" stroke="#0F172A" strokeWidth="1.5" />
 
-          {/* Dynamic Lifter Body: Squatting Down & Rising */}
+          {/* Dynamic Lifter Body: Olympic Squatting Down & Driving Up */}
           <motion.g
             animate={
               isPlaying
                 ? {
-                    y: [0, 26, 0],
+                    y: [0, 32, 0],
                   }
                 : {}
             }
-            transition={{
-              duration: baseDuration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
           >
-            {/* Shins to Knees */}
-            <line x1="100" y1="156" x2="94" y2="118" stroke="#94A3B8" strokeWidth="7" strokeLinecap="round" />
-            <line x1="140" y1="156" x2="146" y2="118" stroke="#94A3B8" strokeWidth="7" strokeLinecap="round" />
+            {/* Muscular Calves & Shins */}
+            <path d="M 112 175 L 105 135" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
+            <path d="M 168 175 L 175 135" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
 
-            {/* Thighs / Quadriceps with Muscle Glow */}
-            <line x1="94" y1="118" x2="110" y2="88" stroke="#38BDF8" strokeWidth="8" strokeLinecap="round" />
-            <line x1="146" y1="118" x2="130" y2="88" stroke="#38BDF8" strokeWidth="8" strokeLinecap="round" />
+            {/* Powerful Quadriceps & Glutes */}
+            <path d="M 105 135 L 126 95" stroke="#FDBA74" strokeWidth="14" strokeLinecap="round" />
+            <path d="M 175 135 L 154 95" stroke="#FDBA74" strokeWidth="14" strokeLinecap="round" />
 
-            {/* Quadriceps Contraction Pulse */}
-            <motion.circle
-              cx="120"
-              cy="104"
-              r="18"
-              fill="url(#quadGlow)"
+            {/* Targeted Quadriceps Heatmap Glow (الفخذ الأمامي) */}
+            <motion.ellipse
+              cx="140"
+              cy="115"
+              rx="28"
+              ry="18"
+              fill="url(#quadGlowRadar)"
               animate={
                 isPlaying
                   ? {
                       scale: [1, 1.4, 1],
-                      opacity: [0.2, 0.85, 0.2],
+                      opacity: [0.4, 0.95, 0.4],
                     }
                   : {}
               }
-              transition={{
-                duration: baseDuration,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
             />
 
-            {/* Torso */}
-            <path d="M 110 88 L 130 88 L 124 50 L 116 50 Z" fill="#1E293B" stroke="#475569" strokeWidth="2" />
-            {/* Head */}
-            <circle cx="120" cy="38" r="10" fill="#E2E8F0" />
+            {/* Gym Shorts with Gold Side Stripe */}
+            <path d="M 120 95 L 160 95 L 168 122 L 140 120 L 112 122 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.5" />
+            <line x1="122" y1="95" x2="114" y2="122" stroke="#D4AF37" strokeWidth="2.5" />
+            <line x1="158" y1="95" x2="166" y2="122" stroke="#D4AF37" strokeWidth="2.5" />
 
-            {/* Barbell on Traps */}
-            <line x1="45" y1="52" x2="195" y2="52" stroke="#CBD5E1" strokeWidth="5" strokeLinecap="round" />
-            {/* Plates */}
-            <rect x="55" y="32" width="10" height="40" rx="3" fill="url(#squatGold)" />
-            <rect x="175" y="32" width="10" height="40" rx="3" fill="url(#squatGold)" />
+            {/* Muscular Core & Chest (TitanFit Tank Top) */}
+            <path d="M 125 95 L 155 95 L 158 55 L 122 55 Z" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.5" />
+            {/* Abs Contour */}
+            <line x1="140" y1="68" x2="140" y2="90" stroke="#0F172A" strokeWidth="2" strokeLinecap="round" />
+
+            {/* Cartoon Champion Head with Focused Expression */}
+            <circle cx="140" cy="40" r="14" fill="#FDBA74" />
+            {/* Modern Hair & Headband */}
+            <path d="M 128 34 Q 140 20 152 34 Q 146 42 140 40 Z" fill="#1E1B4B" />
+            <path d="M 128 36 Q 140 33 152 36" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round" />
+            {/* Eyes & Fierce Focus */}
+            <circle cx="136" cy="40" r="1.8" fill="#0F172A" />
+            <circle cx="144" cy="40" r="1.8" fill="#0F172A" />
+            <path d="M 137 46 Q 140 48 143 46" stroke="#0F172A" strokeWidth="1.2" fill="none" />
+
+            {/* Arms Gripping Barbell on Traps */}
+            <path d="M 122 58 L 105 48 L 114 46" stroke="#FDBA74" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M 158 58 L 175 48 L 166 46" stroke="#FDBA74" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+
+            {/* Olympic Barbell Rested Across Trapezius */}
+            <line x1="40" y1="46" x2="240" y2="46" stroke="#CBD5E1" strokeWidth="6" strokeLinecap="round" />
+            <line x1="40" y1="44" x2="240" y2="44" stroke="#FFFFFF" strokeWidth="1.5" />
+            {/* Heavy Gold Plates */}
+            <rect x="52" y="22" width="12" height="48" rx="4" fill="url(#squatGold)" stroke="#78350F" strokeWidth="1.5" />
+            <rect x="216" y="22" width="12" height="48" rx="4" fill="url(#squatGold)" stroke="#78350F" strokeWidth="1.5" />
           </motion.g>
 
-          {/* Depth Guidance Dot */}
-          <circle cx="120" cy="115" r="3" fill="#D97706" opacity="0.7" />
+          {/* Visual Target Radar Callout Pin (علامة الفخذ الأمامي) */}
+          <g transform="translate(140, 115)">
+            <motion.circle
+              r="8"
+              fill="none"
+              stroke="#10B981"
+              strokeWidth="2"
+              animate={isPlaying ? { scale: [1, 2.3], opacity: [1, 0] } : {}}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
+            />
+            <circle r="4" fill="#10B981" stroke="#FFFFFF" strokeWidth="1.5" />
+            <path d="M 0 0 L 35 -35 L 90 -35" stroke="#10B981" strokeWidth="1.5" strokeDasharray="3 2" fill="none" />
+            <g transform="translate(35, -46)">
+              <rect width="84" height="20" rx="6" fill="#0F172A" stroke="#10B981" strokeWidth="1.2" />
+              <text x="42" y="13" fill="#D1FAE5" fontSize="9" fontWeight="900" textAnchor="middle">
+                {isAr ? '⚡ الفخذ: +98% بناء' : '⚡ Quads: +98% Act.'}
+              </text>
+            </g>
+          </g>
         </svg>
       );
+    }
 
-    case 'ROMANIAN_DEADLIFT':
+    case 'ROMANIAN_DEADLIFT': {
       return (
-        <svg viewBox="0 0 240 180" className="w-full h-full drop-shadow-md select-none">
+        <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
           <defs>
-            <linearGradient id="rdlPlates" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#F59E0B" />
-              <stop offset="100%" stopColor="#B45309" />
-            </linearGradient>
-            <linearGradient id="hamGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#DC2626" stopOpacity="0.4" />
-            </linearGradient>
+            <radialGradient id="hamGlowRadar" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#EF4444" stopOpacity="0.95" />
+              <stop offset="70%" stopColor="#DC2626" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
+            </radialGradient>
           </defs>
 
-          {/* Floor */}
-          <line x1="20" y1="160" x2="220" y2="160" stroke="#334155" strokeWidth="4" strokeLinecap="round" />
-          <ellipse cx="110" cy="158" rx="14" ry="4" fill="#64748B" />
+          {/* Floor & Platform */}
+          <rect x="30" y="180" width="220" height="8" rx="4" fill="#334155" />
+          <ellipse cx="140" cy="180" rx="80" ry="8" fill="#000000" opacity="0.2" />
 
-          {/* Legs with slight knee bend */}
-          <path d="M 110 156 L 105 115 L 95 85" stroke="#94A3B8" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Athletic Shoes */}
+          <ellipse cx="125" cy="178" rx="14" ry="6" fill="#D4AF37" stroke="#0F172A" strokeWidth="1.5" />
 
-          {/* Hamstrings & Glutes Contraction Glow */}
-          <motion.circle
-            cx="98"
-            cy="100"
-            r="16"
-            fill="url(#hamGlow)"
+          {/* Fixed Lower Leg & Soft Knees */}
+          <path d="M 125 175 L 120 128" stroke="#FDBA74" strokeWidth="13" strokeLinecap="round" />
+
+          {/* Hamstring Muscle Activation Heatmap Glow */}
+          <motion.ellipse
+            cx="112"
+            cy="110"
+            rx="18"
+            ry="24"
+            fill="url(#hamGlowRadar)"
             animate={
               isPlaying
                 ? {
                     scale: [1, 1.45, 1],
-                    opacity: [0.3, 0.9, 0.3],
+                    opacity: [0.35, 0.95, 0.35],
                   }
                 : {}
             }
-            transition={{
-              duration: baseDuration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
           />
 
-          {/* Hip Hinge Torso & Barbell */}
+          {/* Hinging Upper Body: Hips Push Backwards, Torso Tilts Forward */}
           <motion.g
             animate={
               isPlaying
@@ -278,269 +624,595 @@ function ExerciseMotionVisualCanvas({
                   }
                 : {}
             }
-            style={{ transformOrigin: '95px 85px' }}
-            transition={{
-              duration: baseDuration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            style={{ transformOrigin: '110px 100px' }}
+            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
           >
-            {/* Flat Neutral Spine Torso */}
-            <line x1="95" y1="85" x2="95" y2="35" stroke="#38BDF8" strokeWidth="10" strokeLinecap="round" />
-            {/* Head */}
-            <circle cx="95" cy="22" r="9" fill="#E2E8F0" />
+            {/* Muscular Hamstrings & Glutes */}
+            <path d="M 120 128 L 108 100" stroke="#FDBA74" strokeWidth="14" strokeLinecap="round" />
+            {/* Gym Shorts */}
+            <path d="M 108 100 L 102 75 L 128 85 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.5" />
 
-            {/* Hanging Arms */}
-            <line x1="95" y1="42" x2="115" y2="82" stroke="#CBD5E1" strokeWidth="6" strokeLinecap="round" />
-            {/* Barbell Sliding Along Thighs/Shins */}
-            <line x1="85" y1="82" x2="145" y2="82" stroke="#64748B" strokeWidth="5" strokeLinecap="round" />
-            <rect x="80" y="66" width="8" height="32" rx="2" fill="url(#rdlPlates)" />
-            <rect x="142" y="66" width="8" height="32" rx="2" fill="url(#rdlPlates)" />
+            {/* Straight Neutral Spine Torso */}
+            <path d="M 102 75 L 102 38 L 122 42 L 120 80 Z" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.5" />
+
+            {/* Cartoon Athlete Head with Eyeline Forward */}
+            <circle cx="106" cy="24" r="13" fill="#FDBA74" />
+            <path d="M 96 18 Q 106 8 116 18 Q 112 26 106 24 Z" fill="#1E1B4B" />
+            <path d="M 96 20 Q 106 18 116 20" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round" />
+            <circle cx="102" cy="24" r="1.8" fill="#0F172A" />
+
+            {/* Arms Hanging Straight Down Holding Olympic Bar */}
+            <path d="M 112 48 L 132 88" stroke="#FDBA74" strokeWidth="9" strokeLinecap="round" />
+            <circle cx="132" cy="88" r="5" fill="#D4AF37" />
+
+            {/* Barbell Sliding Close to Shins */}
+            <line x1="90" y1="88" x2="174" y2="88" stroke="#CBD5E1" strokeWidth="5.5" strokeLinecap="round" />
+            <rect x="82" y="70" width="10" height="36" rx="3" fill="#F59E0B" stroke="#78350F" strokeWidth="1.5" />
+            <rect x="172" y="70" width="10" height="36" rx="3" fill="#F59E0B" stroke="#78350F" strokeWidth="1.5" />
           </motion.g>
+
+          {/* Visual Target Radar Callout Pin (علامة الفخذ الخلفي) */}
+          <g transform="translate(112, 110)">
+            <motion.circle
+              r="8"
+              fill="none"
+              stroke="#EF4444"
+              strokeWidth="2"
+              animate={isPlaying ? { scale: [1, 2.3], opacity: [1, 0] } : {}}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
+            />
+            <circle r="4" fill="#EF4444" stroke="#FFFFFF" strokeWidth="1.5" />
+            <path d="M 0 0 L -35 -30 L -90 -30" stroke="#EF4444" strokeWidth="1.5" strokeDasharray="3 2" fill="none" />
+            <g transform="translate(-105, -41)">
+              <rect width="90" height="20" rx="6" fill="#0F172A" stroke="#EF4444" strokeWidth="1.2" />
+              <text x="45" y="13" fill="#FEE2E2" fontSize="9" fontWeight="900" textAnchor="middle">
+                {isAr ? '🔥 فخذ خلفي: +95%' : '🔥 Hamstrings: 95%'}
+              </text>
+            </g>
+          </g>
         </svg>
       );
+    }
 
     case 'LAT_PULLDOWN':
-    case 'BARBELL_ROW':
+    case 'BARBELL_ROW': {
       return (
-        <svg viewBox="0 0 240 180" className="w-full h-full drop-shadow-md select-none">
+        <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
           <defs>
-            <linearGradient id="backGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#0284C7" stopOpacity="0.3" />
-            </linearGradient>
+            <radialGradient id="latGlowRadar" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.95" />
+              <stop offset="60%" stopColor="#0284C7" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="#38BDF8" stopOpacity="0" />
+            </radialGradient>
           </defs>
 
           {/* Cable Pulldown Tower Frame */}
-          <path d="M 60 160 L 60 25 L 180 25 L 180 160" stroke="#334155" strokeWidth="4" fill="none" />
-          <circle cx="120" cy="25" r="6" fill="#64748B" />
+          <path d="M 60 180 L 60 22 L 220 22 L 220 180" stroke="#334155" strokeWidth="5" fill="none" strokeLinecap="round" />
+          <circle cx="140" cy="22" r="8" fill="#64748B" stroke="#0F172A" strokeWidth="2" />
 
-          {/* Seated Bench */}
-          <rect x="90" y="115" width="60" height="10" rx="3" fill="#1E293B" />
-          <line x1="120" y1="125" x2="120" y2="160" stroke="#475569" strokeWidth="5" />
+          {/* Seated Bench Pad */}
+          <rect x="100" y="130" width="80" height="12" rx="4" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.5" />
+          <line x1="140" y1="142" x2="140" y2="180" stroke="#475569" strokeWidth="8" strokeLinecap="round" />
 
-          {/* Lifter Body Back View */}
-          <circle cx="120" cy="72" r="11" fill="#E2E8F0" />
-          <path d="M 104 88 L 136 88 L 130 120 L 110 120 Z" fill="#1E293B" stroke="#475569" strokeWidth="2" />
+          {/* Athlete Seated Back View - Iconic V-Taper Figure */}
+          <path d="M 125 142 L 115 180" stroke="#0F172A" strokeWidth="12" strokeLinecap="round" />
+          <path d="M 155 142 L 165 180" stroke="#0F172A" strokeWidth="12" strokeLinecap="round" />
 
-          {/* Latissimus Dorsi Muscle Expansion Glow */}
+          {/* Broad Shoulders & V-Taper Torso Back */}
+          <path d="M 110 88 L 170 88 L 155 132 L 125 132 Z" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.5" />
+
+          {/* Latissimus Dorsi Wing Expansion Heatmap Glow (المجنص) */}
           <motion.ellipse
-            cx="120"
-            cy="98"
-            rx="18"
-            ry="12"
-            fill="url(#backGlow)"
+            cx="140"
+            cy="104"
+            rx="32"
+            ry="18"
+            fill="url(#latGlowRadar)"
             animate={
               isPlaying
                 ? {
-                    scale: [1, 1.4, 1],
-                    opacity: [0.3, 0.9, 0.3],
+                    scale: [1, 1.45, 1],
+                    opacity: [0.35, 0.95, 0.35],
                   }
                 : {}
             }
-            transition={{
-              duration: baseDuration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
           />
 
-          {/* Cable & Lat Bar Pulling Down to Clavicle */}
+          {/* Back Muscular Striations (Rhomboids & Traps) */}
+          <path d="M 125 96 Q 140 102 155 96" stroke="#38BDF8" strokeWidth="2" fill="none" />
+          <path d="M 128 108 Q 140 114 152 108" stroke="#38BDF8" strokeWidth="2" fill="none" />
+
+          {/* Athlete Head Back Profile with Headband */}
+          <circle cx="140" cy="65" r="14" fill="#FDBA74" />
+          <path d="M 126 62 Q 140 50 154 62 Q 146 72 134 72 Z" fill="#1E1B4B" />
+          <path d="M 127 65 Q 140 60 153 65" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round" />
+
+          {/* Dynamic Pulldown Bar & Gripping Arms */}
           <motion.g
             animate={
               isPlaying
                 ? {
-                    y: [0, 28, 0],
+                    y: [0, 32, 0],
                   }
                 : {}
             }
-            transition={{
-              duration: baseDuration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
           >
-            {/* Cable Wire */}
-            <line x1="120" y1="25" x2="120" y2="52" stroke="#CBD5E1" strokeWidth="2" strokeDasharray="2 2" />
-            {/* Curved Wide Grip Bar */}
-            <path d="M 70 60 Q 120 52 170 60" stroke="#D97706" strokeWidth="5" fill="none" strokeLinecap="round" />
-            {/* Arms Holding Bar */}
-            <path d="M 106 88 L 85 64" stroke="#94A3B8" strokeWidth="5" strokeLinecap="round" />
-            <path d="M 134 88 L 155 64" stroke="#94A3B8" strokeWidth="5" strokeLinecap="round" />
+            {/* Cable Line */}
+            <line x1="140" y1="22" x2="140" y2="48" stroke="#CBD5E1" strokeWidth="2.5" strokeDasharray="3 3" />
+            {/* Ergonomic Curved Wide Grip Lat Bar */}
+            <path d="M 75 56 Q 140 44 205 56" stroke="#D4AF37" strokeWidth="6" fill="none" strokeLinecap="round" />
+            <circle cx="75" cy="56" r="4" fill="#94A3B8" />
+            <circle cx="205" cy="56" r="4" fill="#94A3B8" />
+
+            {/* Muscular Arms Gripping Wide Handles */}
+            <path d="M 114 88 L 92 60" stroke="#FDBA74" strokeWidth="10" strokeLinecap="round" />
+            <path d="M 166 88 L 188 60" stroke="#FDBA74" strokeWidth="10" strokeLinecap="round" />
+            <circle cx="92" cy="60" r="5" fill="#D4AF37" />
+            <circle cx="188" cy="60" r="5" fill="#D4AF37" />
           </motion.g>
+
+          {/* Visual Target Radar Callout Pin (علامة المجنص) */}
+          <g transform="translate(140, 104)">
+            <motion.circle
+              r="8"
+              fill="none"
+              stroke="#38BDF8"
+              strokeWidth="2"
+              animate={isPlaying ? { scale: [1, 2.3], opacity: [1, 0] } : {}}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
+            />
+            <circle r="4" fill="#38BDF8" stroke="#FFFFFF" strokeWidth="1.5" />
+            <path d="M 0 0 L 35 -30 L 90 -30" stroke="#38BDF8" strokeWidth="1.5" strokeDasharray="3 2" fill="none" />
+            <g transform="translate(35, -41)">
+              <rect width="84" height="20" rx="6" fill="#0F172A" stroke="#38BDF8" strokeWidth="1.2" />
+              <text x="42" y="13" fill="#E0F2FE" fontSize="9" fontWeight="900" textAnchor="middle">
+                {isAr ? '⚡ المجنص: +95% عرض' : '⚡ Lats: +95% Width'}
+              </text>
+            </g>
+          </g>
         </svg>
       );
+    }
 
-    case 'LATERAL_RAISE':
+    case 'LATERAL_RAISE': {
       return (
-        <svg viewBox="0 0 240 180" className="w-full h-full drop-shadow-md select-none">
+        <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
           <defs>
-            <linearGradient id="deltGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="#EA580C" stopOpacity="0.4" />
-            </linearGradient>
+            <radialGradient id="deltGlowRadar" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.95" />
+              <stop offset="70%" stopColor="#D97706" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#F59E0B" strokeWidth="0" />
+            </radialGradient>
           </defs>
 
-          {/* Floor & Feet */}
-          <line x1="40" y1="160" x2="200" y2="160" stroke="#334155" strokeWidth="4" strokeLinecap="round" />
-          <line x1="110" y1="110" x2="108" y2="158" stroke="#64748B" strokeWidth="7" strokeLinecap="round" />
-          <line x1="130" y1="110" x2="132" y2="158" stroke="#64748B" strokeWidth="7" strokeLinecap="round" />
+          {/* Floor */}
+          <rect x="30" y="180" width="220" height="8" rx="4" fill="#334155" />
+          <ellipse cx="140" cy="180" rx="70" ry="7" fill="#000000" opacity="0.2" />
 
-          {/* Torso & Head */}
-          <circle cx="120" cy="50" r="10" fill="#E2E8F0" />
-          <path d="M 106 65 L 134 65 L 128 110 L 112 110 Z" fill="#1E293B" stroke="#475569" strokeWidth="2" />
+          {/* Standing Legs & Athletic Shorts */}
+          <line x1="128" y1="125" x2="124" y2="178" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
+          <line x1="152" y1="125" x2="156" y2="178" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
+          <path d="M 118 95 L 162 95 L 158 128 L 122 128 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.5" />
 
-          {/* Side Delts Glow */}
+          {/* Athletic Torso with TitanFit Singlet */}
+          <path d="M 122 62 L 158 62 L 160 95 L 120 95 Z" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.5" />
+
+          {/* Head & Gold Headband */}
+          <circle cx="140" cy="46" r="14" fill="#FDBA74" />
+          <path d="M 128 40 Q 140 28 152 40 Q 146 50 134 48 Z" fill="#1E1B4B" />
+          <path d="M 128 42 Q 140 38 152 42" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="136" cy="46" r="1.8" fill="#0F172A" />
+          <circle cx="144" cy="46" r="1.8" fill="#0F172A" />
+
+          {/* Dual Lateral Deltoids Heatmap Glow (الأكتاف الجانبية) */}
           <motion.circle
-            cx="100"
-            cy="68"
-            r="10"
-            fill="url(#deltGlow)"
+            cx="115"
+            cy="65"
+            r="16"
+            fill="url(#deltGlowRadar)"
             animate={
               isPlaying
                 ? {
                     scale: [1, 1.45, 1],
-                    opacity: [0.3, 0.9, 0.3],
+                    opacity: [0.35, 0.95, 0.35],
                   }
                 : {}
             }
-            transition={{
-              duration: baseDuration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
           />
           <motion.circle
-            cx="140"
-            cy="68"
-            r="10"
-            fill="url(#deltGlow)"
+            cx="165"
+            cy="65"
+            r="16"
+            fill="url(#deltGlowRadar)"
             animate={
               isPlaying
                 ? {
                     scale: [1, 1.45, 1],
-                    opacity: [0.3, 0.9, 0.3],
+                    opacity: [0.35, 0.95, 0.35],
                   }
                 : {}
             }
-            transition={{
-              duration: baseDuration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
           />
 
-          {/* Left Arm Lifting Outward */}
+          {/* Left Arm Raising Outward with Dumbbell */}
           <motion.g
             animate={
               isPlaying
                 ? {
-                    rotate: [0, -68, 0],
+                    rotate: [0, -72, 0],
                   }
                 : {}
             }
-            style={{ transformOrigin: '106px 66px' }}
-            transition={{
-              duration: baseDuration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            style={{ transformOrigin: '120px 65px' }}
+            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <line x1="106" y1="66" x2="88" y2="110" stroke="#94A3B8" strokeWidth="6" strokeLinecap="round" />
-            <rect x="80" y="105" width="16" height="8" rx="2" fill="#D97706" />
+            <path d="M 120 65 L 95 115" stroke="#FDBA74" strokeWidth="10" strokeLinecap="round" />
+            <circle cx="95" cy="115" r="4.5" fill="#D4AF37" />
+            {/* Hex Dumbbell */}
+            <rect x="86" y="108" width="18" height="14" rx="3" fill="#334155" stroke="#D4AF37" strokeWidth="1.2" />
           </motion.g>
 
-          {/* Right Arm Lifting Outward */}
+          {/* Right Arm Raising Outward with Dumbbell */}
           <motion.g
             animate={
               isPlaying
                 ? {
-                    rotate: [0, 68, 0],
+                    rotate: [0, 72, 0],
                   }
                 : {}
             }
-            style={{ transformOrigin: '134px 66px' }}
-            transition={{
-              duration: baseDuration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            style={{ transformOrigin: '160px 65px' }}
+            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <line x1="134" y1="66" x2="152" y2="110" stroke="#94A3B8" strokeWidth="6" strokeLinecap="round" />
-            <rect x="144" y="105" width="16" height="8" rx="2" fill="#D97706" />
+            <path d="M 160 65 L 185 115" stroke="#FDBA74" strokeWidth="10" strokeLinecap="round" />
+            <circle cx="185" cy="115" r="4.5" fill="#D4AF37" />
+            {/* Hex Dumbbell */}
+            <rect x="176" y="108" width="18" height="14" rx="3" fill="#334155" stroke="#D4AF37" strokeWidth="1.2" />
           </motion.g>
+
+          {/* Target Callout Radar Pin */}
+          <g transform="translate(165, 65)">
+            <motion.circle
+              r="7"
+              fill="none"
+              stroke="#F59E0B"
+              strokeWidth="2"
+              animate={isPlaying ? { scale: [1, 2.2], opacity: [1, 0] } : {}}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
+            />
+            <circle r="3.5" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="1.5" />
+            <path d="M 0 0 L 25 -25 L 75 -25" stroke="#F59E0B" strokeWidth="1.5" strokeDasharray="3 2" fill="none" />
+            <g transform="translate(25, -36)">
+              <rect width="80" height="20" rx="6" fill="#0F172A" stroke="#F59E0B" strokeWidth="1.2" />
+              <text x="40" y="13" fill="#FEF3C7" fontSize="9" fontWeight="900" textAnchor="middle">
+                {isAr ? '⚡ الكتف: +96% عرض' : '⚡ Delts: +96% Width'}
+              </text>
+            </g>
+          </g>
         </svg>
       );
+    }
 
     case 'TRICEPS_PUSHDOWN':
     case 'BICEPS_CURL':
-    default:
+    default: {
+      const isBiceps = motionType === 'BICEPS_CURL';
       return (
-        <svg viewBox="0 0 240 180" className="w-full h-full drop-shadow-md select-none">
+        <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
           <defs>
-            <linearGradient id="armGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#10B981" />
-              <stop offset="100%" stopColor="#059669" />
-            </linearGradient>
+            <radialGradient id="armGlowRadar" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor={isBiceps ? '#EF4444' : '#10B981'} stopOpacity="0.95" />
+              <stop offset="70%" stopColor={isBiceps ? '#DC2626' : '#059669'} stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
+            </radialGradient>
           </defs>
-          <line x1="40" y1="160" x2="200" y2="160" stroke="#334155" strokeWidth="4" strokeLinecap="round" />
-          <circle cx="110" cy="50" r="10" fill="#E2E8F0" />
-          <path d="M 98 65 L 122 65 L 118 120 L 102 120 Z" fill="#1E293B" stroke="#475569" strokeWidth="2" />
-          <line x1="106" y1="120" x2="104" y2="158" stroke="#64748B" strokeWidth="7" strokeLinecap="round" />
-          <line x1="116" y1="120" x2="118" y2="158" stroke="#64748B" strokeWidth="7" strokeLinecap="round" />
 
-          {/* Cable Rope Above */}
-          <line x1="135" y1="20" x2="135" y2="60" stroke="#CBD5E1" strokeWidth="3" strokeDasharray="2 2" />
+          {/* Floor */}
+          <rect x="30" y="180" width="220" height="8" rx="4" fill="#334155" />
+          <ellipse cx="140" cy="180" rx="70" ry="7" fill="#000000" opacity="0.2" />
+
+          {/* Standing Legs Profile */}
+          <line x1="125" y1="125" x2="120" y2="178" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
+          <line x1="140" y1="125" x2="145" y2="178" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
+          <path d="M 115 95 L 145 95 L 142 128 L 118 128 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.5" />
+
+          {/* Athletic Torso Profile */}
+          <path d="M 118 60 L 144 60 L 142 95 L 115 95 Z" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.5" />
+
+          {/* Head & Headband */}
+          <circle cx="130" cy="45" r="14" fill="#FDBA74" />
+          <path d="M 118 40 Q 130 28 142 40 Q 138 48 126 48 Z" fill="#1E1B4B" />
+          <path d="M 118 42 Q 130 38 142 42" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="135" cy="45" r="1.8" fill="#0F172A" />
 
           {/* Pinned Upper Arm */}
-          <line x1="118" y1="68" x2="128" y2="95" stroke="#94A3B8" strokeWidth="6" strokeLinecap="round" />
+          <path d="M 136 65 L 144 95" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
 
-          {/* Forearm Hinge Flexing/Extending */}
+          {/* Muscle Peak Heatmap Glow */}
+          <motion.circle
+            cx="140"
+            cy="84"
+            r="16"
+            fill="url(#armGlowRadar)"
+            animate={
+              isPlaying
+                ? {
+                    scale: [1, 1.45, 1],
+                    opacity: [0.35, 0.95, 0.35],
+                  }
+                : {}
+            }
+            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+          />
+
+          {/* Forearm Curling Up or Pushing Down */}
           <motion.g
             animate={
               isPlaying
                 ? {
-                    rotate: [0, 60, 0],
+                    rotate: isBiceps ? [0, -85, 0] : [0, 68, 0],
                   }
                 : {}
             }
-            style={{ transformOrigin: '128px 95px' }}
-            transition={{
-              duration: baseDuration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            style={{ transformOrigin: '144px 95px' }}
+            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <line x1="128" y1="95" x2="138" y2="132" stroke="#38BDF8" strokeWidth="6" strokeLinecap="round" />
-            {/* Grip Handle */}
-            <circle cx="138" cy="132" r="5" fill="#D97706" />
+            <path d="M 144 95 L 158 135" stroke="#FDBA74" strokeWidth="10" strokeLinecap="round" />
+            <circle cx="158" cy="135" r="5" fill="#D4AF37" />
+
+            {/* Gear: Cable Rope or Olympic Curl Barbell */}
+            {isBiceps ? (
+              <g transform="translate(158, 135)">
+                <line x1="-15" y1="0" x2="15" y2="0" stroke="#CBD5E1" strokeWidth="5" strokeLinecap="round" />
+                <circle cx="-15" cy="0" r="8" fill="#F59E0B" />
+                <circle cx="15" cy="0" r="8" fill="#F59E0B" />
+              </g>
+            ) : (
+              <g transform="translate(158, 135)">
+                <path d="M 0 0 L -8 18 M 0 0 L 8 18" stroke="#D4AF37" strokeWidth="4" strokeLinecap="round" />
+                <circle cx="-8" cy="18" r="3.5" fill="#0F172A" />
+                <circle cx="8" cy="18" r="3.5" fill="#0F172A" />
+              </g>
+            )}
           </motion.g>
 
-          {/* Muscle Pulse */}
-          <motion.circle
-            cx="126"
-            cy="86"
-            r="12"
-            fill="url(#armGlow)"
-            animate={
-              isPlaying
-                ? {
-                    scale: [1, 1.4, 1],
-                    opacity: [0.2, 0.8, 0.2],
-                  }
-                : {}
-            }
-            transition={{
-              duration: baseDuration,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          />
+          {/* Cable Top Wire for Pushdown */}
+          {!isBiceps && (
+            <line x1="155" y1="20" x2="155" y2="70" stroke="#CBD5E1" strokeWidth="2.5" strokeDasharray="3 3" />
+          )}
+
+          {/* Callout Radar Pin */}
+          <g transform="translate(140, 84)">
+            <motion.circle
+              r="7"
+              fill="none"
+              stroke={isBiceps ? '#EF4444' : '#10B981'}
+              strokeWidth="2"
+              animate={isPlaying ? { scale: [1, 2.2], opacity: [1, 0] } : {}}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
+            />
+            <circle r="3.5" fill={isBiceps ? '#EF4444' : '#10B981'} stroke="#FFFFFF" strokeWidth="1.5" />
+            <path
+              d="M 0 0 L 30 -25 L 80 -25"
+              stroke={isBiceps ? '#EF4444' : '#10B981'}
+              strokeWidth="1.5"
+              strokeDasharray="3 2"
+              fill="none"
+            />
+            <g transform="translate(30, -36)">
+              <rect width="84" height="20" rx="6" fill="#0F172A" stroke={isBiceps ? '#EF4444' : '#10B981'} strokeWidth="1.2" />
+              <text x="42" y="13" fill="#FFFFFF" fontSize="9" fontWeight="900" textAnchor="middle">
+                {isBiceps
+                  ? isAr ? '🔥 بايسبس: +96% ضخامة' : '🔥 Biceps: +96% Peak'
+                  : isAr ? '⚡ ترايسبس: +95% شد' : '⚡ Triceps: +95% Lock'}
+              </text>
+            </g>
+          </g>
         </svg>
       );
+    }
   }
 }
 
+/**
+ * Interactive Anatomical Body Heatmap & Impact Breakdown
+ * Shows human body silhouette highlighting the exact muscles activated by this exercise
+ */
+function BodyAnatomyImpactView({
+  impact,
+  isAr,
+}: {
+  impact: BodyImpactInfo;
+  isAr: boolean;
+}) {
+  const isChest = impact.muscleRegion === 'CHEST';
+  const isBack = impact.muscleRegion === 'BACK';
+  const isLegs = impact.muscleRegion === 'LEGS';
+  const isShoulders = impact.muscleRegion === 'SHOULDERS';
+  const isArms = impact.muscleRegion === 'ARMS';
+
+  return (
+    <div className="space-y-4">
+      {/* Visual Human Silhouette Heatmap Bar */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+        {/* Anatomical Silhouette Graphic */}
+        <div className="flex flex-col items-center justify-center rounded-xl bg-white p-3 dark:bg-slate-950 md:col-span-4 border border-slate-200 dark:border-slate-800">
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">
+            {isAr ? 'خريطة الاستهداف التشريحي المباشر' : 'Live Anatomy Heatmap'}
+          </span>
+          <svg viewBox="0 0 120 180" className="w-28 h-40">
+            <defs>
+              <filter id="bodyGlow">
+                <feGaussianBlur stdDeviation="3" result="glow" />
+                <feComposite in="SourceGraphic" in2="glow" operator="over" />
+              </filter>
+            </defs>
+
+            {/* Base Human Silhouette Silhouette */}
+            {/* Head & Neck */}
+            <circle cx="60" cy="22" r="10" fill="#94A3B8" opacity="0.4" />
+            <rect x="57" y="32" width="6" height="6" rx="2" fill="#94A3B8" opacity="0.4" />
+
+            {/* Shoulders */}
+            <path
+              d="M 38 42 Q 60 36 82 42 L 80 52 L 40 52 Z"
+              fill={isShoulders ? '#F59E0B' : '#94A3B8'}
+              opacity={isShoulders ? 0.95 : 0.35}
+              filter={isShoulders ? 'url(#bodyGlow)' : undefined}
+            />
+
+            {/* Pectorals / Chest Zone */}
+            <path
+              d="M 44 48 Q 60 48 76 48 L 74 65 Q 60 70 46 65 Z"
+              fill={isChest ? '#EF4444' : '#94A3B8'}
+              opacity={isChest ? 0.95 : 0.35}
+              filter={isChest ? 'url(#bodyGlow)' : undefined}
+            />
+
+            {/* Upper Back / Lats Wings Zone */}
+            <path
+              d="M 40 52 L 48 75 L 72 75 L 80 52 Z"
+              fill={isBack ? '#38BDF8' : '#94A3B8'}
+              opacity={isBack ? 0.95 : 0.35}
+              filter={isBack ? 'url(#bodyGlow)' : undefined}
+            />
+
+            {/* Arms / Biceps & Triceps Zone */}
+            <path
+              d="M 36 48 L 28 85 L 34 85 L 42 54 Z"
+              fill={isArms ? '#10B981' : '#94A3B8'}
+              opacity={isArms ? 0.95 : 0.35}
+              filter={isArms ? 'url(#bodyGlow)' : undefined}
+            />
+            <path
+              d="M 84 48 L 92 85 L 86 85 L 78 54 Z"
+              fill={isArms ? '#10B981' : '#94A3B8'}
+              opacity={isArms ? 0.95 : 0.35}
+              filter={isArms ? 'url(#bodyGlow)' : undefined}
+            />
+
+            {/* Abs / Core */}
+            <path d="M 49 68 L 71 68 L 68 95 L 52 95 Z" fill="#64748B" opacity="0.4" />
+
+            {/* Pelvis & Hips */}
+            <path d="M 48 95 L 72 95 L 76 110 L 44 110 Z" fill="#64748B" opacity="0.4" />
+
+            {/* Legs / Quads & Hamstrings Zone */}
+            <path
+              d="M 46 110 L 44 145 L 56 145 L 58 110 Z"
+              fill={isLegs ? '#10B981' : '#94A3B8'}
+              opacity={isLegs ? 0.95 : 0.35}
+              filter={isLegs ? 'url(#bodyGlow)' : undefined}
+            />
+            <path
+              d="M 74 110 L 76 145 L 64 145 L 62 110 Z"
+              fill={isLegs ? '#10B981' : '#94A3B8'}
+              opacity={isLegs ? 0.95 : 0.35}
+              filter={isLegs ? 'url(#bodyGlow)' : undefined}
+            />
+
+            {/* Calves & Feet */}
+            <path d="M 44 146 L 46 172 L 54 172 L 56 146 Z" fill="#64748B" opacity="0.4" />
+            <path d="M 76 146 L 74 172 L 66 172 L 64 146 Z" fill="#64748B" opacity="0.4" />
+          </svg>
+
+          <span className="mt-1 rounded-full px-2.5 py-0.5 text-[10px] font-black text-white" style={{ backgroundColor: impact.primaryTarget.color }}>
+            {isAr ? 'المنطقة الأكثر استفادة' : 'Primary Target Zone'}
+          </span>
+        </div>
+
+        {/* Muscle Activation Percentages */}
+        <div className="space-y-3 md:col-span-8 flex flex-col justify-center">
+          <div>
+            <div className="flex items-center justify-between text-xs font-black">
+              <span className="flex items-center gap-1.5 text-slate-900 dark:text-white">
+                <Flame className="h-4 w-4 text-rose-500" />
+                <span>{isAr ? impact.primaryTarget.nameAr : impact.primaryTarget.nameEn}</span>
+              </span>
+              <span className="font-mono text-emerald-600 dark:text-emerald-400">
+                {impact.primaryTarget.activationPct}%
+              </span>
+            </div>
+            <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${impact.primaryTarget.activationPct}%` }}
+                transition={{ duration: 0.8 }}
+                className="h-full rounded-full"
+                style={{ backgroundColor: impact.primaryTarget.color }}
+              />
+            </div>
+          </div>
+
+          {impact.secondaryTargets.map((sec, idx) => (
+            <div key={idx}>
+              <div className="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
+                <span className="flex items-center gap-1.5">
+                  <Activity className="h-3.5 w-3.5 text-amber-500" />
+                  <span>{isAr ? sec.nameAr : sec.nameEn}</span>
+                </span>
+                <span className="font-mono">{sec.activationPct}%</span>
+              </div>
+              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${sec.activationPct}%` }}
+                  transition={{ duration: 0.8, delay: 0.1 * (idx + 1) }}
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: sec.color }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bulleted Real-World Body Benefits */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-[#121623]">
+        <h4 className="flex items-center gap-2 text-xs font-black text-slate-900 dark:text-white">
+          <HeartPulse className="h-4 w-4 text-[#D4AF37]" />
+          <span>{isAr ? 'كيف يفيد هذا التمرين شكل وصحة جسمك بالضبط؟' : 'Exact Physical & Health Transformation:'}</span>
+        </h4>
+        <ul className="mt-2.5 space-y-2 text-xs text-slate-600 dark:text-slate-300">
+          {(isAr ? impact.bodyBenefitsAr : impact.bodyBenefitsEn).map((b, i) => (
+            <li key={i} className="flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+              <span>{b}</span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Daily Life Function & Posture Benefit Pill */}
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+          <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900">
+            <span className="font-bold text-slate-900 dark:text-white">
+              {isAr ? '💡 في حياتك اليومية: ' : '💡 Daily Life: '}
+            </span>
+            <span className="text-slate-600 dark:text-slate-400">
+              {isAr ? impact.dailyFunctionalBenefitAr : impact.dailyFunctionalBenefitEn}
+            </span>
+          </div>
+          <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900">
+            <span className="font-bold text-slate-900 dark:text-white">
+              {isAr ? '🧍 القوام واستقامة الظهر: ' : '🧍 Posture & Spine: '}
+            </span>
+            <span className="text-slate-600 dark:text-slate-400">
+              {isAr ? impact.postureImpactAr : impact.postureImpactEn}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Main Standalone Exercise Motion Card Component
+ */
 export function ExerciseMotionCard({
   exercise,
   isAr: isArProp,
@@ -557,11 +1229,13 @@ export function ExerciseMotionCard({
   const isAr = isArProp !== undefined ? isArProp : locale === 'ar';
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [speed, setSpeed] = useState<number>(1);
+  const [activeTab, setActiveTab] = useState<'CARTOON' | 'ANATOMY'>('CARTOON');
   const [activePhase, setActivePhase] = useState<'ECCENTRIC' | 'HOLD' | 'CONCENTRIC'>('ECCENTRIC');
 
   const isFullyDone = doneSets >= exercise.sets;
+  const impact = EXERCISE_BODY_IMPACT_MAP[exercise.motionType] ?? EXERCISE_BODY_IMPACT_MAP.BENCH_PRESS;
 
-  // Real-time repetition phase timer loop
+  // Real-time repetition cadence phase loop
   useEffect(() => {
     if (!isPlaying) return;
     const interval = setInterval(() => {
@@ -583,171 +1257,234 @@ export function ExerciseMotionCard({
           : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-[#121623] dark:hover:border-slate-700'
       }`}
     >
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 p-5">
-        {/* Visual Animation Column */}
-        <div className="relative flex flex-col items-center justify-between overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-slate-100 dark:border-slate-800 dark:from-slate-900/90 dark:to-slate-950 p-3 md:col-span-5">
-          {/* Top Pill Controls */}
-          <div className="flex w-full items-center justify-between text-xs">
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#D4AF37]/20 px-2.5 py-0.5 text-[11px] font-black text-amber-800 dark:text-[#F3E5AB]">
-              <Sparkles className="h-3 w-3 text-[#D4AF37]" />
-              {isAr ? 'حركة ثلاثية الأبعاد' : '3D Motion Biomechanics'}
-            </span>
-            <div className="flex items-center gap-1">
-              {[1, 0.5].map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setSpeed(s)}
-                  className={`rounded-md px-1.5 py-0.5 font-mono text-[10px] font-extrabold transition ${
-                    speed === s
-                      ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
-                      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="ms-1 rounded-full p-1 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
-                title={isPlaying ? 'إيقاف الحركة' : 'تشغيل الحركة'}
-              >
-                {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-              </button>
-            </div>
-          </div>
-
-          {/* SVG Vector Motion Canvas */}
-          <div className="my-2 h-36 w-full max-w-[200px]">
-            <ExerciseMotionVisualCanvas
-              motionType={exercise.motionType}
-              isPlaying={isPlaying}
-              speedMultiplier={speed}
-            />
-          </div>
-
-          {/* Live Rhythm & Phase Indicator */}
-          <div className="w-full rounded-xl border border-slate-200 bg-white/80 p-2 text-center text-xs dark:border-slate-800 dark:bg-slate-900/80">
-            <div className="flex items-center justify-between text-[11px] font-extrabold">
-              <span
-                className={`transition ${
-                  activePhase === 'ECCENTRIC'
-                    ? 'text-sky-600 dark:text-sky-400 font-black'
-                    : 'text-slate-400'
-                }`}
-              >
-                {isAr ? '١. إنزال بطيء (3s)' : '1. Eccentric (3s)'}
-              </span>
-              <span
-                className={`transition ${
-                  activePhase === 'HOLD'
-                    ? 'text-amber-600 dark:text-amber-400 font-black'
-                    : 'text-slate-400'
-                }`}
-              >
-                {isAr ? '٢. ثبات (1s)' : '2. Hold (1s)'}
-              </span>
-              <span
-                className={`transition ${
-                  activePhase === 'CONCENTRIC'
-                    ? 'text-emerald-600 dark:text-emerald-400 font-black'
-                    : 'text-slate-400'
-                }`}
-              >
-                {isAr ? '٣. انقباض (1s)' : '3. Concentric (1s)'}
-              </span>
-            </div>
-          </div>
+      {/* Top Header Mode Tabs: [Cartoon Motion] vs [Anatomy Impact] */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800/80 dark:bg-slate-900/40">
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setActiveTab('CARTOON')}
+            className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-black transition ${
+              activeTab === 'CARTOON'
+                ? 'bg-slate-950 text-white shadow-xs dark:bg-[#D4AF37] dark:text-slate-950'
+                : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'
+            }`}
+          >
+            <Dumbbell className="h-3.5 w-3.5" />
+            <span>{isAr ? 'حركة كرتونية تفاعلية' : 'Cartoon Motion'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('ANATOMY')}
+            className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-black transition ${
+              activeTab === 'ANATOMY'
+                ? 'bg-slate-950 text-white shadow-xs dark:bg-[#D4AF37] dark:text-slate-950'
+                : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'
+            }`}
+          >
+            <Flame className="h-3.5 w-3.5 text-rose-500" />
+            <span>{isAr ? 'خريطة عضلات الجسم المستفيدة' : 'Body Impact & Anatomy'}</span>
+          </button>
         </div>
 
-        {/* Content & Form Instruction Column */}
-        <div className="flex flex-col justify-between space-y-3 md:col-span-7">
-          <div>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-base font-black text-slate-900 dark:text-white">
-                {isAr ? exercise.nameAr : exercise.nameEn}
-              </h3>
-              {isFullyDone && (
-                <span className="rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-black text-white">
-                  {isAr ? 'أنهيت التمرين ✓' : 'Completed ✓'}
-                </span>
-              )}
-            </div>
-
-            {/* Target Muscle Badges */}
-            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-              <span className="rounded-lg bg-amber-500/15 px-2.5 py-1 font-bold text-amber-800 dark:text-amber-300">
-                {isAr ? 'العضلة الأساسية: ' : 'Target: '}
-                <strong className="font-black">{isAr ? exercise.targetMuscleAr : exercise.targetMuscleEn}</strong>
-              </span>
-              {exercise.secondaryMuscleAr && (
-                <span className="rounded-lg bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 px-2.5 py-1 font-bold">
-                  {isAr ? 'المساعدة: ' : 'Secondary: '}
-                  {isAr ? exercise.secondaryMuscleAr : exercise.secondaryMuscleEn}
-                </span>
-              )}
-            </div>
-
-            {/* Form Cues / Instructions */}
-            <div className="mt-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-xs dark:border-slate-800/80 dark:bg-slate-900/50">
-              <p className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
-                <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span>{isAr ? 'تعليمات الأداء السليم وتفادي الإصابات:' : 'Pro Execution Form Cue:'}</span>
-              </p>
-              <p className="mt-1 text-slate-600 dark:text-slate-400 leading-relaxed">
-                {isAr ? exercise.cuesAr : exercise.cuesEn}
-              </p>
-            </div>
+        {/* Speed & Pause Controls (Active on Cartoon Tab) */}
+        {activeTab === 'CARTOON' && (
+          <div className="flex items-center gap-1.5">
+            {[1, 0.5].map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSpeed(s)}
+                className={`rounded-lg px-2 py-1 text-[11px] font-bold transition ${
+                  speed === s
+                    ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
+                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                }`}
+              >
+                {s}x
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="ms-1 rounded-full p-1 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
+              title={isPlaying ? (isAr ? 'إيقاف الحركة' : 'Pause') : isAr ? 'تشغيل الحركة' : 'Play'}
+            >
+              {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+            </button>
           </div>
+        )}
+      </div>
 
-          {/* Sets, Reps & Rest Actions */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-800">
-            <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold">
-              <span className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 shadow-2xs dark:border-slate-700 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
-                {exercise.sets} {isAr ? 'مجموعات' : 'Sets'} × {exercise.reps}
-              </span>
-              <span className="rounded-xl bg-amber-500/15 px-3 py-1.5 text-amber-800 dark:text-amber-300">
-                <Timer className="inline h-3.5 w-3.5 me-1 text-[#D4AF37]" />
-                {isAr ? `راحة: ${exercise.restSec} ثانية` : `Rest: ${exercise.restSec}s`}
-              </span>
-            </div>
-
-            {/* Set Progression Circles & Complete Set Button */}
-            {onCompleteSet && (
-              <div className="flex items-center gap-3">
-                <div className="flex gap-1.5">
-                  {Array.from({ length: exercise.sets }).map((_, idx) => (
-                    <span
-                      key={idx}
-                      className={`h-2.5 w-5 rounded-full transition ${
-                        idx < doneSets ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700'
-                      }`}
-                    />
-                  ))}
+      <div className="p-5">
+        <AnimatePresence mode="wait">
+          {activeTab === 'CARTOON' ? (
+            <motion.div
+              key="cartoon"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="grid grid-cols-1 md:grid-cols-12 gap-5"
+            >
+              {/* Visual Cartoon Character Column */}
+              <div className="relative flex flex-col items-center justify-between overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 via-white to-slate-100 p-4 dark:border-slate-800 dark:from-slate-900/90 dark:via-slate-950 dark:to-slate-900 md:col-span-5">
+                {/* Visual SVG Cartoon Character Canvas */}
+                <div className="my-1 h-44 w-full max-w-[260px] flex items-center justify-center">
+                  <CartoonAthleteVisualCanvas
+                    motionType={exercise.motionType}
+                    isPlaying={isPlaying}
+                    speedMultiplier={speed}
+                    isAr={isAr}
+                  />
                 </div>
 
-                <button
-                  type="button"
-                  onClick={onCompleteSet}
-                  className={`rounded-xl px-4 py-2 text-xs font-extrabold transition shadow-xs ${
-                    isFullyDone
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-slate-900 text-white hover:bg-amber-500 hover:text-slate-950 dark:bg-slate-800 dark:hover:bg-amber-500'
-                  }`}
-                >
-                  {isFullyDone
-                    ? isAr
-                      ? `تم بالكامل (${doneSets}/${exercise.sets})`
-                      : `Completed (${doneSets}/${exercise.sets})`
-                    : isAr
-                      ? `+ أتممت مجموعة (${doneSets}/${exercise.sets})`
-                      : `+ Complete Set (${doneSets}/${exercise.sets})`}
-                </button>
+                {/* Biomechanical Cadence Tempo Indicator (3s Down -> 1s Hold -> 1s Up) */}
+                <div className="mt-2 flex w-full flex-col gap-1.5 rounded-xl border border-slate-200 bg-white/80 p-2.5 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/60">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <Timer className="h-3.5 w-3.5 text-[#D4AF37]" />
+                      <span>{isAr ? 'إيقاع الحركة الذكي (Tempo)' : 'Cadence Tempo'}</span>
+                    </span>
+                    <span className="font-mono text-[10px] text-slate-500">
+                      {activePhase === 'ECCENTRIC'
+                        ? isAr ? 'نزول هادئ' : 'Lowering'
+                        : activePhase === 'HOLD'
+                          ? isAr ? 'ثبات وانقباض' : 'Peak Hold'
+                          : isAr ? 'دفع انفجاري' : 'Explosion'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-1 text-center font-mono text-[10px] font-extrabold">
+                    <span
+                      className={`rounded-lg py-1 transition ${
+                        activePhase === 'ECCENTRIC'
+                          ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 font-black'
+                          : 'text-slate-400'
+                      }`}
+                    >
+                      {isAr ? '١. نزول 3ث' : '1. Eccentric 3s'}
+                    </span>
+                    <span
+                      className={`rounded-lg py-1 transition ${
+                        activePhase === 'HOLD'
+                          ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 font-black'
+                          : 'text-slate-400'
+                      }`}
+                    >
+                      {isAr ? '٢. ثبات 1ث' : '2. Hold 1s'}
+                    </span>
+                    <span
+                      className={`rounded-lg py-1 transition ${
+                        activePhase === 'CONCENTRIC'
+                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black'
+                          : 'text-slate-400'
+                      }`}
+                    >
+                      {isAr ? '٣. صعود 1ث' : '3. Drive 1s'}
+                    </span>
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
+
+              {/* Exercise Description, Target Badges & Execution Controls */}
+              <div className="flex flex-col justify-between space-y-3 md:col-span-7">
+                <div>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-base font-black text-slate-900 dark:text-white">
+                      {isAr ? exercise.nameAr : exercise.nameEn}
+                    </h3>
+                    {isFullyDone && (
+                      <span className="rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-black text-white">
+                        {isAr ? 'أنهيت التمرين ✓' : 'Completed ✓'}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Highlighted Target Muscle Badges with Direct Body Impact Callout */}
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+                    <span className="rounded-lg bg-rose-500/15 px-2.5 py-1 font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1">
+                      <Flame className="h-3.5 w-3.5 text-rose-500" />
+                      <span>{isAr ? 'العضلة المستفيدة: ' : 'Target: '}</span>
+                      <strong className="font-black">{isAr ? exercise.targetMuscleAr : exercise.targetMuscleEn}</strong>
+                    </span>
+                    {exercise.secondaryMuscleAr && (
+                      <span className="rounded-lg bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 px-2.5 py-1 font-bold">
+                        {isAr ? 'المساعدة: ' : 'Secondary: '}
+                        {isAr ? exercise.secondaryMuscleAr : exercise.secondaryMuscleEn}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Form Cues & Safety Guideline */}
+                  <div className="mt-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-xs dark:border-slate-800/80 dark:bg-slate-900/50">
+                    <p className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
+                      <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
+                      <span>{isAr ? 'تعليمات الأداء السليم وتفادي الإصابات:' : 'Pro Execution Form Cue:'}</span>
+                    </p>
+                    <p className="mt-1 text-slate-600 dark:text-slate-400 leading-relaxed">
+                      {isAr ? exercise.cuesAr : exercise.cuesEn}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Sets, Reps & Rest Actions */}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-800">
+                  <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold">
+                    <span className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 shadow-2xs dark:border-slate-700 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                      {exercise.sets} {isAr ? 'مجموعات' : 'Sets'} × {exercise.reps}
+                    </span>
+                    <span className="rounded-xl bg-amber-500/15 px-3 py-1.5 text-amber-800 dark:text-amber-300">
+                      <Timer className="inline h-3.5 w-3.5 me-1 text-[#D4AF37]" />
+                      {isAr ? `راحة: ${exercise.restSec} ثانية` : `Rest: ${exercise.restSec}s`}
+                    </span>
+                  </div>
+
+                  {/* Set Progression & Complete Set Button */}
+                  {onCompleteSet && (
+                    <div className="flex items-center gap-3">
+                      <div className="flex gap-1.5">
+                        {Array.from({ length: exercise.sets }).map((_, idx) => (
+                          <span
+                            key={idx}
+                            className={`h-2.5 w-5 rounded-full transition ${
+                              idx < doneSets ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700'
+                            }`}
+                          />
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={onCompleteSet}
+                        className={`rounded-xl px-4 py-2 text-xs font-extrabold transition shadow-xs ${
+                          isFullyDone
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-slate-900 text-white hover:bg-amber-500 hover:text-slate-950 dark:bg-slate-800 dark:hover:bg-amber-500'
+                        }`}
+                      >
+                        {isFullyDone
+                          ? isAr
+                            ? `تم بالكامل (${doneSets}/${exercise.sets})`
+                            : `Completed (${doneSets}/${exercise.sets})`
+                          : isAr
+                            ? `+ أتممت مجموعة (${doneSets}/${exercise.sets})`
+                            : `+ Complete Set (${doneSets}/${exercise.sets})`}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="anatomy"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+            >
+              <BodyAnatomyImpactView impact={impact} isAr={isAr} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
