@@ -48,12 +48,12 @@ jobs:
 
     env:
       NODE_ENV: test
-      DATABASE_MIGRATION_URL: postgresql://gymos_owner:ci_owner_password_secure_123@localhost:5432/gymos_ci?schema=public
-      DATABASE_URL: postgresql://gymos_app:ci_app_password_secure_123456@localhost:5432/gymos_ci?schema=public&connection_limit=10
-      DATABASE_WORKER_URL: postgresql://gymos_worker:ci_worker_password_secure_123456@localhost:5432/gymos_ci?schema=public&connection_limit=5
+      DATABASE_MIGRATION_URL: postgresql://gymos_owner:ci_owner_password_secure_123@127.0.0.1:5432/gymos_ci?schema=public
+      DATABASE_URL: postgresql://gymos_app:ci_app_password_secure_123456@127.0.0.1:5432/gymos_ci?schema=public&connection_limit=10
+      DATABASE_WORKER_URL: postgresql://gymos_worker:ci_worker_password_secure_123456@127.0.0.1:5432/gymos_ci?schema=public&connection_limit=5
       DB_RUNTIME_APP_PASSWORD: ci_app_password_secure_123456
       DB_RUNTIME_WORKER_PASSWORD: ci_worker_password_secure_123456
-      REDIS_URL: redis://localhost:6379
+      REDIS_URL: redis://127.0.0.1:6379
       JWT_ACCESS_SECRET: "ci_test_jwt_access_secret_minimum_32_characters_long_0000000000"
       JWT_REFRESH_SECRET: "ci_test_jwt_refresh_secret_minimum_32_characters_long_000000000"
       COOKIE_SECRET: "ci_test_cookie_secret_minimum_32_characters_long_00000000000000"
