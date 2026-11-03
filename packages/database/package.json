@@ -13,7 +13,7 @@
   },
   "scripts": {
     "db:generate": "prisma generate",
-    "db:migrate:deploy": "prisma migrate deploy && node ./dist/provision-roles.js",
+    "db:migrate:deploy": "node ./scripts/run-migrate.mjs",
     "db:seed": "node ./dist/seed.js",
     "build": "prisma generate && tsc -p tsconfig.json",
     "typecheck": "prisma generate && tsc -p tsconfig.json --noEmit",

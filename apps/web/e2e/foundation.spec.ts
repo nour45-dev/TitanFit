@@ -35,30 +35,12 @@ test.describe('TitanFit (Rooted Performance) — Complete Phases 0–6 E2E Suite
     await page.getByTestId('open-login-modal-btn').click();
     await page.getByTestId('tab-admin-owner').click();
 
-    let adminEmail = process.env.E2E_ADMIN_EMAIL;
-    let adminPass = process.env.E2E_ADMIN_PASSWORD;
+    const adminEmail = process.env.E2E_ADMIN_EMAIL || 'superadmin@titanfit.eg';
+    const adminPass = process.env.E2E_ADMIN_PASSWORD || 'TitanFit#2026!';
 
-    if (!adminEmail || !adminPass) {
-      const dynamicCreds = await page.evaluate(() => {
-        try {
-          const raw = localStorage.getItem('gymos-platform-state');
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            const user = parsed.state?.users?.[0];
-            return { email: user?.email || user?.name || '', pass: user?.password || '' };
-          }
-        } catch {}
-        return { email: '', pass: '' };
-      });
-      adminEmail = adminEmail || dynamicCreds.email;
-      adminPass = adminPass || dynamicCreds.pass;
-    }
-
-    if (adminEmail && adminPass) {
-      await page.getByTestId('login-email-input').fill(adminEmail);
-      await page.getByTestId('login-password-input').fill(adminPass);
-      await page.getByTestId('login-submit-btn').click();
-    }
+    await page.getByTestId('login-email-input').fill(adminEmail);
+    await page.getByTestId('login-password-input').fill(adminPass);
+    await page.getByTestId('login-submit-btn').click();
 
     // Switch to English LTR to verify English copy across ERP phases
     await page.getByTestId('locale-toggle-btn').click();

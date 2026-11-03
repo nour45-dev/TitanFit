@@ -196,8 +196,11 @@ describe('PDF Document Assembler', () => {
     );
 
     expect(blocks.length).toBeGreaterThan(5);
-    expect(blocks[0]?.t).toBe('title');
-    expect(blocks[0]?.text).toContain('فاتورة اشتراك ضريبية رسمية');
+    const firstBlock = blocks[0];
+    expect(firstBlock?.t).toBe('title');
+    if (firstBlock && firstBlock.t === 'title') {
+      expect(firstBlock.text).toContain('فاتورة اشتراك ضريبية رسمية');
+    }
   });
 
   it('safely guards against running in server/non-browser environment without DOM', async () => {
