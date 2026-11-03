@@ -106,7 +106,7 @@ export function MemberPwaPortalView() {
                 ? `مرحباً، ${currentMember.fullNameAr} 🔥 (${currentMember.streakDays} يوم التزام متتالي)`
                 : `Welcome back, ${currentMember.fullNameEn} 🔥 (${currentMember.streakDays}-Day Streak)`}
             </h1>
-            <p className="mt-1 text-xs text-slate-300">
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
               {isAr
                 ? `${currentMember.planNameAr} • تنتهي في ${currentMember.endDate} • النقاط: ${currentMember.points}`
                 : `${currentMember.planNameEn} • Valid until ${currentMember.endDate} • ${currentMember.points} XP`}
@@ -135,7 +135,7 @@ export function MemberPwaPortalView() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Column 1: Rotating Digital QR Pass + Gamification Leaderboard */}
         <div className="space-y-6">
-          <div className="rounded-2xl border border-[#D4AF37]/40 bg-[#121623] p-6 text-center">
+          <div className="rounded-2xl border border-[#D4AF37]/40 bg-white p-6 text-center shadow-md dark:bg-[#121623]">
             <div className="flex items-center justify-between text-xs font-bold text-slate-400">
               <span>{isAr ? 'بطاقة الدخول الذكية' : 'ROTATING GATE PASS'}</span>
               <span className="font-mono text-emerald-400">HMAC-SHA256</span>
@@ -148,7 +148,7 @@ export function MemberPwaPortalView() {
               </span>
             </div>
 
-            <p className="font-mono text-xs text-[#F3E5AB]">
+            <p className="font-mono text-xs text-amber-800 dark:text-[#F3E5AB]">
               TITANFIT:v1:titanfit-egypt:{currentMember.code}:{qrWindowHash}
             </p>
             <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-800">
@@ -157,7 +157,7 @@ export function MemberPwaPortalView() {
                 style={{ width: `${(qrCountdown / 30) * 100}%` }}
               />
             </div>
-            <p className="mt-2 text-xs text-slate-400">
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
               {isAr
                 ? `يتغير الرمز المشفر تلقائياً خلال ${qrCountdown} ثانية لمنع مشاركة الصور`
                 : `Anti-screenshot token rotates in ${qrCountdown}s`}
@@ -165,9 +165,9 @@ export function MemberPwaPortalView() {
           </div>
 
           {/* Branch Leaderboard */}
-          <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
+          <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-extrabold text-white">
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
                 {isAr ? 'لوحة متصدري الفرع (Leaderboard)' : 'Branch Consistency Leaderboard'}
               </h3>
               <Trophy className="h-5 w-5 text-[#D4AF37]" />
@@ -176,13 +176,13 @@ export function MemberPwaPortalView() {
               {members.slice(0, 4).map((m, idx) => (
                 <div
                   key={m.id}
-                  className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-3"
+                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60 p-3"
                 >
                   <div className="flex items-center gap-2.5">
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#D4AF37]/20 text-xs font-extrabold text-[#D4AF37]">
                       {idx + 1}
                     </span>
-                    <span className="text-xs font-bold text-white">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">
                       {isAr ? m.fullNameAr : m.fullNameEn}
                     </span>
                   </div>
@@ -197,9 +197,9 @@ export function MemberPwaPortalView() {
 
         {/* Column 2: Workout Logger + 1RM PR Detector + Rest Timer */}
         <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
+          <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-extrabold text-white">
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
                 {isAr
                   ? 'مسجل التمارين وحاسبة الأرقام القياسية (Epley 1RM)'
                   : 'Workout Logger & Auto 1RM PR Engine'}
@@ -217,7 +217,7 @@ export function MemberPwaPortalView() {
                   aria-label={isAr ? 'التمرين' : 'Exercise'}
                   value={exerciseEn}
                   onChange={(e) => setExerciseEn(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-900 dark:text-white"
                 >
                   <option value="Barbell Bench Press">Barbell Bench Press (ضغط صدر بالبار)</option>
                   <option value="Barbell Back Squat">Barbell Back Squat (سكوات خلفي بالبار)</option>
@@ -285,7 +285,7 @@ export function MemberPwaPortalView() {
               )}
 
               {/* Rest Timer */}
-              <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/70 p-3">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
                   <Timer className="h-4 w-4 text-[#D4AF37]" />
                   <span>{isAr ? 'مؤقت الراحة بين المجموعات:' : 'Rest Timer:'}</span>
@@ -339,9 +339,9 @@ export function MemberPwaPortalView() {
         {/* Column 3: Daily Nutrition/Macros + Real-Time Trainer Chat */}
         <div className="space-y-6">
           {/* Nutrition & Hydration Card */}
-          <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
+          <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-extrabold text-white">
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
                 {isAr ? 'خطة التغذية، الماكروز، وشرب المياه' : 'Daily Macros & Hydration Tracker'}
               </h2>
               <Flame className="h-5 w-5 text-amber-400" />
@@ -349,7 +349,7 @@ export function MemberPwaPortalView() {
             <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
               <div className="rounded-xl bg-slate-900/70 p-3">
                 <span className="text-slate-400">{isAr ? 'السعرات' : 'Calories'}</span>
-                <p className="mt-1 font-mono text-base font-extrabold text-white">{calories}</p>
+                <p className="mt-1 font-mono text-base font-extrabold text-slate-900 dark:text-white">{calories}</p>
                 <span className="text-[10px] text-emerald-400">/ 2,600 kcal</span>
               </div>
               <div className="rounded-xl bg-slate-900/70 p-3">
@@ -372,11 +372,11 @@ export function MemberPwaPortalView() {
           </div>
 
           {/* Trainer Direct Chat */}
-          <div className="flex flex-col justify-between rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
+          <div className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
             <div>
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div>
-                  <h3 className="text-sm font-extrabold text-white">
+                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
                     {isAr ? 'محادثة مباشرة مع كابتن عمر حسن' : 'Direct Chat — Coach Omar Hassan'}
                   </h3>
                   <p className="text-[11px] text-emerald-400">
@@ -460,14 +460,14 @@ export function ReportsAnalyticsView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-800/80 bg-[#121623] p-6 sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-xl font-extrabold text-white">
+          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
             {isAr
               ? 'التقارير المالية، معدلات الاحتفاظ بالأعضاء، وتصدير Excel / CSV'
               : 'Executive Financial, Retention & Attendance BI Reports'}
           </h1>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             {isAr
               ? 'تحليل الإيرادات حسب بوابة الدفع والفرع مع إمكانية التصدير المباشر للمحاسبين والضرائب'
               : 'Granular revenue attribution by payment gateway, branch P&L, and cohort retention'}
@@ -484,8 +484,8 @@ export function ReportsAnalyticsView() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
-          <h3 className="text-sm font-extrabold text-white">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
             {isAr ? 'توزيع التحصيل حسب بوابة الدفع' : 'Revenue by Payment Gateway'}
           </h3>
           <div className="mt-4 space-y-3 text-xs">
@@ -508,15 +508,15 @@ export function ReportsAnalyticsView() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
-          <h3 className="text-sm font-extrabold text-white">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
             {isAr ? 'أداء الفروع وصافي الربحية' : 'Branch Revenue Breakdown'}
           </h3>
           <div className="mt-4 space-y-3 text-xs">
             {branches.map((b, i) => (
               <div
                 key={b.id}
-                className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-3"
+                className="flex items-center justify-between rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60 p-3"
               >
                 <div>
                   <p className="font-bold text-white">{isAr ? b.nameAr : b.nameEn}</p>
@@ -530,8 +530,8 @@ export function ReportsAnalyticsView() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
-          <h3 className="text-sm font-extrabold text-white">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
             {isAr ? 'مؤشرات الاحتفاظ والتجديد (Cohort Retention)' : 'Member Retention & LTV Metrics'}
           </h3>
           <div className="mt-4 space-y-3 text-xs">
@@ -568,26 +568,26 @@ export function TenantSettingsView() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
-        <h1 className="text-xl font-extrabold text-white">
+      <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
+        <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
           {isAr
             ? 'إعدادات النادي، الفروع، الهوية البصرية، والضرائب المصرية'
             : 'Club Settings, Multi-Branch Setup, White-Label Branding & Tax'}
         </h1>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           {isAr
             ? 'تخصيص ألوان الهوية البصرية للمستأجر، مواعيد عمل الفروع، وقوالب رسائل واتساب التلقائية'
             : 'Customize tenant white-label theme tokens, branch working hours, Egypt 14% VAT, and WhatsApp templates'}
         </p>
       </div>
 
-      <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6" data-testid="settings-logo-card">
-        <h3 className="text-base font-extrabold text-white">
+      <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6" data-testid="settings-logo-card">
+        <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
           {isAr ? 'شعار ناديك' : 'Your Gym Logo'}
         </h3>
         {activeTenantCustom ? (
           <>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {isAr
                 ? `اختر صورة الشعار من جهازك لتظهر في أعلى منصة "${activeTenantCustom.nameAr}" ولدى متدربيك.`
                 : `Pick your logo from your device — it appears across "${activeTenantCustom.nameEn}" and for your members.`}
@@ -612,7 +612,7 @@ export function TenantSettingsView() {
             />
           </>
         ) : (
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             {isAr
               ? 'يتم تحديد شعار كل نادٍ من حساب صاحب النادي، أو من لوحة المنصة عند إنشاء النادي.'
               : 'Each gym logo is set from the gym owner account, or when the gym is created from the platform console.'}
@@ -621,9 +621,9 @@ export function TenantSettingsView() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-extrabold text-white">
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
               {isAr ? 'تخصيص الهوية البصرية (White-Label Theme)' : 'White-Label Brand Tokens'}
             </h3>
             <Palette className="h-5 w-5 text-[#D4AF37]" />
@@ -659,15 +659,15 @@ export function TenantSettingsView() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
-          <h3 className="text-base font-extrabold text-white">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
+          <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
             {isAr ? 'الفروع المسجلة ومواعيد العمل' : 'Configured Club Branches'}
           </h3>
           <div className="mt-4 space-y-3">
             {branches.map((b) => (
               <div
                 key={b.id}
-                className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-xs"
+                className="flex items-center justify-between rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60 p-3 text-xs"
               >
                 <div>
                   <p className="font-bold text-white">{isAr ? b.nameAr : b.nameEn}</p>

@@ -84,11 +84,11 @@ export function OverviewView() {
   return (
     <div data-testid="panel-admin-overview" className="space-y-6">
       {/* Top Executive Banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-[#D4AF37]/30 bg-gradient-to-r from-[#121624] via-[#171C2E] to-[#1E1910] p-6 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-50 via-slate-50 to-amber-50/60 p-6 text-slate-900 dark:border-[#D4AF37]/30 dark:bg-gradient-to-r dark:from-[#121624] dark:via-[#171C2E] dark:to-[#1E1910] dark:text-white shadow-xl">
         <div className="pointer-events-none absolute -top-24 -end-24 h-64 w-64 rounded-full bg-[#D4AF37]/15 blur-3xl" />
         <div className="relative flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-3 py-1 text-xs font-bold text-[#F3E5AB]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-600/40 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-900 dark:border-[#D4AF37]/40 dark:bg-[#D4AF37]/10 dark:text-[#F3E5AB]">
               <Sparkles className="h-3.5 w-3.5 text-[#D4AF37]" />
               {isAr
                 ? 'مركز القيادة التنفيذي المباشر — تيتان فيت مصر'
@@ -102,7 +102,7 @@ export function OverviewView() {
                 ? 'منصة الإدارة المتكاملة للأندية الرياضية والفروع (Rooted Performance)'
                 : 'TitanFit Enterprise Gym & Athletic Club OS'}
             </h1>
-            <p className="mt-1 max-w-2xl text-sm text-slate-300">
+            <p className="mt-1 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
               {isAr
                 ? 'متابعة لحظية للإيرادات، بوابات الدخول بالـ QR الدوار، اشتراكات الأعضاء، الحصص التدريبية، ومبيعات المكملات عبر جميع الفروع.'
                 : 'Real-time multi-branch telemetry across memberships, Egypt payment gateways, rotating HMAC QR turnstiles, classes, and POS.'}
@@ -120,7 +120,7 @@ export function OverviewView() {
             <button
               type="button"
               onClick={() => setActiveSection('PAYMENTS')}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-xs font-bold text-white backdrop-blur transition hover:bg-white/15"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold text-slate-800 shadow-xs transition hover:bg-slate-50 dark:border-white/15 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
             >
               <CreditCard className="h-4 w-4 text-[#D4AF37]" />
               {isAr ? 'تحصيل اشتراك / فاتورة' : 'Collect Payment'}
@@ -141,9 +141,9 @@ export function OverviewView() {
 
       {/* 4 Primary KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {isAr ? 'إجمالي الإيرادات الشهرية' : 'Monthly Gross Revenue'}
             </span>
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#D4AF37]/15 text-[#D4AF37]">
@@ -151,7 +151,7 @@ export function OverviewView() {
             </span>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <p className="text-2xl font-extrabold text-white">
+            <p className="text-2xl font-extrabold text-slate-900 dark:text-white">
               {isAr
                 ? `${totalRevenueEgp.toLocaleString('ar-EG')} ج.م`
                 : `EGP ${totalRevenueEgp.toLocaleString()}`}
@@ -160,16 +160,16 @@ export function OverviewView() {
               <ArrowUpRight className="h-3.5 w-3.5" /> +18.4%
             </span>
           </div>
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             {isAr
               ? 'إنستاباي 42% • بطاقات Paymob 31% • نقدي وفوري 27%'
               : 'InstaPay 42% • Paymob 31% • Cash & Fawry 27%'}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {isAr ? 'الأعضاء النشطون حالياً' : 'Active Subscriptions'}
             </span>
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400">
@@ -177,21 +177,21 @@ export function OverviewView() {
             </span>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <p className="text-2xl font-extrabold text-white">
+            <p className="text-2xl font-extrabold text-slate-900 dark:text-white">
               {isAr ? (2840 + activeCount).toLocaleString('ar-EG') : (2840 + activeCount).toLocaleString()}
             </p>
             <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-400">
               +12.1%
             </span>
           </div>
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             {isAr ? 'معدل الاحتفاظ بالأعضاء 96.6% (معدل تسرب 3.4%)' : '96.6% retention rate (3.4% monthly churn)'}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {isAr ? 'تسجيلات الدخول اليوم (البوابات)' : 'Turnstile Check-ins Today'}
             </span>
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/15 text-sky-400">
@@ -199,21 +199,21 @@ export function OverviewView() {
             </span>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <p className="text-2xl font-extrabold text-white">
+            <p className="text-2xl font-extrabold text-slate-900 dark:text-white">
               {isAr ? (412 + accessLogs.length).toLocaleString('ar-EG') : 412 + accessLogs.length}
             </p>
             <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/15 px-2.5 py-0.5 text-xs font-bold text-sky-400">
               {isAr ? '٣٦١ داخل النادي الآن' : '361 On-Floor Now'}
             </span>
           </div>
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             {isAr ? 'متوسط زمن التحقق من رمز QR الدوار: 42ms' : 'Avg rotating HMAC QR verification: 42ms'}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {isAr ? 'اشتراكات تنتهي خلال 7 أيام' : 'Expiring Within 7 Days'}
             </span>
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400">
@@ -238,7 +238,7 @@ export function OverviewView() {
               {isAr ? 'إرسال تذكير واتساب' : 'Send WhatsApp Blast'}
             </button>
           </div>
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             {isAr ? 'إيرادات تجديد متوقعة: 164,000 ج.م' : 'Projected renewal pipeline: EGP 164,000'}
           </p>
         </div>
@@ -247,13 +247,13 @@ export function OverviewView() {
       {/* Main Analytics Row: Revenue Chart + Live Branch Occupancy */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Interactive Revenue & Attendance Chart */}
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6 lg:col-span-2">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6 lg:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-base font-extrabold text-white">
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
                 {isAr ? 'تحليل الإيرادات وحركة حضور الأعضاء' : 'Revenue & Member Attendance Velocity'}
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {isAr
                   ? 'مقارنة التدفقات النقدية (ج.م) مع كثافة الحضور اليومي في الفروع'
                   : 'Daily collected revenue (EGP) correlated with floor check-in volume'}
@@ -297,7 +297,7 @@ export function OverviewView() {
             ))}
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-slate-800/80 pt-4 text-xs text-slate-400">
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-slate-800/80 pt-4 text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-4">
               <span className="inline-flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-[#D4AF37]" />
@@ -315,14 +315,14 @@ export function OverviewView() {
         </div>
 
         {/* Live Multi-Branch Occupancy & Capacity */}
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-extrabold text-white">
+            <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
               {isAr ? 'إشغال الفروع اللحظي' : 'Live Branch Occupancy'}
             </h2>
             <Building2 className="h-5 w-5 text-[#D4AF37]" />
           </div>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             {isAr ? 'قراءة مباشرة من بوابات الدخول الإلكترونية' : 'Live telemetry from turnstile counters'}
           </p>
 
@@ -332,14 +332,14 @@ export function OverviewView() {
               return (
                 <div
                   key={br.id}
-                  className="rounded-xl border border-slate-800/90 bg-slate-900/60 p-4"
+                  className="rounded-xl border border-slate-200 bg-white dark:border-slate-800/90 dark:bg-slate-900/60 p-4"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-bold text-white">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">
                         {isAr ? br.nameAr : br.nameEn}
                       </p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         {isAr ? br.cityAr : br.cityEn} • {isAr ? br.managerAr : br.managerEn}
                       </p>
                     </div>
@@ -371,13 +371,13 @@ export function OverviewView() {
       {/* Bottom Row: Live Gate Feed + Today's High-Demand Classes */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Live Gate Feed */}
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-extrabold text-white">
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
                 {isAr ? 'سجل بوابات الدخول المباشر (Turnstile Live Feed)' : 'Live Turnstile & QR Access Stream'}
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {isAr
                   ? 'حالة التحقق من التوقيع المشفر HMAC-SHA256 ومنع الدخول المتكرر'
                   : 'Real-time HMAC-SHA256 QR verification & anti-passback logs'}
@@ -409,30 +409,30 @@ export function OverviewView() {
                     {log.decision === 'ALLOW_ACCESS' ? 'OK' : 'DENY'}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-white">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
                       {isAr ? log.memberNameAr : log.memberNameEn}{' '}
-                      <span className="font-mono text-xs text-slate-400">({log.memberCode})</span>
+                      <span className="font-mono text-xs text-slate-500 dark:text-slate-400">({log.memberCode})</span>
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {isAr ? log.gateNameAr : log.gateNameEn} •{' '}
                       {isAr ? log.reasonAr : log.reasonEn}
                     </p>
                   </div>
                 </div>
-                <span className="shrink-0 font-mono text-xs text-slate-400">{log.timestamp}</span>
+                <span className="shrink-0 font-mono text-xs text-slate-500 dark:text-slate-400">{log.timestamp}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Today's Classes Snapshot */}
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-extrabold text-white">
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
                 {isAr ? 'حصص اليوم وقوائم الانتظار' : "Today's Group Classes & Waitlists"}
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {isAr
                   ? 'ترقية تلقائية لأول عضو في قائمة الانتظار عند أي إلغاء'
                   : 'Automatic waitlist promotion when a confirmed spot opens'}
@@ -458,16 +458,16 @@ export function OverviewView() {
                     <span className="rounded-md bg-[#D4AF37]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#F3E5AB]">
                       {cls.category}
                     </span>
-                    <p className="text-sm font-bold text-white">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
                       {isAr ? cls.titleAr : cls.titleEn}
                     </p>
                   </div>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {isAr ? cls.trainerAr : cls.trainerEn} • {cls.timeRange}
                   </p>
                 </div>
                 <div className="text-end">
-                  <span className="inline-block rounded-lg bg-slate-800 px-2.5 py-1 text-xs font-bold text-white">
+                  <span className="inline-block rounded-lg bg-slate-800 px-2.5 py-1 text-xs font-bold text-slate-900 dark:text-white">
                     {cls.bookedMembers.length}/{cls.capacity}{' '}
                     {isAr ? 'محجوز' : 'Booked'}
                   </span>
@@ -555,12 +555,12 @@ export function MembersCrmView() {
   return (
     <div className="space-y-6">
       {/* Header & Controls */}
-      <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-800/80 bg-[#121623] p-6 sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-xl font-extrabold text-white">
+          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
             {isAr ? 'إدارة الأعضاء والملفات الطبية المشفرة (CRM)' : 'Members Directory & Encrypted Health Vault'}
           </h1>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             {isAr
               ? 'بحث شامل، تصفية حسب الحالة والفرع، تجميد فوري، وخزينة طبية مشفرة بمعيار AES-256-GCM لكل عضو'
               : 'Complete member lifecycle, instant freeze/unfreeze, attendance history, and tenant-bound AES-256-GCM health records'}
@@ -589,7 +589,7 @@ export function MembersCrmView() {
                 ? 'ابحث بالاسم، رقم العضوية (TF-2026-1001)، أو رقم الموبايل...'
                 : 'Search by name, member ID (TF-2026-1001), or phone (+2010...)'
             }
-            className="w-full rounded-xl border border-slate-800 bg-[#121623] py-2.5 ps-10 pe-4 text-sm text-white placeholder-slate-500 focus:border-[#D4AF37] focus:outline-none"
+            className="w-full rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-[#121623] py-2.5 ps-10 pe-4 text-sm text-white placeholder-slate-500 focus:border-[#D4AF37] focus:outline-none"
           />
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
@@ -601,7 +601,7 @@ export function MembersCrmView() {
               className={`rounded-xl px-3 py-2 text-xs font-bold transition ${
                 statusFilter === st
                   ? 'bg-[#D4AF37] text-slate-950'
-                  : 'border border-slate-800 bg-[#121623] text-slate-300 hover:border-slate-700'
+                  : 'border border-slate-200 bg-white dark:border-slate-800 dark:bg-[#121623] text-slate-300 hover:border-slate-700'
               }`}
             >
               {st === 'ALL'
@@ -629,7 +629,7 @@ export function MembersCrmView() {
       </div>
 
       {/* Members Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-800/80 bg-[#121623]">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623]">
         <div className="overflow-x-auto">
           <table className="w-full text-start text-sm">
             <thead className="border-b border-slate-800 bg-slate-900/80 text-xs uppercase text-slate-400">
@@ -654,7 +654,7 @@ export function MembersCrmView() {
                         <p className="font-bold text-white">
                           {isAr ? m.fullNameAr : m.fullNameEn}
                         </p>
-                        <p className="font-mono text-xs text-slate-400">
+                        <p className="font-mono text-xs text-slate-500 dark:text-slate-400">
                           {m.code} • {m.phone}
                         </p>
                       </div>
@@ -664,7 +664,7 @@ export function MembersCrmView() {
                     <p className="font-semibold text-slate-200">
                       {isAr ? m.planNameAr : m.planNameEn}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {isAr
                         ? `رصيد التجميد: ${m.freezeDaysRemaining} يوم`
                         : `Freeze balance: ${m.freezeDaysRemaining} days`}
@@ -685,13 +685,13 @@ export function MembersCrmView() {
                       {m.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3.5 font-mono text-xs text-slate-300">
+                  <td className="px-4 py-3.5 font-mono text-xs text-slate-600 dark:text-slate-300">
                     {m.endDate}
                     <div className="text-[11px] text-slate-500">
                       {isAr ? `آخر حضور: ${m.lastCheckIn}` : `Last seen: ${m.lastCheckIn}`}
                     </div>
                   </td>
-                  <td className="px-4 py-3.5 text-xs text-slate-300">
+                  <td className="px-4 py-3.5 text-xs text-slate-600 dark:text-slate-300">
                     {isAr ? m.assignedTrainerAr : m.assignedTrainerEn}
                   </td>
                   <td className="px-4 py-3.5 text-end">
@@ -699,7 +699,7 @@ export function MembersCrmView() {
                       <button
                         type="button"
                         onClick={() => setSelectedMember(m)}
-                        className="rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1.5 text-xs font-bold text-white hover:border-[#D4AF37]"
+                        className="rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1.5 text-xs font-bold text-slate-900 dark:text-white hover:border-[#D4AF37]"
                       >
                         {isAr ? 'ملف 360°' : '360° Profile'}
                       </button>
@@ -741,13 +741,13 @@ export function MembersCrmView() {
       {/* Add Member Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-700 bg-[#121623] p-6 text-white shadow-2xl">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div>
-                <h3 className="text-lg font-extrabold text-white">
+                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
                   {isAr ? 'تسجيل عضو جديد + تشفير الملف الصحي' : 'Register New Member + AES-256 Health Vault'}
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {isAr
                     ? 'يتم تشفير البيانات الطبية تلقائياً بمفتاح خاص بالمستأجر (AAD)'
                     : 'Medical PAR-Q notes are encrypted with AES-256-GCM bound to tenantId AAD'}
@@ -756,7 +756,7 @@ export function MembersCrmView() {
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-white"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -932,7 +932,7 @@ export function MembersCrmView() {
       {/* Member 360° Slide-Over Profile Modal */}
       {selectedMember && (
         <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/75 backdrop-blur-sm">
-          <div className="h-full w-full max-w-xl overflow-y-auto border-s border-slate-800 bg-[#121623] p-6 text-white shadow-2xl">
+          <div className="h-full w-full max-w-xl overflow-y-auto border-s border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-800 dark:bg-[#121623] dark:text-white">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D4AF37]/20 text-lg font-extrabold text-[#D4AF37]">
@@ -942,7 +942,7 @@ export function MembersCrmView() {
                   <h3 className="text-lg font-extrabold">
                     {isAr ? selectedMember.fullNameAr : selectedMember.fullNameEn}
                   </h3>
-                  <p className="font-mono text-xs text-slate-400">
+                  <p className="font-mono text-xs text-slate-500 dark:text-slate-400">
                     {selectedMember.code} • {selectedMember.phone}
                   </p>
                 </div>
@@ -1001,7 +1001,7 @@ export function MembersCrmView() {
                     Blood: {selectedMember.bloodType}
                   </span>
                 </div>
-                <div className="mt-3 space-y-1.5 text-xs text-slate-300">
+                <div className="mt-3 space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
                   <p>
                     <strong className="text-white">{isAr ? 'الحالة الطبية:' : 'Conditions:'}</strong>{' '}
                     {selectedMember.medicalConditions}
@@ -1070,12 +1070,12 @@ export function SubscriptionsView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-800/80 bg-[#121623] p-6 sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-xl font-extrabold text-white">
+          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
             {isAr ? 'هندسة باقات الاشتراكات، التجميد، والكوبونات' : 'Subscription Plans, Freeze Rules & Promo Coupons'}
           </h1>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             {isAr
               ? 'إدارة الباقات الزمنية وباقات الحصص والعائلات والشركات مع حساب تلقائي لأيام التجميد وفترة السماح'
               : 'Configure Duration, PT Session Packs, Family, and Corporate tiers with automated freeze extensions'}
@@ -1098,8 +1098,8 @@ export function SubscriptionsView() {
             key={p.id}
             className={`relative rounded-2xl border p-6 transition ${
               p.popular
-                ? 'border-[#D4AF37] bg-gradient-to-b from-[#1A1F33] to-[#121623] shadow-lg shadow-[#D4AF37]/10'
-                : 'border-slate-800/80 bg-[#121623]'
+                ? 'border-[#D4AF37] bg-gradient-to-b from-amber-50 to-white shadow-lg shadow-amber-500/10 dark:from-[#1A1F33] dark:to-[#121623] shadow-lg shadow-[#D4AF37]/10'
+                : 'border-slate-200/90 bg-white shadow-xs dark:border-slate-800/80 dark:bg-[#121623]'
             }`}
           >
             {p.popular && (
@@ -1113,18 +1113,18 @@ export function SubscriptionsView() {
               </span>
               <span className="text-xs font-semibold text-slate-400">{p.type}</span>
             </div>
-            <h3 className="mt-3 text-base font-extrabold text-white">
+            <h3 className="mt-3 text-base font-extrabold text-slate-900 dark:text-white">
               {isAr ? p.nameAr : p.nameEn}
             </h3>
             <div className="mt-3 flex items-baseline gap-1">
               <span className="text-2xl font-extrabold text-[#D4AF37]">
                 {p.priceEgp.toLocaleString()}
               </span>
-              <span className="text-xs font-bold text-slate-400">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
                 EGP / {p.durationDays} {isAr ? 'يوم' : 'days'}
               </span>
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-800/80 pt-4 text-xs text-slate-300">
+            <div className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-800/80 pt-4 text-xs text-slate-600 dark:text-slate-300">
               <div>
                 <span className="text-slate-500">{isAr ? 'أقصى تجميد:' : 'Max Freeze:'}</span>{' '}
                 <strong>{p.maxFreezeDays}d</strong>
@@ -1143,8 +1143,8 @@ export function SubscriptionsView() {
       </div>
 
       {/* Active Coupons Strip */}
-      <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
-        <h2 className="text-base font-extrabold text-white">
+      <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
+        <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
           {isAr ? 'أكواد الخصم والعروض الترويجية النشطة' : 'Active Promotional & Corporate Discount Codes'}
         </h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -1160,7 +1160,7 @@ export function SubscriptionsView() {
                   {cp.pct}
                 </span>
               </div>
-              <p className="mt-2 text-xs text-slate-300">{isAr ? cp.descAr : cp.descEn}</p>
+              <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">{isAr ? cp.descAr : cp.descEn}</p>
             </div>
           ))}
         </div>
@@ -1169,7 +1169,7 @@ export function SubscriptionsView() {
       {/* Create Plan Modal */}
       {showPlanModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-700 bg-[#121623] p-6 text-white">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-extrabold">
                 {isAr ? 'إنشاء باقة اشتراك جديدة' : 'Create New Subscription Plan'}
@@ -1290,13 +1290,13 @@ export function PaymentsBillingView() {
     <div data-testid="panel-members-billing" className="space-y-6">
       {/* Cashier Checkout & Tax Invoice Generator */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6 lg:col-span-2">
-          <h2 className="text-lg font-extrabold text-white">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6 lg:col-span-2">
+          <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">
             {isAr
               ? 'محطة تحصيل الاشتراكات وبوابات الدفع المصرية (Paymob / Fawry / InstaPay)'
               : 'Egypt & Global Cashier Terminal (InstaPay / Paymob / Fawry / Vodafone Cash)'}
           </h2>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             {isAr
               ? 'إصدار فوري للفاتورة الضريبية شاملة 14% ضريبة القيمة المضافة مع منع التكرار (Idempotency-Key)'
               : 'Idempotent checkout with 14% Egypt VAT calculation and verified webhook signatures'}
@@ -1423,7 +1423,7 @@ export function PaymentsBillingView() {
                 <span>{isAr ? 'ضريبة القيمة المضافة (14%)' : 'Egypt VAT (14%)'}</span>
                 <span className="font-mono font-bold">+{vat.toLocaleString()} EGP</span>
               </div>
-              <div className="border-t border-slate-700 pt-3 flex justify-between text-lg font-extrabold text-white">
+              <div className="border-t border-slate-700 pt-3 flex justify-between text-lg font-extrabold text-slate-900 dark:text-white">
                 <span>{isAr ? 'الإجمالي المستحق' : 'Total Payable'}</span>
                 <span className="font-mono text-[#D4AF37]">{total.toLocaleString()} EGP</span>
               </div>
@@ -1458,12 +1458,12 @@ export function PaymentsBillingView() {
       </div>
 
       {/* Invoices Ledger Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-800/80 bg-[#121623]">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623]">
         <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
-          <h3 className="text-base font-extrabold text-white">
+          <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
             {isAr ? 'سجل الفواتير الضريبية والمدفوعات' : 'Issued Tax Invoices & Payment Ledger'}
           </h3>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-slate-500 dark:text-slate-400">
             {invoices.length} {isAr ? 'فاتورة مسجلة' : 'invoices'}
           </span>
         </div>
@@ -1489,7 +1489,7 @@ export function PaymentsBillingView() {
                   <td className="px-4 py-3 font-bold text-white">
                     {isAr ? inv.memberNameAr : inv.memberNameEn}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-300">
+                  <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-300">
                     {isAr ? inv.planNameAr : inv.planNameEn}
                   </td>
                   <td className="px-4 py-3">
@@ -1516,7 +1516,7 @@ export function PaymentsBillingView() {
                       <button
                         type="button"
                         onClick={() => setPrintableInvoice(inv)}
-                        className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs font-bold text-white hover:border-[#D4AF37]"
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs font-bold text-slate-900 dark:text-white hover:border-[#D4AF37]"
                       >
                         <Printer className="h-3.5 w-3.5 text-[#D4AF37]" />
                         {isAr ? 'طباعة إيصال QR' : 'Print Receipt'}
@@ -1542,7 +1542,7 @@ export function PaymentsBillingView() {
       {/* Printable Tax Invoice Modal */}
       {printableInvoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-[#D4AF37]/50 bg-[#121623] p-6 text-white shadow-2xl">
+          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-[#D4AF37]/50 bg-white p-6 text-slate-900 shadow-2xl dark:bg-[#121623] dark:text-white">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
                 <p className="text-xs font-extrabold text-[#D4AF37]">TITANFIT EGYPT — ETA TAX INVOICE</p>
@@ -1552,7 +1552,7 @@ export function PaymentsBillingView() {
                 <X className="h-5 w-5 text-slate-400" />
               </button>
             </div>
-            <div className="mt-4 space-y-2 text-xs text-slate-300">
+            <div className="mt-4 space-y-2 text-xs text-slate-600 dark:text-slate-300">
               <div className="flex justify-between">
                 <span>{isAr ? 'العضو:' : 'Member:'}</span>
                 <strong className="text-white">

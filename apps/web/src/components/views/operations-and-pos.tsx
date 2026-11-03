@@ -104,14 +104,14 @@ export function ClassesScheduleView() {
   return (
     <div data-testid="panel-classes-access" className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-800/80 bg-[#121623] p-6 sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-xl font-extrabold text-white">
+          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
             {isAr
               ? 'جدول الحصص التدريبية، قوائم الانتظار الذكية، وتزامن التقويم (.ICS)'
               : 'Class Schedule, Auto-Waitlist Promotion & Calendar Sync'}
           </h1>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             {isAr
               ? 'إدارة الحصص الجماعية والترقية التلقائية الفورية من قائمة الانتظار عند إلغاء أي حجز'
               : 'Manage group sessions, trainer assignments, and instant waitlist auto-promotion'}
@@ -175,7 +175,7 @@ export function ClassesScheduleView() {
               className={`rounded-xl px-3 py-2 text-xs font-bold transition ${
                 categoryFilter === cat
                   ? 'bg-[#D4AF37] text-slate-950'
-                  : 'border border-slate-800 bg-[#121623] text-slate-300'
+                  : 'border border-slate-200 bg-white dark:border-slate-800 dark:bg-[#121623] text-slate-300'
               }`}
             >
               {cat === 'ALL' ? (isAr ? 'جميع الفئات' : 'All Categories') : cat}
@@ -184,13 +184,13 @@ export function ClassesScheduleView() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-slate-500 dark:text-slate-400">
             {isAr ? 'حجز سريع للعضو:' : 'Quick Book Member:'}
           </span>
           <select
             value={selectedMemberId}
             onChange={(e) => setSelectedMemberId(e.target.value)}
-            className="rounded-xl border border-slate-700 bg-[#121623] px-3 py-2 text-xs font-bold text-white"
+            className="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#121623] px-3 py-2 text-xs font-bold text-slate-900 dark:text-white"
           >
             {members.map((m) => (
               <option key={m.id} value={m.id}>
@@ -206,7 +206,7 @@ export function ClassesScheduleView() {
         {visibleClasses.map((cls, index) => (
           <div
             key={cls.id}
-            className="flex flex-col justify-between rounded-2xl border border-slate-800/80 bg-[#121623] p-6"
+            className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6"
           >
             <div>
               <div className="flex items-start justify-between gap-3">
@@ -214,10 +214,10 @@ export function ClassesScheduleView() {
                   <span className="inline-block rounded-lg bg-[#D4AF37]/15 px-2.5 py-0.5 text-xs font-extrabold text-[#D4AF37]">
                     {cls.category} • {isAr ? cls.dayAr : cls.dayEn}
                   </span>
-                  <h3 className="mt-2 text-lg font-extrabold text-white">
+                  <h3 className="mt-2 text-lg font-extrabold text-slate-900 dark:text-white">
                     {isAr ? cls.titleAr : cls.titleEn}
                   </h3>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {isAr ? cls.trainerAr : cls.trainerEn} • {isAr ? cls.roomAr : cls.roomEn} •{' '}
                     {cls.timeRange}
                   </p>
@@ -234,7 +234,7 @@ export function ClassesScheduleView() {
 
               {/* Roster & Waitlist */}
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
+                <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60 p-3">
                   <div className="flex items-center justify-between text-xs font-bold text-slate-300">
                     <span>{isAr ? 'الأعضاء المؤكدون' : 'Confirmed Roster'}</span>
                     <span className="text-emerald-400">
@@ -251,7 +251,7 @@ export function ClassesScheduleView() {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
+                <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60 p-3">
                   <div className="flex items-center justify-between text-xs font-bold text-slate-300">
                     <span>{isAr ? 'قائمة الانتظار التلقائية' : 'Auto-Promotion Waitlist'}</span>
                     <span className="text-amber-400">{cls.waitlistMembers.length}</span>
@@ -310,7 +310,7 @@ export function ClassesScheduleView() {
       {/* Add Class Modal */}
       {showAddClass && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-700 bg-[#121623] p-6 text-white">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#121623] p-6 text-white">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-extrabold">
                 {isAr ? 'إضافة حصة تدريبية جديدة للجدول' : 'Schedule New Group Class'}
@@ -393,13 +393,13 @@ export function AccessControlTurnstilesView() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
-        <h1 className="text-xl font-extrabold text-white">
+      <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
+        <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
           {isAr
             ? 'وحدة التحكم في البوابات الإلكترونية والـ QR الدوار (Access Control & Turnstiles)'
             : 'Hardware Turnstile Relay Controller & Rotating HMAC QR Scanner'}
         </h1>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           {isAr
             ? 'تحقق لحظي من توقيع QR المتغير كل 30 ثانية مع منع الدخول المتكرر (Anti-Passback 15m) وإرسال نبضة فتح البوابة (1500ms)'
             : '30-second rotating HMAC-SHA256 QR verification, 15-minute anti-passback protection, and 1500ms TCP/Webhook gate relay pulses'}
@@ -410,7 +410,7 @@ export function AccessControlTurnstilesView() {
           {gates.map((g) => (
             <div
               key={g.id}
-              className="rounded-xl border border-slate-800 bg-slate-900/70 p-4"
+              className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/70 p-4"
             >
               <div className="flex items-center justify-between">
                 <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-400">
@@ -419,10 +419,10 @@ export function AccessControlTurnstilesView() {
                 </span>
                 <span className="font-mono text-[11px] text-slate-400">1500ms Relay</span>
               </div>
-              <p className="mt-2 text-sm font-extrabold text-white">
+              <p className="mt-2 text-sm font-extrabold text-slate-900 dark:text-white">
                 {isAr ? g.ar : g.en}
               </p>
-              <p className="text-xs text-slate-400">{g.zone}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{g.zone}</p>
               <button
                 type="button"
                 onClick={() => simulateGateScan(selectedMemberId, g.en, g.ar)}
@@ -444,7 +444,7 @@ export function AccessControlTurnstilesView() {
             <select
               value={selectedMemberId}
               onChange={(e) => setSelectedMemberId(e.target.value)}
-              className="rounded-xl border border-slate-700 bg-[#121623] px-3 py-2 text-xs font-bold text-white"
+              className="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#121623] px-3 py-2 text-xs font-bold text-slate-900 dark:text-white"
             >
               {members.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -466,9 +466,9 @@ export function AccessControlTurnstilesView() {
       </div>
 
       {/* Access Logs Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-800/80 bg-[#121623]">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623]">
         <div className="border-b border-slate-800 px-6 py-4">
-          <h3 className="text-base font-extrabold text-white">
+          <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
             {isAr ? 'سجل حركات البوابات الإلكترونية اللحظي' : 'Real-Time Gate Access Audit Trail'}
           </h3>
         </div>
@@ -486,12 +486,12 @@ export function AccessControlTurnstilesView() {
             <tbody className="divide-y divide-slate-800/60">
               {accessLogs.map((log) => (
                 <tr key={log.id} className="hover:bg-slate-900/40">
-                  <td className="px-4 py-3 font-mono text-xs text-slate-400">{log.timestamp}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400">{log.timestamp}</td>
                   <td className="px-4 py-3 font-bold text-white">
                     {isAr ? log.memberNameAr : log.memberNameEn}{' '}
-                    <span className="font-mono text-xs text-slate-400">({log.memberCode})</span>
+                    <span className="font-mono text-xs text-slate-500 dark:text-slate-400">({log.memberCode})</span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-300">
+                  <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-300">
                     {isAr ? log.gateNameAr : log.gateNameEn}
                   </td>
                   <td className="px-4 py-3">
@@ -505,7 +505,7 @@ export function AccessControlTurnstilesView() {
                       {log.decision}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-300">
+                  <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-300">
                     {isAr ? log.reasonAr : log.reasonEn}
                   </td>
                 </tr>
@@ -558,13 +558,13 @@ export function PosInventoryView() {
     <div data-testid="panel-pos-reports-chat" className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       {/* Product Catalog */}
       <div className="space-y-4 lg:col-span-2">
-        <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
-          <h1 className="text-xl font-extrabold text-white">
+        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
+          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
             {isAr
               ? 'نقطة بيع المكملات الغذائية والبار الرياضي (POS & Supplement Bar)'
               : 'POS Register, Supplement Bar & Apparel Inventory'}
           </h1>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             {isAr
               ? 'بيع فوري للمشروبات والمكملات وملابس تيتان فيت مع خصم آلي من المخزون وإصدار فاتورة'
               : 'Ring up protein shakes, supplements, and gear with atomic inventory stock deduction'}
@@ -580,7 +580,7 @@ export function PosInventoryView() {
                   className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
                     categoryFilter === cat
                       ? 'bg-[#D4AF37] text-slate-950'
-                      : 'border border-slate-800 bg-slate-900 text-slate-300'
+                      : 'border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 text-slate-300'
                   }`}
                 >
                   {cat}
@@ -594,7 +594,7 @@ export function PosInventoryView() {
           {filteredProducts.map((prod) => (
             <div
               key={prod.id}
-              className="flex flex-col justify-between rounded-2xl border border-slate-800/80 bg-[#121623] p-5"
+              className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-5"
             >
               <div>
                 <div className="flex items-center justify-between">
@@ -603,7 +603,7 @@ export function PosInventoryView() {
                     {prod.stock} {isAr ? 'متاح بالمخزن' : 'in stock'}
                   </span>
                 </div>
-                <h3 className="mt-2 text-sm font-extrabold text-white">
+                <h3 className="mt-2 text-sm font-extrabold text-slate-900 dark:text-white">
                   {isAr ? prod.nameAr : prod.nameEn}
                 </h3>
               </div>
@@ -626,16 +626,16 @@ export function PosInventoryView() {
       </div>
 
       {/* Live Shopping Cart Register */}
-      <div className="flex flex-col justify-between rounded-2xl border border-[#D4AF37]/40 bg-[#121623] p-6">
+      <div className="flex flex-col justify-between rounded-2xl border border-[#D4AF37]/40 bg-white p-6 shadow-sm dark:bg-[#121623]">
         <div>
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <ShoppingCart className="h-5 w-5 text-[#D4AF37]" />
-              <h2 className="text-base font-extrabold text-white">
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
                 {isAr ? 'سلة الكاشير الحالية' : 'Active POS Register Cart'}
               </h2>
             </div>
-            <span className="rounded-full bg-[#D4AF37]/20 px-2.5 py-0.5 text-xs font-extrabold text-[#F3E5AB]">
+            <span className="rounded-full bg-[#D4AF37]/20 px-2.5 py-0.5 text-xs font-extrabold text-amber-800 dark:text-[#F3E5AB]">
               {cart.reduce((s, c) => s + c.qty, 0)} {isAr ? 'قطع' : 'items'}
             </span>
           </div>
@@ -652,10 +652,10 @@ export function PosInventoryView() {
                 return (
                   <div
                     key={item.productId}
-                    className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/70 p-3"
+                    className="flex items-center justify-between rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/70 p-3"
                   >
                     <div>
-                      <p className="text-xs font-bold text-white">
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">
                         {isAr ? prod.nameAr : prod.nameEn}
                       </p>
                       <p className="font-mono text-xs text-[#D4AF37]">
@@ -693,7 +693,7 @@ export function PosInventoryView() {
               </select>
             </div>
 
-            <div className="space-y-1.5 text-xs text-slate-300">
+            <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
               <div className="flex justify-between">
                 <span>{isAr ? 'المجموع الفرعي:' : 'Subtotal:'}</span>
                 <span className="font-mono font-bold">{subtotal.toLocaleString()} EGP</span>
@@ -702,7 +702,7 @@ export function PosInventoryView() {
                 <span>{isAr ? 'ضريبة القيمة المضافة (14%):' : 'VAT (14%):'}</span>
                 <span className="font-mono font-bold">+{vat.toLocaleString()} EGP</span>
               </div>
-              <div className="flex justify-between pt-2 text-base font-extrabold text-white">
+              <div className="flex justify-between pt-2 text-base font-extrabold text-slate-900 dark:text-white">
                 <span>{isAr ? 'الإجمالي:' : 'Total:'}</span>
                 <span className="font-mono text-[#D4AF37]">{total.toLocaleString()} EGP</span>
               </div>
@@ -734,13 +734,13 @@ export function StaffTrainersView() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6">
-        <h1 className="text-xl font-extrabold text-white">
+      <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
+        <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
           {isAr
             ? 'إدارة المدربين، الموظفين، والعمولات الشهرية (Staff & Trainers)'
             : 'Coaching Staff, Shifts & PT Commission Performance'}
         </h1>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           {isAr
             ? 'متابعة محافظ المتدربين لكل كابتن، نسب العمولات، التقييمات، ومواعيد الورديات'
             : 'Track trainer client rosters, PT revenue commissions, member ratings, and branch shifts'}
@@ -753,17 +753,17 @@ export function StaffTrainersView() {
           return (
             <div
               key={s.id}
-              className="rounded-2xl border border-slate-800/80 bg-[#121623] p-6"
+              className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6"
             >
               <div className="flex items-start justify-between">
                 <div>
                   <span className="rounded-lg bg-[#D4AF37]/15 px-2.5 py-0.5 text-xs font-extrabold text-[#D4AF37]">
                     {s.role}
                   </span>
-                  <h3 className="mt-2 text-lg font-extrabold text-white">
+                  <h3 className="mt-2 text-lg font-extrabold text-slate-900 dark:text-white">
                     {isAr ? s.nameAr : s.nameEn}
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {isAr ? s.specialtyAr : s.specialtyEn}
                   </p>
                 </div>
@@ -775,11 +775,11 @@ export function StaffTrainersView() {
               <div className="mt-5 grid grid-cols-3 gap-2 border-t border-slate-800 pt-4 text-xs">
                 <div className="rounded-xl bg-slate-900/70 p-3">
                   <span className="text-slate-400">{isAr ? 'المتدربون' : 'Clients'}</span>
-                  <p className="mt-1 text-base font-extrabold text-white">{s.activeClients}</p>
+                  <p className="mt-1 text-base font-extrabold text-slate-900 dark:text-white">{s.activeClients}</p>
                 </div>
                 <div className="rounded-xl bg-slate-900/70 p-3">
                   <span className="text-slate-400">{isAr ? 'مبيعات الشهر' : 'PT Revenue'}</span>
-                  <p className="mt-1 font-mono text-sm font-extrabold text-white">
+                  <p className="mt-1 font-mono text-sm font-extrabold text-slate-900 dark:text-white">
                     {s.monthlyRevenueEgp.toLocaleString()} EGP
                   </p>
                 </div>
@@ -792,7 +792,7 @@ export function StaffTrainersView() {
                   </p>
                 </div>
               </div>
-              <p className="mt-3 text-xs text-slate-400">
+              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
                 {isAr ? `الوردية: ${s.shiftAr}` : `Shift: ${s.shiftEn}`} • {s.phone}
               </p>
             </div>
