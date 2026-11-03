@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type { SupportedLocale } from '@gymos/config';
-import { apiLogin, apiLogout, apiGetMe, apiRevokeSessions } from './api-client';
+import { apiLogin, apiLogout, apiGetMe, apiRevokeSessions, apiFetchSyncState, apiPushSyncAction } from './api-client';
 
 export type WorkspaceSection =
   | 'PUBLIC_STOREFRONT'
@@ -717,6 +717,86 @@ export function PlatformProvider({
   const activeTenantCustom =
     tenants.find((t) => t.slug === (currentUser?.tenantSlug || impersonatedTenant)) ?? null;
 
+  // Real-Time Multi-Device Sync Layer
+  useEffect(() => {
+    const tenantSlug = currentUser?.tenantSlug || 'titanfit-cairo';
+
+    // 1. Fetch initial remote state
+    apiFetchSyncState(tenantSlug)
+      .then((res) => {
+        if (res && res.success && res.data) {
+          if (Array.isArray(res.data.members) && res.data.members.length > 0) {
+            setMembers((prev) => {
+              const combined = [...res.data.members];
+              for (const p of prev) {
+                if (!combined.some((m: any) => m.id === p.id || m.code === p.code)) {
+                  combined.push(p);
+                }
+              }
+              return combined;
+            });
+          }
+          if (Array.isArray(res.data.plans) && res.data.plans.length > 0) {
+            setPlans((prev) => {
+              const combined = [...res.data.plans];
+              for (const p of prev) {
+                if (!combined.some((pl: any) => pl.id === p.id)) {
+                  combined.push(p);
+                }
+              }
+              return combined;
+            });
+          }
+          if (res.data.customBranding && Object.keys(res.data.customBranding).length > 0) {
+            setTenants((prev) =>
+              prev.map((t) =>
+                t.slug === tenantSlug
+                  ? { ...t, ...res.data.customBranding }
+                  : t
+              )
+            );
+          }
+        }
+      })
+      .catch(() => {});
+
+    // 2. Cross-tab Broadcast Channel listener
+    let channel: BroadcastChannel | null = null;
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        channel = new BroadcastChannel('titanfit_realtime_sync');
+        channel.onmessage = (event) => {
+          const { action, payload } = event.data || {};
+          if (action === 'ADD_MEMBER' && payload) {
+            setMembers((prev) => {
+              if (prev.some((m) => m.id === payload.id || m.code === payload.code)) return prev;
+              return [payload, ...prev];
+            });
+          } else if (action === 'ADD_PLAN' && payload) {
+            setPlans((prev) => {
+              if (prev.some((p) => p.id === payload.id)) return prev;
+              return [payload, ...prev];
+            });
+          } else if (action === 'RECORD_CHECKIN' && payload) {
+            setMembers((prev) =>
+              prev.map((m) =>
+                m.id === payload.memberId || m.code === payload.memberCode
+                  ? { ...m, checkInsCount: (m.checkInsCount || 0) + 1, lastCheckIn: 'Just now' }
+                  : m
+              )
+            );
+          }
+        };
+      }
+    } catch {
+      /* ignore */
+    }
+
+    return () => {
+      channel?.close();
+    };
+  }, [currentUser?.tenantSlug]);
+
   const login: PlatformStoreContextValue['login'] = async (email, password, gymSecretCode) => {
     const trimmed = (email || '').trim().toLowerCase();
     const cleanPass = (password || '').trim();
@@ -872,6 +952,13 @@ export function PlatformProvider({
     };
     setMembers((prev) => [newMember, ...prev]);
     appendAudit('MEMBER_CREATED_WITH_ENCRYPTED_HEALTH_VAULT', `${code} (${data.fullNameEn})`);
+    const tenantSlug = currentUser?.tenantSlug || 'titanfit-cairo';
+    apiPushSyncAction({ tenantSlug, action: 'ADD_MEMBER', payload: newMember }).catch(() => {});
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        new BroadcastChannel('titanfit_realtime_sync').postMessage({ action: 'ADD_MEMBER', payload: newMember });
+      }
+    } catch {}
     showToast(
       locale === 'ar'
         ? `تم تسجيل العضو ${newMember.fullNameAr} بنجاح برقم ${code}`
@@ -1009,6 +1096,13 @@ export function PlatformProvider({
     };
     setPlans((prev) => [newPlan, ...prev]);
     appendAudit('SUBSCRIPTION_PLAN_CREATED', `${newPlan.code} (${newPlan.priceEgp} EGP)`);
+    const tenantSlug = currentUser?.tenantSlug || 'titanfit-cairo';
+    apiPushSyncAction({ tenantSlug, action: 'ADD_PLAN', payload: newPlan }).catch(() => {});
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        new BroadcastChannel('titanfit_realtime_sync').postMessage({ action: 'ADD_PLAN', payload: newPlan });
+      }
+    } catch {}
     showToast(
       locale === 'ar'
         ? `تمت إضافة باقة الاشتراك "${newPlan.nameAr}" بنجاح`
@@ -1168,6 +1262,20 @@ export function PlatformProvider({
             : m,
         ),
       );
+      const tenantSlug = currentUser?.tenantSlug || 'titanfit-cairo';
+      apiPushSyncAction({
+        tenantSlug,
+        action: 'RECORD_CHECKIN',
+        payload: { memberId: member.id, memberCode: member.code },
+      }).catch(() => {});
+      try {
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          new BroadcastChannel('titanfit_realtime_sync').postMessage({
+            action: 'RECORD_CHECKIN',
+            payload: { memberId: member.id, memberCode: member.code },
+          });
+        }
+      } catch {}
     }
     appendAudit('TURNSTILE_ACCESS_DECISION', `${member.code}: ${decision} (${gateNameEn})`);
     showToast(

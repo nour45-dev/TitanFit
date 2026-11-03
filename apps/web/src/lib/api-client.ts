@@ -95,3 +95,45 @@ export async function apiRevokeSessions(): Promise<{ success: boolean; revokedCo
     return { success: false };
   }
 }
+
+export interface SyncActionPayload {
+  tenantSlug: string;
+  action:
+    | 'INIT_STATE'
+    | 'ADD_MEMBER'
+    | 'UPDATE_MEMBER'
+    | 'ADD_PLAN'
+    | 'RECORD_CHECKIN'
+    | 'RECORD_SALE'
+    | 'SET_BRANDING';
+  payload: any;
+}
+
+export async function apiFetchSyncState(tenantSlug: string, version = 0) {
+  try {
+    const res = await fetch(`/api/sync?tenantSlug=${encodeURIComponent(tenantSlug)}&version=${version}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function apiPushSyncAction(action: SyncActionPayload) {
+  try {
+    const res = await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(action),
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
