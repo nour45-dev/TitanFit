@@ -312,7 +312,7 @@ function TitanFitEnterpriseShell() {
         setActiveSection('OVERVIEW');
       }
     } else {
-      setLoginError(res.message || (isAr ? 'بيانات الدخول غير صحيحة' : 'Invalid credentials'));
+      setLoginError(isAr ? 'بيانات تسجيل الدخول غير صحيحة' : (res.message || 'Invalid credentials'));
     }
   };
 
@@ -328,7 +328,7 @@ function TitanFitEnterpriseShell() {
       setTraineeGymCode('');
       setLoginError('');
     } else {
-      setLoginError(res.message || (isAr ? 'كود الجيم غير صحيح' : 'Invalid gym code'));
+      setLoginError(isAr ? 'كود الجيم غير صحيح' : (res.message || 'Invalid gym code'));
     }
   };
 

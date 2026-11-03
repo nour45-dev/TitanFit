@@ -156,10 +156,20 @@ export async function POST(req: NextRequest) {
       return res;
     }
 
+    if (gymSecretCode) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'كود الجيم غير صحيح / Invalid gym code',
+        },
+        { status: 401 },
+      );
+    }
+
     return NextResponse.json(
       {
         success: false,
-        message: 'Invalid credentials. Please verify your login credentials.',
+        message: 'بيانات تسجيل الدخول غير صحيحة / Invalid credentials',
       },
       { status: 401 },
     );
