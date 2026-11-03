@@ -102,7 +102,10 @@ export interface SyncActionPayload {
     | 'INIT_STATE'
     | 'ADD_MEMBER'
     | 'UPDATE_MEMBER'
+    | 'DELETE_MEMBER'
     | 'ADD_PLAN'
+    | 'UPDATE_PLAN'
+    | 'DELETE_PLAN'
     | 'RECORD_CHECKIN'
     | 'RECORD_SALE'
     | 'SET_BRANDING';

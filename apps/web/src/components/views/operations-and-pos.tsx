@@ -8,6 +8,7 @@ import {
   Clock,
   Download,
   Dumbbell,
+  Edit3,
   Lock,
   Minus,
   Package,
@@ -29,6 +30,7 @@ import {
   type AccessLogItem,
   type ClassSessionItem,
   type InvoiceItem,
+  type PosProductItem,
   usePlatformStore,
 } from '../../lib/platform-store';
 
@@ -519,7 +521,7 @@ export function AccessControlTurnstilesView() {
 }
 
 export function PosInventoryView() {
-  const { locale, posProducts, members, completePosCheckout } = usePlatformStore();
+  const { locale, posProducts, members, completePosCheckout, addPosProduct, updatePosProduct, deletePosProduct } = usePlatformStore();
   const isAr = locale === 'ar';
 
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
@@ -528,6 +530,46 @@ export function PosInventoryView() {
   ]);
   const [selectedMemberId, setSelectedMemberId] = useState(members[0]?.id ?? 'mem-1001');
   const [paymentMethod, setPaymentMethod] = useState<InvoiceItem['method']>('INSTAPAY');
+
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<PosProductItem | null>(null);
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
+
+  // New Product Form State
+  const [newProdNameAr, setNewProdNameAr] = useState('');
+  const [newProdNameEn, setNewProdNameEn] = useState('');
+  const [newProdCategory, setNewProdCategory] = useState<PosProductItem['category']>('PROTEIN');
+  const [newProdPrice, setNewProdPrice] = useState(450);
+  const [newProdStock, setNewProdStock] = useState(25);
+  const [newProdSku, setNewProdSku] = useState('PROD-NEW');
+
+  const handleCreateProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProdNameAr.trim() && !newProdNameEn.trim()) return;
+    addPosProduct({
+      nameAr: newProdNameAr || newProdNameEn,
+      nameEn: newProdNameEn || newProdNameAr,
+      category: newProdCategory,
+      priceEgp: newProdPrice,
+      stock: newProdStock,
+      sku: newProdSku || `SKU-${Date.now().toString().slice(-4)}`,
+    });
+    setNewProdNameAr('');
+    setNewProdNameEn('');
+    setShowAddProductModal(false);
+  };
+
+  const handleUpdateProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    updatePosProduct(editingProduct.id, {
+      nameAr: editingProduct.nameAr,
+      nameEn: editingProduct.nameEn,
+      priceEgp: editingProduct.priceEgp,
+      stock: editingProduct.stock,
+    });
+    setEditingProduct(null);
+  };
 
   const addToCart = (productId: string) => {
     setCart((prev) => {
@@ -559,16 +601,28 @@ export function PosInventoryView() {
       {/* Product Catalog */}
       <div className="space-y-4 lg:col-span-2">
         <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
-          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
-            {isAr
-              ? 'نقطة بيع المكملات الغذائية والبار الرياضي (POS & Supplement Bar)'
-              : 'POS Register, Supplement Bar & Apparel Inventory'}
-          </h1>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            {isAr
-              ? 'بيع فوري للمشروبات والمكملات وملابس تيتان فيت مع خصم آلي من المخزون وإصدار فاتورة'
-              : 'Ring up protein shakes, supplements, and gear with atomic inventory stock deduction'}
-          </p>
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div>
+              <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
+                {isAr
+                  ? 'نقطة بيع المكملات الغذائية والبار الرياضي (POS & Supplement Bar)'
+                  : 'POS Register, Supplement Bar & Apparel Inventory'}
+              </h1>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                {isAr
+                  ? 'بيع فوري للمشروبات والمكملات وملابس تيتان فيت مع خصم آلي من المخزون وإصدار فاتورة'
+                  : 'Ring up protein shakes, supplements, and gear with atomic inventory stock deduction'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAddProductModal(true)}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#D4AF37] px-3.5 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400"
+            >
+              <Plus className="h-4 w-4" />
+              {isAr ? '+ إضافة مكمل جديد' : '+ Add Supplement'}
+            </button>
+          </div>
 
           <div className="mt-4 flex flex-wrap gap-1.5">
             {(['ALL', 'PROTEIN', 'PRE_WORKOUT', 'DRINKS', 'APPAREL', 'ACCESSORIES'] as const).map(
@@ -580,7 +634,7 @@ export function PosInventoryView() {
                   className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
                     categoryFilter === cat
                       ? 'bg-[#D4AF37] text-slate-950'
-                      : 'border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 text-slate-300'
+                      : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
                   }`}
                 >
                   {cat}
@@ -594,12 +648,12 @@ export function PosInventoryView() {
           {filteredProducts.map((prod) => (
             <div
               key={prod.id}
-              className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-5"
+              className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-5 shadow-xs"
             >
               <div>
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-xs font-bold text-slate-400">{prod.sku}</span>
-                  <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-300">
+                  <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-300">
                     {prod.stock} {isAr ? 'متاح بالمخزن' : 'in stock'}
                   </span>
                 </div>
@@ -607,18 +661,36 @@ export function PosInventoryView() {
                   {isAr ? prod.nameAr : prod.nameEn}
                 </h3>
               </div>
-              <div className="mt-4 flex items-center justify-between border-t border-slate-800 pt-3">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 dark:border-slate-800 pt-3">
                 <span className="font-mono text-lg font-extrabold text-[#D4AF37]">
                   {prod.priceEgp.toLocaleString()} EGP
                 </span>
-                <button
-                  type="button"
-                  onClick={() => addToCart(prod.id)}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#D4AF37] px-3.5 py-2 text-xs font-extrabold text-slate-950"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  {isAr ? 'أضف للسلة' : 'Add to Cart'}
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setEditingProduct(prod)}
+                    title={isAr ? 'تعديل السعر والمخزون' : 'Edit Product'}
+                    className="rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800 p-2 text-slate-700 dark:text-slate-300 hover:border-[#D4AF37]"
+                  >
+                    <Edit3 className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeletingProductId(prod.id)}
+                    title={isAr ? 'حذف المنتج' : 'Delete Product'}
+                    className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-2 text-rose-500 hover:bg-rose-500/20"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addToCart(prod.id)}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#D4AF37] px-3.5 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    {isAr ? 'أضف للسلة' : 'Add to Cart'}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -717,13 +789,248 @@ export function PosInventoryView() {
             completePosCheckout(cart, paymentMethod, selectedMemberId);
             setCart([]);
           }}
-          className="mt-5 w-full rounded-xl bg-[#D4AF37] py-3 text-xs font-extrabold text-slate-950 disabled:opacity-40"
+          className="mt-5 w-full rounded-xl bg-[#D4AF37] py-3 text-xs font-extrabold text-slate-950 disabled:opacity-40 hover:bg-amber-400"
         >
           {isAr
             ? `إتمام البيع وخصم المخزون (${total.toLocaleString()} ج.م)`
             : `Complete POS Sale (EGP ${total.toLocaleString()})`}
         </button>
       </div>
+
+      {/* Add Product Modal */}
+      {showAddProductModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-extrabold">
+                {isAr ? 'إضافة منتج أو مكمل جديد للمخزون' : 'Add New Inventory Product'}
+              </h3>
+              <button type="button" onClick={() => setShowAddProductModal(false)}>
+                <X className="h-5 w-5 text-slate-400" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateProduct} className="mt-4 space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'اسم المنتج بالعربية' : 'Product Name (Arabic)'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="مثال: واي بروتين أيزوليت 2 كجم"
+                  value={newProdNameAr}
+                  onChange={(e) => setNewProdNameAr(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'اسم المنتج بالإنجليزية' : 'Product Name (English)'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Gold Standard 100% Whey Isolate 2kg"
+                  value={newProdNameEn}
+                  onChange={(e) => setNewProdNameEn(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'القسم' : 'Category'}
+                  </label>
+                  <select
+                    value={newProdCategory}
+                    onChange={(e) => setNewProdCategory(e.target.value as PosProductItem['category'])}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  >
+                    <option value="PROTEIN">PROTEIN (بروتين)</option>
+                    <option value="PRE_WORKOUT">PRE_WORKOUT (طاقة وتركيز)</option>
+                    <option value="DRINKS">DRINKS (مشروبات وبار)</option>
+                    <option value="APPAREL">APPAREL (ملابس وأحزمة)</option>
+                    <option value="ACCESSORIES">ACCESSORIES (شيكر ومستلزمات)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'كود المخزن SKU' : 'SKU Code'}
+                  </label>
+                  <input
+                    type="text"
+                    value={newProdSku}
+                    onChange={(e) => setNewProdSku(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'السعر (ج.م)' : 'Price (EGP)'}
+                  </label>
+                  <input
+                    type="number"
+                    value={newProdPrice}
+                    onChange={(e) => setNewProdPrice(Number(e.target.value))}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'الكمية المتاحة بالمخزن' : 'Stock Quantity'}
+                  </label>
+                  <input
+                    type="number"
+                    value={newProdStock}
+                    onChange={(e) => setNewProdStock(Number(e.target.value))}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowAddProductModal(false)}
+                  className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                >
+                  {isAr ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-[#D4AF37] px-4 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400"
+                >
+                  {isAr ? 'إضافة المنتج' : 'Add Product'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Product Modal */}
+      {editingProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-extrabold">
+                {isAr ? `تعديل منتج (${editingProduct.sku})` : `Edit Product (${editingProduct.sku})`}
+              </h3>
+              <button type="button" onClick={() => setEditingProduct(null)}>
+                <X className="h-5 w-5 text-slate-400" />
+              </button>
+            </div>
+            <form onSubmit={handleUpdateProduct} className="mt-4 space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'اسم المنتج (عربي)' : 'Product Name (Arabic)'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editingProduct.nameAr}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, nameAr: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'اسم المنتج (إنجليزي)' : 'Product Name (English)'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editingProduct.nameEn}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, nameEn: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'السعر (ج.م)' : 'Price (EGP)'}
+                  </label>
+                  <input
+                    type="number"
+                    value={editingProduct.priceEgp}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, priceEgp: Number(e.target.value) })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'المخزون المتوفر' : 'Stock Qty'}
+                  </label>
+                  <input
+                    type="number"
+                    value={editingProduct.stock}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingProduct(null)}
+                  className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                >
+                  {isAr ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-[#D4AF37] px-4 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400"
+                >
+                  {isAr ? 'تحديث المنتج' : 'Update Product'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Product Confirmation Modal */}
+      {deletingProductId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-rose-500/40 bg-white p-6 text-slate-900 shadow-2xl dark:border-rose-500/40 dark:bg-[#121623] dark:text-white">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/15 text-rose-500">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  {isAr ? 'تأكيد حذف المنتج' : 'Confirm Product Deletion'}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {isAr
+                    ? 'هل أنت متأكد من حذف هذا المنتج نهائياً من نقطة البيع والمخزون؟'
+                    : 'Are you sure you want to delete this product from POS inventory?'}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeletingProductId(null)}
+                className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              >
+                {isAr ? 'إلغاء' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deletePosProduct(deletingProductId);
+                  setDeletingProductId(null);
+                }}
+                className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-extrabold text-white hover:bg-rose-700"
+              >
+                {isAr ? 'نعم، احذف المنتج' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

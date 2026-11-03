@@ -9,8 +9,10 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
+  Copy,
   CreditCard,
   Download,
+  Edit3,
   Eye,
   Filter,
   HeartPulse,
@@ -27,6 +29,7 @@ import {
   ShieldCheck,
   Sparkles,
   Tag,
+  Trash2,
   TrendingUp,
   UserCheck,
   UserPlus,
@@ -494,8 +497,11 @@ export function MembersCrmView() {
     branches,
     selectedBranchId,
     addMember,
+    updateMember,
+    deleteMember,
     toggleMemberFreeze,
     simulateGateScan,
+    showToast,
   } = usePlatformStore();
   const isAr = locale === 'ar';
 
@@ -503,6 +509,9 @@ export function MembersCrmView() {
   const [statusFilter, setStatusFilter] = useState<'ALL' | MemberItem['status']>('ALL');
   const [selectedMember, setSelectedMember] = useState<MemberItem | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingMember, setEditingMember] = useState<MemberItem | null>(null);
+  const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
+  const [newlyCreatedMember, setNewlyCreatedMember] = useState<MemberItem | null>(null);
 
   // Add Member Form State
   const [fullNameEn, setFullNameEn] = useState('');
@@ -533,7 +542,7 @@ export function MembersCrmView() {
   const handleCreateMember = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullNameEn.trim() && !fullNameAr.trim()) return;
-    addMember({
+    const created = addMember({
       fullNameEn: fullNameEn || fullNameAr,
       fullNameAr: fullNameAr || fullNameEn,
       phone,
@@ -550,6 +559,24 @@ export function MembersCrmView() {
     setFullNameAr('');
     setMedicalConditions('');
     setShowAddModal(false);
+    setNewlyCreatedMember(created);
+  };
+
+  const handleUpdateMember = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember) return;
+    const selectedPlan = plans.find((p) => p.id === editingMember.planId);
+    updateMember(editingMember.id, {
+      fullNameAr: editingMember.fullNameAr,
+      fullNameEn: editingMember.fullNameEn,
+      phone: editingMember.phone,
+      email: editingMember.email,
+      planId: editingMember.planId,
+      planNameAr: selectedPlan?.nameAr || editingMember.planNameAr,
+      planNameEn: selectedPlan?.nameEn || editingMember.planNameEn,
+      status: editingMember.status,
+    });
+    setEditingMember(null);
   };
 
   return (
@@ -632,7 +659,7 @@ export function MembersCrmView() {
       <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623]">
         <div className="overflow-x-auto">
           <table className="w-full text-start text-sm">
-            <thead className="border-b border-slate-800 bg-slate-900/80 text-xs uppercase text-slate-400">
+            <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-400">
               <tr>
                 <th className="px-4 py-3.5 text-start">{isAr ? 'العضو' : 'Member'}</th>
                 <th className="px-4 py-3.5 text-start">{isAr ? 'الباقة الحالية' : 'Subscription Plan'}</th>
@@ -642,9 +669,9 @@ export function MembersCrmView() {
                 <th className="px-4 py-3.5 text-end">{isAr ? 'إجراءات سريعة' : 'Actions'}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
               {filteredMembers.map((m) => (
-                <tr key={m.id} className="transition hover:bg-slate-900/40">
+                <tr key={m.id} className="transition hover:bg-slate-50 dark:hover:bg-slate-900/40">
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D4AF37]/15 font-extrabold text-[#D4AF37]">
@@ -661,7 +688,7 @@ export function MembersCrmView() {
                     </div>
                   </td>
                   <td className="px-4 py-3.5">
-                    <p className="font-semibold text-slate-200">
+                    <p className="font-semibold text-slate-900 dark:text-slate-200">
                       {isAr ? m.planNameAr : m.planNameEn}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -674,12 +701,12 @@ export function MembersCrmView() {
                     <span
                       className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-extrabold ${
                         m.status === 'ACTIVE'
-                          ? 'bg-emerald-500/15 text-emerald-300'
+                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300'
                           : m.status === 'FROZEN'
-                            ? 'bg-sky-500/15 text-sky-300'
+                            ? 'bg-sky-500/15 text-sky-600 dark:text-sky-300'
                             : m.status === 'EXPIRING_SOON'
-                              ? 'bg-amber-500/15 text-amber-300'
-                              : 'bg-rose-500/15 text-rose-300'
+                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300'
+                              : 'bg-rose-500/15 text-rose-600 dark:text-rose-300'
                       }`}
                     >
                       {m.status}
@@ -699,14 +726,22 @@ export function MembersCrmView() {
                       <button
                         type="button"
                         onClick={() => setSelectedMember(m)}
-                        className="rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1.5 text-xs font-bold text-slate-900 dark:text-white hover:border-[#D4AF37]"
+                        className="rounded-lg border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800/80 px-2.5 py-1.5 text-xs font-bold text-slate-700 dark:text-white hover:border-[#D4AF37]"
                       >
                         {isAr ? 'ملف 360°' : '360° Profile'}
                       </button>
                       <button
                         type="button"
+                        onClick={() => setEditingMember(m)}
+                        title={isAr ? 'تعديل بيانات العضو' : 'Edit Member'}
+                        className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-1.5 text-xs font-bold text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
+                      >
+                        <Edit3 className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => toggleMemberFreeze(m.id, 14)}
-                        className="rounded-lg border border-sky-500/30 bg-sky-500/10 px-2.5 py-1.5 text-xs font-bold text-sky-300 hover:bg-sky-500/20"
+                        className="rounded-lg border border-sky-500/30 bg-sky-500/10 px-2.5 py-1.5 text-xs font-bold text-sky-600 dark:text-sky-300 hover:bg-sky-500/20"
                       >
                         {m.status === 'FROZEN'
                           ? isAr
@@ -725,9 +760,17 @@ export function MembersCrmView() {
                             'بوابة الاستقبال السريعة',
                           )
                         }
-                        className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20"
+                        className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-300 hover:bg-emerald-500/20"
                       >
                         {isAr ? 'دخول QR' : 'Check-in'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeletingMemberId(m.id)}
+                        title={isAr ? 'حذف العضو' : 'Delete Member'}
+                        className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-500/20"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </td>
@@ -742,7 +785,7 @@ export function MembersCrmView() {
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
           <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
               <div>
                 <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
                   {isAr ? 'تسجيل عضو جديد + تشفير الملف الصحي' : 'Register New Member + AES-256 Health Vault'}
@@ -764,7 +807,7 @@ export function MembersCrmView() {
 
             <form onSubmit={handleCreateMember} className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-bold text-slate-300">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                   {isAr ? 'الاسم الكامل (عربي)' : 'Full Name (Arabic)'}
                 </label>
                 <input
@@ -773,11 +816,11 @@ export function MembersCrmView() {
                   value={fullNameAr}
                   onChange={(e) => setFullNameAr(e.target.value)}
                   placeholder="مثال: كريم وائل المنياوي"
-                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-300">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                   {isAr ? 'الاسم الكامل (إنجليزي)' : 'Full Name (English)'}
                 </label>
                 <input
@@ -786,11 +829,11 @@ export function MembersCrmView() {
                   value={fullNameEn}
                   onChange={(e) => setFullNameEn(e.target.value)}
                   placeholder="e.g. Karim Wael El-Miniawy"
-                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-300">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                   {isAr ? 'رقم الموبايل المصري (+20)' : 'Phone Number (+20)'}
                 </label>
                 <input
@@ -798,11 +841,11 @@ export function MembersCrmView() {
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-sm text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-300">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                   {isAr ? 'البريد الإلكتروني' : 'Email Address'}
                 </label>
                 <input
@@ -810,11 +853,11 @@ export function MembersCrmView() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="karim@titanfit.eg"
-                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 />
               </div>
               <div>
-                <label htmlFor="member-plan-select" className="block text-xs font-bold text-slate-300">
+                <label htmlFor="member-plan-select" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                   {isAr ? 'باقة الاشتراك' : 'Subscription Plan'}
                 </label>
                 <select
@@ -822,7 +865,7 @@ export function MembersCrmView() {
                   aria-label={isAr ? 'باقة الاشتراك' : 'Subscription Plan'}
                   value={planId}
                   onChange={(e) => setPlanId(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 >
                   {plans.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -832,7 +875,7 @@ export function MembersCrmView() {
                 </select>
               </div>
               <div>
-                <label htmlFor="member-branch-select" className="block text-xs font-bold text-slate-300">
+                <label htmlFor="member-branch-select" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                   {isAr ? 'الفرع الأساسي' : 'Home Branch'}
                 </label>
                 <select
@@ -840,7 +883,7 @@ export function MembersCrmView() {
                   aria-label={isAr ? 'الفرع الأساسي' : 'Home Branch'}
                   value={branchId}
                   onChange={(e) => setBranchId(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 >
                   {branches.map((b) => (
                     <option key={b.id} value={b.id}>
@@ -850,7 +893,7 @@ export function MembersCrmView() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-300">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                   {isAr ? 'اسم قريب للطوارئ' : 'Emergency Contact Name'}
                 </label>
                 <input
@@ -858,11 +901,11 @@ export function MembersCrmView() {
                   value={emergencyContactName}
                   onChange={(e) => setEmergencyContactName(e.target.value)}
                   placeholder={isAr ? 'وائل المنياوي' : 'Wael El-Miniawy'}
-                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-300">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                   {isAr ? 'فصيلة الدم والنوع' : 'Blood Type & Gender'}
                 </label>
                 <div className="mt-1 flex gap-2">
@@ -870,7 +913,7 @@ export function MembersCrmView() {
                     aria-label={isAr ? 'النوع' : 'Gender'}
                     value={gender}
                     onChange={(e) => setGender(e.target.value as 'MALE' | 'FEMALE')}
-                    className="w-1/2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+                    className="w-1/2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                   >
                     <option value="MALE">{isAr ? 'ذكر' : 'Male'}</option>
                     <option value="FEMALE">{isAr ? 'أنثى' : 'Female'}</option>
@@ -879,7 +922,7 @@ export function MembersCrmView() {
                     aria-label={isAr ? 'فصيلة الدم' : 'Blood Type'}
                     value={bloodType}
                     onChange={(e) => setBloodType(e.target.value)}
-                    className="w-1/2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+                    className="w-1/2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                   >
                     {['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'].map((bt) => (
                       <option key={bt} value={bt}>
@@ -890,7 +933,7 @@ export function MembersCrmView() {
                 </div>
               </div>
               <div className="sm:col-span-2">
-                <label className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                   <Lock className="h-3.5 w-3.5" />
                   {isAr
                     ? 'ملاحظات طبية أو إصابات (تُشفر بمعيار AES-256-GCM)'
@@ -905,7 +948,7 @@ export function MembersCrmView() {
                       ? 'لا توجد أمراض مزمنة — لائق للتمرين الرياضي الكامل'
                       : 'Cleared for full strength & conditioning'
                   }
-                  className="mt-1 w-full rounded-xl border border-emerald-500/30 bg-slate-900 px-3 py-2 text-sm text-white"
+                  className="mt-1 w-full rounded-xl border border-emerald-500/30 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:bg-slate-900 dark:text-white"
                 />
               </div>
 
@@ -913,18 +956,289 @@ export function MembersCrmView() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-bold text-slate-300"
+                  className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                 >
                   {isAr ? 'إلغاء' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-[#D4AF37] px-5 py-2 text-xs font-extrabold text-slate-950"
+                  className="rounded-xl bg-[#D4AF37] px-5 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400"
                 >
                   {isAr ? 'حفظ وتفعيل العضوية فوراً' : 'Save & Activate Membership'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Member Modal */}
+      {editingMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Edit3 className="h-5 w-5 text-[#D4AF37]" />
+                <h3 className="text-base font-extrabold">
+                  {isAr ? `تعديل بيانات العضو (${editingMember.code})` : `Edit Member (${editingMember.code})`}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingMember(null)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateMember} className="mt-4 space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'الاسم بالكامل (عربي)' : 'Full Name (Arabic)'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editingMember.fullNameAr}
+                  onChange={(e) => setEditingMember({ ...editingMember, fullNameAr: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'الاسم بالكامل (إنجليزي)' : 'Full Name (English)'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editingMember.fullNameEn}
+                  onChange={(e) => setEditingMember({ ...editingMember, fullNameEn: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'رقم الهاتف' : 'Phone'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editingMember.phone}
+                    onChange={(e) => setEditingMember({ ...editingMember, phone: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'البريد الإلكتروني' : 'Email'}
+                  </label>
+                  <input
+                    type="email"
+                    value={editingMember.email}
+                    onChange={(e) => setEditingMember({ ...editingMember, email: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'الباقة الحالية' : 'Subscription Plan'}
+                  </label>
+                  <select
+                    value={editingMember.planId}
+                    onChange={(e) => setEditingMember({ ...editingMember, planId: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  >
+                    {plans.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {isAr ? p.nameAr : p.nameEn}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'حالة العضوية' : 'Status'}
+                  </label>
+                  <select
+                    value={editingMember.status}
+                    onChange={(e) => setEditingMember({ ...editingMember, status: e.target.value as MemberItem['status'] })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  >
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="FROZEN">FROZEN</option>
+                    <option value="EXPIRING_SOON">EXPIRING_SOON</option>
+                    <option value="EXPIRED">EXPIRED</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-4 flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingMember(null)}
+                  className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                >
+                  {isAr ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-[#D4AF37] px-5 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400"
+                >
+                  {isAr ? 'حفظ التعديلات' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Member Confirmation Modal */}
+      {deletingMemberId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-rose-500/40 bg-white p-6 text-slate-900 shadow-2xl dark:border-rose-500/40 dark:bg-[#121623] dark:text-white">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/15 text-rose-500">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  {isAr ? 'تأكيد حذف العضو' : 'Confirm Member Deletion'}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {isAr
+                    ? 'هل أنت متأكد من حذف هذا العضو نهائياً؟ هذا الإجراء لا يمكن التراجع عنه.'
+                    : 'Are you sure you want to delete this member? This action cannot be undone.'}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeletingMemberId(null)}
+                className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              >
+                {isAr ? 'إلغاء' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteMember(deletingMemberId);
+                  setDeletingMemberId(null);
+                }}
+                className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-extrabold text-white hover:bg-rose-700"
+              >
+                {isAr ? 'نعم، احذف العضو' : 'Yes, Delete Member'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Newly Registered Member Welcome Pass Modal */}
+      {newlyCreatedMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-3xl border-2 border-[#D4AF37] bg-white p-6 text-slate-900 shadow-2xl dark:border-[#D4AF37] dark:bg-[#121623] dark:text-white">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-[#D4AF37]" />
+                <h3 className="text-base font-black">
+                  {isAr ? '🎉 كارت دخول وبيانات المتدرب الجديد' : 'New Member Access Pass & Credentials'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNewlyCreatedMember(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-4 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#D4AF37]/20 font-black text-xl text-[#D4AF37]">
+                {newlyCreatedMember.avatarInitials}
+              </div>
+              <h4 className="mt-2 text-lg font-black text-slate-900 dark:text-white">
+                {isAr ? newlyCreatedMember.fullNameAr : newlyCreatedMember.fullNameEn}
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {isAr ? newlyCreatedMember.planNameAr : newlyCreatedMember.planNameEn}
+              </p>
+
+              {/* Credentials Box */}
+              <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-start font-mono text-xs dark:border-slate-800 dark:bg-slate-900/80">
+                <div className="flex items-center justify-between py-1 border-b border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-500">{isAr ? 'كود العضوية:' : 'Member Code:'}</span>
+                  <span className="font-black text-[#D4AF37] text-sm">{newlyCreatedMember.code}</span>
+                </div>
+                <div className="flex items-center justify-between py-1 border-b border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-500">{isAr ? 'رقم الهاتف:' : 'Phone:'}</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{newlyCreatedMember.phone}</span>
+                </div>
+                <div className="flex items-center justify-between py-1">
+                  <span className="text-slate-500">{isAr ? 'كلمة المرور المؤقتة:' : 'Temp Password:'}</span>
+                  <span className="font-black text-emerald-600 dark:text-emerald-400 text-sm bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                    {newlyCreatedMember.tempPassword || 'TF@2026'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Digital QR Code */}
+              <div className="mx-auto my-4 flex h-36 w-36 flex-col items-center justify-center rounded-2xl border-2 border-[#D4AF37] bg-white p-2 text-slate-950 shadow-md">
+                <QrCode className="h-24 w-24 text-slate-950" />
+                <span className="mt-1 font-mono text-[9px] font-extrabold tracking-widest">
+                  {newlyCreatedMember.code}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                {isAr
+                  ? 'يمكن للمتدرب استخدام هذا الكود وكلمة المرور للدخول لمنصة التمارين أو إظهار الـ QR عند البوابة'
+                  : 'Member can log into the PWA portal using this password or scan at the turnstiles'}
+              </p>
+
+              {/* Action Buttons */}
+              <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = `🎉 أهلاً بك في TitanFit!\nتم تفعيل اشتراكك بنجاح:\n👤 الاسم: ${newlyCreatedMember.fullNameAr}\n🆔 كود العضوية: ${newlyCreatedMember.code}\n🔑 كلمة المرور المؤقتة: ${newlyCreatedMember.tempPassword || 'TF@2026'}\n🌐 رابط تسجيل الدخول: https://titanfit.up.railway.app/\n\nيمكنك تسجيل الدخول ومتابعة جدول تمارينك ونظامك الغذائي وكارت البوابة الذكي!`;
+                    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                      navigator.clipboard.writeText(text);
+                    }
+                    showToast(isAr ? 'تم نسخ بيانات الدخول إلى الحافظة' : 'Copied credentials to clipboard');
+                  }}
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:border-[#D4AF37]"
+                >
+                  <Copy className="h-3.5 w-3.5 text-[#D4AF37]" />
+                  <span>{isAr ? 'نسخ البيانات' : 'Copy'}</span>
+                </button>
+
+                <a
+                  href={`https://wa.me/${newlyCreatedMember.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                    `🎉 أهلاً بك في TitanFit!\nتم تفعيل اشتراكك بنجاح:\n👤 الاسم: ${newlyCreatedMember.fullNameAr}\n🆔 كود العضوية: ${newlyCreatedMember.code}\n🔑 كلمة المرور: ${newlyCreatedMember.tempPassword || 'TF@2026'}\n🌐 رابط المنصة: https://titanfit.up.railway.app/`,
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-extrabold text-white hover:bg-emerald-700"
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  <span>{isAr ? 'إرسال واتساب' : 'WhatsApp'}</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 rounded-xl bg-[#D4AF37] px-3 py-2 text-xs font-black text-slate-950 hover:bg-amber-400"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  <span>{isAr ? 'طباعة الكارت' : 'Print Pass'}</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1042,9 +1356,12 @@ export function MembersCrmView() {
 }
 
 export function SubscriptionsView() {
-  const { locale, plans, members, createPlan, toggleMemberFreeze } = usePlatformStore();
+  const { locale, plans, members, createPlan, updatePlan, deletePlan, toggleMemberFreeze } = usePlatformStore();
   const isAr = locale === 'ar';
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<PlanItem | null>(null);
+  const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
+
   const [nameEn, setNameEn] = useState('');
   const [nameAr, setNameAr] = useState('');
   const [type, setType] = useState<PlanItem['type']>('DURATION');
@@ -1066,6 +1383,19 @@ export function SubscriptionsView() {
     setNameEn('');
     setNameAr('');
     setShowPlanModal(false);
+  };
+
+  const handleUpdatePlan = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPlan) return;
+    updatePlan(editingPlan.id, {
+      nameAr: editingPlan.nameAr,
+      nameEn: editingPlan.nameEn,
+      priceEgp: editingPlan.priceEgp,
+      durationDays: editingPlan.durationDays,
+      maxFreezeDays: editingPlan.maxFreezeDays,
+    });
+    setEditingPlan(null);
   };
 
   return (
@@ -1108,10 +1438,10 @@ export function SubscriptionsView() {
               </span>
             )}
             <div className="flex items-center justify-between">
-              <span className="rounded-lg bg-slate-800 px-2.5 py-1 font-mono text-xs font-bold text-[#F3E5AB]">
+              <span className="rounded-lg bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-[#F3E5AB] px-2.5 py-1 font-mono text-xs font-bold">
                 {p.code}
               </span>
-              <span className="text-xs font-semibold text-slate-400">{p.type}</span>
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{p.type}</span>
             </div>
             <h3 className="mt-3 text-base font-extrabold text-slate-900 dark:text-white">
               {isAr ? p.nameAr : p.nameEn}
@@ -1124,7 +1454,7 @@ export function SubscriptionsView() {
                 EGP / {p.durationDays} {isAr ? 'يوم' : 'days'}
               </span>
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-800/80 pt-4 text-xs text-slate-600 dark:text-slate-300">
+            <div className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-200 dark:border-slate-800/80 pt-4 text-xs text-slate-600 dark:text-slate-300">
               <div>
                 <span className="text-slate-500">{isAr ? 'أقصى تجميد:' : 'Max Freeze:'}</span>{' '}
                 <strong>{p.maxFreezeDays}d</strong>
@@ -1135,8 +1465,25 @@ export function SubscriptionsView() {
               </div>
               <div className="col-span-2">
                 <span className="text-slate-500">{isAr ? 'المشتركون النشطون:' : 'Active Subscribers:'}</span>{' '}
-                <strong className="text-emerald-400">{p.activeSubscribers}</strong>
+                <strong className="text-emerald-500 dark:text-emerald-400">{p.activeSubscribers}</strong>
               </div>
+            </div>
+
+            <div className="mt-4 flex items-center justify-end gap-2 border-t border-slate-200 dark:border-slate-800/80 pt-3">
+              <button
+                type="button"
+                onClick={() => setEditingPlan(p)}
+                className="rounded-lg border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#D4AF37]"
+              >
+                {isAr ? 'تعديل الباقة' : 'Edit Plan'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeletingPlanId(p.id)}
+                className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-500/20"
+              >
+                {isAr ? 'حذف' : 'Delete'}
+              </button>
             </div>
           </div>
         ))}
@@ -1153,10 +1500,10 @@ export function SubscriptionsView() {
             { code: 'TITAN15', pct: '15% OFF', descEn: 'Member referral reward discount code', descAr: 'خصم ١٥٪ عند ترشيح صديق جديد للنادي' },
             { code: 'CORPORATE25', pct: '25% OFF', descEn: 'CIB, Vodafone & Banque Misr corporate partner rate', descAr: 'خصم ٢٥٪ لموظفي الشركات والبنوك المتعاقدة' },
           ].map((cp) => (
-            <div key={cp.code} className="rounded-xl border border-dashed border-[#D4AF37]/40 bg-slate-900/60 p-4">
+            <div key={cp.code} className="rounded-xl border border-dashed border-[#D4AF37]/40 bg-slate-50 dark:bg-slate-900/60 p-4">
               <div className="flex items-center justify-between">
                 <span className="font-mono text-sm font-extrabold text-[#D4AF37]">{cp.code}</span>
-                <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-extrabold text-emerald-300">
+                <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-extrabold text-emerald-600 dark:text-emerald-300">
                   {cp.pct}
                 </span>
               </div>
@@ -1170,7 +1517,7 @@ export function SubscriptionsView() {
       {showPlanModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-extrabold">
                 {isAr ? 'إنشاء باقة اشتراك جديدة' : 'Create New Subscription Plan'}
               </h3>
@@ -1185,7 +1532,7 @@ export function SubscriptionsView() {
                 placeholder={isAr ? 'اسم الباقة بالعربية (مثال: باقة 6 شهور بلس)' : 'Plan Name (Arabic)'}
                 value={nameAr}
                 onChange={(e) => setNameAr(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               />
               <input
                 type="text"
@@ -1193,34 +1540,34 @@ export function SubscriptionsView() {
                 placeholder="Plan Name (English, e.g. 6-Month Semi-Annual Pro)"
                 value={nameEn}
                 onChange={(e) => setNameEn(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               />
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="text-[11px] text-slate-400">{isAr ? 'السعر (ج.م)' : 'Price (EGP)'}</label>
+                  <label className="text-[11px] text-slate-600 dark:text-slate-400">{isAr ? 'السعر (ج.م)' : 'Price (EGP)'}</label>
                   <input
                     type="number"
                     value={priceEgp}
                     onChange={(e) => setPriceEgp(Number(e.target.value))}
-                    className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-slate-400">{isAr ? 'المدة (يوم)' : 'Duration (Days)'}</label>
+                  <label className="text-[11px] text-slate-600 dark:text-slate-400">{isAr ? 'المدة (يوم)' : 'Duration (Days)'}</label>
                   <input
                     type="number"
                     value={durationDays}
                     onChange={(e) => setDurationDays(Number(e.target.value))}
-                    className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-slate-400">{isAr ? 'أيام التجميد' : 'Freeze Days'}</label>
+                  <label className="text-[11px] text-slate-600 dark:text-slate-400">{isAr ? 'أيام التجميد' : 'Freeze Days'}</label>
                   <input
                     type="number"
                     value={maxFreezeDays}
                     onChange={(e) => setMaxFreezeDays(Number(e.target.value))}
-                    className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -1228,18 +1575,136 @@ export function SubscriptionsView() {
                 <button
                   type="button"
                   onClick={() => setShowPlanModal(false)}
-                  className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-bold"
+                  className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                 >
                   {isAr ? 'إلغاء' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-[#D4AF37] px-4 py-2 text-xs font-extrabold text-slate-950"
+                  className="rounded-xl bg-[#D4AF37] px-4 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400"
                 >
                   {isAr ? 'حفظ الباقة' : 'Save Plan'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Plan Modal */}
+      {editingPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-extrabold">
+                {isAr ? `تعديل باقة (${editingPlan.code})` : `Edit Plan (${editingPlan.code})`}
+              </h3>
+              <button type="button" onClick={() => setEditingPlan(null)}>
+                <X className="h-5 w-5 text-slate-400" />
+              </button>
+            </div>
+            <form onSubmit={handleUpdatePlan} className="mt-4 space-y-3">
+              <input
+                type="text"
+                required
+                value={editingPlan.nameAr}
+                onChange={(e) => setEditingPlan({ ...editingPlan, nameAr: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              />
+              <input
+                type="text"
+                required
+                value={editingPlan.nameEn}
+                onChange={(e) => setEditingPlan({ ...editingPlan, nameEn: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              />
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="text-[11px] text-slate-600 dark:text-slate-400">{isAr ? 'السعر (ج.م)' : 'Price (EGP)'}</label>
+                  <input
+                    type="number"
+                    value={editingPlan.priceEgp}
+                    onChange={(e) => setEditingPlan({ ...editingPlan, priceEgp: Number(e.target.value) })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-slate-600 dark:text-slate-400">{isAr ? 'المدة (يوم)' : 'Duration (Days)'}</label>
+                  <input
+                    type="number"
+                    value={editingPlan.durationDays}
+                    onChange={(e) => setEditingPlan({ ...editingPlan, durationDays: Number(e.target.value) })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-slate-600 dark:text-slate-400">{isAr ? 'أيام التجميد' : 'Freeze Days'}</label>
+                  <input
+                    type="number"
+                    value={editingPlan.maxFreezeDays}
+                    onChange={(e) => setEditingPlan({ ...editingPlan, maxFreezeDays: Number(e.target.value) })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingPlan(null)}
+                  className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                >
+                  {isAr ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-[#D4AF37] px-4 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400"
+                >
+                  {isAr ? 'تحديث الباقة' : 'Update Plan'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Plan Confirmation Modal */}
+      {deletingPlanId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-rose-500/40 bg-white p-6 text-slate-900 shadow-2xl dark:border-rose-500/40 dark:bg-[#121623] dark:text-white">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/15 text-rose-500">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  {isAr ? 'تأكيد حذف باقة الاشتراك' : 'Confirm Plan Deletion'}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {isAr
+                    ? 'هل أنت متأكد من حذف هذه الباقة؟ لن يتمكن الأعضاء الجدد من الاشتراك فيها.'
+                    : 'Are you sure you want to delete this subscription plan?'}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeletingPlanId(null)}
+                className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              >
+                {isAr ? 'إلغاء' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deletePlan(deletingPlanId);
+                  setDeletingPlanId(null);
+                }}
+                className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-extrabold text-white hover:bg-rose-700"
+              >
+                {isAr ? 'نعم، احذف الباقة' : 'Yes, Delete Plan'}
+              </button>
+            </div>
           </div>
         </div>
       )}

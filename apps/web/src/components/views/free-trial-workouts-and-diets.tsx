@@ -24,6 +24,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { usePlatformStore } from '../../lib/platform-store';
+import { ExerciseMotionCard, type ExerciseMotionItem } from '../exercise-motion-card';
 
 interface FreeVideoWorkout {
   id: string;
@@ -42,17 +43,7 @@ interface FreeVideoWorkout {
   directVideoUrl: string;
   ptSafetyTipAr: string;
   ptSafetyTipEn: string;
-  exercises: Array<{
-    nameAr: string;
-    nameEn: string;
-    sets: number;
-    reps: string;
-    restSec: number;
-    targetMuscleAr: string;
-    targetMuscleEn: string;
-    cuesAr: string;
-    cuesEn: string;
-  }>;
+  exercises: ExerciseMotionItem[];
 }
 
 interface FreeDietBlueprint {
@@ -106,6 +97,8 @@ const FREE_VIDEO_WORKOUTS: FreeVideoWorkout[] = [
       'Keep your shoulder blades retracted and depressed during pressing movements to protect your rotator cuff.',
     exercises: [
       {
+        id: 'push-ex-1',
+        motionType: 'INCLINE_PRESS',
         nameAr: '١. تجميع دمبل على البنش العالي (Incline Dumbbell Press)',
         nameEn: '1. Incline Dumbbell Chest Press (30° Angle)',
         sets: 4,
@@ -113,21 +106,29 @@ const FREE_VIDEO_WORKOUTS: FreeVideoWorkout[] = [
         restSec: 75,
         targetMuscleAr: 'الصدر العلوي والكتف الأمامي',
         targetMuscleEn: 'Upper Pectorals & Anterior Delts',
-        cuesAr: 'انزل بالدمبل ببطء في ٣ ثوانٍ بزاوية ٤٥ درجة للكوع واطلع بقوة.',
-        cuesEn: 'Lower slowly for 3 seconds with a 45° elbow tuck and press explosively.',
+        secondaryMuscleAr: 'الترايسبس والكتف الجانبي',
+        secondaryMuscleEn: 'Triceps & Medial Delts',
+        cuesAr: 'انزل بالدمبل ببطء في ٣ ثوانٍ بزاوية ٤٥ درجة للكوع واطلع بقوة مع الحفاظ على تقوس أسفل الظهر الطبيعي.',
+        cuesEn: 'Lower slowly for 3 seconds with a 45° elbow tuck and press explosively with natural arch.',
       },
       {
+        id: 'push-ex-2',
+        motionType: 'CABLE_FLY',
         nameAr: '٢. تفتيح بالكابل للصدر السفلي والوسط (Cable Chest Fly)',
         nameEn: '2. Seated Dual Cable Chest Fly',
         sets: 3,
         reps: '12 - 15 عدّة',
         restSec: 60,
         targetMuscleAr: 'منتصف الصدر والألياف الداخلية',
-        targetMuscleEn: 'Mid-Chest & Inner Striations',
-        cuesAr: 'اثبت ثانية كاملة في قمة الانقباض (Peak Contraction) أمام الصدر.',
-        cuesEn: 'Hold for 1 full second at peak contraction in front of your sternum.',
+        targetMuscleEn: 'Mid-Chest & Sternal Fibers',
+        secondaryMuscleAr: 'الكتف الأمامي',
+        secondaryMuscleEn: 'Anterior Deltoid',
+        cuesAr: 'اثبت ثانية كاملة في قمة الانقباض (Peak Contraction) أمام الصدر دون تلامس المقابض.',
+        cuesEn: 'Hold for 1 full second at peak contraction in front of your sternum without banging handles.',
       },
       {
+        id: 'push-ex-3',
+        motionType: 'LATERAL_RAISE',
         nameAr: '٣. رفرفة جانبي بالدمبل للكتف (Dumbbell Lateral Raises)',
         nameEn: '3. Controlled Lateral Raises',
         sets: 4,
@@ -135,10 +136,14 @@ const FREE_VIDEO_WORKOUTS: FreeVideoWorkout[] = [
         restSec: 60,
         targetMuscleAr: 'الكتف الجانبي (لإعطاء شكل الـ V-Taper)',
         targetMuscleEn: 'Medial Deltoid (V-Taper Width)',
-        cuesAr: 'ارفع بكوعك وليس بمعصمك مع ميل بسيط للأمام.',
-        cuesEn: 'Lead with your elbows slightly in the scapular plane.',
+        secondaryMuscleAr: 'الترابيس العليا',
+        secondaryMuscleEn: 'Upper Trapezius',
+        cuesAr: 'ارفع بكوعك وليس بمعصمك مع ميل بسيط للأمام لحماية مفصل الروتاتور كاف.',
+        cuesEn: 'Lead with your elbows slightly in the scapular plane without swinging your torso.',
       },
       {
+        id: 'push-ex-4',
+        motionType: 'TRICEPS_PUSHDOWN',
         nameAr: '٤. دفع الحبل للترايسبس على الكابل (Rope Triceps Pushdown)',
         nameEn: '4. Cable Rope Triceps Pushdown',
         sets: 3,
@@ -146,8 +151,199 @@ const FREE_VIDEO_WORKOUTS: FreeVideoWorkout[] = [
         restSec: 60,
         targetMuscleAr: 'عضلة الترايسبس الثلاثية بالكامل',
         targetMuscleEn: 'Lateral & Long Head Triceps',
-        cuesAr: 'ثبت كوعك بجانب جسمك تماماً وافتح الحبل في آخر الحركة.',
-        cuesEn: 'Lock elbows at your sides and flare the rope apart at the bottom.',
+        secondaryMuscleAr: 'الساعد ومعصم اليد',
+        secondaryMuscleEn: 'Forearms & Wrist Stabilizers',
+        cuesAr: 'ثبت كوعك بجانب جسمك تماماً وافتح الحبل في آخر الحركة لعزل الرأس الخارجي.',
+        cuesEn: 'Lock elbows at your sides and flare the rope apart at lockout for peak pump.',
+      },
+    ],
+  },
+  {
+    id: 'w-pull-back-biceps',
+    titleAr: 'تمرين سحب الضهر والبايسبس الكامل (Pull Day)',
+    titleEn: 'Back Width, Thickness & Biceps Peak (Pull Day)',
+    categoryAr: 'تمارين الجيم • بناء عضل',
+    categoryEn: 'Gym Workout • Pull Strength',
+    levelAr: 'متوسط',
+    levelEn: 'Intermediate',
+    durationMin: 50,
+    kcalBurn: 410,
+    coachAr: 'كابتن محمود رضا + د. هبة (إصابات ملاعب)',
+    coachEn: 'Capt. Mahmoud Reda + Dr. Heba (Sports PT)',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=900&q=80',
+    youtubeId: 'eGo4IYlbE5g',
+    directVideoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    ptSafetyTipAr:
+      'اسحب بكوعك باتجاه الحوض وافرد ضهرك تماماً لتجنب إجهاد الفقرات القطنية في حركات التجديف.',
+    ptSafetyTipEn:
+      'Drive with your elbows towards your hip pockets to bias the lats and protect your lower spine.',
+    exercises: [
+      {
+        id: 'pull-ex-1',
+        motionType: 'LAT_PULLDOWN',
+        nameAr: '١. سحب عالي بالبار للضهر (Wide-Grip Lat Pulldown)',
+        nameEn: '1. Wide-Grip Lat Pulldown',
+        sets: 4,
+        reps: '10 - 12 عدّة',
+        restSec: 75,
+        targetMuscleAr: 'المجنص وعضلة الظهر العريضة',
+        targetMuscleEn: 'Latissimus Dorsi & Teres Major',
+        secondaryMuscleAr: 'البايسبس وعضلات اللوح',
+        secondaryMuscleEn: 'Biceps & Rhomboids',
+        cuesAr: 'اسحب البار حتى أعلى صدرك مع إرجاع الكتفين للخلف والأسفل بدون انحناء الظهر.',
+        cuesEn: 'Pull the bar to your clavicle with proud chest and full stretch at the top.',
+      },
+      {
+        id: 'pull-ex-2',
+        motionType: 'BARBELL_ROW',
+        nameAr: '٢. تجديف بالبار الحر لسمك الضهر (Bent-Over Barbell Row)',
+        nameEn: '2. Bent-Over Barbell Row (Pendlay Style)',
+        sets: 4,
+        reps: '8 - 10 عدّات',
+        restSec: 90,
+        targetMuscleAr: 'منتصف الظهر والترابيس الوسطى',
+        targetMuscleEn: 'Rhomboids & Mid-Traps Thickness',
+        secondaryMuscleAr: 'القطنية والمؤخرة',
+        secondaryMuscleEn: 'Erector Spinae & Glutes',
+        cuesAr: 'اثبت بزاوية ٤٥ درجة واسحب البار لأسفل البطن مع الحفاظ على عمود فقري محايد.',
+        cuesEn: 'Hinge at hips to 45°, pull bar to navel keeping your core fully braced.',
+      },
+      {
+        id: 'pull-ex-3',
+        motionType: 'BICEPS_CURL',
+        nameAr: '٣. كيرل واقف بالبار للبايسبس (Standing Barbell Curl)',
+        nameEn: '3. Standing Barbell Biceps Curl',
+        sets: 3,
+        reps: '12 عدّة',
+        restSec: 60,
+        targetMuscleAr: 'البايسبس ورأسي الذراع',
+        targetMuscleEn: 'Biceps Brachii & Brachialis',
+        secondaryMuscleAr: 'الساعد ومعصم اليد',
+        secondaryMuscleEn: 'Forearm Flexors',
+        cuesAr: 'ثبت كوعك جانب وسطك بدون تأرجح الجسم واعتصر الباي في أعلى نقطة.',
+        cuesEn: 'Keep elbows strictly pinned to ribs with zero torso swing.',
+      },
+    ],
+  },
+  {
+    id: 'w-legs-lower',
+    titleAr: 'تمرين الأرجل الخلفية والأمامية وقوة الجذع (Leg Day)',
+    titleEn: 'Legs, Quads, Hamstrings & Core Power (Leg Day)',
+    categoryAr: 'تمارين الجيم • قوة وتحمل',
+    categoryEn: 'Gym Workout • Lower Body',
+    levelAr: 'متقدم',
+    levelEn: 'Advanced',
+    durationMin: 55,
+    kcalBurn: 490,
+    coachAr: 'كابتن أحمد سامي (بطل كمال أجسام)',
+    coachEn: 'Capt. Ahmed Samy (Powerlifter & Coach)',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=900&q=80',
+    youtubeId: 'bEv6CCg2BC8',
+    directVideoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+    ptSafetyTipAr:
+      'ثبت ركبتيك في مسار مشط القدم، واكتم نفسك داخل بطنك (Valsalva Maneuver) قبل النزول.',
+    ptSafetyTipEn:
+      'Track knees inline with toes, breathe deeply into your belly and brace your core prior to descent.',
+    exercises: [
+      {
+        id: 'leg-ex-1',
+        motionType: 'BARBELL_SQUAT',
+        nameAr: '١. سكوات خلفي بالبار الأوليمبي (Barbell Back Squat)',
+        nameEn: '1. Olympic Barbell Back Squat (Parallel Depth)',
+        sets: 4,
+        reps: '8 - 10 عدّات',
+        restSec: 120,
+        targetMuscleAr: 'عضلات الفخذ الأمامية (الكوادس)',
+        targetMuscleEn: 'Quadriceps Femoris',
+        secondaryMuscleAr: 'المؤخرة والقطنية وعضلات الجذع',
+        secondaryMuscleEn: 'Gluteus Maximus & Spinal Erectors',
+        cuesAr: 'انزل لعمق متوازي مع الأرض وادفع الأرض بكعبيك للأعلى مع ثبات الصدر مرفوعاً.',
+        cuesEn: 'Descend to parallel, drive through your heels while maintaining an upright chest.',
+      },
+      {
+        id: 'leg-ex-2',
+        motionType: 'ROMANIAN_DEADLIFT',
+        nameAr: '٢. ديدليفت روماني للهامسترنج (Romanian Deadlift RDL)',
+        nameEn: '2. Barbell Romanian Deadlift (RDL)',
+        sets: 4,
+        reps: '10 - 12 عدّة',
+        restSec: 90,
+        targetMuscleAr: 'عضلات الفخذ الخلفية والمؤخرة',
+        targetMuscleEn: 'Hamstrings & Glute-Ham Tie-in',
+        secondaryMuscleAr: 'أسفل الظهر ومحيط الجذع',
+        secondaryMuscleEn: 'Lower Back & Core Stabilizers',
+        cuesAr: 'ارجع بمفصل الحوض للخلف كأنك تغلق باباً بمؤخرتك دون ثني الركبتين بعمق.',
+        cuesEn: 'Push hips backward as if touching a wall behind you with slight knee bend.',
+      },
+    ],
+  },
+  {
+    id: 'w-chest-strength',
+    titleAr: 'تمرين زيادة القوة لبنش بريس الصدر (Power Chest)',
+    titleEn: 'Flat Barbell Bench Press & Power Focus',
+    categoryAr: 'تمارين القوة • أرقام قياسية',
+    categoryEn: 'Strength & Powerlifting',
+    levelAr: 'متوسط / متقدم',
+    levelEn: 'Intermediate / Pro',
+    durationMin: 40,
+    kcalBurn: 350,
+    coachAr: 'كابتن يوسف الصاوي (مدرب رفع أثقال)',
+    coachEn: 'Capt. Youssef El-Sawy (Strength Coach)',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=900&q=80',
+    youtubeId: '4Y2ZdHCOXok',
+    directVideoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
+    ptSafetyTipAr:
+      'لا ترفع مؤخرتك عن البنش أبداً أثناء الدفع للحفاظ على استقرار الحوض والعمود الفقري.',
+    ptSafetyTipEn:
+      'Keep glutes glued to the bench throughout the lift to ensure strict mechanical power transfer.',
+    exercises: [
+      {
+        id: 'bench-ex-1',
+        motionType: 'BENCH_PRESS',
+        nameAr: '١. بنش بريس مستوي بالبار (Flat Barbell Bench Press)',
+        nameEn: '1. Competition Flat Barbell Bench Press',
+        sets: 5,
+        reps: '5 - 6 عدّات (قوة)',
+        restSec: 120,
+        targetMuscleAr: 'عضلة الصدر بالكامل (Pectoralis Major)',
+        targetMuscleEn: 'Pectoralis Major (Mid & Lower Head)',
+        secondaryMuscleAr: 'الترايسبس والكتف الأمامي',
+        secondaryMuscleEn: 'Triceps Brachii & Anterior Delts',
+        cuesAr: 'المس منتصف الصدر بلطف واطلع بانفجارية مع تثبيت القدمين بالأرض تماماً.',
+        cuesEn: 'Touch sternum with control, then explode upward driving legs firmly into the floor.',
+      },
+      {
+        id: 'bench-ex-2',
+        motionType: 'INCLINE_PRESS',
+        nameAr: '٢. تجميع دمبل عالي ضخامة (Incline DB Press)',
+        nameEn: '2. Incline Dumbbell Press (Upper Chest)',
+        sets: 3,
+        reps: '10 - 12 عدّة',
+        restSec: 75,
+        targetMuscleAr: 'الصدر العلوي',
+        targetMuscleEn: 'Clavicular Head Pectorals',
+        secondaryMuscleAr: 'الكتف الأمامي والترايسبس',
+        secondaryMuscleEn: 'Anterior Delts & Triceps',
+        cuesAr: 'تحكم كامل في مسار الدمبل مع تمدد كامل لألياف الصدر في أسفل النقطة.',
+        cuesEn: 'Deep stretch at the bottom, maintain steady rhythm with full pectoral contraction.',
+      },
+      {
+        id: 'bench-ex-3',
+        motionType: 'TRICEPS_PUSHDOWN',
+        nameAr: '٣. بوش داون ترايسبس حبل (Heavy Cable Pushdown)',
+        nameEn: '3. Heavy Rope Triceps Pushdown',
+        sets: 4,
+        reps: '12 عدّة',
+        restSec: 60,
+        targetMuscleAr: 'عضلة الترايسبس الخارجية والوسطى',
+        targetMuscleEn: 'Triceps Lateral & Medial Heads',
+        secondaryMuscleAr: 'عضلات الساعد',
+        secondaryMuscleEn: 'Forearms',
+        cuesAr: 'افرد ذراعيك بالكامل مع الحفاظ على استقامة الجذع والرقبة.',
+        cuesEn: 'Full extension at the bottom with locked torso.',
       },
     ],
   },
@@ -559,86 +755,19 @@ export function FreeTrialWorkoutsAndDietsView({
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {activeWorkout.exercises.map((ex) => {
                 const key = `${activeWorkout.id}-${ex.nameEn}`;
                 const doneSets = completedExercises[key] ?? 0;
-                const isFullyDone = doneSets >= ex.sets;
 
                 return (
-                  <div
-                    key={ex.nameEn}
-                    className={`theme-card rounded-2xl border p-4 transition ${
-                      isFullyDone
-                        ? 'border-emerald-500/40 bg-emerald-500/10'
-                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300'
-                    }`}
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-black text-slate-900 dark:text-white">
-                            {isAr ? ex.nameAr : ex.nameEn}
-                          </h4>
-                          {isFullyDone && (
-                            <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-extrabold text-white">
-                              {isAr ? 'مكتمل ✓' : 'Done ✓'}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                          {isAr ? 'العضلة المستهدفة: ' : 'Target: '}
-                          {isAr ? ex.targetMuscleAr : ex.targetMuscleEn}
-                        </p>
-                        <p className="text-xs text-slate-600 dark:text-slate-400">
-                          {isAr ? ex.cuesAr : ex.cuesEn}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col items-end gap-2">
-                        <div className="flex items-center gap-2 text-xs font-extrabold text-slate-700 dark:text-slate-300">
-                          <span className="theme-surface rounded-lg border border-slate-200 px-2.5 py-1 dark:border-slate-700">
-                            {ex.sets} {isAr ? 'مجموعات' : 'Sets'} × {ex.reps}
-                          </span>
-                          <span className="rounded-lg bg-amber-500/15 px-2.5 py-1 text-amber-700 dark:text-amber-300">
-                            {isAr ? `راحة ${ex.restSec}ث` : `Rest ${ex.restSec}s`}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <div className="flex gap-1">
-                            {Array.from({ length: ex.sets }).map((_, idx) => (
-                              <span
-                                key={idx}
-                                className={`h-2.5 w-6 rounded-full transition ${
-                                  idx < doneSets
-                                    ? 'bg-emerald-500'
-                                    : 'bg-slate-200 dark:bg-slate-700'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleCompleteSet(ex.nameEn, ex.sets, ex.restSec)}
-                            className={`rounded-xl px-3.5 py-1.5 text-xs font-extrabold transition ${
-                              isFullyDone
-                                ? 'bg-emerald-600 text-white'
-                                : 'bg-slate-900 text-white hover:bg-amber-500 hover:text-slate-950 dark:bg-slate-800 dark:hover:bg-amber-500'
-                            }`}
-                          >
-                            {isFullyDone
-                              ? isAr
-                                ? `تم بالكامل (${doneSets}/${ex.sets})`
-                                : `Completed (${doneSets}/${ex.sets})`
-                              : isAr
-                                ? `+ أتممت مجموعة (${doneSets}/${ex.sets})`
-                                : `+ Complete Set (${doneSets}/${ex.sets})`}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <ExerciseMotionCard
+                    key={ex.id || ex.nameEn}
+                    exercise={ex}
+                    locale={isAr ? 'ar' : 'en'}
+                    doneSets={doneSets}
+                    onCompleteSet={() => handleCompleteSet(ex.nameEn, ex.sets, ex.restSec)}
+                  />
                 );
               })}
             </div>

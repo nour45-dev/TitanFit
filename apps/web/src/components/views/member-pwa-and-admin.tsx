@@ -24,16 +24,111 @@ import {
   ShieldCheck,
   Sparkles,
   Timer,
+  Trash2,
   Trophy,
   UserCheck,
   X,
 } from 'lucide-react';
 import { LogoPicker } from '../logo-picker';
+import { ExerciseMotionCard, type ExerciseMotionItem } from '../exercise-motion-card';
 import {
   type TenantSaaSItem,
   type WorkoutLogEntry,
   usePlatformStore,
 } from '../../lib/platform-store';
+
+const PWA_EXERCISE_MOTION_MAP: Record<string, ExerciseMotionItem> = {
+  'Barbell Bench Press': {
+    id: 'pwa-bench',
+    motionType: 'BENCH_PRESS',
+    nameAr: 'ضغط صدر مستوي بالبار (Barbell Bench Press)',
+    nameEn: 'Flat Barbell Bench Press',
+    targetMuscleAr: 'عضلة الصدر بالكامل',
+    targetMuscleEn: 'Pectoralis Major',
+    secondaryMuscleAr: 'الترايسبس والكتف الأمامي',
+    secondaryMuscleEn: 'Triceps & Anterior Delts',
+    sets: 4,
+    reps: '8 - 10 reps',
+    restSec: 90,
+    cuesAr: 'المس الصدر مع ثبات القدمين وادفع بقوة للأعلى بتوقيت 3-1-1.',
+    cuesEn: 'Touch chest with control and explode upwards with solid leg drive.',
+  },
+  'Barbell Back Squat': {
+    id: 'pwa-squat',
+    motionType: 'BARBELL_SQUAT',
+    nameAr: 'سكوات خلفي بالبار (Barbell Back Squat)',
+    nameEn: 'Olympic Barbell Back Squat',
+    targetMuscleAr: 'عضلات الفخذ الأمامية (الكوادس)',
+    targetMuscleEn: 'Quadriceps Femoris',
+    secondaryMuscleAr: 'المؤخرة والقطنية',
+    secondaryMuscleEn: 'Glutes & Lower Back',
+    sets: 4,
+    reps: '8 - 10 reps',
+    restSec: 120,
+    cuesAr: 'انزل لعمق متوازي مع الأرض وادفع بكعبيك للأعلى مع ثبات الصدر مرفوعاً.',
+    cuesEn: 'Descend to parallel, drive through heels keeping an upright posture.',
+  },
+  'Romanian Deadlift (RDL)': {
+    id: 'pwa-rdl',
+    motionType: 'ROMANIAN_DEADLIFT',
+    nameAr: 'ديدليفت روماني (Romanian Deadlift RDL)',
+    nameEn: 'Barbell Romanian Deadlift',
+    targetMuscleAr: 'الفخذ الخلفي والمؤخرة',
+    targetMuscleEn: 'Hamstrings & Glutes',
+    secondaryMuscleAr: 'أسفل الظهر وعضلات الجذع',
+    secondaryMuscleEn: 'Lower Back & Core',
+    sets: 4,
+    reps: '10 - 12 reps',
+    restSec: 90,
+    cuesAr: 'ارجع بالحوض للخلف مع شد أوتار الركبة وانحناء طفيف بالركبتين.',
+    cuesEn: 'Hinge hips backward feeling full hamstring tension with slight knee soft bend.',
+  },
+  'Strict Overhead Press': {
+    id: 'pwa-ohp',
+    motionType: 'INCLINE_PRESS',
+    nameAr: 'ضغط أكتاف عالي (Overhead / Incline Press)',
+    nameEn: 'Strict Overhead / Incline Press',
+    targetMuscleAr: 'الكتف الأمامي والعلوي',
+    targetMuscleEn: 'Anterior & Lateral Delts',
+    secondaryMuscleAr: 'الترايسبس وأعلى الصدر',
+    secondaryMuscleEn: 'Triceps & Upper Chest',
+    sets: 3,
+    reps: '10 - 12 reps',
+    restSec: 75,
+    cuesAr: 'اثبت الجذع واضغط للأعلى باستقامة كاملة دون تقوس مفرط بالظهر.',
+    cuesEn: 'Brace core and press vertically without hyperextending lumbar spine.',
+  },
+  'Lat Pulldown': {
+    id: 'pwa-lat',
+    motionType: 'LAT_PULLDOWN',
+    nameAr: 'سحب عالي للضهر (Wide-Grip Lat Pulldown)',
+    nameEn: 'Wide-Grip Lat Pulldown',
+    targetMuscleAr: 'عضلة الظهر العريضة (المجنص)',
+    targetMuscleEn: 'Latissimus Dorsi',
+    secondaryMuscleAr: 'البايسبس',
+    secondaryMuscleEn: 'Biceps Brachii',
+    sets: 4,
+    reps: '10 - 12 reps',
+    restSec: 75,
+    cuesAr: 'اسحب لأعلى الصدر مع ثبات الكتفين للخلف والأسفل.',
+    cuesEn: 'Pull to clavicle with retracted scapulae and pause at chest.',
+  },
+  'Cable Rope Triceps Pushdown': {
+    id: 'pwa-tri',
+    motionType: 'TRICEPS_PUSHDOWN',
+    nameAr: 'بوش داون ترايسبس حبل (Triceps Pushdown)',
+    nameEn: 'Cable Rope Triceps Pushdown',
+    targetMuscleAr: 'عضلة الترايسبس الثلاثية',
+    targetMuscleEn: 'Triceps Brachii',
+    secondaryMuscleAr: 'الساعدين',
+    secondaryMuscleEn: 'Forearms',
+    sets: 3,
+    reps: '12 - 15 reps',
+    restSec: 60,
+    cuesAr: 'ثبت الكوعين بجانب جسمك وافتح الحبل في أسفل الحركة.',
+    cuesEn: 'Lock elbows tightly at sides and spread rope apart at lockout.',
+  },
+};
 
 export function MemberPwaPortalView() {
   const {
@@ -94,14 +189,14 @@ export function MemberPwaPortalView() {
   return (
     <div data-testid="panel-member-pwa" className="space-y-6">
       {/* Top Member App Header */}
-      <div className="rounded-2xl border border-[#D4AF37]/40 bg-gradient-to-r from-[#14192B] via-[#191F36] to-[#211B11] p-6 text-white">
+      <div className="rounded-2xl border border-amber-300/60 bg-gradient-to-r from-amber-50 via-slate-50 to-amber-100/50 p-6 text-slate-900 shadow-sm dark:border-[#D4AF37]/40 dark:bg-gradient-to-r dark:from-[#14192B] dark:via-[#191F36] dark:to-[#211B11] dark:text-white">
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#D4AF37]/20 px-3 py-1 text-xs font-extrabold text-[#F3E5AB]">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-extrabold text-amber-800 dark:bg-[#D4AF37]/20 dark:text-[#F3E5AB]">
               <Sparkles className="h-3.5 w-3.5 text-[#D4AF37]" />
               {isAr ? 'تطبيق العضو الذكي (Installable PWA)' : 'INSTALLABLE MEMBER PWA PORTAL'}
             </span>
-            <h1 className="mt-2 text-2xl font-extrabold">
+            <h1 className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">
               {isAr
                 ? `مرحباً، ${currentMember.fullNameAr} 🔥 (${currentMember.streakDays} يوم التزام متتالي)`
                 : `Welcome back, ${currentMember.fullNameEn} 🔥 (${currentMember.streakDays}-Day Streak)`}
@@ -113,14 +208,14 @@ export function MemberPwaPortalView() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-white/15 bg-black/40 px-4 py-2.5 text-center">
-              <span className="text-[11px] text-slate-400">
+            <div className="rounded-xl border border-slate-200 bg-white/90 px-4 py-2.5 text-center shadow-2xs dark:border-white/15 dark:bg-black/40">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
                 {isAr ? 'مؤشر كتلة الجسم BMI' : 'Current BMI'}
               </span>
-              <p className="font-mono text-lg font-extrabold text-emerald-400">{bmi}</p>
+              <p className="font-mono text-lg font-extrabold text-emerald-600 dark:text-emerald-400">{bmi}</p>
             </div>
-            <div className="rounded-xl border border-white/15 bg-black/40 px-4 py-2.5 text-center">
-              <span className="text-[11px] text-slate-400">
+            <div className="rounded-xl border border-slate-200 bg-white/90 px-4 py-2.5 text-center shadow-2xs dark:border-white/15 dark:bg-black/40">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
                 {isAr ? 'مرات الحضور' : 'Total Check-ins'}
               </span>
               <p className="font-mono text-lg font-extrabold text-[#D4AF37]">
@@ -209,55 +304,66 @@ export function MemberPwaPortalView() {
 
             <div className="mt-4 space-y-3">
               <div>
-                <label htmlFor="pwa-exercise-select" className="block text-xs font-bold text-slate-300">
-                  {isAr ? 'التمرين' : 'Exercise'}
+                <label htmlFor="pwa-exercise-select" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'التمرين ومسار الحركة الحي (Motion Guide)' : 'Exercise & Live Motion Guide'}
                 </label>
                 <select
                   id="pwa-exercise-select"
                   aria-label={isAr ? 'التمرين' : 'Exercise'}
                   value={exerciseEn}
                   onChange={(e) => setExerciseEn(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-900 dark:text-white"
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 >
                   <option value="Barbell Bench Press">Barbell Bench Press (ضغط صدر بالبار)</option>
                   <option value="Barbell Back Squat">Barbell Back Squat (سكوات خلفي بالبار)</option>
                   <option value="Romanian Deadlift (RDL)">Romanian Deadlift (ديدليفت روماني)</option>
                   <option value="Strict Overhead Press">Strict Overhead Press (ضغط أكتاف)</option>
+                  <option value="Lat Pulldown">Wide-Grip Lat Pulldown (سحب عالي للظهر)</option>
+                  <option value="Cable Rope Triceps Pushdown">Cable Rope Triceps Pushdown (بوش داون ترايسبس حبل)</option>
                 </select>
+
+                {PWA_EXERCISE_MOTION_MAP[exerciseEn] && (
+                  <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 shadow-sm dark:border-slate-800">
+                    <ExerciseMotionCard
+                      exercise={PWA_EXERCISE_MOTION_MAP[exerciseEn]!}
+                      locale={isAr ? 'ar' : 'en'}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label htmlFor="pwa-weight-input" className="text-[11px] text-slate-400">{isAr ? 'الوزن (كجم)' : 'Weight (kg)'}</label>
+                  <label htmlFor="pwa-weight-input" className="text-[11px] text-slate-600 dark:text-slate-400">{isAr ? 'الوزن (كجم)' : 'Weight (kg)'}</label>
                   <input
                     id="pwa-weight-input"
                     aria-label={isAr ? 'الوزن بالكيلوجرام' : 'Weight in kilograms'}
                     type="number"
                     value={weightKg}
                     onChange={(e) => setWeightKg(Number(e.target.value))}
-                    className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-sm text-white"
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label htmlFor="pwa-reps-input" className="text-[11px] text-slate-400">{isAr ? 'العدات' : 'Reps'}</label>
+                  <label htmlFor="pwa-reps-input" className="text-[11px] text-slate-600 dark:text-slate-400">{isAr ? 'العدات' : 'Reps'}</label>
                   <input
                     id="pwa-reps-input"
                     aria-label={isAr ? 'عدد العدات' : 'Reps count'}
                     type="number"
                     value={reps}
                     onChange={(e) => setReps(Number(e.target.value))}
-                    className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-sm text-white"
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label htmlFor="pwa-sets-input" className="text-[11px] text-slate-400">{isAr ? 'المجموعات' : 'Sets'}</label>
+                  <label htmlFor="pwa-sets-input" className="text-[11px] text-slate-600 dark:text-slate-400">{isAr ? 'المجموعات' : 'Sets'}</label>
                   <input
                     id="pwa-sets-input"
                     aria-label={isAr ? 'عدد المجموعات' : 'Sets count'}
                     type="number"
                     value={sets}
                     onChange={(e) => setSets(Number(e.target.value))}
-                    className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-sm text-white"
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -266,7 +372,7 @@ export function MemberPwaPortalView() {
                 type="button"
                 data-testid="log-workout-set-btn"
                 onClick={handleLogSet}
-                className="w-full rounded-xl bg-[#D4AF37] py-2.5 text-xs font-extrabold text-slate-950 shadow-lg shadow-[#D4AF37]/20"
+                className="w-full rounded-xl bg-[#D4AF37] py-2.5 text-xs font-extrabold text-slate-950 shadow-lg shadow-[#D4AF37]/20 hover:bg-amber-400"
               >
                 {isAr
                   ? 'تسجيل المجموعة وحساب الرقم القياسي (1RM PR)'
@@ -285,8 +391,8 @@ export function MemberPwaPortalView() {
               )}
 
               {/* Rest Timer */}
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/70 p-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/70 p-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
                   <Timer className="h-4 w-4 text-[#D4AF37]" />
                   <span>{isAr ? 'مؤقت الراحة بين المجموعات:' : 'Rest Timer:'}</span>
                   <span className="font-mono text-sm font-extrabold text-[#D4AF37]">
@@ -299,7 +405,7 @@ export function MemberPwaPortalView() {
                       key={sec}
                       type="button"
                       onClick={() => setRestSeconds(sec)}
-                      className="rounded-lg bg-slate-800 px-2 py-1 font-mono text-[11px] font-bold text-slate-200 hover:bg-[#D4AF37] hover:text-slate-950"
+                      className="rounded-lg bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200 px-2 py-1 font-mono text-[11px] font-bold hover:bg-[#D4AF37] hover:text-slate-950"
                     >
                       {sec}s
                     </button>
@@ -308,15 +414,15 @@ export function MemberPwaPortalView() {
               </div>
             </div>
 
-            <div className="mt-4 space-y-2 border-t border-slate-800 pt-4">
+            <div className="mt-4 space-y-2 border-t border-slate-200 dark:border-slate-800 pt-4">
               {workoutLogs.slice(0, 3).map((wk) => (
                 <div
                   key={wk.id}
-                  className="flex items-center justify-between rounded-xl bg-slate-900/60 px-3 py-2 text-xs"
+                  className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs dark:border-slate-800 dark:bg-slate-900/60"
                 >
                   <div>
                     <p className="font-bold text-slate-900 dark:text-white">{isAr ? wk.exerciseAr : wk.exerciseEn}</p>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
                       {wk.sets} sets × {wk.reps} reps @ {wk.weightKg}kg
                     </p>
                   </div>
@@ -344,26 +450,26 @@ export function MemberPwaPortalView() {
               <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
                 {isAr ? 'خطة التغذية، الماكروز، وشرب المياه' : 'Daily Macros & Hydration Tracker'}
               </h2>
-              <Flame className="h-5 w-5 text-amber-400" />
+              <Flame className="h-5 w-5 text-amber-500" />
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="rounded-xl bg-slate-900/70 p-3">
-                <span className="text-slate-400">{isAr ? 'السعرات' : 'Calories'}</span>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/70 p-3 shadow-2xs">
+                <span className="text-slate-500 dark:text-slate-400">{isAr ? 'السعرات' : 'Calories'}</span>
                 <p className="mt-1 font-mono text-base font-extrabold text-slate-900 dark:text-white">{calories}</p>
-                <span className="text-[10px] text-emerald-400">/ 2,600 kcal</span>
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">/ 2,600 kcal</span>
               </div>
-              <div className="rounded-xl bg-slate-900/70 p-3">
-                <span className="text-slate-400">{isAr ? 'البروتين' : 'Protein'}</span>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/70 p-3 shadow-2xs">
+                <span className="text-slate-500 dark:text-slate-400">{isAr ? 'البروتين' : 'Protein'}</span>
                 <p className="mt-1 font-mono text-base font-extrabold text-[#D4AF37]">{proteinG}g</p>
-                <span className="text-[10px] text-slate-400">/ 200g goal</span>
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">/ 200g goal</span>
               </div>
-              <div className="rounded-xl bg-slate-900/70 p-3">
-                <span className="text-slate-400">{isAr ? 'المياه' : 'Hydration'}</span>
-                <p className="mt-1 font-mono text-base font-extrabold text-sky-400">{waterMl}ml</p>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/70 p-3 shadow-2xs">
+                <span className="text-slate-500 dark:text-slate-400">{isAr ? 'المياه' : 'Hydration'}</span>
+                <p className="mt-1 font-mono text-base font-extrabold text-sky-600 dark:text-sky-400">{waterMl}ml</p>
                 <button
                   type="button"
                   onClick={() => setWaterMl((w) => w + 250)}
-                  className="mt-1 rounded bg-sky-500/20 px-2 py-0.5 text-[10px] font-bold text-sky-300"
+                  className="mt-1 rounded bg-sky-500/20 px-2 py-0.5 text-[10px] font-bold text-sky-700 dark:text-sky-300 hover:bg-sky-500/30"
                 >
                   +250ml
                 </button>
@@ -694,12 +800,14 @@ export function SuperAdminConsoleView() {
     setImpersonatedTenant,
     addTenant,
     toggleTenantStatus,
+    deleteTenant,
     login,
     showToast,
   } = usePlatformStore();
   const isAr = locale === 'ar';
 
   const [showAddTenant, setShowAddTenant] = useState(false);
+  const [deletingTenantId, setDeletingTenantId] = useState<string | null>(null);
   const [createdTenantCredentials, setCreatedTenantCredentials] = useState<TenantSaaSItem | null>(null);
 
   // Form states
@@ -928,7 +1036,7 @@ export function SuperAdminConsoleView() {
                 type="button"
                 data-testid={idx === 0 ? 'impersonate-btn-titanfit-cairo' : undefined}
                 onClick={() => setImpersonatedTenant(ten.slug)}
-                className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 py-2.5 text-xs font-black text-slate-950 shadow-xs"
+                className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 py-2.5 text-xs font-black text-slate-950 shadow-xs hover:from-amber-400 hover:to-amber-500"
               >
                 {isAr ? 'دخول دعم مسجل (Impersonate)' : 'Audited Impersonate'}
               </button>
@@ -939,6 +1047,14 @@ export function SuperAdminConsoleView() {
                 className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
               >
                 <Copy className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeletingTenantId(ten.id)}
+                title={isAr ? 'حذف النادي / إلغاء العقد' : 'Delete Tenant'}
+                className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-500/20"
+              >
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -1179,6 +1295,48 @@ export function SuperAdminConsoleView() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Tenant Confirmation Modal */}
+      {deletingTenantId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-rose-500/40 bg-white p-6 text-slate-900 shadow-2xl dark:border-rose-500/40 dark:bg-[#121623] dark:text-white">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/15 text-rose-500">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  {isAr ? 'تأكيد حذف النادي / المستأجر' : 'Confirm Gym Tenant Deletion'}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {isAr
+                    ? 'هل أنت متأكد من حذف هذا النادي نهائياً من المنصة وإلغاء حسابه؟'
+                    : 'Are you sure you want to permanently remove this gym tenant?'}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeletingTenantId(null)}
+                className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              >
+                {isAr ? 'إلغاء' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteTenant(deletingTenantId);
+                  setDeletingTenantId(null);
+                }}
+                className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-extrabold text-white hover:bg-rose-700"
+              >
+                {isAr ? 'نعم، احذف النادي' : 'Yes, Delete Gym'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -92,12 +92,30 @@ export async function POST(req: NextRequest) {
         }
         break;
 
+      case 'DELETE_MEMBER':
+        if (payload?.memberId) {
+          state.members = state.members.filter((m) => m.id !== payload.memberId);
+        }
+        break;
+
       case 'ADD_PLAN':
         if (payload?.id) {
           const exists = state.plans.some((p) => p.id === payload.id);
           if (!exists) {
             state.plans.push(payload);
           }
+        }
+        break;
+
+      case 'UPDATE_PLAN':
+        if (payload?.planId) {
+          state.plans = state.plans.map((p) => (p.id === payload.planId ? { ...p, ...payload.updates } : p));
+        }
+        break;
+
+      case 'DELETE_PLAN':
+        if (payload?.planId) {
+          state.plans = state.plans.filter((p) => p.id !== payload.planId);
         }
         break;
 

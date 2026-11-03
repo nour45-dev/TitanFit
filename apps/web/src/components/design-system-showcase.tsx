@@ -495,7 +495,7 @@ function TitanFitEnterpriseShell() {
                 <div className="flex items-center gap-2">
                   <span
                     data-testid="brand-app-name"
-                    className="block max-w-[112px] truncate text-base font-black tracking-tight text-slate-900 dark:text-white sm:max-w-none sm:text-lg"
+                    className="block whitespace-nowrap text-base font-black tracking-tight text-slate-900 dark:text-white sm:text-lg"
                   >
                     {activeTenantCustom ? brandDisplayName : PLATFORM_CONFIG.appName}
                   </span>

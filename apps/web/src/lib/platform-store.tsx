@@ -47,6 +47,7 @@ export interface BranchItem {
 export interface MemberItem {
   id: string;
   code: string;
+  tempPassword?: string;
   fullNameEn: string;
   fullNameAr: string;
   phone: string;
@@ -304,6 +305,7 @@ const INITIAL_MEMBERS: MemberItem[] = [
   {
     id: 'mem-1001',
     code: 'TF-2026-1001',
+    tempPassword: 'TF@2026',
     fullNameEn: 'Youssef El-Masry',
     fullNameAr: 'يوسف المصري',
     phone: '+201001234567',
@@ -586,7 +588,9 @@ export interface PlatformStoreContextValue {
     emergencyContactPhone: string;
     bloodType: string;
     medicalConditions: string;
-  }) => void;
+  }) => MemberItem;
+  updateMember: (memberId: string, updates: Partial<MemberItem>) => void;
+  deleteMember: (memberId: string) => void;
   toggleMemberFreeze: (memberId: string, freezeDays?: number) => void;
   createInvoicePayment: (data: {
     memberId: string;
@@ -604,6 +608,11 @@ export interface PlatformStoreContextValue {
     priceEgp: number;
     maxFreezeDays: number;
   }) => void;
+  updatePlan: (planId: string, updates: Partial<PlanItem>) => void;
+  deletePlan: (planId: string) => void;
+  addPosProduct: (product: Omit<PosProductItem, 'id'>) => PosProductItem;
+  updatePosProduct: (productId: string, updates: Partial<PosProductItem>) => void;
+  deletePosProduct: (productId: string) => void;
   createClassSession: (data: {
     titleEn: string;
     titleAr: string;
@@ -636,6 +645,7 @@ export interface PlatformStoreContextValue {
     gymSecretCodeCustom?: string,
   ) => TenantSaaSItem;
   toggleTenantStatus: (tenantId: string) => void;
+  deleteTenant: (tenantId: string) => void;
   updateTenantBranding: (
     tenantId: string,
     changes: { logoUrl?: string; primaryColor?: string },
@@ -919,9 +929,11 @@ export function PlatformProvider({
       .join('')
       .slice(0, 2)
       .toUpperCase();
+    const tempPassword = `TF@${Math.floor(1000 + Math.random() * 9000)}`;
     const newMember: MemberItem = {
       id: `mem-${Date.now()}`,
       code,
+      tempPassword,
       fullNameEn: data.fullNameEn,
       fullNameAr: data.fullNameAr || data.fullNameEn,
       phone: data.phone,
@@ -963,6 +975,30 @@ export function PlatformProvider({
       locale === 'ar'
         ? `تم تسجيل العضو ${newMember.fullNameAr} بنجاح برقم ${code}`
         : `Member ${newMember.fullNameEn} registered with ID ${code}`,
+    );
+    return newMember;
+  };
+
+  const updateMember: PlatformStoreContextValue['updateMember'] = (memberId, updates) => {
+    setMembers((prev) =>
+      prev.map((m) => (m.id === memberId ? { ...m, ...updates } : m)),
+    );
+    appendAudit('MEMBER_UPDATED', `Member ${memberId} updated`);
+    const tenantSlug = currentUser?.tenantSlug || 'titanfit-cairo';
+    apiPushSyncAction({ tenantSlug, action: 'UPDATE_MEMBER', payload: { memberId, updates } }).catch(() => {});
+    showToast(locale === 'ar' ? 'تم تحديث بيانات العضو بنجاح' : 'Member updated successfully');
+  };
+
+  const deleteMember: PlatformStoreContextValue['deleteMember'] = (memberId) => {
+    const target = members.find((m) => m.id === memberId);
+    setMembers((prev) => prev.filter((m) => m.id !== memberId));
+    appendAudit('MEMBER_DELETED', `Deleted member ${target?.code || memberId}`);
+    const tenantSlug = currentUser?.tenantSlug || 'titanfit-cairo';
+    apiPushSyncAction({ tenantSlug, action: 'DELETE_MEMBER', payload: { memberId } }).catch(() => {});
+    showToast(
+      locale === 'ar'
+        ? `تم حذف العضو ${target?.fullNameAr || ''} بنجاح`
+        : `Member ${target?.fullNameEn || ''} deleted successfully`,
     );
   };
 
@@ -1107,6 +1143,29 @@ export function PlatformProvider({
       locale === 'ar'
         ? `تمت إضافة باقة الاشتراك "${newPlan.nameAr}" بنجاح`
         : `Created subscription plan "${newPlan.nameEn}"`,
+    );
+  };
+
+  const updatePlan: PlatformStoreContextValue['updatePlan'] = (planId, updates) => {
+    setPlans((prev) =>
+      prev.map((p) => (p.id === planId ? { ...p, ...updates } : p)),
+    );
+    appendAudit('SUBSCRIPTION_PLAN_UPDATED', `Plan ${planId} updated`);
+    const tenantSlug = currentUser?.tenantSlug || 'titanfit-cairo';
+    apiPushSyncAction({ tenantSlug, action: 'UPDATE_PLAN', payload: { planId, updates } }).catch(() => {});
+    showToast(locale === 'ar' ? 'تم تحديث باقة الاشتراك بنجاح' : 'Plan updated successfully');
+  };
+
+  const deletePlan: PlatformStoreContextValue['deletePlan'] = (planId) => {
+    const target = plans.find((p) => p.id === planId);
+    setPlans((prev) => prev.filter((p) => p.id !== planId));
+    appendAudit('SUBSCRIPTION_PLAN_DELETED', `Plan ${target?.code || planId} deleted`);
+    const tenantSlug = currentUser?.tenantSlug || 'titanfit-cairo';
+    apiPushSyncAction({ tenantSlug, action: 'DELETE_PLAN', payload: { planId } }).catch(() => {});
+    showToast(
+      locale === 'ar'
+        ? `تم حذف باقة "${target?.nameAr || ''}" بنجاح`
+        : `Plan "${target?.nameEn || ''}" deleted successfully`,
     );
   };
 
@@ -1344,6 +1403,40 @@ export function PlatformProvider({
     );
   };
 
+  const addPosProduct: PlatformStoreContextValue['addPosProduct'] = (product) => {
+    const newProd: PosProductItem = {
+      id: `pos-${Date.now()}`,
+      ...product,
+    };
+    setPosProducts((prev) => [newProd, ...prev]);
+    appendAudit('POS_PRODUCT_CREATED', `${newProd.sku} (${newProd.nameEn})`);
+    showToast(
+      locale === 'ar'
+        ? `تمت إضافة منتج "${newProd.nameAr}" إلى المخزون بنجاح`
+        : `Added product "${newProd.nameEn}" to inventory`,
+    );
+    return newProd;
+  };
+
+  const updatePosProduct: PlatformStoreContextValue['updatePosProduct'] = (productId, updates) => {
+    setPosProducts((prev) =>
+      prev.map((p) => (p.id === productId ? { ...p, ...updates } : p)),
+    );
+    appendAudit('POS_PRODUCT_UPDATED', `Product ${productId} updated`);
+    showToast(locale === 'ar' ? 'تم تحديث بيانات المنتج والمخزون' : 'Product updated successfully');
+  };
+
+  const deletePosProduct: PlatformStoreContextValue['deletePosProduct'] = (productId) => {
+    const target = posProducts.find((p) => p.id === productId);
+    setPosProducts((prev) => prev.filter((p) => p.id !== productId));
+    appendAudit('POS_PRODUCT_DELETED', `Deleted product ${target?.nameEn || productId}`);
+    showToast(
+      locale === 'ar'
+        ? `تم حذف المنتج "${target?.nameAr || ''}" من المخزون`
+        : `Deleted product "${target?.nameEn || ''}"`,
+    );
+  };
+
   const logWorkoutSet: PlatformStoreContextValue['logWorkoutSet'] = (
     exerciseEn,
     exerciseAr,
@@ -1464,6 +1557,17 @@ export function PlatformProvider({
     );
   };
 
+  const deleteTenant: PlatformStoreContextValue['deleteTenant'] = (tenantId) => {
+    const target = tenants.find((t) => t.id === tenantId);
+    setTenants((prev) => prev.filter((t) => t.id !== tenantId));
+    appendAudit('SAAS_TENANT_DELETED', `Tenant ${target?.slug || tenantId} removed`);
+    showToast(
+      locale === 'ar'
+        ? `تم حذف حساب النادي "${target?.nameAr || ''}" بنجاح`
+        : `Gym tenant "${target?.nameEn || ''}" removed successfully`,
+    );
+  };
+
   return (
     <PlatformContext.Provider
       value={{
@@ -1502,10 +1606,17 @@ export function PlatformProvider({
         loginWithGymCode,
         logout,
         addMember,
+        updateMember,
+        deleteMember,
         toggleMemberFreeze,
         createInvoicePayment,
         refundInvoice,
         createPlan,
+        updatePlan,
+        deletePlan,
+        addPosProduct,
+        updatePosProduct,
+        deletePosProduct,
         createClassSession,
         cancelAndPromoteWaitlist,
         bookMemberIntoClass,
@@ -1515,6 +1626,7 @@ export function PlatformProvider({
         sendChatMessage,
         addTenant,
         toggleTenantStatus,
+        deleteTenant,
         updateTenantBranding,
       }}
     >
