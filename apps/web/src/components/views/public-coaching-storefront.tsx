@@ -530,17 +530,17 @@ export function PublicCoachingStorefrontView({
         </div>
       </section>
 
-      {/* 4. REAL TRANSFORMATION STORIES WITH PHOTOS ("شركاؤنا حققوا أفضل نسخة من نفسهم") */}
+      {/* 4. ILLUSTRATIVE TRANSFORMATION EXAMPLE */}
       <section id="transformations-section" className="scroll-mt-24 space-y-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-600">
-              {isAr ? 'نتائج حقيقية وموثقة بالصور والأرقام' : 'REAL CLIENT RESULTS'}
+              {isAr ? 'مثال توضيحي لنتيجة ممكنة' : 'ILLUSTRATIVE EXAMPLE OF POSSIBLE RESULT'}
             </span>
             <h2 className="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">
               {isAr
-                ? 'شركاؤنا حققوا أفضل نسخة من نفسهم — الدور عليك الآن!'
-                : 'Real People, Real Science, Life-Changing Results'}
+                ? 'مثال توضيحي لنتيجة ممكنة بالالتزام بالخطة الغذائية والتدريبية'
+                : 'Illustrative Example of a Possible Result with Consistent Training & Nutrition'}
             </h2>
           </div>
           <a
