@@ -333,23 +333,51 @@ export function PublicCoachingStorefrontView({
             })()}
           </div>
 
-          {/* Left Visual Column — White Card with Real Fitness Photo + Before/After Transformation */}
+          {/* Left Visual Column — Modern Animated Fitness & Sports Nutrition Showcase + Illustrative Projection */}
           <motion.div
             initial={{ opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.15 }}
             className="lg:col-span-5"
           >
-            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
-              <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 flex flex-col justify-end p-5">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.22),transparent_70%)]" />
-                <div className="absolute top-4 end-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-400">
-                  <Trophy className="h-6 w-6 text-amber-400" />
-                </div>
-                <span className="relative z-10 w-fit rounded-full bg-emerald-700 px-3.5 py-1 text-xs font-extrabold text-white shadow">
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+              <div className="relative h-64 w-full overflow-hidden bg-slate-950 flex flex-col justify-end p-5">
+                {/* High-Resolution Custom Fitness & Sports Nutrition Hero Image with Slow Ken-Burns Motion */}
+                <motion.img
+                  src="/brand/hero-fitness-nutrition.jpg"
+                  alt={isAr ? 'اللياقة البدنية والتغذية الرياضية المتكاملة' : 'Elite Fitness & Sports Nutrition'}
+                  data-testid="hero-fitness-nutrition-img"
+                  initial={{ scale: 1.08 }}
+                  animate={{ scale: [1.04, 1.12, 1.04] }}
+                  transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute inset-0 h-full w-full object-cover opacity-85"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/55 to-slate-950/15" />
+
+                {/* Floating Animated Telemetry Pill 1: Sports Nutrition Macros */}
+                <motion.div
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute top-3.5 start-3.5 z-10 flex items-center gap-2 rounded-2xl border border-emerald-400/40 bg-slate-950/85 px-3 py-1.5 text-[11px] font-black text-emerald-300 shadow-lg backdrop-blur-md"
+                >
+                  <Utensils className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>{isAr ? 'تغذية محسوبة: 4P + 4C + 9F' : 'Macro Math: 4P + 4C + 9F'}</span>
+                </motion.div>
+
+                {/* Floating Animated Telemetry Pill 2: Live Biomechanical EMG Pulse */}
+                <motion.div
+                  animate={{ y: [0, 6, 0] }}
+                  transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+                  className="absolute top-3.5 end-3.5 z-10 flex items-center gap-1.5 rounded-2xl border border-amber-400/40 bg-slate-950/85 px-3 py-1.5 text-[11px] font-black text-amber-300 shadow-lg backdrop-blur-md"
+                >
+                  <Activity className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+                  <span>{isAr ? 'محاكاة تمرين 3D • 96% EMG' : '3D Biomechanics • 96% EMG'}</span>
+                </motion.div>
+
+                <span className="relative z-10 w-fit rounded-full bg-emerald-700/95 px-3.5 py-1 text-xs font-extrabold text-white shadow backdrop-blur-xs">
                   {isAr ? '🔥 مثال توضيحي لرحلة تحوّل متدرب' : '🔥 Illustrative Transformation Example'}
                 </span>
-                <div className="relative z-10 mt-3 flex items-center justify-between text-white">
+                <div className="relative z-10 mt-2.5 flex items-center justify-between text-white">
                   <div>
                     <p className="text-sm font-black">
                       {isAr ? 'نموذج محاكاة رقمي (مثال توضيحي)' : 'Simulated Macro Case Model'}
@@ -406,6 +434,87 @@ export function PublicCoachingStorefrontView({
           </motion.div>
         </div>
       </motion.section>
+
+      {/* 1.5 MODERN ANIMATED FITNESS, NUTRITION & AI BIOMECHANICS SHOWCASE */}
+      <section
+        data-testid="animated-fitness-nutrition-showcase"
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      >
+        {[
+          {
+            icon: Dumbbell,
+            accent: 'from-amber-500/20 to-amber-600/5 border-amber-500/30',
+            iconBg: 'bg-amber-500 text-slate-950',
+            tagAr: 'محاكاة حركية 3D',
+            tagEn: '3D Biomechanics',
+            titleAr: 'تمارين مشروحة بالعضلات المستهدفة',
+            titleEn: 'Anatomical Muscle Vector Workouts',
+            descAr: 'شاهد زاوية المفصل (ROM) ونبض تفعيل الألياف العضلية (EMG) وإيقاع العدات 3-1-1.',
+            descEn: 'Live joint ROM angles, EMG muscle fiber activation pulse, and 3-1-1 rep tempo.',
+          },
+          {
+            icon: Utensils,
+            accent: 'from-emerald-500/20 to-emerald-600/5 border-emerald-500/30',
+            iconBg: 'bg-emerald-600 text-white',
+            tagAr: 'معادلة 4P + 4C + 9F',
+            tagEn: 'Exact Macro Math',
+            titleAr: 'تغذية رياضية ووصفات محسوبة',
+            titleEn: 'Precision Sports Nutrition & Meals',
+            descAr: 'وجبات مشبعة من البيت المصري محسوبة الجرامات والسعرات للتنشيف أو الضخامة.',
+            descEn: 'Satiating meals with verified protein, carbs, and healthy fats for cutting or bulking.',
+          },
+          {
+            icon: Sparkles,
+            accent: 'from-sky-500/20 to-sky-600/5 border-sky-500/30',
+            iconBg: 'bg-sky-500 text-slate-950',
+            tagAr: 'AI Gym & Nutritionist',
+            tagEn: 'Smart AI Coach',
+            titleAr: 'مدرب ذكي وأخصائي تغذية فوري',
+            titleEn: '24/7 AI Trainer & Nutritionist',
+            descAr: 'اسأل المساعد الذكي عن أي تمرين أو دايت أو بديل غذائي وسيرد عليك بخطة مفصلة.',
+            descEn: 'Ask our AI coach about workout splits, macros, or food swaps anytime.',
+          },
+          {
+            icon: HeartPulse,
+            accent: 'from-rose-500/20 to-rose-600/5 border-rose-500/30',
+            iconBg: 'bg-rose-600 text-white',
+            tagAr: 'خطة ٧ أيام + متابعة',
+            tagEn: '7-Day Self Tracker',
+            titleAr: 'جدول أسبوعي ومسجل تقدم ذاتي',
+            titleEn: 'Weekly Split & Personal Progress Log',
+            descAr: 'سجّل وزنك، أكواب المياه، التزامك بالدايت، وأرقامك القياسية (1RM) يومياً.',
+            descEn: 'Log body weight, daily hydration, meal adherence, and Epley 1RM PRs.',
+          },
+        ].map((card, idx) => {
+          const Icon = card.icon;
+          return (
+            <motion.div
+              key={card.titleEn}
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -5, scale: 1.01 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.35, delay: idx * 0.08 }}
+              className={`group relative overflow-hidden rounded-3xl border bg-gradient-to-br ${card.accent} bg-white p-5 shadow-sm transition dark:bg-slate-900`}
+            >
+              <div className="flex items-center justify-between">
+                <span className={`flex h-11 w-11 items-center justify-center rounded-2xl ${card.iconBg} shadow-md transition group-hover:scale-110`}>
+                  <Icon className="h-5 w-5" />
+                </span>
+                <span className="rounded-full bg-slate-900/5 px-2.5 py-1 text-[10px] font-black text-slate-700 dark:bg-white/10 dark:text-slate-200">
+                  {isAr ? card.tagAr : card.tagEn}
+                </span>
+              </div>
+              <h3 className="mt-4 text-sm font-black text-slate-950 dark:text-white">
+                {isAr ? card.titleAr : card.titleEn}
+              </h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                {isAr ? card.descAr : card.descEn}
+              </p>
+            </motion.div>
+          );
+        })}
+      </section>
 
       {/* 2. FREE WORKOUT & DIET TRIAL CALLOUT BANNER FOR NEW VISITORS */}
       {onOpenFreeTrialHub && (
