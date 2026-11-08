@@ -1,55 +1,63 @@
-# GymOS — Multi-Tenant Gym Management SaaS Platform
+# TitanFit — نموذج تجريبي استعراضي (Interactive Demo Prototype)
 
-> **Enterprise-grade, bilingual (Arabic RTL / English LTR) multi-branch fitness operating system built for Egypt, MENA, and global scale.**
+> **⚠️ تنبيه شفافية مهم (Transparency Notice):**
+> هذا المستودع يحتوي على **نموذج تجريبي استعراضي (Interactive Demo Prototype)** لمنصة **TitanFit** (واجهة تخطيط التغذية والتمارين + استعراض لوحة إدارة الأندية الرياضية باللغتين العربية RTL والإنجليزية LTR).
+> المنصة في وضعها الحالي **ليست نظام إنتاج طبي أو مالي معتمد**؛ تسجيل الدخول وحفظ التعديلات في الواجهة يعتمدان على **محاكاة محلية في المتصفح (`localStorage` / `sessionStorage`) وذاكرة جلسة تجريبية (`client-side / in-memory demo state`)**، كما أن بوابات الدفع الإلكتروني (InstaPay / Fawry / Paymob / Vodafone Cash) وخدمات التعاقد للشركات (B2B White-Label) هي واجهات استعراضية قيد التطوير (**قريباً / قائمة انتظار**).
 
 ---
 
-## 1. Quick Start (< 10 Minutes)
+## 1. نظرة عامة صادقة على الوضع الحالي (Current Prototype Scope)
 
-### Prerequisites
-- **Node.js** `>= 20.0.0` (Node 22 LTS recommended)
-- **pnpm** `>= 9.0.0` (`npm install -g pnpm`)
-- **Docker** (optional for local containers; embedded PGlite is also supported for instant zero-daemon RLS testing)
+| المكوّن | الحالة الفعلية في النسخة التجريبية | مكان تخزين البيانات |
+| :--- | :--- | :--- |
+| **حاسبة السعرات وتخطيط الوجبات** (`CalorieAndMealPlanner`) | تعمل بالكامل في المتصفح بمعادلة Mifflin-St Jeor مع توحيد حساب السعرات من الماكروز (`4P + 4C + 9F`) كقيم تقريبية وتوليد ملفات PDF عربية/إنجليزية محلياً. | ذاكرة المتصفح اللحظية (`React State`) |
+| **مكتبة التمارين التفاعلية** (`FreeTrialWorkoutsAndDietsView`) | بطاقات حركية مرسومة (`SVG Cartoon Motion Cards`) توضح مسار الحركة والعضلات المستهدفة مع تايمر راحة تفاعلي. | ذاكرة المتصفح اللحظية (`React State`) |
+| **المصادقة والأدوار** (`Authentication & RBAC`) | **محاكاة تجريبية (Client-Side / Demo Session)**: تبديل الأدوار والجلسة يتم محلياً لاستعراض شاشات المالك والمدرب والمتدرب دون ربط بقاعدة بيانات إنتاجية خارجية في نسخة العرض. | `localStorage` + `sessionStorage` + كوكي جلسة تجريبية مؤقتة |
+| **لوحة إدارة الجيم (CRUD Demo)** (`Members, Plans, POS, Tenants`) | إضافة/تعديل/حذف الأعضاء والباقات والمكملات والأندية تعمل كمحاكاة تفاعلية لتجربة المستخدم. | `localStorage` (`titanfit-demo-*`) + ذاكرة السيرفر المؤقتة (`In-Memory`) |
+| **المدفوعات والفواتير** (`InstaPay, Fawry, Paymob, Cash`) | **قريباً / نسخة تجريبية**: نماذج استعراضية فقط ولا تقوم بأي خصم مالي حقيقي أو ربط ضريبي رسمي. | محاكاة واجهة فقط |
+| **الصفحات القانونية** (`/privacy` و `/terms`) | قوالب عربية استرشادية توضح البيانات المخزنة محلياً، ومعلّمة صراحةً بأنها **مسودة تحتاج مراجعة مختص قانوني**. | صفحات ثابتة (`Next.js App Router`) |
 
-### Step-by-Step Local Setup
+---
+
+## 2. هيكل المستودع (Monorepo Structure)
+
+| المسار | الحزمة | الوصف |
+| :--- | :--- | :--- |
+| `apps/web` | `@gymos/web` | تطبيق الواجهة الأمامية المبني بـ Next.js 15 App Router (واجهة الزوار، حاسبة السعرات، التمارين المتحركة، لوحة التحكم التجريبية، وصفحات `/privacy` و `/terms`). |
+| `apps/api` | `@gymos/api` | خادم NestJS (Fastify) التجريبي لواجهات الـ REST API الخلفية. |
+| `packages/config` | `@gymos/config` | إعدادات العلامة التجارية (`TitanFit`) واللغات والعملات، مع تفريغ كافة الادعاءات التسويقية (`claims`) افتراضياً (`""`). |
+| `packages/contracts` | `@gymos/contracts` | مخططات Zod المشتركة وتعريفات الأنواع. |
+| `packages/database` | `@gymos/database` | مخطط Prisma وملفات SQL التأسيسية. |
+| `packages/ui` | `@gymos/ui` | مكونات واجهة المستخدم المشتركة ومتغيرات التصميم. |
+| `qa/` | — | سكربتات الفحص والاختبار الآلي (`qa/qa-investigation.mjs`, `qa/run-audit.mjs`, `qa/titanfit-test.mjs`). |
+
+---
+
+## 3. التشغيل المحلي والاختبار (Quick Start)
+
+### المتطلبات الأساسية
+- **Node.js** `>= 20.0.0`
+- **pnpm** `>= 9.0.0`
+
+### خطوات التشغيل
 ```bash
-# 1. Install all workspace dependencies
+# 1. تثبيت الحزم
 pnpm install
 
-# 2. Copy the environment template for local dev
-cp .env.example .env.local
+# 2. بناء حزم الإعدادات والعقود
+pnpm --filter @gymos/config build
+pnpm --filter @gymos/contracts build
 
-# 3. (Optional) Start isolated local Docker services (Postgres 16, Redis 7, MinIO, MailHog)
-docker compose up -d
+# 3. تشغيل اختبارات الوحدات (Vitest)
+pnpm --filter @gymos/config test
+pnpm --filter @gymos/web test
 
-# 4. Generate Prisma client & build all monorepo packages
-pnpm build
-
-# 5. Run all unit, integration (including non-bypassable Postgres RLS proof), and E2E tests
-pnpm test
+# 4. تشغيل تطبيق الويب محلياً
+pnpm --filter @gymos/web dev
 ```
 
 ---
 
-## 2. Monorepo Structure
-
-| Path | Package Name | Purpose |
-| :--- | :--- | :--- |
-| `apps/api` | `@gymos/api` | NestJS 11 (Fastify) REST `/api/v1`, Swagger `/api/docs`, Health `/api/v1/health`, Readiness `/api/v1/ready`, and BullMQ Worker (`src/worker.ts`). |
-| `apps/web` | `@gymos/web` | Next.js 15 App Router (Admin Dashboard, Super Admin Console, and Installable Member PWA with RTL Arabic & LTR English). |
-| `packages/config` | `@gymos/config` | Single source of truth for platform brand name (`GymOS`), currencies (`EGP`), locales (`ar`, `en`), and fail-fast Zod startup env validation. |
-| `packages/contracts` | `@gymos/contracts` | Shared Zod schemas, RBAC permission enums, API response envelopes, and health/readiness contracts. |
-| `packages/database` | `@gymos/database` | Prisma schema, SQL migrations, non-superuser/non-bypassrls runtime role provisioning (`gymos_app`, `gymos_worker`), and bilingual seed scripts. |
-| `packages/ui` | `@gymos/ui` | Design System tokens, tenant white-label CSS variable builder, RTL-ready accessible components (`44px` min tap target), and Storybook 8. |
-
----
-
-## 3. Git & Deployment Workflow
-
-- **Private Repository**: `https://github.com/Nour-EldinAhmed/gymos`
-- **Branching Model**:
-  - `main`: Production environment on Railway (protected, requires CI + PR).
-  - `develop`: Staging environment on Railway (protected, requires CI + PR).
-  - `phase-N/*`: Feature/phase branches merged into `develop` via Pull Request.
-- See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for the complete Railway setup, database role security model, Cloudflare R2 storage configuration, and backup/restore runbook.
-"# TitanFit" 
+## 4. تنبيه الخصوصية والاستخدام التجريبي
+- شريط تنبيه النسخة التجريبية (`Demo Prototype Banner`) مفعّل افتراضياً في بيئة الإنتاج والتطوير لتذكير الزوار بعدم إدخال بيانات شخصية أو مالية حقيقية.
+- للاطلاع على تفاصيل البيانات المخزنة محلياً في المتصفح، راجع صفحتي [سياسة الخصوصية (مسودة)](./apps/web/src/app/privacy/page.tsx) و[شروط الاستخدام (مسودة)](./apps/web/src/app/terms/page.tsx).
