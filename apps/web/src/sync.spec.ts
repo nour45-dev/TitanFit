@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GET, POST } from './app/api/sync/route';
+import { POST as LoginPOST } from './app/api/auth/login/route';
 import { NextRequest } from 'next/server';
 
 describe('Multi-Device Real-Time Synchronization Engine (/api/sync)', () => {
@@ -152,5 +153,84 @@ describe('Multi-Device Real-Time Synchronization Engine (/api/sync)', () => {
     const flJson = await flRes.json();
     expect(flJson.success).toBe(true);
     expect(flJson.data.customFiles.some((f: any) => f.id === 'cf-sync-1')).toBe(true);
+  });
+
+  it('registers a new gym tenant and authenticates by slug, email (including emails containing nour), and trainee PIN', async () => {
+    const registerReq = new NextRequest('http://localhost:3000/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenantSlug: 'test',
+        action: 'REGISTER_TENANT',
+        payload: {
+          id: 'tnt-test-1',
+          slug: 'test',
+          nameAr: 'test',
+          nameEn: 'test',
+          ownerEmail: 'noureldin.ahmed2001@gmail.com',
+          authVerifier: 'GymTest2026!',
+          gymSecretCode: 'TES-JOIN',
+          primaryColor: '#d97706',
+        },
+      }),
+    });
+    const regRes = await POST(registerReq);
+    expect(regRes.status).toBe(200);
+
+    // 1. Login by username / slug ("test")
+    const loginSlugReq = new NextRequest('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identifier: 'test',
+        password: 'GymTest2026!',
+      }),
+    });
+    const slugRes = await LoginPOST(loginSlugReq);
+    expect(slugRes.status).toBe(200);
+    const slugJson = await slugRes.json();
+    expect(slugJson.user.role).toBe('GYM_OWNER');
+    expect(slugJson.user.tenantSlug).toBe('test');
+
+    // 2. Login by email ("noureldin.ahmed2001@gmail.com") -> must log into GYM_OWNER of "test", not SUPER_ADMIN
+    const loginEmailReq = new NextRequest('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identifier: 'noureldin.ahmed2001@gmail.com',
+        password: 'GymTest2026!',
+      }),
+    });
+    const emailRes = await LoginPOST(loginEmailReq);
+    expect(emailRes.status).toBe(200);
+    const emailJson = await emailRes.json();
+    expect(emailJson.user.role).toBe('GYM_OWNER');
+    expect(emailJson.user.tenantSlug).toBe('test');
+
+    // 3. Reject wrong password for registered gym
+    const wrongPassReq = new NextRequest('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identifier: 'test',
+        password: 'WrongPassword999',
+      }),
+    });
+    const wrongRes = await LoginPOST(wrongPassReq);
+    expect(wrongRes.status).toBe(401);
+
+    // 4. Trainee PIN login ("TES-JOIN")
+    const pinReq = new NextRequest('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gymSecretCode: 'TES-JOIN',
+      }),
+    });
+    const pinRes = await LoginPOST(pinReq);
+    expect(pinRes.status).toBe(200);
+    const pinJson = await pinRes.json();
+    expect(pinJson.user.role).toBe('MEMBER');
+    expect(pinJson.user.tenantSlug).toBe('test');
   });
 });

@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  getServerTenantRegistry,
+  registerServerMember,
+  registerServerTenant,
+  removeServerTenant,
+} from '../../../lib/tenant-registry';
 
 interface SyncStoreState {
   version: number;
@@ -43,12 +49,16 @@ export async function GET(req: NextRequest) {
     const clientVersion = parseInt(searchParams.get('version') || '0', 10);
 
     const state = getOrCreateTenantState(tenantSlug);
+    const registry = getServerTenantRegistry();
 
     return NextResponse.json({
       success: true,
       tenantSlug,
       hasUpdates: state.version > clientVersion,
-      data: state,
+      data: {
+        ...state,
+        registeredTenants: Array.from(registry.tenants.values()),
+      },
     });
   } catch (err) {
     return NextResponse.json(
@@ -98,6 +108,16 @@ export async function POST(req: NextRequest) {
           if (!exists) {
             state.members.unshift(payload);
           }
+          registerServerMember({
+            id: payload.id,
+            code: payload.code || '',
+            email: payload.email || '',
+            phone: payload.phone || '',
+            fullNameEn: payload.fullNameEn || '',
+            fullNameAr: payload.fullNameAr || '',
+            tempPassword: payload.tempPassword,
+            tenantSlug,
+          });
         }
         break;
 
@@ -217,6 +237,30 @@ export async function POST(req: NextRequest) {
       case 'DELETE_CUSTOM_FILE':
         if (payload?.id) {
           state.customFiles = state.customFiles.filter((f) => f.id !== payload.id);
+        }
+        break;
+
+      case 'REGISTER_TENANT':
+        if (payload?.slug) {
+          registerServerTenant({
+            id: payload.id || `ten-${Date.now()}`,
+            slug: payload.slug,
+            nameEn: payload.nameEn || payload.slug,
+            nameAr: payload.nameAr || payload.nameEn || payload.slug,
+            ownerEmail: payload.ownerEmail || `owner@${payload.slug}.eg`,
+            authVerifier: payload.authVerifier,
+            gymSecretCode: payload.gymSecretCode || 'TF-JOIN',
+            logoUrl: payload.logoUrl || '/brand/logo.png',
+            primaryColor: payload.primaryColor || '#059669',
+            planTier: payload.planTier || 'PRO',
+            status: payload.status || 'ACTIVE',
+          });
+        }
+        break;
+
+      case 'DELETE_TENANT':
+        if (payload?.tenantId || payload?.slug) {
+          removeServerTenant(payload.slug || payload.tenantId);
         }
         break;
 

@@ -201,6 +201,7 @@ export interface TenantSaaSItem {
   nameEn: string;
   nameAr: string;
   ownerEmail: string;
+  authVerifier?: string;
   gymSecretCode?: string;
   logoUrl?: string;
   primaryColor?: string;
@@ -1048,15 +1049,40 @@ export function PlatformProvider({
     }
   }, [customWorkouts, customRecipes, customFiles, activeTenantSlug]);
 
-  // Purge legacy storage from browser and hydrate active session via BFF
+  // Hydrate & persist created gym tenants so newly created gym accounts work across refreshes
   useEffect(() => {
     try {
       window.localStorage.removeItem('titanfit.tenants.v1');
       window.localStorage.removeItem('titanfit.auth.token');
       window.localStorage.removeItem('titanfit.auth.user');
+      const savedTenantsRaw = window.localStorage.getItem('titanfit.customTenants.v2');
+      if (savedTenantsRaw) {
+        const parsed = JSON.parse(savedTenantsRaw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setTenants((prev) => {
+            const combined = [...parsed];
+            for (const def of prev) {
+              if (!combined.some((t: any) => t.slug === def.slug)) {
+                combined.push(def);
+              }
+            }
+            return combined;
+          });
+          for (const t of parsed) {
+            if (t?.slug) {
+              apiPushSyncAction({
+                tenantSlug: t.slug,
+                action: 'REGISTER_TENANT',
+                payload: t,
+              }).catch(() => {});
+            }
+          }
+        }
+      }
     } catch {
       /* ignore */
     }
+    tenantsHydrated.current = true;
 
     apiGetMe()
       .then((res) => {
@@ -1077,6 +1103,15 @@ export function PlatformProvider({
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (!tenantsHydrated.current) return;
+    try {
+      window.localStorage.setItem('titanfit.customTenants.v2', JSON.stringify(tenants));
+    } catch {
+      /* ignore */
+    }
+  }, [tenants]);
+
   // Real-Time Multi-Device & Multi-Tenant Isolated Sync Layer
   useEffect(() => {
     const tenantSlug = activeTenantSlug;
@@ -1085,6 +1120,34 @@ export function PlatformProvider({
     apiFetchSyncState(tenantSlug)
       .then((res) => {
         if (res && res.success && res.data) {
+          if (Array.isArray(res.data.registeredTenants) && res.data.registeredTenants.length > 0) {
+            setTenants((prev) => {
+              const combined = [...prev];
+              for (const rt of res.data.registeredTenants) {
+                if (!combined.some((t) => t.slug === rt.slug)) {
+                  combined.unshift({
+                    id: rt.id || `ten-${rt.slug}`,
+                    slug: rt.slug,
+                    nameEn: rt.nameEn || rt.slug,
+                    nameAr: rt.nameAr || rt.nameEn || rt.slug,
+                    ownerEmail: rt.ownerEmail,
+                    authVerifier: rt.authVerifier,
+                    gymSecretCode: rt.gymSecretCode,
+                    logoUrl: rt.logoUrl || '/brand/logo.png',
+                    primaryColor: rt.primaryColor || '#059669',
+                    planTier: rt.planTier || 'PRO',
+                    status: rt.status || 'ACTIVE',
+                    branchesCount: 1,
+                    activeMembersCount: 25,
+                    mrrEgp: 420000,
+                    cityEn: 'Cairo, Egypt',
+                    cityAr: 'القاهرة، مصر',
+                  });
+                }
+              }
+              return combined;
+            });
+          }
           if (Array.isArray(res.data.members) && res.data.members.length > 0) {
             setMembers((prev) => {
               const combined = [...res.data.members];
@@ -1193,13 +1256,88 @@ export function PlatformProvider({
   const login: PlatformStoreContextValue['login'] = async (email, password, gymSecretCode) => {
     const trimmed = (email || '').trim().toLowerCase();
     const cleanPass = (password || '').trim();
+    const cleanCode = (gymSecretCode || '').trim().toUpperCase();
+
+    // 1. Check if identifier or gymSecretCode matches any tenant in our state
+    let matchedTen: TenantSaaSItem | undefined;
+    if (cleanCode) {
+      matchedTen = tenants.find(
+        (t) =>
+          (t.gymSecretCode && t.gymSecretCode.toUpperCase() === cleanCode) ||
+          t.slug.toUpperCase() === cleanCode,
+      );
+    } else if (
+      trimmed &&
+      trimmed !== 'superadmin@titanfit.eg' &&
+      trimmed !== 'superadmin' &&
+      trimmed !== 'admin@titanfit.eg'
+    ) {
+      matchedTen = tenants.find(
+        (t) =>
+          t.ownerEmail.toLowerCase() === trimmed ||
+          t.slug.toLowerCase() === trimmed ||
+          t.nameEn.toLowerCase() === trimmed ||
+          t.nameAr.toLowerCase() === trimmed,
+      );
+      if (matchedTen && matchedTen.authVerifier && cleanPass && matchedTen.authVerifier !== cleanPass) {
+        return {
+          success: false,
+          message:
+            locale === 'ar'
+              ? 'كلمة المرور غير صحيحة لحساب هذا النادي. يرجى التأكد من كلمة المرور.'
+              : 'Incorrect password for this gym account.',
+        };
+      }
+    }
+
+    // 2. Check if identifier matches any registered Member in our state
+    const matchedMem =
+      !cleanCode && !matchedTen && trimmed
+        ? members.find(
+            (m) =>
+              m.code.toLowerCase() === trimmed ||
+              m.email.toLowerCase() === trimmed ||
+              m.phone === (email || '').trim(),
+          )
+        : undefined;
+
+    if (matchedMem && matchedMem.tempPassword && cleanPass && matchedMem.tempPassword !== cleanPass) {
+      return {
+        success: false,
+        message:
+          locale === 'ar'
+            ? 'كلمة مرور المتدرب غير صحيحة. يرجى التأكد من الباسورد المؤقت المستخرج لك.'
+            : 'Incorrect member password.',
+      };
+    }
 
     try {
       const res = await apiLogin({
         identifier: trimmed,
         password: cleanPass,
         gymSecretCode,
-        tenantSlug: activeTenantCustom?.slug,
+        tenantSlug: matchedTen?.slug || activeTenantCustom?.slug,
+        matchedTenant: matchedTen
+          ? {
+              id: matchedTen.id,
+              slug: matchedTen.slug,
+              nameEn: matchedTen.nameEn,
+              nameAr: matchedTen.nameAr,
+              ownerEmail: matchedTen.ownerEmail,
+              logoUrl: matchedTen.logoUrl,
+              primaryColor: matchedTen.primaryColor,
+            }
+          : undefined,
+        matchedMember: matchedMem
+          ? {
+              id: matchedMem.id,
+              code: matchedMem.code,
+              email: matchedMem.email,
+              fullNameEn: matchedMem.fullNameEn,
+              fullNameAr: matchedMem.fullNameAr,
+              tenantSlug: activeTenantSlug,
+            }
+          : undefined,
       });
 
       if (res.success && res.user) {
@@ -1215,7 +1353,13 @@ export function PlatformProvider({
           primaryColor: res.user.primaryColor || '#059669',
         });
         setActiveRole(role);
-        setActiveSection(role === 'SUPER_ADMIN' ? 'SUPER_ADMIN' : 'OVERVIEW');
+        setActiveSection(
+          role === 'SUPER_ADMIN'
+            ? 'SUPER_ADMIN'
+            : role === 'MEMBER'
+              ? 'MEMBER_PWA'
+              : 'OVERVIEW',
+        );
         if (res.user.primaryColor) setBrandAccentHex(res.user.primaryColor);
         appendAudit('USER_LOGIN', `User logged in: ${res.user.email} (${role})`);
         showToast(
@@ -1893,6 +2037,7 @@ export function PlatformProvider({
       nameEn,
       nameAr: nameAr || nameEn,
       ownerEmail,
+      authVerifier: password?.trim() || undefined,
       gymSecretCode: secretCode,
       logoUrl: logoUrl || '/brand/logo.png',
       primaryColor: primaryColor || '#059669',
@@ -1905,6 +2050,11 @@ export function PlatformProvider({
       cityAr: cityEn || 'القاهرة، مصر',
     };
     setTenants((prev) => [newTen, ...prev]);
+    apiPushSyncAction({
+      tenantSlug: slug,
+      action: 'REGISTER_TENANT',
+      payload: newTen,
+    }).catch(() => {});
     appendAudit('SAAS_TENANT_PROVISIONED', `${slug} (${planTier}) with gym code ${secretCode}`);
     showToast(
       locale === 'ar'
@@ -1943,6 +2093,11 @@ export function PlatformProvider({
   const deleteTenant: PlatformStoreContextValue['deleteTenant'] = (tenantId) => {
     const target = tenants.find((t) => t.id === tenantId);
     setTenants((prev) => prev.filter((t) => t.id !== tenantId));
+    apiPushSyncAction({
+      tenantSlug: target?.slug || 'titanfit-egypt',
+      action: 'DELETE_TENANT',
+      payload: { tenantId, slug: target?.slug },
+    }).catch(() => {});
     appendAudit('SAAS_TENANT_DELETED', `Tenant ${target?.slug || tenantId} removed`);
     showToast(
       locale === 'ar'

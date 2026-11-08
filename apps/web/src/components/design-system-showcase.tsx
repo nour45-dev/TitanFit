@@ -1119,7 +1119,7 @@ function TitanFitEnterpriseShell() {
         )}
 
         {/* Main Content Area */}
-        <main className="flex-1 bg-white p-4 transition-colors dark:bg-[#090D16] sm:p-6 lg:p-8">
+        <main className="flex-1 bg-transparent p-4 transition-colors sm:p-6 lg:p-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}

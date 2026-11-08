@@ -201,7 +201,7 @@ export function PublicCoachingStorefrontView({
   };
 
   return (
-    <div data-testid="panel-public-storefront" className="mx-auto max-w-7xl space-y-16 bg-white pb-20 text-slate-900">
+    <div data-testid="panel-public-storefront" className="mx-auto max-w-7xl space-y-16 pb-20 text-slate-900 dark:text-slate-100">
       {/* 1. PURE WHITE LUXURY HERO SECTION — DIET & CHEAT HIGH-CONVERSION STYLE */}
       <motion.section
         initial={{ opacity: 0, y: 20 }}

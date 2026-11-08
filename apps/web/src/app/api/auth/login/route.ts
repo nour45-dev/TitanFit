@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerTenantRegistry } from '../../../../lib/tenant-registry';
 
 const API_BASE_URL =
   process.env.API_BASE_URL ||
@@ -11,7 +12,9 @@ export async function POST(req: NextRequest) {
     const identifier = (body.identifier || body.email || '').trim();
     const password = (body.password || '').trim();
     const gymSecretCode = (body.gymSecretCode || '').trim();
-    const tenantSlug = (body.tenantSlug || 'titanfit-cairo').trim();
+    const tenantSlug = (body.tenantSlug || 'titanfit-egypt').trim();
+    const matchedTenant = body.matchedTenant;
+    const matchedMember = body.matchedMember;
 
     // 1. Try forwarding to backend NestJS API
     let apiSuccess = false;
@@ -26,7 +29,7 @@ export async function POST(req: NextRequest) {
           identifier: identifier || gymSecretCode,
           password: password || 'TitanFit#2026!',
         }),
-        signal: AbortSignal.timeout(3000),
+        signal: AbortSignal.timeout(1500),
       });
 
       if (response.ok) {
@@ -35,7 +38,7 @@ export async function POST(req: NextRequest) {
         apiSuccess = true;
       }
     } catch {
-      // Backend API offline / unreachable - fallback to server-side mock validation
+      // Backend API offline / unreachable - fallback to server-side registry validation
     }
 
     if (apiSuccess && apiData) {
@@ -53,13 +56,12 @@ export async function POST(req: NextRequest) {
         tenant: apiData.tenant,
       });
 
-      // Set secure HTTP-only cookies
       res.cookies.set('titanfit_access_token', apiData.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
-        maxAge: 15 * 60, // 15 minutes
+        maxAge: 15 * 60,
       });
 
       if (apiData.refreshToken) {
@@ -68,93 +70,191 @@ export async function POST(req: NextRequest) {
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
           path: '/',
-          maxAge: 7 * 24 * 60 * 60, // 7 days
+          maxAge: 7 * 24 * 60 * 60,
         });
       }
 
       return res;
     }
 
-    // 2. Server-side demo authentication (executed strictly on server; NOT included in client bundle)
+    // 2. Server-side Tenant & Member Registry Authentication
     const lowerId = identifier.toLowerCase();
-
-    // Super Admin
-    if (lowerId === 'superadmin@titanfit.eg' || lowerId.includes('nour')) {
-      const res = NextResponse.json({
-        success: true,
-        user: {
-          id: 'usr-sa-1',
-          email: 'superadmin@titanfit.eg',
-          name: 'Nour El-Din (Super Admin)',
-          role: 'SUPER_ADMIN',
-          tenantSlug: 'titanfit-cairo',
-          logoUrl: '/brand/logo.png',
-          primaryColor: '#D97706',
-        },
-      });
-      res.cookies.set('titanfit_access_token', 'demo-sa-token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-      });
-      return res;
-    }
-
-    // Gym Code / PIN Login (Only accepted for valid gym code formats e.g. TF-#### or PK-####)
     const upperGym = gymSecretCode.toUpperCase();
-    if (upperGym.startsWith('TF-') || upperGym.startsWith('PK-') || lowerId.startsWith('tf-') || lowerId.startsWith('pk-')) {
-      const code = (upperGym || lowerId).toUpperCase();
-      const res = NextResponse.json({
-        success: true,
-        user: {
-          id: 'usr-mem-1',
-          email: 'member@titanfit.eg',
-          name: 'Ahmed Titan (Member)',
-          role: 'MEMBER',
-          tenantSlug: code.startsWith('PK') ? 'peak-fitness' : 'titanfit-cairo',
-          logoUrl: '/brand/logo.png',
-          primaryColor: code.startsWith('PK') ? '#059669' : '#D97706',
-        },
-      });
-      res.cookies.set('titanfit_access_token', 'demo-member-token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-      });
-      return res;
+    const registry = getServerTenantRegistry();
+
+    // 2A. Check if logging in as a matched/registered Gym Tenant Owner (by email, username/slug, or club name)
+    if (!gymSecretCode && lowerId) {
+      // Explicit Super Admin accounts
+      if (
+        lowerId === 'superadmin@titanfit.eg' ||
+        lowerId === 'superadmin' ||
+        lowerId === 'admin@titanfit.eg' ||
+        lowerId === 'nour'
+      ) {
+        const res = NextResponse.json({
+          success: true,
+          user: {
+            id: 'usr-sa-1',
+            email: 'superadmin@titanfit.eg',
+            name: 'Nour El-Din (Super Admin)',
+            role: 'SUPER_ADMIN',
+            tenantSlug: 'titanfit-egypt',
+            logoUrl: '/brand/logo.png',
+            primaryColor: '#D97706',
+          },
+        });
+        res.cookies.set('titanfit_access_token', 'demo-sa-token', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+        });
+        return res;
+      }
+
+      // Check server tenant registry or client-verified matchedTenant
+      let foundTenant = matchedTenant || null;
+      if (!foundTenant) {
+        for (const t of registry.tenants.values()) {
+          if (
+            t.ownerEmail.toLowerCase() === lowerId ||
+            t.slug.toLowerCase() === lowerId ||
+            t.nameEn.toLowerCase() === lowerId ||
+            t.nameAr.toLowerCase() === lowerId ||
+            (lowerId === 'titanfit-cairo' && t.slug === 'titanfit-egypt')
+          ) {
+            if (t.authVerifier && password && t.authVerifier !== password) {
+              return NextResponse.json(
+                {
+                  success: false,
+                  message: 'كلمة المرور غير صحيحة لهذا النادي / Invalid password for this gym',
+                },
+                { status: 401 },
+              );
+            }
+            foundTenant = t;
+            break;
+          }
+        }
+      }
+
+      if (foundTenant) {
+        const res = NextResponse.json({
+          success: true,
+          user: {
+            id: foundTenant.id || `usr-${foundTenant.slug}`,
+            email: foundTenant.ownerEmail,
+            name: foundTenant.nameAr || foundTenant.nameEn || foundTenant.slug,
+            role: 'GYM_OWNER',
+            tenantSlug: foundTenant.slug,
+            logoUrl: foundTenant.logoUrl || '/brand/logo.png',
+            primaryColor: foundTenant.primaryColor || '#059669',
+          },
+          tenant: foundTenant,
+        });
+        res.cookies.set('titanfit_access_token', `owner-token-${foundTenant.slug}`, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+        });
+        return res;
+      }
+
+      // Check if logging in as a registered Member (by Member Code, Email, or Phone)
+      let foundMem = matchedMember || registry.members.get(lowerId) || null;
+      if (!foundMem) {
+        for (const m of registry.members.values()) {
+          if (
+            m.code.toLowerCase() === lowerId ||
+            m.email.toLowerCase() === lowerId ||
+            m.phone === identifier
+          ) {
+            if (m.tempPassword && password && m.tempPassword !== password) {
+              return NextResponse.json(
+                {
+                  success: false,
+                  message: 'كلمة مرور المتدرب غير صحيحة / Invalid member password',
+                },
+                { status: 401 },
+              );
+            }
+            foundMem = m;
+            break;
+          }
+        }
+      }
+
+      if (foundMem) {
+        const res = NextResponse.json({
+          success: true,
+          user: {
+            id: foundMem.id,
+            email: foundMem.email || `${foundMem.code}@titanfit.eg`,
+            name: foundMem.fullNameAr || foundMem.fullNameEn,
+            role: 'MEMBER',
+            tenantSlug: foundMem.tenantSlug || 'titanfit-egypt',
+            logoUrl: '/brand/logo.png',
+            primaryColor: '#059669',
+          },
+        });
+        res.cookies.set('titanfit_access_token', `member-token-${foundMem.code}`, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+        });
+        return res;
+      }
     }
 
-    // Gym Owner / Staff Login
-    if (
-      lowerId === 'owner@titanfit.eg' ||
-      lowerId === 'coach.ahmed@peakfit.eg' ||
-      lowerId === 'titanfit-egypt' ||
-      lowerId === 'peak-fitness'
-    ) {
-      const isPeak = lowerId.includes('peak');
-      const res = NextResponse.json({
-        success: true,
-        user: {
-          id: isPeak ? 'usr-pk-1' : 'usr-tf-1',
-          email: isPeak ? 'coach.ahmed@peakfit.eg' : 'owner@titanfit.eg',
-          name: isPeak ? 'Peak Fitness Cairo' : 'TitanFit Egypt',
-          role: 'GYM_OWNER',
-          tenantSlug: isPeak ? 'peak-fitness' : 'titanfit-cairo',
-          logoUrl: isPeak
-            ? 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=200&q=80'
-            : '/brand/logo.png',
-          primaryColor: isPeak ? '#059669' : '#D97706',
-        },
-      });
-      res.cookies.set('titanfit_access_token', 'demo-owner-token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-      });
-      return res;
+    // 2B. Gym Secret Code / Trainee PIN Login (Matches any registered tenant's gymSecretCode, *-JOIN, TF-*, or PK-*)
+    const candidateCode = (upperGym || lowerId).toUpperCase();
+    if (candidateCode) {
+      let pinTenant = matchedTenant || null;
+      if (!pinTenant) {
+        for (const t of registry.tenants.values()) {
+          if (t.gymSecretCode && t.gymSecretCode.toUpperCase() === candidateCode) {
+            pinTenant = t;
+            break;
+          }
+        }
+      }
+
+      if (
+        pinTenant ||
+        candidateCode.endsWith('-JOIN') ||
+        candidateCode.startsWith('TF-') ||
+        candidateCode.startsWith('PK-')
+      ) {
+        const resolvedSlug =
+          pinTenant?.slug ||
+          (candidateCode.startsWith('PK') ? 'peak-fitness' : 'titanfit-egypt');
+        const resolvedColor =
+          pinTenant?.primaryColor || (candidateCode.startsWith('PK') ? '#059669' : '#D97706');
+        const resolvedLogo = pinTenant?.logoUrl || '/brand/logo.png';
+
+        const res = NextResponse.json({
+          success: true,
+          user: {
+            id: 'usr-mem-1',
+            email: `member@${resolvedSlug}.eg`,
+            name: pinTenant ? `${pinTenant.nameAr} — متدرب` : 'Ahmed Titan (Member)',
+            role: 'MEMBER',
+            tenantSlug: resolvedSlug,
+            logoUrl: resolvedLogo,
+            primaryColor: resolvedColor,
+          },
+          tenant: pinTenant,
+        });
+        res.cookies.set('titanfit_access_token', 'demo-member-token', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+        });
+        return res;
+      }
     }
 
     if (gymSecretCode) {

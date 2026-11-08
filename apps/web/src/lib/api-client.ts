@@ -9,6 +9,23 @@ export interface LoginCredentials {
   password?: string;
   tenantSlug?: string;
   gymSecretCode?: string;
+  matchedTenant?: {
+    id?: string;
+    slug: string;
+    nameEn: string;
+    nameAr: string;
+    ownerEmail: string;
+    logoUrl?: string;
+    primaryColor?: string;
+  };
+  matchedMember?: {
+    id: string;
+    code: string;
+    email: string;
+    fullNameEn: string;
+    fullNameAr: string;
+    tenantSlug?: string;
+  };
 }
 
 export interface AuthSessionUser {
@@ -116,7 +133,9 @@ export interface SyncActionPayload {
     | 'UPDATE_CUSTOM_RECIPE'
     | 'DELETE_CUSTOM_RECIPE'
     | 'ADD_CUSTOM_FILE'
-    | 'DELETE_CUSTOM_FILE';
+    | 'DELETE_CUSTOM_FILE'
+    | 'REGISTER_TENANT'
+    | 'DELETE_TENANT';
   payload: any;
 }
 

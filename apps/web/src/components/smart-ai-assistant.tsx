@@ -30,14 +30,139 @@ interface AssistantReply {
   actionLabelEn?: string;
   highlightsAr?: string[];
   highlightsEn?: string[];
+  followUpAr?: string;
+  followUpEn?: string;
   disclaimerAr?: string;
   disclaimerEn?: string;
 }
 
+interface ConversationMemory {
+  weightKg: number | null;
+  heightCm: number | null;
+  age: number | null;
+  goal: 'CUT' | 'BULK' | 'RECOMP' | null;
+  daysPerWeek: number | null;
+  place: 'GYM' | 'HOME' | null;
+}
+
 const AI_DISCLAIMER_AR =
-  '⚠️ ملاحظة هامة: أنا مساعد ذكي (AI Gym & Nutritionist) وممكن أغلط زي أي ذكاء اصطناعي آخر. المعلومات هنا استرشادية للتدريب والتغذية ولا تغني عن مراجعة الطبيب أو المختص.';
+  '⚠️ ملاحظة: أنا مساعد ذكي (AI Gym & Nutritionist) وممكن أغلط زي أي ذكاء اصطناعي آخر — المعلومات هنا استرشادية ولا تغني عن استشارة الطبيب أو المختص.';
 const AI_DISCLAIMER_EN =
-  '⚠️ Important Note: I am an AI Gym & Nutrition assistant and can make mistakes like any AI. Always verify critical training or dietary decisions with a qualified professional.';
+  '⚠️ Note: I am an AI Gym & Nutritionist and can make mistakes like any AI — always verify critical health decisions with a qualified professional.';
+
+/**
+ * Normalize Eastern Arabic digits (٠-٩) to Western digits (0-9) and unify Arabic characters
+ */
+function normalizeArabicText(raw: string): string {
+  const arabicDigits = '٠١٢٣٤٥٦٧٨٩';
+  let out = raw;
+  for (let i = 0; i < 10; i++) {
+    out = out.replace(new RegExp(arabicDigits.charAt(i), 'g'), String(i));
+  }
+  return out
+    .toLowerCase()
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي')
+    .trim();
+}
+
+/**
+ * Extracts cumulative user context (weight, height, age, goal, training days, home vs gym)
+ * from the entire conversation history so follow-up turns work like ChatGPT / Claude.
+ */
+function extractConversationMemory(history: AssistantReply[], latestQuery: string): ConversationMemory {
+  const mem: ConversationMemory = {
+    weightKg: null,
+    heightCm: null,
+    age: null,
+    goal: null,
+    daysPerWeek: null,
+    place: null,
+  };
+
+  const userTexts = [
+    ...history.filter((m) => m.sender === 'USER').map((m) => m.textAr),
+    latestQuery,
+  ];
+
+  for (const raw of userTexts) {
+    const t = normalizeArabicText(raw);
+
+    // Weight extraction (e.g., "وزني 95", "95 كيلو", "95kg", "95 كجم")
+    const explicitWeight =
+      t.match(/(?:وزني|وزن)\s*(\d{2,3})/) ||
+      t.match(/(\d{2,3})\s*(?:كيلو|كجم|كغ|kg)/);
+    if (explicitWeight) {
+      const w = Number(explicitWeight[1]);
+      if (w >= 35 && w <= 220) mem.weightKg = w;
+    }
+
+    // Height extraction (e.g., "طولي 175", "175 سم", "175cm")
+    const explicitHeight =
+      t.match(/(?:طولي|طول)\s*(\d{3})/) ||
+      t.match(/(\d{3})\s*(?:سم|سنتي|cm)/);
+    if (explicitHeight) {
+      const h = Number(explicitHeight[1]);
+      if (h >= 130 && h <= 225) mem.heightCm = h;
+    }
+
+    // Age extraction (e.g., "سني 25", "عمري 28", "25 سنه")
+    const explicitAge =
+      t.match(/(?:سني|عمري)\s*(\d{2})/) ||
+      t.match(/(\d{2})\s*(?:سنه|عام)/);
+    if (explicitAge) {
+      const a = Number(explicitAge[1]);
+      if (a >= 14 && a <= 85) mem.age = a;
+    }
+
+    // Goal extraction
+    if (
+      t.includes('اخس') ||
+      t.includes('تخسيس') ||
+      t.includes('تنشيف') ||
+      t.includes('حرق') ||
+      t.includes('دهون') ||
+      t.includes('كرش') ||
+      t.includes('انزل وزن') ||
+      t.includes('وزني زايد') ||
+      t.includes('خساره') ||
+      t.includes('cut') ||
+      t.includes('lose')
+    ) {
+      mem.goal = 'CUT';
+    } else if (
+      t.includes('تضخيم') ||
+      t.includes('ضخامه') ||
+      t.includes('ازيد') ||
+      t.includes('زياده وزن') ||
+      t.includes('نحافه') ||
+      t.includes('رفيع') ||
+      t.includes('بناء عضل') ||
+      t.includes('bulk') ||
+      t.includes('gain')
+    ) {
+      mem.goal = 'BULK';
+    } else if (t.includes('نحت') || t.includes('شد الجسم') || t.includes('recomp')) {
+      mem.goal = 'RECOMP';
+    }
+
+    // Training days per week (e.g. "3 ايام", "4 ايام")
+    const daysMatch = t.match(/([2-6])\s*(?:ايام|يوم|days)/);
+    if (daysMatch) {
+      mem.daysPerWeek = Number(daysMatch[1]);
+    }
+
+    // Place (Home vs Gym)
+    if (t.includes('في البيت') || t.includes('منزل') || t.includes('بدون جيم') || t.includes('home')) {
+      mem.place = 'HOME';
+    } else if (t.includes('في الجيم') || t.includes('نادي') || t.includes('gym')) {
+      mem.place = 'GYM';
+    }
+  }
+
+  return mem;
+}
 
 /**
  * Quick buttons shown strictly to authenticated Gym Owners / Admins
@@ -94,32 +219,30 @@ const OWNER_QUICK_TOPICS: Array<{
 ];
 
 /**
- * Smart AI Gym Coach & Sports Nutritionist Engine (for Regular Users & Trainees)
- * Also answers Gym Owner operational queries when isGymOwnerAccount is true.
+ * Context-Aware Multi-Turn Conversational AI Engine (ChatGPT / Claude Style)
  */
 function buildSmartReply(
   query: string,
+  history: AssistantReply[],
   isGymOwnerAccount: boolean,
 ): Omit<AssistantReply, 'id' | 'sender'> {
-  const q = query.trim().toLowerCase();
+  const q = normalizeArabicText(query);
+  const mem = extractConversationMemory(history, query);
 
-  // Check if user mentioned a weight in kg (e.g., "80 كيلو" or "80kg" or "وزني 90")
-  const weightMatch = q.match(/(\d{2,3})\s*(?:كجم|كيلو|kg)?/);
-  const detectedWeightKg = weightMatch ? Number(weightMatch[1]) : null;
-
-  // 1. Gym Owner Operational Queries (Only return navigation actions if isGymOwnerAccount is true)
+  // =========================================================================
+  // 1. GYM OWNER OPERATIONAL QUERIES (Only when logged in as Gym Owner / Admin)
+  // =========================================================================
   if (
     isGymOwnerAccount &&
     (q.includes('فيديو') ||
       q.includes('ملف') ||
       q.includes('pdf') ||
       q.includes('ارفع') ||
-      q.includes('أرفع') ||
       q.includes('upload'))
   ) {
     return {
       textAr:
-        'بصفتك صاحب الجيم، تقدر ترفع فيديوهات التمارين (ملف MP4 من جهازك أو رابط يوتيوب أو حركة تشريحية ثلاثية الأبعاد 3D) + الوصفات الغذائية المحسوبة + ملفات الـ PDF من قسم «استوديو رفع الفيديوهات والوصفات والملفات». أي محتوى بترفعُه هناك بيظهر فوراً لمتدربين ناديك فقط!',
+        'أهلاً بك يا كابتن! بصفتك صاحب الجيم، تقدر ترفع فيديوهات التمارين (ملف MP4 من جهازك أو رابط يوتيوب أو حركة تشريحية ثلاثية الأبعاد 3D) + الوصفات الغذائية المحسوبة + ملفات الـ PDF من قسم «استوديو رفع الفيديوهات والوصفات والملفات». أي محتوى بترفعُه هناك بيظهر فوراً لمتدربين ناديك فقط!',
       textEn:
         'As a Gym Owner, you can upload MP4 workout videos, YouTube links, 3D anatomical animations, macro-verified recipes, and PDF guides in the Gym Owner Media Studio.',
       highlightsAr: [
@@ -143,7 +266,7 @@ function buildSmartReply(
   if (
     isGymOwnerAccount &&
     (q.includes('داتابيز') ||
-      q.includes('قاعدة') ||
+      q.includes('قاعده') ||
       q.includes('عزل') ||
       q.includes('معزول') ||
       q.includes('خاص بيه') ||
@@ -179,7 +302,6 @@ function buildSmartReply(
     (q.includes('دفع') ||
       q.includes('فوري') ||
       q.includes('انستاباي') ||
-      q.includes('إنستاباي') ||
       q.includes('بايموب') ||
       q.includes('paymob') ||
       q.includes('fawry') ||
@@ -242,47 +364,223 @@ function buildSmartReply(
     };
   }
 
-  // 2. AI Sports Nutritionist: Fat Loss / Cutting / Calorie & Macro Calculation
+  // =========================================================================
+  // 2. NATURAL GREETINGS & SMALL TALK (ChatGPT / Claude Human-like Warmth)
+  // =========================================================================
+  const isPureGreeting =
+    /^(السلام عليكم|سلام عليكم|وعليكم السلام|اهلا|مرحبا|صباح الخير|مساء الخير|ازيك|عامل ايه|اخبارك|هاي|هلا|يا كابتن|كابتن|hello|hi|hey)/.test(
+      q,
+    ) && q.split(/\s+/).length <= 7;
+
+  if (isPureGreeting) {
+    const hasالسلام = q.includes('سلام');
+    return {
+      textAr: hasالسلام
+        ? 'وعليكم السلام ورحمة الله وبركاته! أهلاً وسهلاً بك يا بطل، نورتني 🤝✨ أنا معاك كمدربك الشخصي وأخصائي التغذية الرياضية. احكيلي عنك: وزنك وطولك كام تقريباً؟ وهدفك الحالي إيه (تخسيس وحرق دهون، ولا زيادة عضل وتضخيم، ولا شد الجسم واللياقة)؟'
+        : 'أهلاً وسهلاً بك يا بطل! أنا بخير الحمد لله وجاهز أساعدك توصل لأفضل فورمة 💪🥗. قولي وزنك وطولك كام تقريباً، وهدفك إيه الفترة دي عشان أفصل لك خطة تدريب وتغذية على مقاسك بالظبط؟',
+      textEn:
+        'Peace and blessings be upon you! Welcome champion 🤝✨ I am here as your personal trainer and sports nutritionist. Tell me your approximate weight, height, and current goal (fat loss, muscle building, or body recomposition) so I can design a custom plan just for you!',
+      highlightsAr: [
+        'لو هدفك تخسيس: قولي مثلاً «وزني 95 كيلو وعايز أخس» وهحسبلك سعراتك ووجباتك فوراً.',
+        'لو عايز جدول متكامل: قولي بتتمرن كام يوم في الأسبوع (في الجيم أو البيت) وهرتبلك خطة واضحة خطوة بخطوة.',
+      ],
+      highlightsEn: [
+        'For fat loss: Tell me e.g. "I weigh 95kg and want to lose fat" for exact macros and meals.',
+        'For a structured split: Tell me how many days you can train (Gym or Home) for a complete roadmap.',
+      ],
+      disclaimerAr: AI_DISCLAIMER_AR,
+      disclaimerEn: AI_DISCLAIMER_EN,
+    };
+  }
+
+  // Thanks / Appreciation
+  if (/^(شكرا|متشكر|تسلم|ربنا يباركلك|جزاك الله|الله يكرمك|عاش|ممتاز|حلو اوي|تمام شكرا|thanks|thank you)/.test(q) && q.split(/\s+/).length <= 6) {
+    const wText = mem.weightKg ? ` لوزنك (${mem.weightKg} كجم)` : '';
+    return {
+      textAr: `العفو يا بطل، على الرحب والسعة دايماً! 🙌💪 أهم حاجة الاستمرارية وعدم الاستعجال. أنا مسجل عندي تفاصيلك${wText}، ولو احتجت في أي وقت نعدل أكلات في الدايت، أو نشوف بدائل تمارين، أو تسأل عن مكملات، ابعتلي فوراً!`,
+      textEn: `You're very welcome champion! 🙌💪 Consistency is everything. Anytime you want to swap a meal, adjust an exercise, or ask about recovery, just message me!`,
+      disclaimerAr: AI_DISCLAIMER_AR,
+      disclaimerEn: AI_DISCLAIMER_EN,
+    };
+  }
+
+  // =========================================================================
+  // 3. FOLLOW-UP OR DIRECT REQUEST FOR A "CLEAR COMPLETE PLAN / ROADMAP"
+  //    (e.g., "طب قولي خطة واضحة وكويسه", "عايز خطة كاملة", "امشي ازاي", "جدول واضح")
+  // =========================================================================
+  const asksForClearPlan =
+    q.includes('خطه') ||
+    q.includes('جدول واضح') ||
+    q.includes('امشي ازاي') ||
+    q.includes('ابدا ازاي') ||
+    q.includes('برنامج كامل') ||
+    q.includes('نظام كامل') ||
+    q.includes('واضحه وكويسه') ||
+    q.includes('قولي اعمل ايه بالظبط') ||
+    q.includes('clear plan') ||
+    q.includes('roadmap');
+
+  if (asksForClearPlan) {
+    const w = mem.weightKg || 90;
+    const isCutting = mem.goal !== 'BULK'; // Default to fat-loss/recomp if user previously asked to lose weight or didn't specify bulk
+    const days = mem.daysPerWeek || 4;
+    const isHome = mem.place === 'HOME';
+
+    if (isCutting) {
+      const targetWeight8Wks = Math.max(55, w - 7);
+      const proteinG = Math.round(w * 2.0);
+      const fatsG = Math.round(w * 0.75);
+      const rawKcal = Math.round(w * 23.5);
+      const carbsG = Math.max(90, Math.round((rawKcal - (proteinG * 4 + fatsG * 9)) / 4));
+      const exactKcal = proteinG * 4 + carbsG * 4 + fatsG * 9;
+
+      return {
+        textAr: mem.weightKg
+          ? `عيوني يا بطل! بما إنك قولتلي إن وزنك **${w} كجم** وهدفك تنزل دهون بصحة ومن غير ترهلات، دي **خطتك الواضحة المتكاملة لمدة 8 أسابيع** (تغذية + تمرين ${isHome ? 'منزلي' : 'جيم'} ${days} أيام + كارديو ومتابعة) عشان تنزل من **${w} كجم إلى ${targetWeight8Wks} كجم** صافي دهون:`
+          : `عيوني يا بطل! دي **خطة واضحة ومتكاملة خطوة بخطوة لمدة 8 أسابيع** (تجمع بين التغذية المحسوبة + تمرين المقاومة + الكارديو الذكي) عشان تشوف فرق حقيقي في مقاساتك وشكل جسمك من أول شهر:`,
+        textEn: `Here is your complete, step-by-step **8-Week Transformation Blueprint** tailored for ${w}kg (${exactKcal} kcal/day, ${days} days/week training + cardio):`,
+        highlightsAr: [
+          `🎯 الهدف الرقمي (8 أسابيع): نزول صحي بمعدل 0.8 إلى 1 كجم دهون أسبوعياً (إجمالي -7 إلى -8 كجم دهون صافية) مع شد العضلات ومحيط الوسط.`,
+          `🥗 ١. خطة الأكل اليومية الثابتة (${exactKcal} سعرة — ${proteinG}g بروتين • ${carbsG}g كارب • ${fatsG}g دهون):\n   • الفطور (9 ص): 3 بيضات مسلوقة + 100 جم جبن قريش + نصف رغيف بلدي أسمر + خيار وورقيات.\n   • الغداء (3 م): 200 جم صدور دجاج أو سمك مشوي + 150 جم أرز مسلوق (6 ملاعق) + طبق سلطة خضراء كبير.\n   • سناك (6 م): ثمرة تفاح أو جوافة + كوب زبادي يوناني أو 15 حبة لوز.\n   • العشاء (9 م): علبة تونة مصفاة بالليمون أو 150 جم جبن قريش + بيضة مسلوقة.`,
+          isHome
+            ? `🏋️‍♂️ ٢. جدول التمرين المنزلي (${days} أيام أسبوعياً):\n   • السبت (علوي دفع): ضغط على الأرض أو الحائط 4×12 + ضغط أكتاف بالدمبل أو زجاجات مياه 4×15 + ترايسبس على الكرسي 3×12.\n   • الأحد (سفلي وبطن): سكوات بوزن الجسم 4×15 + طعن ثابت (Lunges) 3×12 + بلانك 3×45 ثانية.\n   • الثلاثاء (سحب وظهر): تجديف بالدمبل أو حبل المقاومة 4×12 + بايسبس تبادل 3×15.\n   • الخميس (حرق شامل HIIT): 20 دقيقة تمارين هوائية متقطعة (مشية سريعة + نط حبل خفيف).`
+            : `🏋️‍♂️ ٢. جدول تمرين الجيم (${days} أيام مقاومة + 20 دقيقة كارديو بعد التمرين):\n   • اليوم الأول (سبت — دفع: صدر وكتف وترايسبس): بنش مستوي 4×10 + ضغط دمبل عالي 3×12 + رفرفة كتف جانبي 4×15 + ترايسبس حبل 3×12 + 20 دقيقة مشي بميل (Incline Treadmill).\n   • اليوم الثاني (أحد — سحب: ظهر وبايسبس): سحب عالي واسع 4×10 + تجديف بار أو ماكينة 4×10 + سحب أرضي ضيق 3×12 + بايسبس دمبل 3×12.\n   • الاثنين: راحة من الجيم (اكتفِ بـ 8,000 خطوة مشي خفيف).\n   • اليوم الثالث (ثلاثاء — أرجل وبطن لحرق مضاعف): سكوات أو Leg Press 4×10 + ديدليفت روماني للخلفية 3×12 + أمامي وخلفي ماكينة 3×15 + بلانك للبطن 3×45 ثانية.\n   • اليوم الرابع (أربعاء — علوي شامل لحرق الدهون): تمرين شامل للصدر والظهر والكتف بوزن متوسط وراحة 60 ثانية بين المجموعات + 20 دقيقة عجلة أو مشي سريع.`,
+          `💧 ٣. الـ 3 عادات اليومية التي تضمن النتيجة:\n   • اشرب ${Math.max(3.5, Math.round(w * 0.04 * 10) / 10)} لتر مياه يومياً (كوبين قبل كل وجبة).\n   • نم 7 إلى 8 ساعات ليلاً (لأن قلة النوم ترفع هرمون الكورتيزول وتحبس المياه).\n   • اوزن نفسك مرة واحدة فقط كل يوم سبت صباحاً على الريق وقيس محيط الوسط بالمازورة.`,
+        ],
+        highlightsEn: [
+          `🎯 8-Week Target: Drop from ${w}kg to ${targetWeight8Wks}kg (~0.8-1kg pure fat/week) while preserving lean muscle.`,
+          `🥗 Daily Nutrition (${exactKcal} kcal — ${proteinG}g P / ${carbsG}g C / ${fatsG}g F): 3 eggs + 100g cottage cheese breakfast, 200g chicken/fish + 150g rice lunch, Greek yogurt snack, tuna/cottage cheese dinner.`,
+          `🏋️‍♂️ ${days}-Day Training Split: Day 1 Push + 20m Incline Walk, Day 2 Pull + Core, Day 3 Rest (8k steps), Day 4 Legs & Glutes, Day 5 Upper Body Metabolic Conditioning.`,
+          `💧 Daily Rules: Drink ${Math.max(3.5, Math.round(w * 0.04 * 10) / 10)}L water, hit 8,000 steps, and weigh in once a week on Saturday morning.`,
+        ],
+        followUpAr:
+          '💡 إيه رأيك في الخطة دي؟ لو فيه أكلة مش بتحبها في الفطور أو الغداء، أو لو عايز نعدل مواعيد التمرين حسب شغلك، قولي وهنعدلها مع بعض حالاً!',
+        followUpEn:
+          '💡 How does this plan look to you? Tell me if you want to swap any food or adjust the training days to fit your schedule!',
+        ...(isGymOwnerAccount
+          ? {
+              actionSection: 'FREE_TRIAL_HUB' as WorkspaceSection,
+              actionLabelAr: '📅 افتح جدول الـ ٧ أيام التفاعلي ومسجل المتابعة',
+              actionLabelEn: '📅 Open Interactive 7-Day Roadmap & Tracker',
+            }
+          : {}),
+        disclaimerAr: AI_DISCLAIMER_AR,
+        disclaimerEn: AI_DISCLAIMER_EN,
+      };
+    } else {
+      // BULK / MUSCLE GAIN COMPLETE PLAN
+      const targetWeight8Wks = w + 4;
+      const proteinG = Math.round(w * 2.0);
+      const fatsG = Math.round(w * 1.0);
+      const rawKcal = Math.round(w * 34);
+      const carbsG = Math.max(220, Math.round((rawKcal - (proteinG * 4 + fatsG * 9)) / 4));
+      const exactKcal = proteinG * 4 + carbsG * 4 + fatsG * 9;
+
+      return {
+        textAr: `عيوني يا بطل! بما إن هدفك **بناء عضل صافي وتضخيم نظيف (Lean Bulk)** لوزن **${w} كجم**، دي **خطتك المتكاملة لمدة 8 أسابيع** للوصول إلى **${targetWeight8Wks} كجم** عضل صافي بدون دهون زائدة:`,
+        textEn: `Here is your complete **8-Week Lean Bulking Blueprint** for ${w}kg (${exactKcal} kcal/day):`,
+        highlightsAr: [
+          `🥗 ١. فائض السعرات النظيف (${exactKcal} سعرة — ${proteinG}g بروتين • ${carbsG}g كارب • ${fatsG}g دهون):\n   • الفطور: 4 بيضات + 80 جم شوفان بالحليب والموز + ملعقة زبدة فول سوداني.\n   • الغداء: 200 جم صدور دجاج أو لحم بقري صافي + 250 جم أرز أو مكرونة + سلطة.\n   • وجبة قبل التمرين: ثمرة موز + 50 جم شوفان أو بطاطا حلوة + قهوة سادة.\n   • العشاء: 150 جم جبن قريش أو علبة تونة + رغيف بلدي + زيت زيتون.`,
+          `🏋️‍♂️ ٢. جدول التدرج في الأحمال (Push / Pull / Legs — 4 إلى 5 أيام):\n   • ركّز على الحركات المركبة (السكوات، البنش بريس، السحب العالي، التجديف بالبار، الرفعة الرومانية) في نطاق 8 إلى 10 عدات مع زيادة الوزن تدريجياً كل أسبوع.`,
+          `⚡ ٣. الاستشفاء والمكملات: 5 جم كرياتين مونوهيدرات يومياً + شرب 4 لتر مياه + نوم 8 ساعات ليلاً.`,
+        ],
+        highlightsEn: [
+          `🥗 Lean Surplus (${exactKcal} kcal — ${proteinG}g P / ${carbsG}g C / ${fatsG}g F).`,
+          `🏋️‍♂️ Progressive Overload PPL Split focusing on compound lifts in the 8–10 rep range.`,
+          `⚡ Recovery: 5g Creatine Monohydrate daily + 4L water + 8 hours sleep.`,
+        ],
+        followUpAr: '💡 تحب أفصل لك أوزان وعدات كل يوم تمرين بالتفصيل؟',
+        followUpEn: '💡 Would you like me to break down the exact sets and reps for each workout day?',
+        disclaimerAr: AI_DISCLAIMER_AR,
+        disclaimerEn: AI_DISCLAIMER_EN,
+      };
+    }
+  }
+
+  // =========================================================================
+  // 4. FOOD SWAPS / ECONOMIC DIET / SPECIFIC MEAL QUESTIONS
+  // =========================================================================
   if (
-    q.includes('تنشيف') ||
-    q.includes('تخسيس') ||
-    q.includes('دهون') ||
+    q.includes('بديل') ||
+    q.includes('بدائل') ||
+    q.includes('مبحبش') ||
+    q.includes('مش بحب') ||
+    q.includes('اقتصادي') ||
+    q.includes('رخيص') ||
+    q.includes('ميزانيه') ||
+    q.includes('سمك') ||
+    q.includes('قريش') ||
+    q.includes('فراخ') ||
+    q.includes('تونه') ||
+    q.includes('بيض')
+  ) {
+    const w = mem.weightKg || 85;
+    return {
+      textAr: `ولا يهمك خالص يا بطل! أهم ميزة في التغذية الذكية إننا بنبدل أي أكلة مش بتحبها ببديل يعطيك **نفس جرامات البروتين والسعرات بالظبط** لوزنك (${w} كجم) وبأقل تكلفة:`,
+      textEn: `No problem at all! Here are exact gram-for-gram protein and carb swaps tailored for your ${w}kg plan:`,
+      highlightsAr: [
+        '🔄 بدائل البروتين في الغداء (كل بديل = حوالي 45 جم بروتين صافي):\n   • 200 جم صدور دجاج مشوية = 250 جم سمك بلطي أو ماكريل مشوي = 200 جم كبدة دجاج أو بقري = 220 جم لحم قليل الدهن = علبة ونصف تونة مصفاة.',
+        '🔄 بدائل الفطور والعشاء (لو مش بتحب الجبن القريش أو البيض):\n   • 150 جم جبن قريش = كوب زبادي يوناني + 2 بيضة مسلوقة = 6 ملاعق فول مدمس بالليمون والكمون بدون زيت غزير + بيضتين = 100 جم شوفان بالحليب.',
+        '🔄 بدائل النشويات الصحية (كل بديل = حوالي 40 جم كاربوهيدرات):\n   • 150 جم أرز مسلوق (6 ملاعق) = 200 جم بطاطس أو بطاطا مسلوقة/مشوية بالفرن = نصف رغيف بلدي أسمر = 55 جم شوفان جاف.',
+      ],
+      highlightsEn: [
+        '🔄 Lunch Protein Swaps (~45g Protein): 200g chicken breast = 250g grilled tilapia = 200g liver = 1.5 drained tuna tins.',
+        '🔄 Breakfast/Dinner Swaps: 150g cottage cheese = Greek yogurt + 2 eggs = 6 tbsp fava beans (foul) + 2 eggs.',
+        '🔄 Carb Swaps (~40g Carbs): 150g cooked rice = 200g baked potato/sweet potato = half whole-wheat baladi loaf = 55g oats.',
+      ],
+      followUpAr: '💡 قولي إيه أكتر أكلات بتحبها في يومك وهركبلك منها ٣ وجبات مشبعة على مزاجك!',
+      followUpEn: '💡 Tell me your favorite everyday foods and I will build your 3 daily meals around them!',
+      disclaimerAr: AI_DISCLAIMER_AR,
+      disclaimerEn: AI_DISCLAIMER_EN,
+    };
+  }
+
+  // =========================================================================
+  // 5. WEIGHT LOSS / CUTTING / CALORIE & MACRO STATEMENT (e.g. "بص وزني 95 كيلو وعايز اخس اعمل ايه")
+  // =========================================================================
+  if (
     q.includes('اخس') ||
-    q.includes('أخس') ||
+    q.includes('تخسيس') ||
+    q.includes('تنشيف') ||
+    q.includes('دهون') ||
+    q.includes('كرش') ||
+    q.includes('انزل وزن') ||
     q.includes('سعر') ||
     q.includes('كالوري') ||
     q.includes('ماكرو') ||
     q.includes('دايت') ||
     q.includes('نظام غذائي') ||
-    q.includes('تغذية') ||
-    q.includes('وجب') ||
-    q.includes('بروتين') ||
+    q.includes('وزني') ||
     q.includes('cut') ||
-    q.includes('diet') ||
-    q.includes('calorie')
+    q.includes('diet')
   ) {
-    const w = detectedWeightKg && detectedWeightKg >= 40 && detectedWeightKg <= 200 ? detectedWeightKg : 80;
+    const w = mem.weightKg || 85;
+    const targetGoalWeight = Math.max(55, w - 10);
     const proteinG = Math.round(w * 2.0);
-    const fatsG = Math.round(w * 0.8);
-    const targetKcal = Math.round(w * 24);
-    const carbsG = Math.max(80, Math.round((targetKcal - (proteinG * 4 + fatsG * 9)) / 4));
+    const fatsG = Math.round(w * 0.75);
+    const rawKcal = Math.round(w * 23.5);
+    const carbsG = Math.max(90, Math.round((rawKcal - (proteinG * 4 + fatsG * 9)) / 4));
     const exactKcal = proteinG * 4 + carbsG * 4 + fatsG * 9;
 
     return {
-      textAr: `بصفتي أخصائي التغذية الرياضية بالذكاء الاصطناعي (AI Nutritionist) 🥗: لو هدفك حرق الدهون مع الحفاظ على الكتلة العضلية (لوزن تقريبي ${w} كجم)، فأنت تحتاج حوالي ${exactKcal} سعرة حرارية يومياً محسوبة بمعادلة الماكروز الدقيقة (4P + 4C + 9F):`,
-      textEn: `As your AI Sports Nutritionist 🥗: For lean fat loss at ~${w}kg body weight, your target daily intake is ~${exactKcal} kcal (using 4P + 4C + 9F macro math):`,
+      textAr: `أهلاً بك يا بطل! خطوة ممتازة إنك قررت تبدأ صح 💪🔥. لوزن **${w} كجم**، عشان تنزل دهون صافية وتوصل لـ **${targetGoalWeight} كجم** خلال 10 إلى 12 أسبوع **بدون حرمان أو ترهلات أو فقدان عضل**، محتاجين نمشي على عجز سعرات ذكي ومحسوب بمعادلة (4P + 4C + 9F) وهو **${exactKcal} سعرة حرارية يومياً**:`,
+      textEn: `Great decision champion! 💪🔥 At **${w}kg**, to drop pure fat and reach **${targetGoalWeight}kg** safely in 10–12 weeks without muscle loss or hunger, your optimal daily target is **${exactKcal} kcal**:`,
       highlightsAr: [
-        `الاحتياج اليومي الموصى به: ${proteinG} جم بروتين (${proteinG * 4} كالوري) • ${carbsG} جم كاربوهيدرات (${carbsG * 4} كالوري) • ${fatsG} جم دهون صحية (${fatsG * 9} كالوري).`,
-        'الفطور المقترح: ٣ بيضات مسلوقة + ١٠٠ جم جبن قريش + نصف رغيف بلدي أسمر أو ٤٠ جم شوفان + خيار وطماطم.',
-        'الغداء المقترح: ٢٠٠ جم صدور دجاج مشوية (أو ٢٥٠ جم سمك بلطي مشوي كبديل اقتصادي) + ١٥٠ جم أرز مسلوق + طبق سلطة خضراء.',
-        'العشاء المقترح: علبة تونة مصفاة من الزيت أو ١٥٠ جم جبن قريش بزيت الزيتون + ثمرة بطاطا حلوة مشوية.',
+        `📊 تقسيمة الماكروز اليومية لوزن ${w} كجم:\n   • البروتين: ${proteinG} جم يومياً (${proteinG * 4} كالوري) — أهم عنصر عشان يشبعك ويحمي عضلاتك.\n   • الكاربوهيدرات: ${carbsG} جم يومياً (${carbsG * 4} كالوري) — طاقة لتمرينك وتركيزك.\n   • الدهون الصحية: ${fatsG} جم يومياً (${fatsG * 9} كالوري) — لضبط الهرمونات ومعدل الحرق.`,
+        `🍳 الفطور المقترح: 3 بيضات مسلوقة + 100 جم جبن قريش + نصف رغيف بلدي أسمر أو 40 جم شوفان + خيار وطماطم.`,
+        `🍗 الغداء المقترح: 200 جم صدور دجاج مشوية (أو 250 جم سمك بلطي مشوي كبديل اقتصادي) + 150 جم أرز مسلوق + طبق سلطة خضراء.`,
+        `🥗 العشاء المقترح: علبة تونة مصفاة من الزيت أو 150 جم جبن قريش بزيت الزيتون + ثمرة بطاطا حلوة مشوية أو كوب زبادي.`,
       ],
       highlightsEn: [
-        `Daily Macros: ${proteinG}g Protein • ${carbsG}g Carbs • ${fatsG}g Healthy Fats (~${exactKcal} kcal).`,
-        'Breakfast: 3 boiled eggs + 100g cottage cheese + 40g oats or whole-wheat baladi bread.',
-        'Lunch: 200g grilled chicken breast (or 250g grilled tilapia) + 150g basmati rice + green salad.',
-        'Dinner: Drained tuna tin or 150g cottage cheese + roasted sweet potato.',
+        `📊 Daily Macros for ${w}kg: ${proteinG}g Protein • ${carbsG}g Carbs • ${fatsG}g Healthy Fats (${exactKcal} kcal).`,
+        `🍳 Breakfast: 3 boiled eggs + 100g cottage cheese + half whole-wheat baladi bread or 40g oats.`,
+        `🍗 Lunch: 200g grilled chicken breast (or 250g grilled tilapia) + 150g cooked rice + green salad.`,
+        `🥗 Dinner: Drained tuna tin or 150g cottage cheese + roasted sweet potato or Greek yogurt.`,
       ],
+      followUpAr:
+        `💡 تحب أحطلك دلوقتي **خطة واضحة وجدول تمارين أسبوعي** مخصص لوزن ${w} كجم؟ (اكتبلي مثلاً: «طب قولي خطة واضحة وكويسه» أو قولي بتتمرن كام يوم في الأسبوع!)`,
+      followUpEn:
+        `💡 Would you like me to build your **complete weekly workout & cardio roadmap** for ${w}kg next? Just ask "Give me a clear plan"!`,
       ...(isGymOwnerAccount
         ? {
             actionSection: 'PUBLIC_STOREFRONT' as WorkspaceSection,
@@ -296,44 +594,47 @@ function buildSmartReply(
     };
   }
 
-  // 3. AI Gym Coach: Muscle Building / Bulking / Workout Splits (Chest, Back, Legs, PPL)
+  // =========================================================================
+  // 6. WORKOUT SPLITS & SPECIFIC MUSCLE GROUP QUERIES
+  // =========================================================================
   if (
     q.includes('تمرين') ||
     q.includes('تمارين') ||
     q.includes('جدول') ||
     q.includes('عضل') ||
     q.includes('تضخيم') ||
-    q.includes('ضخامة') ||
+    q.includes('ضخامه') ||
     q.includes('صدر') ||
     q.includes('ظهر') ||
     q.includes('رجل') ||
-    q.includes('أرجل') ||
+    q.includes('ارجل') ||
     q.includes('كتف') ||
     q.includes('ذراع') ||
     q.includes('باي') ||
     q.includes('تراي') ||
-    q.includes('خطة') ||
     q.includes('workout') ||
     q.includes('gym') ||
     q.includes('muscle')
   ) {
+    const wContext = mem.weightKg ? ` (مخصص لوزنك ${mem.weightKg} كجم${mem.goal === 'CUT' ? ' مع رفع معدل حرق الدهون' : ''})` : '';
     return {
-      textAr:
-        'بصفتي مدربك الذكي (AI Gym Coach) 🏋️‍♂️: أفضل نظام علمي لبناء العضلات والقوة بدون إجهاد للجهاز العصبي هو نظام (Push / Pull / Legs) مع تطبيق مبدأ التدرج في الأحمال (Progressive Overload) وإيقاع عدات منضبط (٣ ثوانٍ نزول سلبي • ١ ثانية ثبات • ١ ثانية دفع):',
-      textEn:
-        'As your AI Gym Coach 🏋️‍♂️: The gold-standard hypertrophy split is Push / Pull / Legs (PPL) using controlled 3-1-1 tempo and progressive overload:',
+      textAr: `بصفتي مدربك الذكي (AI Gym Coach) 🏋️‍♂️: ده جدول التمارين العلمي${wContext} بنظام (Push / Pull / Legs) مع تطبيق التدرج في الأحمال وإيقاع عدات منضبط (٣ ثوانٍ نزول سلبي • ١ ثانية ثبات • ١ ثانية دفع):`,
+      textEn: `As your AI Gym Coach 🏋️‍♂️: Here is your structured Push / Pull / Legs (PPL) program with controlled 3-1-1 tempo and progressive overload:`,
       highlightsAr: [
-        'يوم الدفع (Push — صدر وكتف وترايسبس): ضغط بار بنش مستوي (٤×٨-١٠) + ضغط دمبل عالي ٣٠ درجة (٤×١٠) + تفتيح كابل (٣×١٢) + رفرفة كتف جانبي (٤×١٥) + دفع حبل ترايسبس (٣×١٢).',
-        'يوم السحب (Pull — ظهر وبايسبس): سحب مجنص عالي واسع (٤×١٠) + تجديف بالبار الحر (٤×٨-١٠) + تبادل دمبل بايسبس (٣×١٢).',
-        'يوم الأرجل (Legs — سفلي وبطن): سكوات بالبار الحر (٤×٨) + ديدليفت روماني للخلفية (٤×١٠) + سمانة وبطن.',
-        'نصيحة ذهبية: استرح من ٦٠ إلى ٩٠ ثانية بين المجموعات، ونم ٧-٨ ساعات ليلاً لأن العضلات تنمو أثناء النوم والاستشفاء.',
+        '🔥 يوم الدفع (Push — صدر وكتف وترايسبس): ضغط بار بنش مستوي (٤×٨-١٠) + ضغط دمبل عالي ٣٠ درجة (٤×١٠) + تفتيح كابل (٣×١٢) + رفرفة كتف جانبي (٤×١٥) + دفع حبل ترايسبس (٣×١٢).',
+        '💪 يوم السحب (Pull — ظهر وبايسبس): سحب مجنص عالي واسع (٤×١٠) + تجديف بالبار الحر أو الماكينة (٤×٨-١٠) + سحب أرضي ضيق (٣×١٢) + تبادل دمبل بايسبس (٣×١٢).',
+        '🦵 يوم الأرجل (Legs — سفلي وبطن): سكوات بالبار أو Leg Press (٤×١٠) + ديدليفت روماني للخلفية (٤×١٠) + سمانة وبطن بلانك (٣×٤٥ ثانية).',
+        mem.goal === 'CUT'
+          ? '🏃‍♂️ إضافة حرق الدهون: أضف ٢٠ دقيقة مشي سريع بميل (Incline 10% • Speed 5) بعد تمرين الحديد مباشرة لحرق الدهون المخزنة.'
+          : '😴 نصيحة الاستشفاء: استرح ٦٠ إلى ٩٠ ثانية بين المجموعات، ونم ٧-٨ ساعات ليلاً لأن العضلات تنمو أثناء النوم.',
       ],
       highlightsEn: [
-        'Push Day (Chest/Shoulders/Triceps): Barbell Bench Press (4x8-10), Incline Dumbbell Press (4x10), Cable Fly (3x12), Lateral Raises (4x15), Triceps Pushdown (3x12).',
-        'Pull Day (Back/Biceps): Lat Pulldown (4x10), Barbell Row (4x8-10), Dumbbell Biceps Curl (3x12).',
-        'Leg Day (Quads/Hamstrings/Glutes): Barbell Squat (4x8), Romanian Deadlift (4x10), Calf Raises & Core.',
-        'Recovery rule: Rest 60–90s between sets and sleep 7–8 hours for optimal muscle protein synthesis.',
+        '🔥 Push Day (Chest/Shoulders/Triceps): Barbell Bench Press (4x8-10), Incline DB Press (4x10), Cable Fly (3x12), Lateral Raises (4x15), Triceps Pushdown (3x12).',
+        '💪 Pull Day (Back/Biceps): Wide Lat Pulldown (4x10), Barbell/Machine Row (4x8-10), Seated Cable Row (3x12), DB Biceps Curl (3x12).',
+        '🦵 Leg Day (Quads/Hamstrings/Core): Squat or Leg Press (4x10), Romanian Deadlift (4x10), Calf Raises & Plank (3x45s).',
       ],
+      followUpAr: '💡 تحب أقولك بدائل أي تمرين لو بتتمرن في البيت بالدمبل، أو لو عندك أي ألم في الركبة أو الكتف؟',
+      followUpEn: '💡 Want home dumbbell alternatives or joint-friendly modifications for knees or shoulders?',
       ...(isGymOwnerAccount
         ? {
             actionSection: 'FREE_TRIAL_HUB' as WorkspaceSection,
@@ -346,57 +647,84 @@ function buildSmartReply(
     };
   }
 
-  // 4. Supplements, Hydration & Recovery Queries
+  // =========================================================================
+  // 7. SUPPLEMENTS, INJURIES, JOINT PAIN & RECOVERY QUERIES
+  // =========================================================================
   if (
     q.includes('مكمل') ||
     q.includes('كرياتين') ||
     q.includes('واي') ||
     q.includes('بروتين بودر') ||
-    q.includes('مياه') ||
-    q.includes('نوم') ||
+    q.includes('حارق') ||
+    q.includes('حوارق') ||
     q.includes('اصاب') ||
-    q.includes('إصاب') ||
     q.includes('وجع') ||
+    q.includes('الم') ||
+    q.includes('ركب') ||
+    q.includes('قطنيه') ||
     q.includes('creatine') ||
     q.includes('whey')
   ) {
     return {
       textAr:
-        'بصفتي مستشارك الرياضي والغذائي الذكي (AI Gym & Nutritionist) ⚡: المكملات الغذائية هي مكمل للنظام الغذائي وليست بديلاً عن الأكل الطبيعي، وأهم ٣ عناصر مثبتة علمياً هي:',
+        'سؤال مهم جداً يا بطل ⚡! خليني أوضحلك الحقيقة العلمية بدون مبالغات تجارية بخصوص المكملات وحماية المفاصل:',
       textEn:
-        'As your AI Gym & Nutritionist ⚡: Supplements complement whole foods rather than replacing them. Here are the top evidence-based essentials:',
+        'Great question ⚡! Here is the science-based truth on supplements and joint-safe training:',
       highlightsAr: [
-        'الكرياتين مونوهيدرات (Creatine Monohydrate): ٥ جرام يومياً مع شرب ٣ إلى ٤ لتر مياه؛ يزيد القوة الانفجارية والامتلاء العضلي.',
-        'الواي بروتين (Whey Protein): سكوب واحد بعد التمرين فقط إذا لم تستطع تغطية احتياجك اليومي من البروتين من الدجاج والبيض والسمك والجبن القريش.',
-        'الإحماء وتجنب الإصابات: ابدأ دائماً بـ ٥-١٠ دقائق إحماء مفصلي ومجموعتين بوزن خفيف قبل الأوزان الثقيلة.',
+        '١. الكرياتين مونوهيدرات (Creatine Monohydrate): أفضل مكمل مدروس علمياً (٥ جرام يومياً مع شرب ٣.٥ لتر مياه)؛ بيزود القوة والتحمل العضلي ومناسب للتضخيم والتنشيف.',
+        '٢. الواي بروتين (Whey Protein): مجرد أكل مجفف سريع الامتصاص؛ لو بتقفل احتياجك اليومي من الدجاج والبيض والجبن القريش والسمك، مش هتحتاجه إطلاقاً.',
+        '٣. حوارق الدهون (Fat Burners): ٩٥٪ منها مجرد كافيين عالي؛ فنجان قهوة سادة قبل التمرين بـ ٣٠ دقيقة مع التزامك بعجز السعرات أقوى وآمن بمراحل!',
+        '٤. لو عندك ألم في الركبة أو الكتف: استبدل السكوات الحر بـ Box Squat أو Leg Press بزاوية مريحة، وفي تمارين الصدر خلّي كوعك بزاوية ٤٥ درجة للداخل مش ٩٠ درجة مفتوحة.',
       ],
       highlightsEn: [
-        'Creatine Monohydrate: 5g daily with 3–4L of water to boost ATP strength and cell hydration.',
-        'Whey Protein: Convenient post-workout option if whole-food protein targets are not met.',
-        'Injury Prevention: Always perform 5–10 minutes of dynamic joint mobility and 2 warm-up sets.',
+        '1. Creatine Monohydrate: 5g daily with 3.5L water boosts ATP strength and muscle fullness.',
+        '2. Whey Protein: Only needed if you cannot hit your daily protein target from whole foods.',
+        '3. Fat Burners: Mostly overpriced caffeine — black coffee 30m pre-workout + calorie deficit works best.',
+        '4. Joint Safety: Tuck elbows to 45° on presses and use controlled tempos to protect shoulders and knees.',
+      ],
+      followUpAr: '💡 قولي لو بتحس بأي إجهاد في تمرين معين وهقولك البديل التشريحي الآمن ليه فوراً!',
+      followUpEn: '💡 Let me know if any specific movement causes discomfort and I will give you a joint-safe alternative!',
+      disclaimerAr: AI_DISCLAIMER_AR,
+      disclaimerEn: AI_DISCLAIMER_EN,
+    };
+  }
+
+  // =========================================================================
+  // 8. CONTEXT-AWARE CONVERSATIONAL FALLBACK (Uses Memory if Available!)
+  // =========================================================================
+  if (mem.weightKg) {
+    return {
+      textAr: `أنا معاك يا بطل ومسجل عندي إن وزنك **${mem.weightKg} كجم**${mem.goal === 'CUT' ? ' وهدفك **حرق الدهون والتنشيف**' : mem.goal === 'BULK' ? ' وهدفك **زيادة العضلات**' : ''}! 🤖💪 قولي حابب نركز على إيه دلوقتي بالظبط؟`,
+      textEn: `I'm right here with you and have your profile noted (**${mem.weightKg}kg**)! What should we focus on next?`,
+      highlightsAr: [
+        `اكتب «طب قولي خطة واضحة وكويسه» عشان أطلعلك خطة الـ 8 أسابيع الكاملة (تمرين + دايت + كارديو) لوزن ${mem.weightKg} كجم.`,
+        'اكتب «عايز بدائل اقتصادية للأكل» لو حابب نبدل أي وجبة بأكلات بتحبها من البيت.',
+        'اكتب «بتمرن في البيت» أو عدد أيام تمرينك (مثلاً: ٣ أيام أو ٤ أيام) عشان أظبطلك الجدول عليها.',
+      ],
+      highlightsEn: [
+        `Type "Give me a clear plan" for your complete 8-week workout, cardio & meal blueprint for ${mem.weightKg}kg.`,
+        'Type "Food swaps" to customize your meals with budget-friendly options.',
+        'Tell me how many days you train (or if you train at home) to tailor your split.',
       ],
       disclaimerAr: AI_DISCLAIMER_AR,
       disclaimerEn: AI_DISCLAIMER_EN,
     };
   }
 
-  // 5. Default Smart AI Gym & Nutritionist Reply
   return {
     textAr: isGymOwnerAccount
       ? 'أهلاً بك يا كابتن في المساعد الذكي (AI Gym & Nutritionist + دليل لوحة الجيم)! تقدر تسألني أي سؤال في التمارين والتغذية وحساب السعرات، أو تستخدم أزرار التحكم الخاصة بصاحب الجيم بالأسفل للوصول الفوري لأي قسم في منصتك.'
-      : 'أهلاً بك! أنا مدربك الذكي وأخصائي التغذية الرياضية بالذكاء الاصطناعي (AI Gym & Nutritionist) 🤖💪🥗. اكتب لي هدفك (تنشيف، تضخيم، وزنك وطولك، أو العضلة التي تريد تمرينها، أو ميزانية أكلك) وسأصمم لك فوراً جدول تمارين ونظاماً غذائياً محسوب السعرات والماكروز!',
+      : 'أهلاً بك يا بطل! أنا مدربك الذكي وأخصائي التغذية الرياضية (AI Gym & Nutritionist) 🤖💪🥗. بتكلم معاك زي مدربك الشخصي بالظبط — قولي وزنك وطولك وهدفك وهفصل لك خطة كاملة وتمارين ودايت على مقاسك!',
     textEn: isGymOwnerAccount
       ? 'Welcome Coach! Ask me any training or nutrition question, or use your Gym Owner quick buttons below to jump directly to any club management tool.'
-      : 'Hi! I am your AI Gym Coach & Sports Nutritionist 🤖💪🥗. Tell me your goal (fat loss, muscle gain, your weight/height, target muscle, or budget) and I will craft a tailored workout and macro meal plan for you!',
+      : 'Hi champion! I am your conversational AI Gym Coach & Sports Nutritionist 🤖💪🥗. Share your weight, height, and goal and I will build a personalized plan and adapt it with you step by step!',
     highlightsAr: [
-      'مثال ١: اكتب «عايز نظام غذائي للتنشيف وزني 85 كيلو مع بدائل اقتصادية».',
-      'مثال ٢: اكتب «عايز جدول تمارين صدر وظهر وأرجل لبناء العضل».',
-      'مثال ٣: اكتب «إيه أفضل مكملات وإزاي أتجنب الإصابات في الجيم؟».',
+      'جرب تكتبلي: «وزني 95 كيلو وعايز أخس اعمل إيه؟» وبعدها اكتبلي «طب قولي خطة واضحة وكويسه».',
+      'أو اسألني عن: بدائل الأكل الاقتصادية، جدول تمارين الجيم أو البيت، أو المكملات وتجنب الإصابات.',
     ],
     highlightsEn: [
-      'Example 1: Type "Give me a fat loss meal plan for 85kg with budget foods".',
-      'Example 2: Type "Build me a Push Pull Legs workout routine".',
-      'Example 3: Type "How much creatine and water do I need daily?".',
+      'Try typing: "I weigh 95kg and want to lose fat" and then follow up with "Give me a clear plan".',
+      'Ask about budget food swaps, gym/home workout splits, or injury prevention.',
     ],
     disclaimerAr: AI_DISCLAIMER_AR,
     disclaimerEn: AI_DISCLAIMER_EN,
@@ -419,16 +747,14 @@ export function SmartAiAssistantWidget() {
       id: 'welcome-ai',
       sender: 'AI',
       textAr:
-        'مرحباً بك! أنا مدربك الذكي وأخصائي التغذية الرياضية بالذكاء الاصطناعي (AI Gym & Nutritionist) 🤖💪🥗. اسألني عن أي تمرين، جدول تدريبي، حساب سعرات وماكروز، أو بدائل وجبات اقتصادية وسأرد عليك فوراً!',
+        'أهلاً بك يا بطل! أنا مدربك الذكي وأخصائي التغذية الرياضية بالذكاء الاصطناعي (AI Gym & Nutritionist) 🤖💪🥗. احكيلي عن هدفك ووزنك أو اسألني أي سؤال في التمارين والدايت ونتناقش مع بعض خطوة بخطوة!',
       textEn:
-        'Welcome! I am your AI Gym Coach & Sports Nutritionist 🤖💪🥗. Ask me about any exercise, workout split, macro calculation, or meal plan and I will answer right away!',
+        'Welcome champion! I am your conversational AI Gym Coach & Sports Nutritionist 🤖💪🥗. Tell me your weight and goal or ask any training/diet question and we will plan it together step by step!',
       highlightsAr: [
-        'اسألني عن: جداول التمارين (Push / Pull / Legs)، التنشيف، التضخيم، أو حساب السعرات.',
-        'اكتب وزنك وهدفك وسأحسب لك البروتين والكارب والدهون والوجبات المناسبة.',
+        'بفهم كلامك وبفتكر تفاصيلك طول المحادثة: قولي وزنك وهدفك، واسألني بعدها عن الخطة أو بدائل الأكل أو التمرين.',
       ],
       highlightsEn: [
-        'Ask me about workout splits, fat loss, muscle hypertrophy, or macro math.',
-        'Share your weight and goal for a customized daily meal & training guide.',
+        'I remember your context throughout our chat: share your weight & goal, then ask follow-up questions naturally.',
       ],
       disclaimerAr: AI_DISCLAIMER_AR,
       disclaimerEn: AI_DISCLAIMER_EN,
@@ -443,6 +769,8 @@ export function SmartAiAssistantWidget() {
     }
   }, [messages, isOpen]);
 
+  const activeMemory = extractConversationMemory(messages, '');
+
   const handleSendQuery = (customQuery?: string) => {
     const text = (customQuery ?? inputText).trim();
     if (!text) return;
@@ -454,7 +782,7 @@ export function SmartAiAssistantWidget() {
       textEn: text,
     };
 
-    const replyData = buildSmartReply(text, isGymOwnerAccount);
+    const replyData = buildSmartReply(text, messages, isGymOwnerAccount);
     const aiMsg: AssistantReply = {
       id: `ai-${Date.now() + 1}`,
       sender: 'AI',
@@ -508,10 +836,10 @@ export function SmartAiAssistantWidget() {
               {isAr
                 ? isGymOwnerAccount
                   ? 'وضع صاحب الجيم + توجيه سريع ✨'
-                  : 'اسألني في التمارين والدايت ✨'
+                  : 'محادثة ذكية فورية ✨'
                 : isGymOwnerAccount
                   ? 'Gym Owner Mode + Quick Actions ✨'
-                  : 'Ask Workouts & Nutrition ✨'}
+                  : 'Conversational AI Coach ✨'}
             </p>
           </div>
         </motion.button>
@@ -526,10 +854,10 @@ export function SmartAiAssistantWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.96 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-20 end-4 z-50 flex h-[590px] max-h-[84vh] w-[92vw] max-w-md flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-[#0B0F19] sm:end-6"
+            className="fixed bottom-20 end-4 z-50 flex h-[610px] max-h-[85vh] w-[92vw] max-w-md flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-[#0B0F19] sm:end-6"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 px-5 py-4 text-white dark:border-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 px-5 py-3.5 text-white dark:border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500 text-slate-950 shadow-md">
                   <Bot className="h-5 w-5" />
@@ -543,15 +871,27 @@ export function SmartAiAssistantWidget() {
                     </h3>
                     <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
                   </div>
-                  <p className="text-[11px] text-slate-300">
-                    {isAr
-                      ? isGymOwnerAccount
-                        ? 'وضع مالك النادي مفعل: إجابات ذكية + أزرار تحكم سريع'
-                        : 'مدرب ذكي وأخصائي تغذية يرد على استفساراتك'
-                      : isGymOwnerAccount
-                        ? 'Gym Owner Mode: AI Answers + Quick Navigation'
-                        : 'Smart AI Personal Trainer & Sports Nutritionist'}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-300">
+                    <span>
+                      {isAr
+                        ? isGymOwnerAccount
+                          ? 'وضع مالك النادي مفعل'
+                          : 'ذاكرة محادثة تفاعلية ذكية'
+                        : isGymOwnerAccount
+                          ? 'Gym Owner Mode Active'
+                          : 'Context-Aware AI Coach'}
+                    </span>
+                    {activeMemory.weightKg && (
+                      <span className="rounded-md bg-emerald-500/20 px-1.5 py-0.5 font-mono text-[10px] font-black text-emerald-300 border border-emerald-500/30">
+                        {activeMemory.weightKg}kg{' '}
+                        {activeMemory.goal === 'CUT'
+                          ? '• تنشيف'
+                          : activeMemory.goal === 'BULK'
+                            ? '• تضخيم'
+                            : ''}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -577,25 +917,31 @@ export function SmartAiAssistantWidget() {
                   }`}
                 >
                   <div
-                    className={`max-w-[92%] rounded-2xl p-3.5 text-xs leading-relaxed shadow-2xs ${
+                    className={`max-w-[94%] rounded-2xl p-3.5 text-xs leading-relaxed shadow-2xs ${
                       msg.sender === 'USER'
                         ? 'bg-amber-500 font-black text-slate-950'
                         : 'border border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200'
                     }`}
                   >
-                    <p>{isAr ? msg.textAr : msg.textEn}</p>
+                    <p className="whitespace-pre-line">{isAr ? msg.textAr : msg.textEn}</p>
 
                     {msg.highlightsAr && msg.highlightsAr.length > 0 && (
-                      <ul className="mt-2.5 space-y-1.5 border-t border-slate-100 pt-2 text-[11px] font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300">
+                      <ul className="mt-2.5 space-y-2 border-t border-slate-100 pt-2.5 text-[11px] font-semibold text-slate-700 dark:border-slate-800 dark:text-slate-300">
                         {(isAr ? msg.highlightsAr : msg.highlightsEn || msg.highlightsAr).map(
                           (h, idx) => (
-                            <li key={idx} className="flex items-start gap-1.5">
-                              <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                            <li key={idx} className="flex items-start gap-1.5 whitespace-pre-line leading-relaxed">
+                              <Sparkles className="mt-1 h-3.5 w-3.5 shrink-0 text-amber-500" />
                               <span>{h}</span>
                             </li>
                           ),
                         )}
                       </ul>
+                    )}
+
+                    {(msg.followUpAr || msg.followUpEn) && (
+                      <p className="mt-2.5 rounded-xl bg-emerald-500/10 px-3 py-2 text-[11px] font-extrabold text-emerald-800 dark:text-emerald-300">
+                        {isAr ? msg.followUpAr : msg.followUpEn}
+                      </p>
                     )}
 
                     {/* Action Buttons strictly visible ONLY to authenticated Gym Owners / Admins */}
@@ -612,13 +958,13 @@ export function SmartAiAssistantWidget() {
                       </button>
                     )}
 
-                    {/* Mandatory AI Disclaimer inside every AI reply */}
+                    {/* Subtle AI Disclaimer Note at bottom of AI reply */}
                     {msg.sender === 'AI' && (
                       <div
                         data-testid="ai-reply-disclaimer"
-                        className="mt-3 flex items-start gap-1.5 rounded-xl border border-amber-500/30 bg-amber-50/80 px-2.5 py-2 text-[10px] font-bold text-amber-900 dark:bg-amber-950/30 dark:text-amber-300"
+                        className="mt-2.5 flex items-center gap-1.5 border-t border-slate-100 pt-2 text-[10px] font-semibold text-slate-500 dark:border-slate-800 dark:text-slate-400"
                       >
-                        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                        <AlertTriangle className="h-3 w-3 shrink-0 text-amber-500" />
                         <span>
                           {isAr
                             ? msg.disclaimerAr || AI_DISCLAIMER_AR
@@ -682,8 +1028,8 @@ export function SmartAiAssistantWidget() {
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder={
                   isAr
-                    ? 'اسأل مدربك الذكي أو أخصائي التغذية (مثال: نظام تنشيف 85 كجم)...'
-                    : 'Ask your AI Gym Coach & Nutritionist (e.g., fat loss plan for 85kg)...'
+                    ? 'اكتب رسالتك بحرية (مثال: وزني 95 وعايز أخس / قولي خطة واضحة)...'
+                    : 'Chat naturally (e.g., I weigh 95kg and want to lose fat / Give me a clear plan)...'
                 }
                 className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
               />
