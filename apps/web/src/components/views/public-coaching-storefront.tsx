@@ -382,7 +382,9 @@ export function PublicCoachingStorefrontView({
                       {isAr ? 'بعد ١٢ أسبوع' : 'After 12 Wks'}
                     </p>
                     <p className="mt-1 font-mono text-2xl font-black text-emerald-700 dark:text-emerald-400">84 kg</p>
-                    <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">Body Fat: 12% (-24kg)</p>
+                    <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">
+                      {isAr ? 'نسبة الدهون: 12% • فرق الوزن: -24 كجم' : 'Body Fat: 12% • Weight Change: -24 kg'}
+                    </p>
                   </div>
                 </div>
 
@@ -617,7 +619,8 @@ export function PublicCoachingStorefrontView({
 
               <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4">
                 <p className="text-sm font-extrabold text-slate-900">
-                  {isAr ? story.nameAr : story.nameEn} ({story.age} {isAr ? 'سنة' : 'yrs'})
+                  {isAr ? story.nameAr : story.nameEn}
+                  {story.age != null ? ` (${story.age} ${isAr ? 'سنة' : 'yrs'})` : ''}
                 </p>
                 <p className="text-[11px] font-semibold text-slate-500">
                   {isAr ? story.roleAr : story.roleEn}
