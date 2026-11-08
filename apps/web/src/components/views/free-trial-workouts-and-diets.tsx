@@ -85,8 +85,8 @@ const FREE_VIDEO_WORKOUTS: FreeVideoWorkout[] = [
     levelEn: 'Intermediate / Pro',
     durationMin: 45,
     kcalBurn: 380,
-    coachAr: 'كابتن عمر الشناوي + د. كريم (علاج طبيعي)',
-    coachEn: 'Capt. Omar El-Shenawy + Dr. Karim (PT)',
+    coachAr: 'كابتن عمر الشناوي (مدرب لياقة وأحمال)',
+    coachEn: 'Capt. Omar El-Shenawy (Strength & Conditioning Coach)',
     thumbnailUrl:
       'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=80',
     youtubeId: 'rT7DgCr-3pg',
@@ -168,8 +168,8 @@ const FREE_VIDEO_WORKOUTS: FreeVideoWorkout[] = [
     levelEn: 'Intermediate',
     durationMin: 50,
     kcalBurn: 410,
-    coachAr: 'كابتن محمود رضا + د. هبة (إصابات ملاعب)',
-    coachEn: 'Capt. Mahmoud Reda + Dr. Heba (Sports PT)',
+    coachAr: 'كابتن محمود رضا (مدرب كمال أجسام ولياقة)',
+    coachEn: 'Capt. Mahmoud Reda (Bodybuilding & Fitness Coach)',
     thumbnailUrl:
       'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=900&q=80',
     youtubeId: 'eGo4IYlbE5g',
@@ -352,17 +352,17 @@ const FREE_VIDEO_WORKOUTS: FreeVideoWorkout[] = [
 const FREE_DIET_BLUEPRINTS: FreeDietBlueprint[] = [
   {
     id: 'diet-1500-cut',
-    nameAr: 'نظام ١٥٠٠ سعرة — تنشيف وحرق دهون سريع بدون حرمان',
-    nameEn: '1,500 kcal Rapid Fat-Loss & Shred Blueprint',
+    nameAr: 'نظام ١٥٠٠ سعرة (تقريبي) — تنشيف وحرق دهون متوازن بدون حرمان',
+    nameEn: '~1,500 kcal (Approx.) Balanced Fat-Loss Blueprint',
     badgeAr: 'الأكثر طلباً للتخسيس',
     badgeEn: 'MOST POPULAR FOR FAT LOSS',
     targetKcal: 1500,
     proteinG: 135,
-    carbsG: 130,
-    fatsG: 45,
+    carbsG: 129,
+    fatsG: 49,
     waterLiters: 3.2,
-    bestForAr: 'مثالي لخسارة 1 إلى 1.5 كجم دهون أسبوعياً مع شبع كامل طوال اليوم.',
-    bestForEn: 'Ideal for dropping 1–1.5 kg of pure fat weekly while staying full.',
+    bestForAr: 'سعرات تقريبية موحّدة من الماكروز (135 جم بروتين × 4 + 129 جم كارب × 4 + 49 جم دهون × 9 = 1497 ≈ 1500 kcal).',
+    bestForEn: 'Approximate macro-unified calories (135g P × 4 + 129g C × 4 + 49g F × 9 = 1,497 ≈ 1,500 kcal).',
     coverImageUrl:
       'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
     meals: [
@@ -547,8 +547,8 @@ export function FreeTrialWorkoutsAndDietsView({
             </h1>
             <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300 sm:text-sm">
               {isAr
-                ? 'عشان تتأكد من جودة المتابعة العلمية في منصتنا قبل ما تشترك، جهزنالك ٤ حصص تدريبية كاملة بالفيديو تحت إشراف أطباء علاج طبيعي + ٣ أنظمة غذائية محسوبة بالجرامات والبدائل الاقتصادية تقدر تبدأ بيها فوراً من النهاردة!'
-                : 'Experience our scientific coaching quality firsthand: pick a video-guided workout below, log your sets with our live rest timer, and grab a complete macro-calculated meal plan.'}
+                ? 'عشان تتعرف على أدوات التخطيط والمتابعة في منصتنا قبل ما تشترك، جهزنالك ٤ حصص تدريبية كاملة بالفيديو والرسوم المتحركة + أنظمة غذائية محسوبة بالجرامات والبدائل الاقتصادية تقدر تبدأ بيها فوراً!'
+                : 'Experience our coaching tools firsthand: pick a video-guided workout below, log your sets with our live rest timer, and grab a complete macro-calculated meal plan.'}
             </p>
           </div>
 
@@ -726,13 +726,13 @@ export function FreeTrialWorkoutsAndDietsView({
               </div>
             </div>
 
-            {/* Physical Therapist Safety Note */}
+            {/* Exercise Form & Joint Safety Note */}
             <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
               <div className="flex items-center gap-2 text-xs font-black text-emerald-700 dark:text-emerald-400">
                 <ShieldCheck className="h-4 w-4" />
                 {isAr
-                  ? '💡 توجيه طبي من دكتور العلاج الطبيعي (لتجنب الإصابة):'
-                  : '💡 Physical Therapist Form & Safety Note:'}
+                  ? '💡 إرشادات الأداء الحركي السليم (لتجنب الإجهاد والإصابة):'
+                  : '💡 Proper Form & Joint Safety Note:'}
               </div>
               <p className="mt-1.5 text-xs leading-relaxed text-emerald-800 dark:text-emerald-300">
                 {isAr ? activeWorkout.ptSafetyTipAr : activeWorkout.ptSafetyTipEn}
@@ -869,10 +869,10 @@ export function FreeTrialWorkoutsAndDietsView({
             <div className="flex flex-wrap gap-3">
               <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-center">
                 <p className="text-[10px] font-bold text-amber-800 dark:text-amber-300">
-                  {isAr ? 'إجمالي السعرات' : 'Total Calories'}
+                  {isAr ? 'إجمالي السعرات (تقريبي)' : 'Total Calories (Approx.)'}
                 </p>
                 <p className="font-mono text-base font-black text-slate-900 dark:text-white">
-                  {activeDiet.targetKcal} kcal
+                  ≈ {activeDiet.targetKcal} kcal
                 </p>
               </div>
               <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-center">
@@ -914,7 +914,7 @@ export function FreeTrialWorkoutsAndDietsView({
                       {isAr ? meal.timeAr : meal.timeEn}
                     </span>
                     <span className="font-mono text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
-                      {meal.kcal} kcal • {meal.proteinG}g Protein
+                      ≈ {meal.kcal} kcal ({isAr ? 'تقريبي' : 'approx.'}) • {meal.proteinG}g Protein
                     </span>
                   </div>
 

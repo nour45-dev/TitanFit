@@ -68,17 +68,17 @@ const TRANSFORMATION_STORIES: TransformationStory[] = [
     roleEn: 'Mathematical simulation of fat-loss & recomposition (Not a real person)',
     durationAr: '١٢ أسبوع متابعة افتراضية',
     durationEn: '12 Weeks Projected',
-    weightBeforeKg: 108,
-    weightAfterKg: 84,
-    bodyFatBefore: '29%',
-    bodyFatAfter: '12%',
-    badgeAr: '-24 كجم وزن إجمالي (-21.2 كجم دهون صافية) وفق الماكروز',
-    badgeEn: '-24 kg Total (-21.2 kg Fat) based on macro deficit',
+    weightBeforeKg: 92,
+    weightAfterKg: 83,
+    bodyFatBefore: '24%',
+    bodyFatAfter: '16.5%',
+    badgeAr: '-9 كجم وزن إجمالي (-8.4 كجم دهون صافية) خلال 12 أسبوع',
+    badgeEn: '-9 kg Total (-8.4 kg Fat) over 12 weeks',
     isIllustrativeExample: true,
     quoteAr:
-      'مثال توضيحي بالأرقام: نزول من ١٠٨ كجم (٢٩٪ دهون) إلى ٨٤ كجم (١٢٪ دهون) مع المحافظة على الكتلة العضلية بتطبيق عجز سعرات تدريجي ٢٠٪ ونظام بروتين عالي ٢ جم/كجم.',
+      'مثال توضيحي بالأرقام: نزول واقعي من ٩٢ كجم (٢٤٪ دهون = ٢٢.١ كجم دهون و٦٩.٩ كجم كتلة خالية من الدهون) إلى ٨٣ كجم (١٦.٥٪ دهون = ١٣.٧ كجم دهون و٦٩.٣ كجم كتلة خالية من الدهون) خلال ١٢ أسبوعاً بمعدل صافي -٨.٤ كجم دهون مع الحفاظ على الكتلة العضلية.',
     quoteEn:
-      'Numerical illustrative simulation: dropping from 108kg (29% body fat) to 84kg (12% body fat) by maintaining lean mass through a controlled 20% deficit and 2.0g/kg protein.',
+      'Illustrative numerical example: realistic drop from 92 kg (24% body fat = 22.1 kg fat, 69.9 kg lean mass) to 83 kg (16.5% body fat = 13.7 kg fat, 69.3 kg lean mass) in 12 weeks (-9 kg total weight, -8.4 kg fat mass while preserving lean mass).',
   },
 ];
 
@@ -241,17 +241,17 @@ export function PublicCoachingStorefrontView({
                 <>
                   Forget Boring Diets —{' '}
                   <span className="text-amber-700 dark:text-amber-400">
-                    Build Your Dream Physique
+                    Build Your Sustainable Physique
                   </span>{' '}
-                  With Science & Medical Supervision
+                  With Balanced Nutrition & Structured Training
                 </>
               )}
             </h1>
 
             <p className="max-w-2xl text-sm font-normal leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
               {isAr
-                ? `متدربون ومشتركون غيروا حياتهم بالكامل ووصلوا لشكل جسمهم المثالي من خلال خطط تغذية بوصفات مصورة، برامج تدريبية بالفيديو من الجيم أو البيت تحت إشراف أطباء علاج طبيعي، ومتابعة يومية خطوة بخطوة.`
-                : `Members transformed their bodies and lives through tailored video-recipe nutrition, physical-therapist-supervised training, and daily 1-on-1 WhatsApp & app coaching.`}
+                ? `منصة تفاعلية تساعدك على تخطيط نظامك الغذائي وحساب سعراتك وماكروزك اليومية بدقة، مع مكتبة وصفات مصورة وتمارين مشروحة بالفيديو والرسوم المتحركة من الجيم أو البيت خطوة بخطوة.`
+                : `An interactive platform to plan your nutrition, calculate your daily calories and macros, and follow illustrated meal recipes and step-by-step video & animated workouts.`}
             </p>
 
             {/* Primary CTA Buttons including the FREE TRIAL WORKOUTS & DIETS Button */}
@@ -374,22 +374,32 @@ export function PublicCoachingStorefrontView({
                     <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
                       {isAr ? 'قبل الاشتراك' : 'Before'}
                     </p>
-                    <p className="mt-1 font-mono text-2xl font-black text-rose-600">108 kg</p>
-                    <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Body Fat: 29%</p>
+                    <p className="mt-1 font-mono text-2xl font-black text-rose-600">92 kg</p>
+                    <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                      {isAr ? 'نسبة الدهون: 24% (22.1 كجم دهون)' : 'Body Fat: 24% (22.1 kg fat)'}
+                    </p>
+                    <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                      {isAr ? 'الكتلة الخالية من الدهون: 69.9 كجم' : 'Lean Mass: 69.9 kg'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">
                       {isAr ? 'بعد ١٢ أسبوع' : 'After 12 Wks'}
                     </p>
-                    <p className="mt-1 font-mono text-2xl font-black text-emerald-700 dark:text-emerald-400">84 kg</p>
-                    <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">Body Fat: 12% (-24kg)</p>
+                    <p className="mt-1 font-mono text-2xl font-black text-emerald-700 dark:text-emerald-400">83 kg</p>
+                    <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">
+                      {isAr ? 'نسبة الدهون: 16.5% • فرق الوزن: -9 كجم' : 'Body Fat: 16.5% • Weight Change: -9 kg'}
+                    </p>
+                    <p className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                      {isAr ? 'الدهون: 13.7 كجم (-8.4 كجم) • الكتلة الصافية: 69.3 كجم' : 'Fat: 13.7 kg (-8.4 kg) • Lean Mass: 69.3 kg'}
+                    </p>
                   </div>
                 </div>
 
                 <blockquote className="mt-4 text-xs leading-relaxed font-semibold text-slate-700 dark:text-slate-300">
                   {isAr
-                    ? '“مثال توضيحي بالأرقام: نزول ٢١.٢ كجم دهون صافية من إجمالي ٢٤ كجم مع الحفاظ على الكتلة الخالية من الدهون عبر حساب الماكروز والتدرج في الأحمال بدون حرمان.”'
-                    : '“Illustrative calculation: 21.2kg of pure fat loss out of 24kg total while preserving lean mass via calculated macros and progressive overload.”'}
+                    ? '“مثال توضيحي بالأرقام: نزول واقعي بمعدل ٩ كجم في ١٢ أسبوعاً (منها ٨.٤ كجم دهون صافية: من ٢٢.١ كجم إلى ١٣.٧ كجم) مع الحفاظ على الكتلة الخالية من الدهون (٦٩.٩ كجم ← ٦٩.٣ كجم) عبر عجز سعرات معتدل وتدرج الأحمال.”'
+                    : '“Illustrative calculation: realistic 9 kg loss over 12 weeks (8.4 kg fat loss: 22.1 kg → 13.7 kg) while preserving lean mass (69.9 kg → 69.3 kg) through a moderate calorie deficit and progressive overload.”'}
                 </blockquote>
               </div>
             </div>
@@ -421,8 +431,8 @@ export function PublicCoachingStorefrontView({
                 </h2>
                 <p className="text-xs text-slate-600 dark:text-slate-400 sm:text-sm">
                   {isAr
-                    ? 'شاهد فيديوهات التمارين مع نصائح أطباء العلاج الطبيعي، شغل تايمر التمرين التفاعلي، وحمل ٣ أنظمة غذائية كاملة بالجرامات والبدائل الاقتصادية مجاناً.'
-                    : 'Watch HD exercise demos with PT safety cues, use our interactive set & rest timer, and grab 3 complete meal plans for free.'}
+                    ? 'شاهد فيديوهات التمارين مع إرشادات الأداء الحركي السليم، شغل تايمر التمرين التفاعلي، وحمل ٣ أنظمة غذائية كاملة بالجرامات والبدائل الاقتصادية مجاناً.'
+                    : 'Watch HD exercise demos with proper form cues, use our interactive set & rest timer, and grab 3 complete meal plans for free.'}
                 </p>
               </div>
             </div>
@@ -458,45 +468,45 @@ export function PublicCoachingStorefrontView({
           {[
             {
               step: '01',
-              titleAr: '١. إشترك بسهولة',
-              titleEn: '1. Choose & Subscribe',
+              titleAr: '١. اختر الباقة (قريباً / نسخة تجريبية)',
+              titleEn: '1. Select Package (Coming Soon / Demo)',
               descAr:
-                'اختر الباقة المناسبة لهدفك وادفع بأمان عبر إنستاباي، فودافون كاش، فوري، أو البطاقة البنكية.',
+                'استعرض الباقات المناسبة لهدفك؛ بوابات الدفع الإلكتروني (إنستاباي، فودافون كاش، فوري، والبطاقة البنكية) قريباً — المنصة حالياً في وضع النسخة التجريبية.',
               descEn:
-                'Pick your coaching package and pay securely via InstaPay, Fawry, Vodafone Cash, or Card.',
+                'Browse coaching packages; digital payment gateways (InstaPay, Fawry, Vodafone Cash, and Card) are coming soon — currently in demo preview.',
               icon: CreditCard,
               color: 'text-amber-600 bg-amber-50 border-amber-200',
             },
             {
               step: '02',
-              titleAr: '٢. تاريخك الصحي والرياضي',
-              titleEn: '2. Deep-Dive Assessment',
+              titleAr: '٢. نمط حياتك ومستواك الرياضي',
+              titleEn: '2. Lifestyle & Activity Profile',
               descAr:
-                'بنتعرف على تفاصيل يومك، الأكل اللي بتحبه، تحاليلك الطبية، وأي إصابات سابقة عشان نفصل البرنامج عليك.',
+                'بنتعرف على تفاصيل يومك، الأكل اللي بتحبه، ومستوى نشاطك الحالي عشان نفصل البرنامج التدريبي والغذائي المناسب لك.',
               descEn:
-                'We analyze your nutrition history, lifestyle, lab tests, and injuries to tailor every detail.',
+                'We review your daily routine, food preferences, and current fitness level to tailor your plan.',
               icon: HeartPulse,
               color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
             },
             {
               step: '03',
               titleAr: '٣. الجزء السحري (البرنامج المفصل)',
-              titleEn: '3. The Magic Blueprint',
+              titleEn: '3. The Custom Blueprint',
               descAr:
-                'تستلم على التطبيق خطتك الغذائية بالوصفات المصورة وبرنامجك التدريبي بالفيديو تحت إشراف طبيب علاج طبيعي.',
+                'تستلم على التطبيق خطتك الغذائية بالوصفات المصورة وبرنامجك التدريبي المشروح بالفيديو والرسوم التوضيحية.',
               descEn:
-                'Receive your custom meal plan, video workouts, and supplement guide reviewed by a physician.',
+                'Receive your custom meal plan, illustrated recipes, and step-by-step video & animated workouts.',
               icon: Sparkles,
               color: 'text-sky-600 bg-sky-50 border-sky-200',
             },
             {
               step: '04',
               titleAr: '٤. المتابعة: إنت مش لوحدك!',
-              titleEn: '4. Daily Coaching & Support',
+              titleEn: '4. Daily Coaching & Check-Ins',
               descAr:
-                'متابعة يومية على الواتساب والتطبيق، وتصحيح لأدائك التدريبي بالفيديو ودعم نفسي مستمر لحد ما توصل لهدفك.',
+                'متابعة دورية على الواتساب والتطبيق، ومراجعة لأدائك التدريبي بالفيديو وتشجيع مستمر على الالتزام لحد ما توصل لهدفك.',
               descEn:
-                'Daily WhatsApp check-ins, video form corrections, and mindset support until you hit your goal.',
+                'Regular WhatsApp check-ins, exercise form feedback, and ongoing accountability until you reach your goal.',
               icon: MessageCircle,
               color: 'text-purple-600 bg-purple-50 border-purple-200',
             },
@@ -530,17 +540,17 @@ export function PublicCoachingStorefrontView({
         </div>
       </section>
 
-      {/* 4. REAL TRANSFORMATION STORIES WITH PHOTOS ("شركاؤنا حققوا أفضل نسخة من نفسهم") */}
+      {/* 4. ILLUSTRATIVE TRANSFORMATION EXAMPLE */}
       <section id="transformations-section" className="scroll-mt-24 space-y-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-600">
-              {isAr ? 'نتائج حقيقية وموثقة بالصور والأرقام' : 'REAL CLIENT RESULTS'}
+              {isAr ? 'مثال توضيحي لنتيجة ممكنة' : 'ILLUSTRATIVE EXAMPLE OF POSSIBLE RESULT'}
             </span>
             <h2 className="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">
               {isAr
-                ? 'شركاؤنا حققوا أفضل نسخة من نفسهم — الدور عليك الآن!'
-                : 'Real People, Real Science, Life-Changing Results'}
+                ? 'مثال توضيحي لنتيجة ممكنة بالالتزام بالخطة الغذائية والتدريبية'
+                : 'Illustrative Example of a Possible Result with Consistent Training & Nutrition'}
             </h2>
           </div>
           <a
@@ -617,7 +627,8 @@ export function PublicCoachingStorefrontView({
 
               <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4">
                 <p className="text-sm font-extrabold text-slate-900">
-                  {isAr ? story.nameAr : story.nameEn} ({story.age} {isAr ? 'سنة' : 'yrs'})
+                  {isAr ? story.nameAr : story.nameEn}
+                  {story.age != null ? ` (${story.age} ${isAr ? 'سنة' : 'yrs'})` : ''}
                 </p>
                 <p className="text-[11px] font-semibold text-slate-500">
                   {isAr ? story.roleAr : story.roleEn}
@@ -697,7 +708,7 @@ export function PublicCoachingStorefrontView({
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1 text-xs font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200">
               <BookOpen className="h-3.5 w-3.5 text-amber-500" />
-              {isAr ? 'هدية مجانية موثقة للزوار' : 'FREE VERIFIED TRAINING E-BOOK'}
+              {isAr ? 'هدية مجانية للزوار' : 'FREE TRAINING E-BOOK'}
             </span>
             <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
               {isAr ? 'تحميل فوري مباشر' : 'Instant Direct Download'}
@@ -711,8 +722,8 @@ export function PublicCoachingStorefrontView({
           </h3>
           <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400 sm:text-sm">
             {isAr
-              ? 'دليل عملي معتمد أعده فريق العلاج الطبيعي والتغذية الرياضية يشمل المبادئ الميكانيكية لحماية المفاصل، جدول تمارين Push/Pull/Legs، حساب الماكروز، والبدائل الاقتصادية المصرية.'
-              : 'Complete practical handbook written by certified physiotherapists & sports nutritionists covering joint safety biomechanics, PPL splits, macros, and smart budget swaps.'}
+              ? 'دليل عملي استرشادي يشمل المبادئ الحركية لحماية المفاصل، جدول تمارين Push/Pull/Legs، حساب الماكروز، والبدائل الاقتصادية المصرية.'
+              : 'Practical reference guide covering joint-friendly exercise form, PPL workout splits, macro calculations, and smart budget food swaps.'}
           </p>
 
           <form onSubmit={handleSendEbook} className="mt-5 space-y-3">
@@ -753,24 +764,24 @@ export function PublicCoachingStorefrontView({
               <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />
               {isAr ? 'لأصحاب الجيمات والمدربين (B2B SaaS White-Label)' : 'FOR GYM OWNERS & ONLINE COACHES'}
             </span>
-            <span className="flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-              {isAr ? 'متاح للتعاقد الفوري' : 'Available Now'}
+            <span className="flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
+              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              {isAr ? 'قريباً / نسخة تجريبية' : 'Coming Soon / Demo Preview'}
             </span>
           </div>
 
           <h3 className="mt-3 text-xl font-black text-slate-900 dark:text-white sm:text-2xl">
             {isAr
-              ? 'هل أنت صاحب جيم أو مدرب أونلاين؟ امتلك منصتك الخاصة باسمك وشعارك!'
-              : 'Own a Gym or Coaching Brand? Launch Your White-Label SaaS Platform'}
+              ? 'هل أنت صاحب جيم أو مدرب أونلاين؟ استكشف النسخة التجريبية لمنصتك الخاصة!'
+              : 'Own a Gym or Coaching Brand? Explore the White-Label SaaS Demo Preview'}
           </h3>
           <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400 sm:text-sm">
             {isAr
-              ? 'احصل على نسخة كاملة بهويتك البصرية (White-Label) تشمل موقع المتدربين، تطبيق العضو، بوابات الدخول بالـ QR، والربط مع فوري وإنستاباي و Paymob.'
-              : 'Get your full white-label fitness ecosystem: member PWA, QR turnstiles, and Egypt payment gateways with your brand colors and domain.'}
+              ? 'نموذج تجريبي استعراضي لنظام الهوية البصرية (White-Label) يشمل واجهة المتدربين، تطبيق العضو، محاكاة بوابات الـ QR، والربط المزمع مع فوري وإنستاباي و Paymob (قريباً / نسخة تجريبية).'
+              : 'Interactive demo preview of the white-label ecosystem: member PWA, simulated QR turnstiles, and planned Egypt payment gateway integrations (Coming Soon / Demo).'}
           </p>
 
-          {/* WhatsApp Direct Contact Highlight Box */}
+          {/* WhatsApp Waitlist Highlight Box */}
           <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
@@ -779,7 +790,7 @@ export function PublicCoachingStorefrontView({
                 </div>
                 <div>
                   <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
-                    {isAr ? 'تواصل مع كابتن نور الدين مباشرة (مالك المنصة)' : 'Direct WhatsApp with Platform Owner'}
+                    {isAr ? 'سجّل اهتمامك للانضمام لقائمة الانتظار (نسخة تجريبية)' : 'Register Interest to Join the Waitlist (Demo)'}
                   </p>
                   <p className="font-mono text-sm font-black text-slate-900 dark:text-white dir-ltr">
                     +20 155 994 9271
@@ -788,13 +799,13 @@ export function PublicCoachingStorefrontView({
               </div>
 
               <a
-                href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D9%86%D8%A7%20%D8%B5%D8%A7%D8%AD%D8%A8%20%D8%AC%D9%8A%D9%85/%D9%83%D9%88%D8%AA%D8%B4%20%D9%88%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%B4%D8%B1%D8%A7%D8%A1%20%D9%85%D9%86%D8%B5%D8%A9%20TitanFit%20White-Label"
+                href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D9%81%D9%8A%20%D8%A7%D9%84%D8%A7%D9%86%D8%B6%D9%85%D8%A7%D9%85%20%D9%84%D9%82%D8%A7%D8%A6%D9%85%D8%A9%20%D8%A7%D9%86%D8%AA%D8%B8%D8%A7%D8%B1%20%D9%85%D9%86%D8%B5%D8%A9%20TitanFit"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-xs font-black text-white shadow-xs transition hover:bg-[#20bd5a]"
               >
                 <MessageSquare className="h-4 w-4 fill-white" />
-                <span>{isAr ? 'محادثة واتساب الآن' : 'Chat via WhatsApp'}</span>
+                <span>{isAr ? 'قائمة انتظار' : 'Join Waitlist'}</span>
               </a>
             </div>
           </div>
@@ -920,13 +931,13 @@ export function PublicCoachingStorefrontView({
 
                 <div className="flex items-center gap-2">
                   <a
-                    href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D9%82%D8%B1%D8%A3%D8%AA%20%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%AA%D9%85%D8%B1%D9%8A%D9%86%20%D8%A7%D9%84%D9%85%D8%AC%D8%A7%D9%86%D9%8A%20%D9%88%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%A7%D9%84%D9%85%D8%AA%D8%A7%D8%A8%D8%B9%D8%A9%20%D8%A7%D9%84%D8%B4%D8%AE%D8%B5%D9%8A%D8%A9"
+                    href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D9%82%D8%B1%D8%A3%D8%AA%20%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%AA%D9%85%D8%B1%D9%8A%D9%86%20%D8%A7%D9%84%D9%85%D8%AC%D8%A7%D9%86%D9%8A%20%D9%88%D8%A3%D8%B1%D8%BA%D8%A8%20%D9%81%D9%8A%20%D8%A7%D9%84%D8%A7%D9%86%D8%B6%D9%85%D8%A7%D9%85%20%D9%84%D9%82%D8%A7%D8%A6%D9%85%D8%A9%20%D8%A7%D9%84%D8%A7%D9%86%D8%AA%D8%B8%D8%A7%D9%85"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] px-4 py-2.5 text-xs font-black text-white hover:bg-[#20bd5a]"
                   >
                     <MessageSquare className="h-4 w-4 fill-white" />
-                    {isAr ? 'واتساب: 01559949271' : 'WhatsApp 01559949271'}
+                    {isAr ? 'قائمة انتظار (واتساب)' : 'Join Waitlist (WhatsApp)'}
                   </a>
                   <button
                     type="button"

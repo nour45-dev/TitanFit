@@ -682,7 +682,6 @@ export const RECIPES: Recipe[] = [
 /* ------------------------------------------------------------------ */
 
 export function macrosOf(ingredients: RecipeIngredient[]): Macros {
-  let kcal = 0;
   let p = 0;
   let c = 0;
   let f = 0;
@@ -690,16 +689,19 @@ export function macrosOf(ingredients: RecipeIngredient[]): Macros {
     const n = INGREDIENTS[ing.key];
     if (!n) continue;
     const k = ing.grams / 100;
-    kcal += n.kcal * k;
     p += n.p * k;
     c += n.c * k;
     f += n.f * k;
   }
+  const proteinG = Math.round(p);
+  const carbsG = Math.round(c);
+  const fatsG = Math.round(f);
+  const kcal = proteinG * 4 + carbsG * 4 + fatsG * 9;
   return {
-    kcal: Math.round(kcal),
-    proteinG: Math.round(p),
-    carbsG: Math.round(c),
-    fatsG: Math.round(f),
+    kcal,
+    proteinG,
+    carbsG,
+    fatsG,
   };
 }
 

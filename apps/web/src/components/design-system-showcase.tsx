@@ -209,7 +209,7 @@ function TitanFitEnterpriseShell() {
         {
           id: 'STAFF_TRAINERS',
           labelEn: 'Trainers & Staff',
-          labelAr: 'المدربون والأطباء والعمولات',
+          labelAr: 'المدربون وطاقم العمل والعمولات',
           icon: UserCheck,
         },
       ],
@@ -289,7 +289,7 @@ function TitanFitEnterpriseShell() {
     { id: 'GYM_OWNER', labelEn: 'Gym Owner', labelAr: 'مالك النادي / الكوتش' },
     { id: 'BRANCH_MANAGER', labelEn: 'Branch Manager', labelAr: 'مدير فرع' },
     { id: 'RECEPTIONIST', labelEn: 'Receptionist', labelAr: 'موظف استقبال' },
-    { id: 'TRAINER', labelEn: 'Coach / Trainer', labelAr: 'مدرب / طبيب تغذية' },
+    { id: 'TRAINER', labelEn: 'Coach / Trainer', labelAr: 'مدرب لياقة وتغذية' },
     { id: 'MEMBER', labelEn: 'Member App', labelAr: 'متدرب (Member)' },
     { id: 'SUPER_ADMIN', labelEn: 'Super Admin', labelAr: 'مالك المنصة (SaaS)' },
   ];
@@ -373,10 +373,9 @@ function TitanFitEnterpriseShell() {
         )}
       </AnimatePresence>
 
-      {/* TOP ANNOUNCEMENT BANNER: Controlled by NEXT_PUBLIC_DEMO_NOTICE or sleek commercial announcement */}
+      {/* TOP ANNOUNCEMENT BANNER: Enabled by default in production unless NEXT_PUBLIC_DEMO_NOTICE === 'false' */}
       {(() => {
-        // Phase 4 Commercial Launch: Disclaimers removed for official commercial sales
-        const isDemoNoticeEnabled = false;
+        const isDemoNoticeEnabled = process.env.NEXT_PUBLIC_DEMO_NOTICE !== 'false';
 
         if (isDemoNoticeEnabled) {
           const isPortalOrAuth = isAuthenticated || !isPublicWebsiteView || showLoginModal;
@@ -388,6 +387,7 @@ function TitanFitEnterpriseShell() {
           return (
             <aside
               role="region"
+              data-testid="demo-prototype-banner"
               aria-label={isAr ? 'تنبيه النسخة التجريبية' : 'Demo Prototype Notice'}
               className="relative z-40 border-b border-amber-600 bg-amber-500 px-3 py-2 text-slate-950 dark:border-amber-500 dark:bg-amber-500 dark:text-slate-950 sm:px-6"
             >
@@ -419,12 +419,12 @@ function TitanFitEnterpriseShell() {
           );
         }
 
-        // Commercial Production Announcement Banner for Storefront Visitors
+        // Commercial Storefront Announcement Banner for Visitors
         if (isPublicWebsiteView && !publicBannerDismissed && !isAuthenticated) {
           return (
             <aside
               role="region"
-              aria-label={isAr ? 'إعلان المنصة الرسمية' : 'Official Platform Announcement'}
+              aria-label={isAr ? 'إعلان المنصة التجريبية' : 'Platform Preview Announcement'}
               className="relative z-40 border-b border-emerald-600 bg-emerald-600 px-3 py-2 text-white sm:px-6"
             >
               <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 text-xs font-black">
@@ -432,8 +432,8 @@ function TitanFitEnterpriseShell() {
                   <Sparkles className="h-4 w-4 shrink-0 text-amber-300" aria-hidden="true" />
                   <span>
                     {isAr
-                      ? '🚀 TitanFit — المنصة الرسمية المتكاملة لإدارة الأندية الرياضية والتغذية والتدريب في مصر • اطلب نسختك الخاصة الآن'
-                      : '🚀 TitanFit — The Official Gym Management & Nutrition Operating System in Egypt • Get Your Club Setup Now'}
+                      ? '🚀 TitanFit — نموذج استعراضي لإدارة الأندية الرياضية والتغذية والتدريب • انضم لقائمة الانتظار'
+                      : '🚀 TitanFit — Interactive Gym Management & Nutrition Prototype • Join the Waitlist'}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -1134,6 +1134,44 @@ function TitanFitEnterpriseShell() {
           </AnimatePresence>
         </main>
       </div>
+
+      {/* SITE FOOTER WITH PRIVACY POLICY & TERMS OF USE LINKS */}
+      <footer
+        data-testid="site-legal-footer"
+        className="border-t border-slate-200 bg-slate-50 px-4 py-6 text-xs text-slate-600 dark:border-slate-800 dark:bg-[#070A12] dark:text-slate-400 sm:px-8"
+      >
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
+          <div className="flex flex-wrap items-center gap-2 text-center sm:text-start">
+            <span className="font-black text-slate-900 dark:text-white">{brandDisplayName}</span>
+            <span>•</span>
+            <span>
+              {isAr
+                ? 'نموذج تجريبي استعراضي (Demo Prototype) — البيانات التجريبية تُحفظ محلياً في متصفحك (localStorage / sessionStorage).'
+                : 'Interactive Demo Prototype — Demo data is stored locally in your browser (localStorage / sessionStorage).'}
+            </span>
+          </div>
+          <nav
+            aria-label={isAr ? 'روابط قانونية' : 'Legal links'}
+            className="flex flex-wrap items-center gap-4 font-bold"
+          >
+            <a
+              href="/privacy"
+              data-testid="footer-privacy-link"
+              className="text-slate-700 underline-offset-4 hover:text-amber-600 hover:underline dark:text-slate-300 dark:hover:text-amber-400"
+            >
+              {isAr ? 'سياسة الخصوصية (مسودة)' : 'Privacy Policy (Draft)'}
+            </a>
+            <span className="text-slate-300 dark:text-slate-700">|</span>
+            <a
+              href="/terms"
+              data-testid="footer-terms-link"
+              className="text-slate-700 underline-offset-4 hover:text-amber-600 hover:underline dark:text-slate-300 dark:hover:text-amber-400"
+            >
+              {isAr ? 'شروط الاستخدام (مسودة)' : 'Terms of Use (Draft)'}
+            </a>
+          </nav>
+        </div>
+      </footer>
 
       {/* MODERN MULTI-TENANT LOGIN MODAL */}
       {showLoginModal && (

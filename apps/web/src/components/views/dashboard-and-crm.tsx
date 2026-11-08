@@ -1808,7 +1808,7 @@ export function PaymentsBillingView() {
 
             <div className="sm:col-span-2">
               <label className="block text-xs font-bold text-slate-300">
-                {isAr ? 'وسيلة الدفع المعتمدة' : 'Payment Gateway / Method'}
+                {isAr ? 'وسيلة الدفع (نموذج تجريبي)' : 'Payment Gateway / Method (Demo)'}
               </label>
               <div className="mt-1.5 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {(
@@ -2086,7 +2086,7 @@ export function PaymentsBillingView() {
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#D4AF37] py-2.5 text-xs font-extrabold text-slate-950 transition hover:bg-amber-400"
             >
               <Download className="h-4 w-4" />
-              {isAr ? 'تحميل فاتورة PDF رسمية' : 'Download Official PDF Invoice'}
+              {isAr ? 'تحميل إيصال PDF تجريبي' : 'Download Sample PDF Receipt'}
             </button>
           </div>
         </div>

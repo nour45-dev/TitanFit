@@ -20,6 +20,11 @@ export interface PlatformBrandConfig {
   readonly claims: {
     readonly activeMembersCount: string;
     readonly medicalSupervisionPercent: string;
+    readonly physiotherapyClaim: string;
+    readonly labAnalysisClaim: string;
+    readonly psychologicalSupportClaim: string;
+    readonly accreditationClaim: string;
+    readonly officialPlatformClaim: string;
   };
   readonly defaultLocale: SupportedLocale;
   readonly supportedLocales: readonly SupportedLocale[];
@@ -59,8 +64,13 @@ export function getPlatformConfig(
       ar: `${appName} — نظام الإدارة المتكامل للأندية الرياضية والفروع`,
     },
     claims: {
-      activeMembersCount: env.NEXT_PUBLIC_BRAND_MEMBERS_COUNT?.trim() || '[MEMBERS_COUNT]',
-      medicalSupervisionPercent: env.NEXT_PUBLIC_BRAND_MEDICAL_PERCENT?.trim() || '[SUPERVISION_LEVEL]',
+      activeMembersCount: env.NEXT_PUBLIC_BRAND_MEMBERS_COUNT?.trim() || '',
+      medicalSupervisionPercent: env.NEXT_PUBLIC_BRAND_MEDICAL_PERCENT?.trim() || '',
+      physiotherapyClaim: env.NEXT_PUBLIC_BRAND_CLAIM_PHYSIOTHERAPY?.trim() || '',
+      labAnalysisClaim: env.NEXT_PUBLIC_BRAND_CLAIM_LAB_ANALYSIS?.trim() || '',
+      psychologicalSupportClaim: env.NEXT_PUBLIC_BRAND_CLAIM_PSYCH_SUPPORT?.trim() || '',
+      accreditationClaim: env.NEXT_PUBLIC_BRAND_CLAIM_ACCREDITATION?.trim() || '',
+      officialPlatformClaim: env.NEXT_PUBLIC_BRAND_CLAIM_OFFICIAL?.trim() || '',
     },
     defaultLocale,
     supportedLocales: SUPPORTED_LOCALES,
