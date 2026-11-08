@@ -199,7 +199,7 @@ describe('PDF Document Assembler', () => {
     const firstBlock = blocks[0];
     expect(firstBlock?.t).toBe('title');
     if (firstBlock && firstBlock.t === 'title') {
-      expect(firstBlock.text).toContain('فاتورة اشتراك ضريبية رسمية');
+      expect(firstBlock.text).toContain('بيان اشتراك ضريبي');
     }
   });
 

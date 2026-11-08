@@ -59,8 +59,8 @@ export async function POST(req: NextRequest) {
           orderId,
           paymentToken,
           iframeUrl: `https://accept.paymob.com/api/acceptance/iframes/789012?payment_token=${paymentToken}`,
-          instructionAr: 'أدخل بيانات بطاقتك البنكية بأمان عبر بوابة Paymob المعتمدة من البنك المركزي المصري',
-          instructionEn: 'Enter card details securely via Paymob gateway regulated by Central Bank of Egypt',
+          instructionAr: 'محاكاة تجريبية للدفع بالبطاقة البنكية عبر بوابة Paymob (بيئة اختبار)',
+          instructionEn: 'Simulated card checkout preview via Paymob sandbox environment',
         };
         break;
       }

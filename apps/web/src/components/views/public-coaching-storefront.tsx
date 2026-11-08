@@ -241,9 +241,9 @@ export function PublicCoachingStorefrontView({
                 <>
                   Forget Boring Diets —{' '}
                   <span className="text-amber-700 dark:text-amber-400">
-                    Build Your Dream Physique
+                    Build Your Sustainable Physique
                   </span>{' '}
-                  With Science & Medical Supervision
+                  With Balanced Nutrition & Structured Training
                 </>
               )}
             </h1>
@@ -431,8 +431,8 @@ export function PublicCoachingStorefrontView({
                 </h2>
                 <p className="text-xs text-slate-600 dark:text-slate-400 sm:text-sm">
                   {isAr
-                    ? 'شاهد فيديوهات التمارين مع نصائح أطباء العلاج الطبيعي، شغل تايمر التمرين التفاعلي، وحمل ٣ أنظمة غذائية كاملة بالجرامات والبدائل الاقتصادية مجاناً.'
-                    : 'Watch HD exercise demos with PT safety cues, use our interactive set & rest timer, and grab 3 complete meal plans for free.'}
+                    ? 'شاهد فيديوهات التمارين مع إرشادات الأداء الحركي السليم، شغل تايمر التمرين التفاعلي، وحمل ٣ أنظمة غذائية كاملة بالجرامات والبدائل الاقتصادية مجاناً.'
+                    : 'Watch HD exercise demos with proper form cues, use our interactive set & rest timer, and grab 3 complete meal plans for free.'}
                 </p>
               </div>
             </div>
@@ -479,34 +479,34 @@ export function PublicCoachingStorefrontView({
             },
             {
               step: '02',
-              titleAr: '٢. تاريخك الصحي والرياضي',
-              titleEn: '2. Deep-Dive Assessment',
+              titleAr: '٢. نمط حياتك ومستواك الرياضي',
+              titleEn: '2. Lifestyle & Activity Profile',
               descAr:
-                'بنتعرف على تفاصيل يومك، الأكل اللي بتحبه، تحاليلك الطبية، وأي إصابات سابقة عشان نفصل البرنامج عليك.',
+                'بنتعرف على تفاصيل يومك، الأكل اللي بتحبه، ومستوى نشاطك الحالي عشان نفصل البرنامج التدريبي والغذائي المناسب لك.',
               descEn:
-                'We analyze your nutrition history, lifestyle, lab tests, and injuries to tailor every detail.',
+                'We review your daily routine, food preferences, and current fitness level to tailor your plan.',
               icon: HeartPulse,
               color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
             },
             {
               step: '03',
               titleAr: '٣. الجزء السحري (البرنامج المفصل)',
-              titleEn: '3. The Magic Blueprint',
+              titleEn: '3. The Custom Blueprint',
               descAr:
-                'تستلم على التطبيق خطتك الغذائية بالوصفات المصورة وبرنامجك التدريبي بالفيديو تحت إشراف طبيب علاج طبيعي.',
+                'تستلم على التطبيق خطتك الغذائية بالوصفات المصورة وبرنامجك التدريبي المشروح بالفيديو والرسوم التوضيحية.',
               descEn:
-                'Receive your custom meal plan, video workouts, and supplement guide reviewed by a physician.',
+                'Receive your custom meal plan, illustrated recipes, and step-by-step video & animated workouts.',
               icon: Sparkles,
               color: 'text-sky-600 bg-sky-50 border-sky-200',
             },
             {
               step: '04',
               titleAr: '٤. المتابعة: إنت مش لوحدك!',
-              titleEn: '4. Daily Coaching & Support',
+              titleEn: '4. Daily Coaching & Check-Ins',
               descAr:
-                'متابعة يومية على الواتساب والتطبيق، وتصحيح لأدائك التدريبي بالفيديو ودعم نفسي مستمر لحد ما توصل لهدفك.',
+                'متابعة دورية على الواتساب والتطبيق، ومراجعة لأدائك التدريبي بالفيديو وتشجيع مستمر على الالتزام لحد ما توصل لهدفك.',
               descEn:
-                'Daily WhatsApp check-ins, video form corrections, and mindset support until you hit your goal.',
+                'Regular WhatsApp check-ins, exercise form feedback, and ongoing accountability until you reach your goal.',
               icon: MessageCircle,
               color: 'text-purple-600 bg-purple-50 border-purple-200',
             },
@@ -708,7 +708,7 @@ export function PublicCoachingStorefrontView({
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1 text-xs font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200">
               <BookOpen className="h-3.5 w-3.5 text-amber-500" />
-              {isAr ? 'هدية مجانية موثقة للزوار' : 'FREE VERIFIED TRAINING E-BOOK'}
+              {isAr ? 'هدية مجانية للزوار' : 'FREE TRAINING E-BOOK'}
             </span>
             <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
               {isAr ? 'تحميل فوري مباشر' : 'Instant Direct Download'}
@@ -722,8 +722,8 @@ export function PublicCoachingStorefrontView({
           </h3>
           <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400 sm:text-sm">
             {isAr
-              ? 'دليل عملي معتمد أعده فريق العلاج الطبيعي والتغذية الرياضية يشمل المبادئ الميكانيكية لحماية المفاصل، جدول تمارين Push/Pull/Legs، حساب الماكروز، والبدائل الاقتصادية المصرية.'
-              : 'Complete practical handbook written by certified physiotherapists & sports nutritionists covering joint safety biomechanics, PPL splits, macros, and smart budget swaps.'}
+              ? 'دليل عملي استرشادي يشمل المبادئ الحركية لحماية المفاصل، جدول تمارين Push/Pull/Legs، حساب الماكروز، والبدائل الاقتصادية المصرية.'
+              : 'Practical reference guide covering joint-friendly exercise form, PPL workout splits, macro calculations, and smart budget food swaps.'}
           </p>
 
           <form onSubmit={handleSendEbook} className="mt-5 space-y-3">

@@ -209,7 +209,7 @@ function TitanFitEnterpriseShell() {
         {
           id: 'STAFF_TRAINERS',
           labelEn: 'Trainers & Staff',
-          labelAr: 'المدربون والأطباء والعمولات',
+          labelAr: 'المدربون وطاقم العمل والعمولات',
           icon: UserCheck,
         },
       ],
@@ -289,7 +289,7 @@ function TitanFitEnterpriseShell() {
     { id: 'GYM_OWNER', labelEn: 'Gym Owner', labelAr: 'مالك النادي / الكوتش' },
     { id: 'BRANCH_MANAGER', labelEn: 'Branch Manager', labelAr: 'مدير فرع' },
     { id: 'RECEPTIONIST', labelEn: 'Receptionist', labelAr: 'موظف استقبال' },
-    { id: 'TRAINER', labelEn: 'Coach / Trainer', labelAr: 'مدرب / طبيب تغذية' },
+    { id: 'TRAINER', labelEn: 'Coach / Trainer', labelAr: 'مدرب لياقة وتغذية' },
     { id: 'MEMBER', labelEn: 'Member App', labelAr: 'متدرب (Member)' },
     { id: 'SUPER_ADMIN', labelEn: 'Super Admin', labelAr: 'مالك المنصة (SaaS)' },
   ];
@@ -419,12 +419,12 @@ function TitanFitEnterpriseShell() {
           );
         }
 
-        // Commercial Production Announcement Banner for Storefront Visitors
+        // Commercial Storefront Announcement Banner for Visitors
         if (isPublicWebsiteView && !publicBannerDismissed && !isAuthenticated) {
           return (
             <aside
               role="region"
-              aria-label={isAr ? 'إعلان المنصة الرسمية' : 'Official Platform Announcement'}
+              aria-label={isAr ? 'إعلان المنصة التجريبية' : 'Platform Preview Announcement'}
               className="relative z-40 border-b border-emerald-600 bg-emerald-600 px-3 py-2 text-white sm:px-6"
             >
               <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 text-xs font-black">
@@ -432,8 +432,8 @@ function TitanFitEnterpriseShell() {
                   <Sparkles className="h-4 w-4 shrink-0 text-amber-300" aria-hidden="true" />
                   <span>
                     {isAr
-                      ? '🚀 TitanFit — المنصة الرسمية المتكاملة لإدارة الأندية الرياضية والتغذية والتدريب في مصر • اطلب نسختك الخاصة الآن'
-                      : '🚀 TitanFit — The Official Gym Management & Nutrition Operating System in Egypt • Get Your Club Setup Now'}
+                      ? '🚀 TitanFit — نموذج استعراضي لإدارة الأندية الرياضية والتغذية والتدريب • انضم لقائمة الانتظار'
+                      : '🚀 TitanFit — Interactive Gym Management & Nutrition Prototype • Join the Waitlist'}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
