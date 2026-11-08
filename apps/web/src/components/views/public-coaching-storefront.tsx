@@ -68,17 +68,17 @@ const TRANSFORMATION_STORIES: TransformationStory[] = [
     roleEn: 'Mathematical simulation of fat-loss & recomposition (Not a real person)',
     durationAr: '١٢ أسبوع متابعة افتراضية',
     durationEn: '12 Weeks Projected',
-    weightBeforeKg: 108,
-    weightAfterKg: 84,
-    bodyFatBefore: '29%',
-    bodyFatAfter: '12%',
-    badgeAr: '-24 كجم وزن إجمالي (-21.2 كجم دهون صافية) وفق الماكروز',
-    badgeEn: '-24 kg Total (-21.2 kg Fat) based on macro deficit',
+    weightBeforeKg: 92,
+    weightAfterKg: 83,
+    bodyFatBefore: '24%',
+    bodyFatAfter: '16.5%',
+    badgeAr: '-9 كجم وزن إجمالي (-8.4 كجم دهون صافية) خلال 12 أسبوع',
+    badgeEn: '-9 kg Total (-8.4 kg Fat) over 12 weeks',
     isIllustrativeExample: true,
     quoteAr:
-      'مثال توضيحي بالأرقام: نزول من ١٠٨ كجم (٢٩٪ دهون) إلى ٨٤ كجم (١٢٪ دهون) مع المحافظة على الكتلة العضلية بتطبيق عجز سعرات تدريجي ٢٠٪ ونظام بروتين عالي ٢ جم/كجم.',
+      'مثال توضيحي بالأرقام: نزول واقعي من ٩٢ كجم (٢٤٪ دهون = ٢٢.١ كجم دهون و٦٩.٩ كجم كتلة خالية من الدهون) إلى ٨٣ كجم (١٦.٥٪ دهون = ١٣.٧ كجم دهون و٦٩.٣ كجم كتلة خالية من الدهون) خلال ١٢ أسبوعاً بمعدل صافي -٨.٤ كجم دهون مع الحفاظ على الكتلة العضلية.',
     quoteEn:
-      'Numerical illustrative simulation: dropping from 108kg (29% body fat) to 84kg (12% body fat) by maintaining lean mass through a controlled 20% deficit and 2.0g/kg protein.',
+      'Illustrative numerical example: realistic drop from 92 kg (24% body fat = 22.1 kg fat, 69.9 kg lean mass) to 83 kg (16.5% body fat = 13.7 kg fat, 69.3 kg lean mass) in 12 weeks (-9 kg total weight, -8.4 kg fat mass while preserving lean mass).',
   },
 ];
 
@@ -374,24 +374,32 @@ export function PublicCoachingStorefrontView({
                     <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
                       {isAr ? 'قبل الاشتراك' : 'Before'}
                     </p>
-                    <p className="mt-1 font-mono text-2xl font-black text-rose-600">108 kg</p>
-                    <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Body Fat: 29%</p>
+                    <p className="mt-1 font-mono text-2xl font-black text-rose-600">92 kg</p>
+                    <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                      {isAr ? 'نسبة الدهون: 24% (22.1 كجم دهون)' : 'Body Fat: 24% (22.1 kg fat)'}
+                    </p>
+                    <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                      {isAr ? 'الكتلة الخالية من الدهون: 69.9 كجم' : 'Lean Mass: 69.9 kg'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">
                       {isAr ? 'بعد ١٢ أسبوع' : 'After 12 Wks'}
                     </p>
-                    <p className="mt-1 font-mono text-2xl font-black text-emerald-700 dark:text-emerald-400">84 kg</p>
+                    <p className="mt-1 font-mono text-2xl font-black text-emerald-700 dark:text-emerald-400">83 kg</p>
                     <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">
-                      {isAr ? 'نسبة الدهون: 12% • فرق الوزن: -24 كجم' : 'Body Fat: 12% • Weight Change: -24 kg'}
+                      {isAr ? 'نسبة الدهون: 16.5% • فرق الوزن: -9 كجم' : 'Body Fat: 16.5% • Weight Change: -9 kg'}
+                    </p>
+                    <p className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                      {isAr ? 'الدهون: 13.7 كجم (-8.4 كجم) • الكتلة الصافية: 69.3 كجم' : 'Fat: 13.7 kg (-8.4 kg) • Lean Mass: 69.3 kg'}
                     </p>
                   </div>
                 </div>
 
                 <blockquote className="mt-4 text-xs leading-relaxed font-semibold text-slate-700 dark:text-slate-300">
                   {isAr
-                    ? '“مثال توضيحي بالأرقام: نزول ٢١.٢ كجم دهون صافية من إجمالي ٢٤ كجم مع الحفاظ على الكتلة الخالية من الدهون عبر حساب الماكروز والتدرج في الأحمال بدون حرمان.”'
-                    : '“Illustrative calculation: 21.2kg of pure fat loss out of 24kg total while preserving lean mass via calculated macros and progressive overload.”'}
+                    ? '“مثال توضيحي بالأرقام: نزول واقعي بمعدل ٩ كجم في ١٢ أسبوعاً (منها ٨.٤ كجم دهون صافية: من ٢٢.١ كجم إلى ١٣.٧ كجم) مع الحفاظ على الكتلة الخالية من الدهون (٦٩.٩ كجم ← ٦٩.٣ كجم) عبر عجز سعرات معتدل وتدرج الأحمال.”'
+                    : '“Illustrative calculation: realistic 9 kg loss over 12 weeks (8.4 kg fat loss: 22.1 kg → 13.7 kg) while preserving lean mass (69.9 kg → 69.3 kg) through a moderate calorie deficit and progressive overload.”'}
                 </blockquote>
               </div>
             </div>
