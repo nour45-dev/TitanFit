@@ -250,8 +250,8 @@ export function PublicCoachingStorefrontView({
 
             <p className="max-w-2xl text-sm font-normal leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
               {isAr
-                ? `متدربون ومشتركون غيروا حياتهم بالكامل ووصلوا لشكل جسمهم المثالي من خلال خطط تغذية بوصفات مصورة، برامج تدريبية بالفيديو من الجيم أو البيت تحت إشراف أطباء علاج طبيعي، ومتابعة يومية خطوة بخطوة.`
-                : `Members transformed their bodies and lives through tailored video-recipe nutrition, physical-therapist-supervised training, and daily 1-on-1 WhatsApp & app coaching.`}
+                ? `منصة تفاعلية تساعدك على تخطيط نظامك الغذائي وحساب سعراتك وماكروزك اليومية بدقة، مع مكتبة وصفات مصورة وتمارين مشروحة بالفيديو والرسوم المتحركة من الجيم أو البيت خطوة بخطوة.`
+                : `An interactive platform to plan your nutrition, calculate your daily calories and macros, and follow illustrated meal recipes and step-by-step video & animated workouts.`}
             </p>
 
             {/* Primary CTA Buttons including the FREE TRIAL WORKOUTS & DIETS Button */}
