@@ -60,6 +60,7 @@ import {
 import { PublicCoachingStorefrontView } from './views/public-coaching-storefront';
 import { FreeTrialWorkoutsAndDietsView } from './views/free-trial-workouts-and-diets';
 import { GymOwnerContentStudioView } from './views/gym-owner-content-studio';
+import { SmartAiAssistantWidget } from './smart-ai-assistant';
 
 function TitanFitEnterpriseShell() {
   const {
@@ -1459,6 +1460,9 @@ function TitanFitEnterpriseShell() {
           </div>
         </div>
       )}
+
+      {/* Global Smart AI Assistant & Interactive Platform Navigator */}
+      <SmartAiAssistantWidget />
     </div>
   );
 }

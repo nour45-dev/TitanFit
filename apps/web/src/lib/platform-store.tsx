@@ -975,39 +975,78 @@ export function PlatformProvider({
   const tenantsHydrated = useRef(false);
   const customContentHydrated = useRef(false);
 
-  // Hydrate & persist Gym Owner Custom Content (workouts, recipes, files) in localStorage
+  const [auditLogs, setAuditLogs] = useState<AuditEntry[]>(INITIAL_AUDITS);
+  const [impersonatedTenant, setImpersonatedTenantState] = useState<string | null>(null);
+  const [brandAccentHex, setBrandAccentHex] = useState<string>('#D4AF37');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Authentication & Custom Tenant Branding State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<{
+    id?: string;
+    email: string;
+    name: string;
+    role: UserRoleKey;
+    tenantSlug?: string;
+    logoUrl?: string;
+    primaryColor?: string;
+  } | null>(null);
+
+  const activeTenantSlug = currentUser?.tenantSlug || impersonatedTenant || 'titanfit-egypt';
+
+  const activeTenantCustom =
+    tenants.find((t) => t.slug === (currentUser?.tenantSlug || impersonatedTenant)) ?? null;
+
+  // Hydrate & persist Gym Owner Custom Content per isolated Tenant Slug in localStorage
   useEffect(() => {
+    customContentHydrated.current = false;
     try {
-      const raw = window.localStorage.getItem('titanfit.customContent.v1');
+      const tenantStorageKey = `titanfit.customContent.v1.${activeTenantSlug}`;
+      const raw =
+        window.localStorage.getItem(tenantStorageKey) ||
+        (activeTenantSlug === 'titanfit-egypt'
+          ? window.localStorage.getItem('titanfit.customContent.v1')
+          : null);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed.customWorkouts) && parsed.customWorkouts.length > 0) {
-          setCustomWorkouts(parsed.customWorkouts);
-        }
-        if (Array.isArray(parsed.customRecipes) && parsed.customRecipes.length > 0) {
-          setCustomRecipes(parsed.customRecipes);
-        }
-        if (Array.isArray(parsed.customFiles) && parsed.customFiles.length > 0) {
-          setCustomFiles(parsed.customFiles);
-        }
+        setCustomWorkouts(
+          Array.isArray(parsed.customWorkouts) && parsed.customWorkouts.length > 0
+            ? parsed.customWorkouts
+            : INITIAL_CUSTOM_WORKOUTS,
+        );
+        setCustomRecipes(
+          Array.isArray(parsed.customRecipes) && parsed.customRecipes.length > 0
+            ? parsed.customRecipes
+            : INITIAL_CUSTOM_RECIPES,
+        );
+        setCustomFiles(
+          Array.isArray(parsed.customFiles) && parsed.customFiles.length > 0
+            ? parsed.customFiles
+            : INITIAL_CUSTOM_FILES,
+        );
+      } else {
+        setCustomWorkouts(INITIAL_CUSTOM_WORKOUTS);
+        setCustomRecipes(INITIAL_CUSTOM_RECIPES);
+        setCustomFiles(INITIAL_CUSTOM_FILES);
       }
     } catch {
       /* ignore */
     }
     customContentHydrated.current = true;
-  }, []);
+  }, [activeTenantSlug]);
 
   useEffect(() => {
     if (!customContentHydrated.current) return;
     try {
-      window.localStorage.setItem(
-        'titanfit.customContent.v1',
-        JSON.stringify({ customWorkouts, customRecipes, customFiles }),
-      );
+      const payload = JSON.stringify({ customWorkouts, customRecipes, customFiles });
+      window.localStorage.setItem(`titanfit.customContent.v1.${activeTenantSlug}`, payload);
+      if (activeTenantSlug === 'titanfit-egypt') {
+        window.localStorage.setItem('titanfit.customContent.v1', payload);
+      }
     } catch {
       /* ignore quota errors */
     }
-  }, [customWorkouts, customRecipes, customFiles]);
+  }, [customWorkouts, customRecipes, customFiles, activeTenantSlug]);
 
   // Purge legacy storage from browser and hydrate active session via BFF
   useEffect(() => {
@@ -1028,7 +1067,7 @@ export function PlatformProvider({
             email: res.user.email || 'user@titanfit.eg',
             name: res.user.name || 'TitanFit User',
             role: (res.user.role as UserRoleKey) || 'GYM_OWNER',
-            tenantSlug: res.user.tenantSlug || 'titanfit-cairo',
+            tenantSlug: res.user.tenantSlug || 'titanfit-egypt',
             logoUrl: res.user.logoUrl || '/brand/logo.png',
             primaryColor: res.user.primaryColor || '#059669',
           });
@@ -1037,31 +1076,12 @@ export function PlatformProvider({
       })
       .catch(() => {});
   }, []);
-  const [auditLogs, setAuditLogs] = useState<AuditEntry[]>(INITIAL_AUDITS);
-  const [impersonatedTenant, setImpersonatedTenantState] = useState<string | null>(null);
-  const [brandAccentHex, setBrandAccentHex] = useState<string>('#D4AF37');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Authentication & Custom Tenant Branding State
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<{
-    id?: string;
-    email: string;
-    name: string;
-    role: UserRoleKey;
-    tenantSlug?: string;
-    logoUrl?: string;
-    primaryColor?: string;
-  } | null>(null);
-
-  const activeTenantCustom =
-    tenants.find((t) => t.slug === (currentUser?.tenantSlug || impersonatedTenant)) ?? null;
-
-  // Real-Time Multi-Device Sync Layer
+  // Real-Time Multi-Device & Multi-Tenant Isolated Sync Layer
   useEffect(() => {
-    const tenantSlug = currentUser?.tenantSlug || 'titanfit-cairo';
+    const tenantSlug = activeTenantSlug;
 
-    // 1. Fetch initial remote state
+    // 1. Fetch initial remote state for this isolated tenant partition
     apiFetchSyncState(tenantSlug)
       .then((res) => {
         if (res && res.success && res.data) {
@@ -1087,6 +1107,39 @@ export function PlatformProvider({
               return combined;
             });
           }
+          if (Array.isArray(res.data.customWorkouts) && res.data.customWorkouts.length > 0) {
+            setCustomWorkouts((prev) => {
+              const combined = [...res.data.customWorkouts];
+              for (const cw of prev) {
+                if (!combined.some((item: any) => item.id === cw.id)) {
+                  combined.push(cw);
+                }
+              }
+              return combined;
+            });
+          }
+          if (Array.isArray(res.data.customRecipes) && res.data.customRecipes.length > 0) {
+            setCustomRecipes((prev) => {
+              const combined = [...res.data.customRecipes];
+              for (const cr of prev) {
+                if (!combined.some((item: any) => item.id === cr.id)) {
+                  combined.push(cr);
+                }
+              }
+              return combined;
+            });
+          }
+          if (Array.isArray(res.data.customFiles) && res.data.customFiles.length > 0) {
+            setCustomFiles((prev) => {
+              const combined = [...res.data.customFiles];
+              for (const cf of prev) {
+                if (!combined.some((item: any) => item.id === cf.id)) {
+                  combined.push(cf);
+                }
+              }
+              return combined;
+            });
+          }
           if (res.data.customBranding && Object.keys(res.data.customBranding).length > 0) {
             setTenants((prev) =>
               prev.map((t) =>
@@ -1100,7 +1153,7 @@ export function PlatformProvider({
       })
       .catch(() => {});
 
-    // 2. Cross-tab Broadcast Channel listener
+    // 2. Cross-tab Broadcast Channel listener scoped to tenant
     let channel: BroadcastChannel | null = null;
     try {
       if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
@@ -1135,7 +1188,7 @@ export function PlatformProvider({
     return () => {
       channel?.close();
     };
-  }, [currentUser?.tenantSlug]);
+  }, [activeTenantSlug]);
 
   const login: PlatformStoreContextValue['login'] = async (email, password, gymSecretCode) => {
     const trimmed = (email || '').trim().toLowerCase();

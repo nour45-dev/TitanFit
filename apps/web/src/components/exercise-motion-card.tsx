@@ -304,120 +304,128 @@ export function CartoonAthleteVisualCanvas({
   const baseDuration = 3.2 / speedMultiplier;
   const impact = EXERCISE_BODY_IMPACT_MAP[motionType] ?? EXERCISE_BODY_IMPACT_MAP.BENCH_PRESS;
 
-  switch (motionType) {
-    case 'BENCH_PRESS':
-    case 'INCLINE_PRESS': {
-      const isIncline = motionType === 'INCLINE_PRESS';
-      return (
-        <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
-          <defs>
-            <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FDBA74" />
-              <stop offset="100%" stopColor="#FB923C" />
-            </linearGradient>
-            <linearGradient id="tankGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#0F172A" />
-              <stop offset="100%" stopColor="#1E293B" />
-            </linearGradient>
-            <linearGradient id="goldPlate" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FCD34D" />
-              <stop offset="50%" stopColor="#F59E0B" />
-              <stop offset="100%" stopColor="#B45309" />
-            </linearGradient>
-            <radialGradient id="targetGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#EF4444" stopOpacity="0.95" />
-              <stop offset="60%" stopColor="#F59E0B" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
-            </radialGradient>
-            <filter id="glowFilter" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="3.5" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-          </defs>
+  const renderExerciseSvg = () => {
+    switch (motionType) {
+      case 'BENCH_PRESS':
+      case 'INCLINE_PRESS': {
+        const isIncline = motionType === 'INCLINE_PRESS';
+        return (
+          <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
+            <defs>
+              <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#FED7AA" />
+                <stop offset="45%" stopColor="#FDBA74" />
+                <stop offset="100%" stopColor="#EA580C" />
+              </linearGradient>
+              <linearGradient id="tankGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#0F172A" />
+                <stop offset="50%" stopColor="#1E293B" />
+                <stop offset="100%" stopColor="#020617" />
+              </linearGradient>
+              <linearGradient id="goldPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#FEF08A" />
+                <stop offset="45%" stopColor="#F59E0B" />
+                <stop offset="100%" stopColor="#92400E" />
+              </linearGradient>
+              <radialGradient id="targetGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#EF4444" stopOpacity="0.98" />
+                <stop offset="55%" stopColor="#F59E0B" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
+              </radialGradient>
+              <filter id="glowFilter" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="3.5" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
 
-          {/* Gym Floor Shadow */}
-          <ellipse cx="140" cy="180" rx="90" ry="10" fill="#000000" opacity="0.18" />
+            {/* 3D Studio Perspective Floor Grid & Shadow */}
+            <path d="M 20 182 L 260 182 M 45 172 L 235 172" stroke="#334155" strokeWidth="0.7" opacity="0.35" strokeDasharray="4 4" />
+            <ellipse cx="140" cy="180" rx="95" ry="11" fill="#000000" opacity="0.26" />
 
-          {/* Heavy Duty Gym Bench */}
-          <g transform={isIncline ? 'rotate(-16 70 120)' : ''}>
-            <rect x="50" y="125" width="145" height="14" rx="5" fill="#1E293B" stroke="#334155" strokeWidth="2" />
-            <rect x="52" y="122" width="141" height="5" rx="2" fill="#D4AF37" opacity="0.6" />
-            {/* Bench Steel Legs */}
-            <path d="M 65 139 L 55 178" stroke="#475569" strokeWidth="8" strokeLinecap="round" />
-            <path d="M 175 139 L 185 178" stroke="#475569" strokeWidth="8" strokeLinecap="round" />
-          </g>
+            {/* Heavy Duty Gym Bench with 3D Metallic Frame */}
+            <g transform={isIncline ? 'rotate(-16 70 120)' : ''}>
+              <rect x="50" y="125" width="145" height="14" rx="5" fill="#1E293B" stroke="#475569" strokeWidth="2" />
+              <rect x="52" y="122" width="141" height="5" rx="2" fill="#D4AF37" opacity="0.75" />
+              {/* Bench Steel Legs */}
+              <path d="M 65 139 L 55 178" stroke="#64748B" strokeWidth="8" strokeLinecap="round" />
+              <path d="M 175 139 L 185 178" stroke="#64748B" strokeWidth="8" strokeLinecap="round" />
+            </g>
 
-          {/* Cartoon Athletic Character - Lying Down */}
-          {/* Athlete Muscular Legs & Shoes */}
-          <path d="M 175 128 Q 195 135 205 160 L 205 178" stroke="#0F172A" strokeWidth="14" strokeLinecap="round" fill="none" />
-          <ellipse cx="205" cy="178" rx="10" ry="5" fill="#F59E0B" />
+            {/* Realistic Muscular Athlete - Lying Down */}
+            <path d="M 175 128 Q 195 135 205 160 L 205 178" stroke="#0F172A" strokeWidth="14" strokeLinecap="round" fill="none" />
+            <ellipse cx="205" cy="178" rx="11" ry="5.5" fill="#F59E0B" stroke="#FEF08A" strokeWidth="1" />
 
-          {/* Athlete Torso with Athletic Singlet */}
-          <path
-            d={isIncline ? 'M 75 110 Q 115 100 150 115 L 145 135 L 75 125 Z' : 'M 75 115 Q 115 110 155 115 L 150 135 L 75 135 Z'}
-            fill="url(#tankGrad)"
-            stroke="#D4AF37"
-            strokeWidth="1.5"
-          />
-
-          {/* Cartoon Character Head & Hair with Gold Headband */}
-          <circle cx="70" cy="108" r="16" fill="url(#skinGrad)" />
-          {/* Athletic Hair */}
-          <path d="M 58 102 Q 68 85 82 98 Q 78 106 72 104 Z" fill="#1E1B4B" />
-          {/* TitanFit Golden Headband */}
-          <path d="M 60 104 Q 72 98 84 104" stroke="#D4AF37" strokeWidth="4" strokeLinecap="round" />
-          {/* Cartoon Focused Eye & Brow */}
-          <circle cx="74" cy="107" r="2" fill="#0F172A" />
-          <path d="M 71 103 L 77 104" stroke="#0F172A" strokeWidth="1.5" strokeLinecap="round" />
-          {/* Strong Jawline */}
-          <path d="M 68 116 Q 76 118 82 112" stroke="#EA580C" strokeWidth="1.2" fill="none" />
-
-          {/* Target Activated Pectorals Heatmap Zone (Glowing Chest) */}
-          <motion.ellipse
-            cx="118"
-            cy="110"
-            rx="18"
-            ry="12"
-            fill="url(#targetGlow)"
-            filter="url(#glowFilter)"
-            animate={
-              isPlaying
-                ? {
-                    scale: [1, 1.35, 1],
-                    opacity: [0.45, 0.95, 0.45],
-                  }
-                : {}
-            }
-            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-          />
-
-          {/* Chest Muscle Contours */}
-          <path d="M 108 112 Q 118 118 128 112" stroke="#EF4444" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-
-          {/* Biomechanical Moving Barbell & Strong Cartoon Arms */}
-          <motion.g
-            animate={
-              isPlaying
-                ? {
-                    y: [0, -38, 0],
-                    x: isIncline ? [0, -6, 0] : [0, 0, 0],
-                  }
-                : {}
-            }
-            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            {/* Muscular Biceps / Triceps & Forearms */}
+            {/* Athlete Torso with 3D Compression Singlet */}
             <path
-              d="M 100 114 Q 106 90 118 68"
-              stroke="url(#skinGrad)"
-              strokeWidth="11"
-              strokeLinecap="round"
-              fill="none"
+              d={isIncline ? 'M 75 110 Q 115 100 150 115 L 145 135 L 75 125 Z' : 'M 75 115 Q 115 110 155 115 L 150 135 L 75 135 Z'}
+              fill="url(#tankGrad)"
+              stroke="#D4AF37"
+              strokeWidth="1.5"
             />
-            {/* Titan Wrist Wraps */}
-            <rect x="113" y="62" width="10" height="7" rx="2" fill="#D4AF37" />
-            {/* Hands Gripping Bar */}
-            <circle cx="118" cy="65" r="5" fill="#FDBA74" />
+
+            {/* Realistic Sculpted Head & Hair with Gold Headband */}
+            <circle cx="70" cy="108" r="16" fill="url(#skinGrad)" />
+            <path d="M 58 102 Q 68 85 82 98 Q 78 106 72 104 Z" fill="#0F172A" />
+            <path d="M 60 104 Q 72 98 84 104" stroke="#D4AF37" strokeWidth="4" strokeLinecap="round" />
+            <circle cx="74" cy="107" r="2" fill="#0F172A" />
+            <path d="M 71 103 L 77 104" stroke="#0F172A" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M 68 116 Q 76 118 82 112" stroke="#C2410C" strokeWidth="1.4" fill="none" />
+
+            {/* Target Activated Pectorals Heatmap Zone (Glowing 3D Striated Chest) */}
+            <motion.ellipse
+              cx="118"
+              cy="110"
+              rx="19"
+              ry="13"
+              fill="url(#targetGlow)"
+              filter="url(#glowFilter)"
+              animate={
+                isPlaying
+                  ? {
+                      scale: [1, 1.38, 1],
+                      opacity: [0.5, 0.98, 0.5],
+                    }
+                  : {}
+              }
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+            />
+
+            {/* Anatomical Muscle Striation Fibers */}
+            <path d="M 106 112 Q 118 119 130 112" stroke="#EF4444" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+            <path d="M 109 108 Q 118 114 127 108" stroke="#FCA5A5" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.85" />
+
+            {/* Biomechanical Moving Barbell & Sculpted 3D Arms */}
+            <motion.g
+              animate={
+                isPlaying
+                  ? {
+                      y: [0, -38, 0],
+                      x: isIncline ? [0, -6, 0] : [0, 0, 0],
+                    }
+                  : {}
+              }
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              {/* Muscular Biceps / Triceps & Forearms with Vascular Definition */}
+              <path
+                d="M 100 114 Q 106 90 118 68"
+                stroke="url(#skinGrad)"
+                strokeWidth="12"
+                strokeLinecap="round"
+                fill="none"
+              />
+              <path
+                d="M 102 110 Q 108 92 117 72"
+                stroke="#FED7AA"
+                strokeWidth="2"
+                strokeLinecap="round"
+                fill="none"
+                opacity="0.6"
+              />
+              {/* Titan Wrist Wraps */}
+              <rect x="113" y="62" width="10" height="7" rx="2" fill="#D4AF37" />
+              {/* Hands Gripping Bar */}
+              <circle cx="118" cy="65" r="5" fill="#FDBA74" />
 
             {/* Olympic Steel Barbell with Textured Knurling */}
             <line x1="45" y1="65" x2="215" y2="65" stroke="#CBD5E1" strokeWidth="6" strokeLinecap="round" />
@@ -1015,7 +1023,70 @@ export function CartoonAthleteVisualCanvas({
         </svg>
       );
     }
-  }
+    }
+  };
+
+  return (
+    <div className="relative w-full h-full flex flex-col items-center justify-between overflow-hidden rounded-xl">
+      {/* 3D Studio Spotlight & Biomechanical Grid Backdrop */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-40"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 50% 20%, rgba(212,175,55,0.22), transparent 65%), linear-gradient(to right, rgba(148,163,184,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(148,163,184,0.08) 1px, transparent 1px)',
+          backgroundSize: '100% 100%, 18px 18px, 18px 18px',
+        }}
+      />
+
+      {/* Top Biomechanical Joint ROM & 3D Vector Badge */}
+      <div className="relative z-10 flex w-full items-center justify-between px-2.5 pt-1.5 text-[10px] font-black">
+        <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/85 px-2 py-0.5 text-amber-300 border border-amber-500/30 shadow-sm">
+          <Sparkles className="h-2.5 w-2.5 text-amber-400" />
+          {isAr ? 'محاكاة تشريحية 3D واقعية' : '3D Anatomical Biomechanics'}
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/85 px-2 py-0.5 text-emerald-300 border border-emerald-500/30 font-mono">
+          ∠ ROM 95° • {impact.primaryTarget.activationPct}% EMG
+        </span>
+      </div>
+
+      {/* Main 3D-Shaded Exercise SVG Stage */}
+      <div className="relative z-10 flex-1 w-full min-h-0 flex items-center justify-center">
+        {renderExerciseSvg()}
+      </div>
+
+      {/* Bottom Live EMG Muscle Fiber Activation Bar */}
+      <div className="relative z-10 w-full px-2.5 pb-1.5">
+        <div className="flex items-center justify-between rounded-lg bg-slate-900/90 px-2.5 py-1 border border-slate-700/80 text-[10px] text-white backdrop-blur-sm">
+          <div className="flex items-center gap-1.5 truncate">
+            <span
+              className="h-2 w-2 rounded-full shrink-0 animate-pulse"
+              style={{ backgroundColor: impact.primaryTarget.color }}
+            />
+            <span className="font-bold text-slate-200 truncate">
+              {isAr ? impact.primaryTarget.nameAr : impact.primaryTarget.nameEn}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="w-16 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+              <motion.div
+                className="h-full rounded-full"
+                style={{ backgroundColor: impact.primaryTarget.color }}
+                animate={
+                  isPlaying
+                    ? { width: ['45%', `${impact.primaryTarget.activationPct}%`, '45%'] }
+                    : { width: `${impact.primaryTarget.activationPct}%` }
+                }
+                transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            </div>
+            <span className="font-mono font-black text-amber-400">
+              {impact.primaryTarget.activationPct}%
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /**

@@ -58,8 +58,18 @@ export function OverviewView() {
     setActiveSection,
     simulateGateScan,
     showToast,
+    currentUser,
+    impersonatedTenant,
+    activeTenantCustom,
+    customWorkouts,
+    customRecipes,
+    customFiles,
   } = usePlatformStore();
   const isAr = locale === 'ar';
+  const isolatedTenantSlug =
+    currentUser?.tenantSlug || impersonatedTenant || activeTenantCustom?.slug || 'titanfit-egypt';
+  const isolatedClubNameAr = activeTenantCustom?.nameAr || 'مجموعة أندية تيتان فيت مصر';
+  const isolatedClubNameEn = activeTenantCustom?.nameEn || 'TitanFit Egypt Athletic Clubs';
   const [chartPeriod, setChartPeriod] = useState<'7D' | '30D' | '90D' | '12M'>('30D');
 
   const filteredMembers =
@@ -149,6 +159,74 @@ export function OverviewView() {
               {isAr ? 'مسح QR سريع' : 'Quick QR Check-in'}
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Multi-Tenant Isolated Database & Payment Gateways Status Bar */}
+      <div
+        data-testid="tenant-db-isolation-banner"
+        className="grid grid-cols-1 gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-950/5 p-4 dark:bg-emerald-950/20 md:grid-cols-3"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black text-slate-900 dark:text-white">
+                {isAr
+                  ? `قاعدة بيانات معزولة: ${isolatedClubNameAr}`
+                  : `Isolated Tenant DB: ${isolatedClubNameEn}`}
+              </span>
+              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-black text-emerald-700 dark:text-emerald-300">
+                FORCE RLS
+              </span>
+            </div>
+            <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400">
+              {isAr
+                ? `معرف العزل: (${isolatedTenantSlug}) — بيانات أعضائك (${members.length}) ومكتبتك (${customWorkouts.length} فيديو • ${customRecipes.length} وصفة • ${customFiles.length} ملف) معزولة 100% عن أي نادي آخر.`
+                : `Tenant partition (${isolatedTenantSlug}) — ${members.length} members & club library strictly isolated via PostgreSQL RLS.`}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3 border-t border-slate-200/70 pt-3 dark:border-slate-800 md:border-t-0 md:border-s md:ps-3 md:pt-0">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
+            <CreditCard className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black text-slate-900 dark:text-white">
+                {isAr ? 'بوابات الدفع المصرية والفواتير الضريبية' : 'Egyptian Payment Gateways & VAT'}
+              </span>
+              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-black text-amber-700 dark:text-amber-300">
+                14% VAT
+              </span>
+            </div>
+            <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400">
+              {isAr
+                ? 'إنستاباي (IPA) • بطاقات Paymob • كود فوري المرجعي • كاش POS مع بصمة تدقيق SHA-256.'
+                : 'InstaPay IPA • Paymob Cards • Fawry Ref Code • Cash POS with SHA-256 receipt hash.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 border-t border-slate-200/70 pt-3 dark:border-slate-800 md:border-t-0 md:border-s md:ps-3 md:pt-0">
+          <div>
+            <span className="text-xs font-black text-slate-900 dark:text-white">
+              {isAr ? 'كود انضمام المتدربين للنادي' : 'Club Member Join Code'}
+            </span>
+            <p className="mt-0.5 font-mono text-xs font-black text-amber-600 dark:text-amber-400">
+              {activeTenantCustom?.gymSecretCode || 'TF-JOIN'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActiveSection('PAYMENTS')}
+            className="rounded-xl bg-slate-900 px-3 py-2 text-[11px] font-black text-amber-400 transition hover:bg-slate-800 dark:bg-amber-500 dark:text-slate-950"
+          >
+            {isAr ? 'بوابة الدفع والفواتير ←' : 'Open Cashier →'}
+          </button>
         </div>
       </div>
 
