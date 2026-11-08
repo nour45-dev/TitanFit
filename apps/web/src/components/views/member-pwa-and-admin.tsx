@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { LogoPicker } from '../logo-picker';
 import { ExerciseMotionCard, type ExerciseMotionItem } from '../exercise-motion-card';
+import { BuiltInWorkoutVideoPlayer } from '../builtin-workout-video-player';
 import {
   type TenantSaaSItem,
   type WorkoutLogEntry,
@@ -136,10 +137,18 @@ export function MemberPwaPortalView() {
     members,
     workoutLogs,
     chatMessages,
+    customWorkouts,
+    customRecipes,
+    customFiles,
     logWorkoutSet,
     sendChatMessage,
   } = usePlatformStore();
   const isAr = locale === 'ar';
+  const [selectedPwaWorkoutId, setSelectedPwaWorkoutId] = useState<string>(
+    customWorkouts[0]?.id || '',
+  );
+  const activePwaWorkout =
+    customWorkouts.find((w) => w.id === selectedPwaWorkoutId) ?? customWorkouts[0] ?? null;
 
   const currentMember = members[0]!;
   const [qrCountdown, setQrCountdown] = useState(28);
@@ -531,6 +540,128 @@ export function MemberPwaPortalView() {
               >
                 <Send className="h-4 w-4" />
               </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Member App Synced Gym Videos, Recipes & Files Section */}
+      <div
+        data-testid="pwa-coach-media-library"
+        className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#121623] sm:p-8 space-y-6"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <span className="text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
+              🎬 {isAr ? 'مكتبة التدريب والتغذية والملفات الخاصة بناديك' : 'YOUR CLUB VIDEO, RECIPE & FILE HUB'}
+            </span>
+            <h2 className="mt-1 text-xl font-black text-slate-900 dark:text-white">
+              {isAr
+                ? 'فيديوهات تمارينك ووصفاتك الغذائية والملفات المرفوعة من مدربك'
+                : 'Coach Workout Videos, Macro Recipes & Downloadable Guides'}
+            </h2>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {customWorkouts.map((cw) => (
+              <button
+                key={cw.id}
+                type="button"
+                onClick={() => setSelectedPwaWorkoutId(cw.id)}
+                className={`rounded-xl px-3.5 py-2 text-xs font-black transition ${
+                  activePwaWorkout?.id === cw.id
+                    ? 'bg-amber-500 text-slate-950 shadow-xs'
+                    : 'border border-slate-200 bg-slate-50 text-slate-700 hover:border-amber-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
+                }`}
+              >
+                {isAr ? cw.titleAr : cw.titleEn}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {activePwaWorkout && (
+          <BuiltInWorkoutVideoPlayer
+            titleAr={activePwaWorkout.titleAr}
+            titleEn={activePwaWorkout.titleEn}
+            coachAr={activePwaWorkout.coachAr}
+            coachEn={activePwaWorkout.coachEn}
+            motionType={activePwaWorkout.motionType}
+            targetMuscleAr={activePwaWorkout.targetMuscleAr}
+            targetMuscleEn={activePwaWorkout.targetMuscleEn}
+            sets={activePwaWorkout.sets}
+            reps={activePwaWorkout.reps}
+            restSec={activePwaWorkout.restSec}
+            safetyTipAr={activePwaWorkout.safetyTipAr}
+            safetyTipEn={activePwaWorkout.safetyTipEn}
+            thumbnailUrl={activePwaWorkout.thumbnailUrl}
+            videoSourceType={activePwaWorkout.videoSourceType}
+            videoUrl={activePwaWorkout.videoUrl}
+            isAr={isAr}
+          />
+        )}
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {/* Recipes Box */}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/50 space-y-3">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white">
+              🥗 {isAr ? 'أحدث الوصفات الغذائية المضافة لك:' : 'Latest Club Nutrition Recipes:'}
+            </h3>
+            <div className="space-y-2.5">
+              {customRecipes.map((r) => (
+                <div
+                  key={r.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950"
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={r.imageUrl}
+                      alt={r.titleAr}
+                      className="h-12 w-12 shrink-0 rounded-lg object-cover"
+                    />
+                    <div>
+                      <p className="text-xs font-black text-slate-900 dark:text-white">
+                        {isAr ? r.titleAr : r.titleEn}
+                      </p>
+                      <p className="font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                        ≈ {r.kcal} kcal ({r.proteinG}g P • {r.carbsG}g C • {r.fatsG}g F)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Files Box */}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/50 space-y-3">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white">
+              📄 {isAr ? 'ملفات وجداول الجيم المرفوعة للتحميل:' : 'Downloadable Club Files & PDFs:'}
+            </h3>
+            <div className="space-y-2.5">
+              {customFiles.map((f) => (
+                <div
+                  key={f.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950"
+                >
+                  <div>
+                    <p className="text-xs font-black text-slate-900 dark:text-white">
+                      {isAr ? f.titleAr : f.titleEn}
+                    </p>
+                    <p className="font-mono text-[10px] text-slate-500">
+                      {f.fileName} • {f.fileSizeLabel}
+                    </p>
+                  </div>
+                  <a
+                    href={f.fileUrl}
+                    download={f.fileName}
+                    className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-emerald-500"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    {isAr ? 'تحميل' : 'Download'}
+                  </a>
+                </div>
+              ))}
             </div>
           </div>
         </div>

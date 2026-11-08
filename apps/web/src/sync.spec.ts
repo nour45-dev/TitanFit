@@ -93,4 +93,64 @@ describe('Multi-Device Real-Time Synchronization Engine (/api/sync)', () => {
     expect(json.data.customBranding.customSubdomain).toBe('elite.titanfit.eg');
     expect(json.data.customBranding.primaryColor).toBe('#059669');
   });
+
+  it('synchronizes gym owner custom workout videos, nutrition recipes, and downloadable files', async () => {
+    const workoutReq = new NextRequest('http://localhost:3000/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenantSlug: 'titanfit-test-1',
+        action: 'ADD_CUSTOM_WORKOUT',
+        payload: {
+          id: 'cw-sync-1',
+          titleAr: 'تمرين ترايسبس وصدر متقدم',
+          videoSourceType: 'BUILTIN_ANIMATION',
+          motionType: 'TRICEPS_PUSHDOWN',
+        },
+      }),
+    });
+    const wkRes = await POST(workoutReq);
+    const wkJson = await wkRes.json();
+    expect(wkJson.success).toBe(true);
+    expect(wkJson.data.customWorkouts.some((w: any) => w.id === 'cw-sync-1')).toBe(true);
+
+    const recipeReq = new NextRequest('http://localhost:3000/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenantSlug: 'titanfit-test-1',
+        action: 'ADD_CUSTOM_RECIPE',
+        payload: {
+          id: 'cr-sync-1',
+          titleAr: 'وجبة سمك مشوي وأرز',
+          proteinG: 40,
+          carbsG: 50,
+          fatsG: 10,
+          kcal: 450,
+        },
+      }),
+    });
+    const rcRes = await POST(recipeReq);
+    const rcJson = await rcRes.json();
+    expect(rcJson.success).toBe(true);
+    expect(rcJson.data.customRecipes.some((r: any) => r.id === 'cr-sync-1')).toBe(true);
+
+    const fileReq = new NextRequest('http://localhost:3000/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenantSlug: 'titanfit-test-1',
+        action: 'ADD_CUSTOM_FILE',
+        payload: {
+          id: 'cf-sync-1',
+          titleAr: 'ملف خطة التنشيف PDF',
+          fileName: 'shred-plan.pdf',
+        },
+      }),
+    });
+    const flRes = await POST(fileReq);
+    const flJson = await flRes.json();
+    expect(flJson.success).toBe(true);
+    expect(flJson.data.customFiles.some((f: any) => f.id === 'cf-sync-1')).toBe(true);
+  });
 });

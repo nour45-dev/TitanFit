@@ -59,6 +59,7 @@ import {
 } from './views/member-pwa-and-admin';
 import { PublicCoachingStorefrontView } from './views/public-coaching-storefront';
 import { FreeTrialWorkoutsAndDietsView } from './views/free-trial-workouts-and-diets';
+import { GymOwnerContentStudioView } from './views/gym-owner-content-studio';
 
 function TitanFitEnterpriseShell() {
   const {
@@ -211,6 +212,14 @@ function TitanFitEnterpriseShell() {
           labelEn: 'Trainers & Staff',
           labelAr: 'المدربون وطاقم العمل والعمولات',
           icon: UserCheck,
+        },
+        {
+          id: 'CONTENT_LIBRARY',
+          testId: 'nav-tab-CONTENT_LIBRARY',
+          labelEn: 'Videos, Recipes & Files Studio',
+          labelAr: 'رفع الفيديوهات والوصفات والملفات',
+          badge: 'STUDIO',
+          icon: Video,
         },
       ],
     },
@@ -599,6 +608,20 @@ function TitanFitEnterpriseShell() {
               >
                 <ShoppingBag className="h-4 w-4" />
                 <span>{isAr ? 'الـ POS والتقارير' : 'POS & Sales'}</span>
+              </button>
+
+              <button
+                type="button"
+                data-testid="header-nav-CONTENT_LIBRARY"
+                onClick={() => setActiveSection('CONTENT_LIBRARY')}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                  activeSection === 'CONTENT_LIBRARY'
+                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+                }`}
+              >
+                <Video className="h-4 w-4 text-amber-500" />
+                <span>{isAr ? 'رفع الفيديوهات والوصفات' : 'Media Studio'}</span>
               </button>
 
               <button
@@ -1126,6 +1149,7 @@ function TitanFitEnterpriseShell() {
               {activeSection === 'ACCESS_CONTROL' && <AccessControlTurnstilesView />}
               {activeSection === 'POS_INVENTORY' && <PosInventoryView />}
               {activeSection === 'STAFF_TRAINERS' && <StaffTrainersView />}
+              {activeSection === 'CONTENT_LIBRARY' && <GymOwnerContentStudioView />}
               {activeSection === 'MEMBER_PWA' && <MemberPwaPortalView />}
               {activeSection === 'REPORTS' && <ReportsAnalyticsView />}
               {activeSection === 'SETTINGS' && <TenantSettingsView />}

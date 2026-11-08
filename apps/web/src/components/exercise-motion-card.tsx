@@ -290,7 +290,7 @@ export const EXERCISE_BODY_IMPACT_MAP: Record<ExerciseMotionType, BodyImpactInfo
  * High-definition Cartoon Athletic Character Visual Engine
  * Renders charming 2D/3D-styled athlete with real biomechanics, headband, training tank, shorts & gym gear
  */
-function CartoonAthleteVisualCanvas({
+export function CartoonAthleteVisualCanvas({
   motionType,
   isPlaying,
   speedMultiplier = 1,

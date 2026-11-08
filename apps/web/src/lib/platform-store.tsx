@@ -15,6 +15,7 @@ export type WorkspaceSection =
   | 'ACCESS_CONTROL'
   | 'POS_INVENTORY'
   | 'STAFF_TRAINERS'
+  | 'CONTENT_LIBRARY'
   | 'MEMBER_PWA'
   | 'REPORTS'
   | 'SETTINGS'
@@ -512,6 +513,274 @@ const INITIAL_TENANTS: TenantSaaSItem[] = [
   },
 ];
 
+export interface CustomWorkoutVideoItem {
+  id: string;
+  titleAr: string;
+  titleEn: string;
+  categoryAr: string;
+  categoryEn: string;
+  levelAr: string;
+  levelEn: string;
+  durationMin: number;
+  kcalBurn: number;
+  coachAr: string;
+  coachEn: string;
+  videoSourceType: 'BUILTIN_ANIMATION' | 'VIDEO_URL' | 'UPLOADED_FILE';
+  videoUrl: string;
+  thumbnailUrl: string;
+  motionType:
+    | 'BENCH_PRESS'
+    | 'INCLINE_PRESS'
+    | 'CABLE_FLY'
+    | 'LATERAL_RAISE'
+    | 'TRICEPS_PUSHDOWN'
+    | 'LAT_PULLDOWN'
+    | 'BARBELL_ROW'
+    | 'BICEPS_CURL'
+    | 'BARBELL_SQUAT'
+    | 'ROMANIAN_DEADLIFT';
+  targetMuscleAr: string;
+  targetMuscleEn: string;
+  sets: number;
+  reps: string;
+  restSec: number;
+  safetyTipAr: string;
+  safetyTipEn: string;
+  daySplit?: 'PUSH' | 'PULL' | 'LEGS' | 'UPPER' | 'CARDIO_CORE';
+  createdAt: string;
+}
+
+export interface CustomNutritionRecipeItem {
+  id: string;
+  titleAr: string;
+  titleEn: string;
+  mealType: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
+  imageUrl: string;
+  proteinG: number;
+  carbsG: number;
+  fatsG: number;
+  kcal: number;
+  prepMin: number;
+  ingredientsAr: string[];
+  ingredientsEn: string[];
+  stepsAr: string[];
+  stepsEn: string[];
+  economicAltAr: string;
+  economicAltEn: string;
+  createdAt: string;
+}
+
+export interface CustomClubFileItem {
+  id: string;
+  titleAr: string;
+  titleEn: string;
+  category: 'WORKOUT_PDF' | 'DIET_PDF' | 'GUIDE' | 'VIDEO_PACK';
+  descriptionAr: string;
+  descriptionEn: string;
+  fileName: string;
+  fileSizeLabel: string;
+  fileUrl: string;
+  fileType: string;
+  uploadedBy: string;
+  createdAt: string;
+}
+
+const INITIAL_CUSTOM_WORKOUTS: CustomWorkoutVideoItem[] = [
+  {
+    id: 'cw-1',
+    titleAr: 'تمرين صدر وكتف متكامل (فيديو متحرك ذاتي + شرح الإيقاع)',
+    titleEn: 'Complete Chest & Shoulder Hypertrophy (Animated Studio)',
+    categoryAr: 'دفع علوي (Push)',
+    categoryEn: 'Upper Push',
+    levelAr: 'مبتدئ / متوسط',
+    levelEn: 'Beginner / Intermediate',
+    durationMin: 40,
+    kcalBurn: 360,
+    coachAr: 'كابتن عمر حسن',
+    coachEn: 'Coach Omar Hassan',
+    videoSourceType: 'BUILTIN_ANIMATION',
+    videoUrl: '',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=900&q=85',
+    motionType: 'BENCH_PRESS',
+    targetMuscleAr: 'الصدر الأوسط، الصدر العلوي، الكتف الجانبي، الترايسبس',
+    targetMuscleEn: 'Mid/Upper Chest, Lateral Delts, Triceps',
+    sets: 4,
+    reps: '10 - 12',
+    restSec: 75,
+    safetyTipAr: 'اثبت لوحي الكتف للخلف وانزل ببطء خلال ٣ ثوانٍ مع الزفير عند الدفع للأعلى.',
+    safetyTipEn: 'Retract scapulae, lower over 3 seconds, and exhale powerfully as you press up.',
+    daySplit: 'PUSH',
+    createdAt: '2026-11-01',
+  },
+  {
+    id: 'cw-2',
+    titleAr: 'تمرين سحب ظهر عريض وبايسبس (V-Taper Pull Studio)',
+    titleEn: 'V-Taper Back & Biceps Pull Studio',
+    categoryAr: 'سحب علوي (Pull)',
+    categoryEn: 'Upper Pull',
+    levelAr: 'جميع المستويات',
+    levelEn: 'All Levels',
+    durationMin: 45,
+    kcalBurn: 390,
+    coachAr: 'كابتن نور الدين',
+    coachEn: 'Capt. Nour El-Din',
+    videoSourceType: 'BUILTIN_ANIMATION',
+    videoUrl: '',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&w=900&q=85',
+    motionType: 'LAT_PULLDOWN',
+    targetMuscleAr: 'المجنص العريض (Lats)، وسط الظهر، البايسبس',
+    targetMuscleEn: 'Latissimus Dorsi, Mid-Back, Biceps',
+    sets: 4,
+    reps: '10 - 12',
+    restSec: 75,
+    safetyTipAr: 'اسحب بكوعك لأسفل باتجاه الجيب الخلفي ولا تتأرجح بأسفل الظهر.',
+    safetyTipEn: 'Drive elbows down toward your back pockets and keep your torso stable.',
+    daySplit: 'PULL',
+    createdAt: '2026-11-02',
+  },
+  {
+    id: 'cw-3',
+    titleAr: 'قوة الأرجل والقطنية الآمنة (Squat & RDL Biomechanics)',
+    titleEn: 'Lower Body Power & Safe Hinge Studio',
+    categoryAr: 'أرجل وسفلي (Legs)',
+    categoryEn: 'Lower Body',
+    levelAr: 'متوسط',
+    levelEn: 'Intermediate',
+    durationMin: 50,
+    kcalBurn: 460,
+    coachAr: 'كابتن عمر حسن',
+    coachEn: 'Coach Omar Hassan',
+    videoSourceType: 'BUILTIN_ANIMATION',
+    videoUrl: '',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=900&q=85',
+    motionType: 'BARBELL_SQUAT',
+    targetMuscleAr: 'الرباعية الأمامية، الخلفية، والأرداف (Glutes)',
+    targetMuscleEn: 'Quadriceps, Hamstrings, and Glutes',
+    sets: 4,
+    reps: '8 - 10',
+    restSec: 90,
+    safetyTipAr: 'حافظ على استقامة العمود الفقري وادفع الأرض بكعب القدم بالكامل.',
+    safetyTipEn: 'Maintain a neutral spine and drive through your mid-foot and heels.',
+    daySplit: 'LEGS',
+    createdAt: '2026-11-03',
+  },
+];
+
+const INITIAL_CUSTOM_RECIPES: CustomNutritionRecipeItem[] = [
+  {
+    id: 'cr-1',
+    titleAr: 'طاجن شوفان بالبيض والجبن القريش والأفوكادو (فطور طاقة عالي البروتين)',
+    titleEn: 'Savory Egg, Cottage Cheese & Oat Power Bowl',
+    mealType: 'BREAKFAST',
+    imageUrl: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=800&q=85',
+    proteinG: 36,
+    carbsG: 45,
+    fatsG: 14,
+    kcal: 450, // 4*36 + 4*45 + 9*14 = 144 + 180 + 126 = 450 kcal
+    prepMin: 10,
+    ingredientsAr: ['3 بيضات كاملة مسلوقة أو أومليت', '100 جم جبن قريش مصري', '50 جم شوفان مطحون أو خبز بلدي', 'شرائح طماطم وخيار وزيت زيتون بكر'],
+    ingredientsEn: ['3 whole eggs', '100g cottage cheese', '50g rolled oats or baladi bread', 'Fresh tomato, cucumber & olive oil drizzle'],
+    stepsAr: [
+      'اخفق البيض مع رشة فلفل أسود وكمون في طاسة غير لاصقة على نار هادئة.',
+      'اهرس الجبن القريش مع ملعقة زيت زيتون وزعتر بري بجانب الشوفان المحمص.',
+      'قدم الطبق ساخناً مع الخضروات الورقية الطازجة.',
+    ],
+    stepsEn: [
+      'Scramble or poach the eggs with black pepper and cumin on low heat.',
+      'Mash the cottage cheese with olive oil and oregano alongside toasted oats.',
+      'Serve warm with fresh greens.',
+    ],
+    economicAltAr: 'بديل اقتصادي: استبدل الشوفان برغيف خبز بلدي أسمر + 4 ملاعق فول مدمس بدون زيت مضاف.',
+    economicAltEn: 'Budget swap: Replace oats with 1 whole-wheat baladi flatbread + 4 tbsp fava beans.',
+    createdAt: '2026-11-01',
+  },
+  {
+    id: 'cr-2',
+    titleAr: 'صدور دجاج مشوية بالليمون والثوم مع أرز بسمتي وبروكلي سوتيه',
+    titleEn: 'Lemon Garlic Grilled Chicken Breast with Basmati Rice & Broccoli',
+    mealType: 'LUNCH',
+    imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=85',
+    proteinG: 52,
+    carbsG: 60,
+    fatsG: 12,
+    kcal: 556, // 4*52 + 4*60 + 9*12 = 208 + 240 + 108 = 556 kcal
+    prepMin: 20,
+    ingredientsAr: ['220 جم صدور دجاج صافي', '160 جم أرز بسمتي أو مصري مسلوق', 'كوب بروكلي وكوسة سوتيه', 'تتبيلة ليمون وثوم مفروم وبابريكا مدخنة'],
+    ingredientsEn: ['220g chicken breast', '160g cooked basmati rice', '1 cup steamed broccoli & zucchini', 'Lemon, garlic & smoked paprika marinade'],
+    stepsAr: [
+      'تبل صدور الدجاج بعصير الليمون والثوم والبابريكا لمدة ١٥ دقيقة.',
+      'اشوِ الدجاج على الجريل الساخن ٤ دقائق لكل وجه حتى ينضج ويبقى طرياً.',
+      'قدم الدجاج فوق الأرز المسلوق مع الخضار السوتيه.',
+    ],
+    stepsEn: [
+      'Marinate chicken breast in lemon juice, garlic, and paprika for 15 minutes.',
+      'Grill for 4 minutes per side until juicy and golden.',
+      'Serve over steamed basmati rice with sautéed greens.',
+    ],
+    economicAltAr: 'بديل اقتصادي: علبة تونة مصفاة من الزيت أو ٢٥٠ جم سمك بلطي مشوي بالردة.',
+    economicAltEn: 'Budget swap: 1 drained tuna tin or 250g grilled Nile tilapia.',
+    createdAt: '2026-11-02',
+  },
+  {
+    id: 'cr-3',
+    titleAr: 'سمك سالمون أو ماكريل مشوي بالفرن مع بطاطا حلوة مشوية وسلطة خضراء',
+    titleEn: 'Oven-Baked Omega Fish with Roasted Sweet Potato & Crisp Salad',
+    mealType: 'DINNER',
+    imageUrl: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=85',
+    proteinG: 42,
+    carbsG: 40,
+    fatsG: 16,
+    kcal: 472, // 4*42 + 4*40 + 9*16 = 168 + 160 + 144 = 472 kcal
+    prepMin: 25,
+    ingredientsAr: ['200 جم فيليه سمك مشوي (سالمون أو ماكريل أو بلطي)', '150 جم بطاطا حلوة مشوية بالفرن', 'طبق سلطة خضراء بالجرجير والليمون'],
+    ingredientsEn: ['200g baked fish fillet', '150g oven-roasted sweet potato', 'Fresh arugula & lemon salad'],
+    stepsAr: [
+      'قطع البطاطا الحلوة مكعبات واشوها في الفرن أو الإيرفراير لمدة ١٨ دقيقة.',
+      'تبل السمك بالكمون والليمون والكسبرة الجافة واشوه في الفرن لمدة ١٥ دقيقة.',
+      'قدم الوجبة مع الجرجير الطازج.',
+    ],
+    stepsEn: [
+      'Cube sweet potatoes and roast in the oven or air-fryer for 18 minutes.',
+      'Season fish with cumin, lemon, and coriander and bake for 15 minutes.',
+      'Serve with fresh arugula.',
+    ],
+    economicAltAr: 'بديل اقتصادي: ٢٠٠ جم صدور دجاج أو ١٥٠ جم جبن قريش مع بطاطس مسلوقة.',
+    economicAltEn: 'Budget swap: 200g chicken breast or 150g cottage cheese with boiled potato.',
+    createdAt: '2026-11-03',
+  },
+];
+
+const INITIAL_CUSTOM_FILES: CustomClubFileItem[] = [
+  {
+    id: 'cf-1',
+    titleAr: 'جدول التدريب الذاتي الشامل ٤ أسابيع (Push / Pull / Legs PDF)',
+    titleEn: '4-Week Complete Self-Coaching Split Schedule (PPL Sheet)',
+    category: 'WORKOUT_PDF',
+    descriptionAr: 'ملف مطبوع جاهز لتسجيل أوزانك وعداتك أسبوعاً بأسبوع مع شرح الإحماء والتدرج في الأوزان.',
+    descriptionEn: 'Printable 4-week workout log sheet with warm-up protocol and progressive overload guide.',
+    fileName: 'TitanFit-4Week-Self-Training-Plan.html',
+    fileSizeLabel: '420 KB',
+    fileUrl: '#builtin-workout-plan-sheet',
+    fileType: 'text/html',
+    uploadedBy: 'إدارة تيتان فيت',
+    createdAt: '2026-11-01',
+  },
+  {
+    id: 'cf-2',
+    titleAr: 'دليل الوجبات المصرية الاقتصادية وحساب الماكروز (4P + 4C + 9F)',
+    titleEn: 'Egyptian Budget Nutrition & Macro Guide',
+    category: 'DIET_PDF',
+    descriptionAr: 'قائمة بدائل البروتين والنشويات والدهون الصحية من البيت المصري لثبات الوزن أو التنشيف أو الضخامة.',
+    descriptionEn: 'Complete Egyptian household food swap table for cutting, maintenance, and lean bulking.',
+    fileName: 'TitanFit-Egyptian-Nutrition-Guide.html',
+    fileSizeLabel: '380 KB',
+    fileUrl: '#builtin-diet-guide-sheet',
+    fileType: 'text/html',
+    uploadedBy: 'قسم التغذية الرياضية',
+    createdAt: '2026-11-02',
+  },
+];
+
 const INITIAL_AUDITS: AuditEntry[] = [
   {
     id: 'aud-1',
@@ -547,6 +816,9 @@ export interface PlatformStoreContextValue {
   workoutLogs: WorkoutLogEntry[];
   chatMessages: ChatMessageItem[];
   tenants: TenantSaaSItem[];
+  customWorkouts: CustomWorkoutVideoItem[];
+  customRecipes: CustomNutritionRecipeItem[];
+  customFiles: CustomClubFileItem[];
   auditLogs: AuditEntry[];
   impersonatedTenant: string | null;
   setImpersonatedTenant: (slug: string | null) => void;
@@ -650,6 +922,26 @@ export interface PlatformStoreContextValue {
     tenantId: string,
     changes: { logoUrl?: string; primaryColor?: string },
   ) => void;
+  addCustomWorkout: (
+    workout: Omit<CustomWorkoutVideoItem, 'id' | 'createdAt'>,
+  ) => CustomWorkoutVideoItem;
+  updateCustomWorkout: (
+    workoutId: string,
+    updates: Partial<CustomWorkoutVideoItem>,
+  ) => void;
+  deleteCustomWorkout: (workoutId: string) => void;
+  addCustomRecipe: (
+    recipe: Omit<CustomNutritionRecipeItem, 'id' | 'createdAt' | 'kcal'>,
+  ) => CustomNutritionRecipeItem;
+  updateCustomRecipe: (
+    recipeId: string,
+    updates: Partial<CustomNutritionRecipeItem>,
+  ) => void;
+  deleteCustomRecipe: (recipeId: string) => void;
+  addCustomFile: (
+    file: Omit<CustomClubFileItem, 'id' | 'createdAt'>,
+  ) => CustomClubFileItem;
+  deleteCustomFile: (fileId: string) => void;
 }
 
 const PlatformContext = createContext<PlatformStoreContextValue | null>(null);
@@ -677,7 +969,45 @@ export function PlatformProvider({
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLogEntry[]>(INITIAL_WORKOUT_LOGS);
   const [chatMessages, setChatMessages] = useState<ChatMessageItem[]>(INITIAL_CHAT);
   const [tenants, setTenants] = useState<TenantSaaSItem[]>(INITIAL_TENANTS);
+  const [customWorkouts, setCustomWorkouts] = useState<CustomWorkoutVideoItem[]>(INITIAL_CUSTOM_WORKOUTS);
+  const [customRecipes, setCustomRecipes] = useState<CustomNutritionRecipeItem[]>(INITIAL_CUSTOM_RECIPES);
+  const [customFiles, setCustomFiles] = useState<CustomClubFileItem[]>(INITIAL_CUSTOM_FILES);
   const tenantsHydrated = useRef(false);
+  const customContentHydrated = useRef(false);
+
+  // Hydrate & persist Gym Owner Custom Content (workouts, recipes, files) in localStorage
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem('titanfit.customContent.v1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed.customWorkouts) && parsed.customWorkouts.length > 0) {
+          setCustomWorkouts(parsed.customWorkouts);
+        }
+        if (Array.isArray(parsed.customRecipes) && parsed.customRecipes.length > 0) {
+          setCustomRecipes(parsed.customRecipes);
+        }
+        if (Array.isArray(parsed.customFiles) && parsed.customFiles.length > 0) {
+          setCustomFiles(parsed.customFiles);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    customContentHydrated.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!customContentHydrated.current) return;
+    try {
+      window.localStorage.setItem(
+        'titanfit.customContent.v1',
+        JSON.stringify({ customWorkouts, customRecipes, customFiles }),
+      );
+    } catch {
+      /* ignore quota errors */
+    }
+  }, [customWorkouts, customRecipes, customFiles]);
 
   // Purge legacy storage from browser and hydrate active session via BFF
   useEffect(() => {
@@ -1568,6 +1898,154 @@ export function PlatformProvider({
     );
   };
 
+  const addCustomWorkout: PlatformStoreContextValue['addCustomWorkout'] = (workout) => {
+    const newItem: CustomWorkoutVideoItem = {
+      ...workout,
+      id: `cw-${Date.now()}`,
+      createdAt: new Date().toISOString().slice(0, 10),
+    };
+    setCustomWorkouts((prev) => [newItem, ...prev]);
+    apiPushSyncAction({
+      tenantSlug: currentUser?.tenantSlug || 'titanfit-cairo',
+      action: 'ADD_CUSTOM_WORKOUT',
+      payload: newItem,
+    });
+    appendAudit('CUSTOM_WORKOUT_ADDED', newItem.titleEn || newItem.titleAr);
+    showToast(
+      locale === 'ar'
+        ? `🎬 تمت إضافة فيديو التمرين "${newItem.titleAr}" إلى مكتبة الجيم والمتدربين!`
+        : `🎬 Workout video "${newItem.titleEn}" published to hub!`,
+    );
+    return newItem;
+  };
+
+  const updateCustomWorkout: PlatformStoreContextValue['updateCustomWorkout'] = (workoutId, updates) => {
+    setCustomWorkouts((prev) =>
+      prev.map((w) => (w.id === workoutId ? { ...w, ...updates } : w)),
+    );
+    apiPushSyncAction({
+      tenantSlug: currentUser?.tenantSlug || 'titanfit-cairo',
+      action: 'UPDATE_CUSTOM_WORKOUT',
+      payload: { id: workoutId, updates },
+    });
+    appendAudit('CUSTOM_WORKOUT_UPDATED', workoutId);
+    showToast(
+      locale === 'ar'
+        ? 'تم تحديث بيانات التمرين والفيديو بنجاح'
+        : 'Workout video updated successfully',
+    );
+  };
+
+  const deleteCustomWorkout: PlatformStoreContextValue['deleteCustomWorkout'] = (workoutId) => {
+    const target = customWorkouts.find((w) => w.id === workoutId);
+    setCustomWorkouts((prev) => prev.filter((w) => w.id !== workoutId));
+    apiPushSyncAction({
+      tenantSlug: currentUser?.tenantSlug || 'titanfit-cairo',
+      action: 'DELETE_CUSTOM_WORKOUT',
+      payload: { id: workoutId },
+    });
+    appendAudit('CUSTOM_WORKOUT_DELETED', target?.titleEn || workoutId);
+    showToast(
+      locale === 'ar'
+        ? `تم حذف التمرين "${target?.titleAr || ''}"`
+        : `Deleted workout "${target?.titleEn || ''}"`,
+    );
+  };
+
+  const addCustomRecipe: PlatformStoreContextValue['addCustomRecipe'] = (recipe) => {
+    // Unified macro calorie equation: 4*P + 4*C + 9*F
+    const kcal = Math.round(recipe.proteinG * 4 + recipe.carbsG * 4 + recipe.fatsG * 9);
+    const newItem: CustomNutritionRecipeItem = {
+      ...recipe,
+      kcal,
+      id: `cr-${Date.now()}`,
+      createdAt: new Date().toISOString().slice(0, 10),
+    };
+    setCustomRecipes((prev) => [newItem, ...prev]);
+    apiPushSyncAction({
+      tenantSlug: currentUser?.tenantSlug || 'titanfit-cairo',
+      action: 'ADD_CUSTOM_RECIPE',
+      payload: newItem,
+    });
+    appendAudit('CUSTOM_RECIPE_ADDED', newItem.titleEn || newItem.titleAr);
+    showToast(
+      locale === 'ar'
+        ? `🥗 تمت إضافة الوصفة الغذائية "${newItem.titleAr}" (~${kcal} سعرة) للمتدربين!`
+        : `🥗 Added nutrition recipe "${newItem.titleEn}" (~${kcal} kcal)!`,
+    );
+    return newItem;
+  };
+
+  const updateCustomRecipe: PlatformStoreContextValue['updateCustomRecipe'] = (recipeId, updates) => {
+    setCustomRecipes((prev) =>
+      prev.map((r) => {
+        if (r.id !== recipeId) return r;
+        const merged = { ...r, ...updates };
+        merged.kcal = Math.round(merged.proteinG * 4 + merged.carbsG * 4 + merged.fatsG * 9);
+        return merged;
+      }),
+    );
+    apiPushSyncAction({
+      tenantSlug: currentUser?.tenantSlug || 'titanfit-cairo',
+      action: 'UPDATE_CUSTOM_RECIPE',
+      payload: { id: recipeId, updates },
+    });
+    showToast(
+      locale === 'ar' ? 'تم تحديث الوصفة الغذائية وحساب السعرات' : 'Recipe updated successfully',
+    );
+  };
+
+  const deleteCustomRecipe: PlatformStoreContextValue['deleteCustomRecipe'] = (recipeId) => {
+    const target = customRecipes.find((r) => r.id === recipeId);
+    setCustomRecipes((prev) => prev.filter((r) => r.id !== recipeId));
+    apiPushSyncAction({
+      tenantSlug: currentUser?.tenantSlug || 'titanfit-cairo',
+      action: 'DELETE_CUSTOM_RECIPE',
+      payload: { id: recipeId },
+    });
+    showToast(
+      locale === 'ar'
+        ? `تم حذف الوصفة "${target?.titleAr || ''}"`
+        : `Deleted recipe "${target?.titleEn || ''}"`,
+    );
+  };
+
+  const addCustomFile: PlatformStoreContextValue['addCustomFile'] = (file) => {
+    const newItem: CustomClubFileItem = {
+      ...file,
+      id: `cf-${Date.now()}`,
+      createdAt: new Date().toISOString().slice(0, 10),
+    };
+    setCustomFiles((prev) => [newItem, ...prev]);
+    apiPushSyncAction({
+      tenantSlug: currentUser?.tenantSlug || 'titanfit-cairo',
+      action: 'ADD_CUSTOM_FILE',
+      payload: newItem,
+    });
+    appendAudit('CUSTOM_FILE_UPLOADED', newItem.fileName);
+    showToast(
+      locale === 'ar'
+        ? `📄 تم رفع الملف "${newItem.titleAr}" وإتاحته لتحميل المتدربين!`
+        : `📄 File "${newItem.titleEn}" uploaded for members!`,
+    );
+    return newItem;
+  };
+
+  const deleteCustomFile: PlatformStoreContextValue['deleteCustomFile'] = (fileId) => {
+    const target = customFiles.find((f) => f.id === fileId);
+    setCustomFiles((prev) => prev.filter((f) => f.id !== fileId));
+    apiPushSyncAction({
+      tenantSlug: currentUser?.tenantSlug || 'titanfit-cairo',
+      action: 'DELETE_CUSTOM_FILE',
+      payload: { id: fileId },
+    });
+    showToast(
+      locale === 'ar'
+        ? `تم حذف الملف "${target?.titleAr || ''}"`
+        : `Deleted file "${target?.titleEn || ''}"`,
+    );
+  };
+
   return (
     <PlatformContext.Provider
       value={{
@@ -1592,6 +2070,9 @@ export function PlatformProvider({
         workoutLogs,
         chatMessages,
         tenants,
+        customWorkouts,
+        customRecipes,
+        customFiles,
         auditLogs,
         impersonatedTenant,
         setImpersonatedTenant,
@@ -1628,6 +2109,14 @@ export function PlatformProvider({
         toggleTenantStatus,
         deleteTenant,
         updateTenantBranding,
+        addCustomWorkout,
+        updateCustomWorkout,
+        deleteCustomWorkout,
+        addCustomRecipe,
+        updateCustomRecipe,
+        deleteCustomRecipe,
+        addCustomFile,
+        deleteCustomFile,
       }}
     >
       {children}

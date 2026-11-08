@@ -108,7 +108,15 @@ export interface SyncActionPayload {
     | 'DELETE_PLAN'
     | 'RECORD_CHECKIN'
     | 'RECORD_SALE'
-    | 'SET_BRANDING';
+    | 'SET_BRANDING'
+    | 'ADD_CUSTOM_WORKOUT'
+    | 'UPDATE_CUSTOM_WORKOUT'
+    | 'DELETE_CUSTOM_WORKOUT'
+    | 'ADD_CUSTOM_RECIPE'
+    | 'UPDATE_CUSTOM_RECIPE'
+    | 'DELETE_CUSTOM_RECIPE'
+    | 'ADD_CUSTOM_FILE'
+    | 'DELETE_CUSTOM_FILE';
   payload: any;
 }
 

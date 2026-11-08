@@ -8,6 +8,9 @@ interface SyncStoreState {
   attendance: any[];
   sales: any[];
   customBranding: Record<string, any>;
+  customWorkouts: any[];
+  customRecipes: any[];
+  customFiles: any[];
 }
 
 // Global in-memory cache for multi-device sync per tenant (persists across requests during server runtime)
@@ -24,6 +27,9 @@ function getOrCreateTenantState(tenantSlug: string): SyncStoreState {
       attendance: [],
       sales: [],
       customBranding: {},
+      customWorkouts: [],
+      customRecipes: [],
+      customFiles: [],
     };
     tenantSyncCache.set(tenantSlug, state);
   }
@@ -74,6 +80,15 @@ export async function POST(req: NextRequest) {
         }
         if (state.sales.length === 0 && Array.isArray(payload.sales)) {
           state.sales = payload.sales;
+        }
+        if (state.customWorkouts.length === 0 && Array.isArray(payload.customWorkouts)) {
+          state.customWorkouts = payload.customWorkouts;
+        }
+        if (state.customRecipes.length === 0 && Array.isArray(payload.customRecipes)) {
+          state.customRecipes = payload.customRecipes;
+        }
+        if (state.customFiles.length === 0 && Array.isArray(payload.customFiles)) {
+          state.customFiles = payload.customFiles;
         }
         break;
 
@@ -141,6 +156,67 @@ export async function POST(req: NextRequest) {
       case 'SET_BRANDING':
         if (payload) {
           state.customBranding = { ...state.customBranding, ...payload };
+        }
+        break;
+
+      case 'ADD_CUSTOM_WORKOUT':
+        if (payload?.id) {
+          const exists = state.customWorkouts.some((w) => w.id === payload.id);
+          if (!exists) {
+            state.customWorkouts.unshift(payload);
+          }
+        }
+        break;
+
+      case 'UPDATE_CUSTOM_WORKOUT':
+        if (payload?.id) {
+          state.customWorkouts = state.customWorkouts.map((w) =>
+            w.id === payload.id ? { ...w, ...payload.updates } : w
+          );
+        }
+        break;
+
+      case 'DELETE_CUSTOM_WORKOUT':
+        if (payload?.id) {
+          state.customWorkouts = state.customWorkouts.filter((w) => w.id !== payload.id);
+        }
+        break;
+
+      case 'ADD_CUSTOM_RECIPE':
+        if (payload?.id) {
+          const exists = state.customRecipes.some((r) => r.id === payload.id);
+          if (!exists) {
+            state.customRecipes.unshift(payload);
+          }
+        }
+        break;
+
+      case 'UPDATE_CUSTOM_RECIPE':
+        if (payload?.id) {
+          state.customRecipes = state.customRecipes.map((r) =>
+            r.id === payload.id ? { ...r, ...payload.updates } : r
+          );
+        }
+        break;
+
+      case 'DELETE_CUSTOM_RECIPE':
+        if (payload?.id) {
+          state.customRecipes = state.customRecipes.filter((r) => r.id !== payload.id);
+        }
+        break;
+
+      case 'ADD_CUSTOM_FILE':
+        if (payload?.id) {
+          const exists = state.customFiles.some((f) => f.id === payload.id);
+          if (!exists) {
+            state.customFiles.unshift(payload);
+          }
+        }
+        break;
+
+      case 'DELETE_CUSTOM_FILE':
+        if (payload?.id) {
+          state.customFiles = state.customFiles.filter((f) => f.id !== payload.id);
         }
         break;
 

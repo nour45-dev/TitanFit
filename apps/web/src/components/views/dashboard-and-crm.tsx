@@ -34,6 +34,7 @@ import {
   UserCheck,
   UserPlus,
   Users,
+  Video,
   Wallet,
   X,
 } from 'lucide-react';
@@ -119,6 +120,15 @@ export function OverviewView() {
             >
               <UserPlus className="h-4 w-4" />
               {isAr ? '+ تسجيل عضو جديد' : '+ Register Member'}
+            </button>
+            <button
+              type="button"
+              data-testid="overview-open-content-studio-btn"
+              onClick={() => setActiveSection('CONTENT_LIBRARY')}
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-sm transition hover:bg-emerald-500"
+            >
+              <Video className="h-4 w-4" />
+              {isAr ? '🎬 رفع فيديوهات ووصفات وملفات' : '🎬 Upload Videos & Recipes'}
             </button>
             <button
               type="button"
