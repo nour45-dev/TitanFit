@@ -373,10 +373,9 @@ function TitanFitEnterpriseShell() {
         )}
       </AnimatePresence>
 
-      {/* TOP ANNOUNCEMENT BANNER: Controlled by NEXT_PUBLIC_DEMO_NOTICE or sleek commercial announcement */}
+      {/* TOP ANNOUNCEMENT BANNER: Enabled by default in production unless NEXT_PUBLIC_DEMO_NOTICE === 'false' */}
       {(() => {
-        // Phase 4 Commercial Launch: Disclaimers removed for official commercial sales
-        const isDemoNoticeEnabled = false;
+        const isDemoNoticeEnabled = process.env.NEXT_PUBLIC_DEMO_NOTICE !== 'false';
 
         if (isDemoNoticeEnabled) {
           const isPortalOrAuth = isAuthenticated || !isPublicWebsiteView || showLoginModal;
@@ -388,6 +387,7 @@ function TitanFitEnterpriseShell() {
           return (
             <aside
               role="region"
+              data-testid="demo-prototype-banner"
               aria-label={isAr ? 'تنبيه النسخة التجريبية' : 'Demo Prototype Notice'}
               className="relative z-40 border-b border-amber-600 bg-amber-500 px-3 py-2 text-slate-950 dark:border-amber-500 dark:bg-amber-500 dark:text-slate-950 sm:px-6"
             >
