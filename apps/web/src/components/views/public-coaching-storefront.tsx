@@ -468,12 +468,12 @@ export function PublicCoachingStorefrontView({
           {[
             {
               step: '01',
-              titleAr: '١. إشترك بسهولة',
-              titleEn: '1. Choose & Subscribe',
+              titleAr: '١. اختر الباقة (قريباً / نسخة تجريبية)',
+              titleEn: '1. Select Package (Coming Soon / Demo)',
               descAr:
-                'اختر الباقة المناسبة لهدفك وادفع بأمان عبر إنستاباي، فودافون كاش، فوري، أو البطاقة البنكية.',
+                'استعرض الباقات المناسبة لهدفك؛ بوابات الدفع الإلكتروني (إنستاباي، فودافون كاش، فوري، والبطاقة البنكية) قريباً — المنصة حالياً في وضع النسخة التجريبية.',
               descEn:
-                'Pick your coaching package and pay securely via InstaPay, Fawry, Vodafone Cash, or Card.',
+                'Browse coaching packages; digital payment gateways (InstaPay, Fawry, Vodafone Cash, and Card) are coming soon — currently in demo preview.',
               icon: CreditCard,
               color: 'text-amber-600 bg-amber-50 border-amber-200',
             },
@@ -764,24 +764,24 @@ export function PublicCoachingStorefrontView({
               <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />
               {isAr ? 'لأصحاب الجيمات والمدربين (B2B SaaS White-Label)' : 'FOR GYM OWNERS & ONLINE COACHES'}
             </span>
-            <span className="flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-              {isAr ? 'متاح للتعاقد الفوري' : 'Available Now'}
+            <span className="flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
+              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              {isAr ? 'قريباً / نسخة تجريبية' : 'Coming Soon / Demo Preview'}
             </span>
           </div>
 
           <h3 className="mt-3 text-xl font-black text-slate-900 dark:text-white sm:text-2xl">
             {isAr
-              ? 'هل أنت صاحب جيم أو مدرب أونلاين؟ امتلك منصتك الخاصة باسمك وشعارك!'
-              : 'Own a Gym or Coaching Brand? Launch Your White-Label SaaS Platform'}
+              ? 'هل أنت صاحب جيم أو مدرب أونلاين؟ استكشف النسخة التجريبية لمنصتك الخاصة!'
+              : 'Own a Gym or Coaching Brand? Explore the White-Label SaaS Demo Preview'}
           </h3>
           <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400 sm:text-sm">
             {isAr
-              ? 'احصل على نسخة كاملة بهويتك البصرية (White-Label) تشمل موقع المتدربين، تطبيق العضو، بوابات الدخول بالـ QR، والربط مع فوري وإنستاباي و Paymob.'
-              : 'Get your full white-label fitness ecosystem: member PWA, QR turnstiles, and Egypt payment gateways with your brand colors and domain.'}
+              ? 'نموذج تجريبي استعراضي لنظام الهوية البصرية (White-Label) يشمل واجهة المتدربين، تطبيق العضو، محاكاة بوابات الـ QR، والربط المزمع مع فوري وإنستاباي و Paymob (قريباً / نسخة تجريبية).'
+              : 'Interactive demo preview of the white-label ecosystem: member PWA, simulated QR turnstiles, and planned Egypt payment gateway integrations (Coming Soon / Demo).'}
           </p>
 
-          {/* WhatsApp Direct Contact Highlight Box */}
+          {/* WhatsApp Waitlist Highlight Box */}
           <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
@@ -790,7 +790,7 @@ export function PublicCoachingStorefrontView({
                 </div>
                 <div>
                   <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
-                    {isAr ? 'تواصل مع كابتن نور الدين مباشرة (مالك المنصة)' : 'Direct WhatsApp with Platform Owner'}
+                    {isAr ? 'سجّل اهتمامك للانضمام لقائمة الانتظار (نسخة تجريبية)' : 'Register Interest to Join the Waitlist (Demo)'}
                   </p>
                   <p className="font-mono text-sm font-black text-slate-900 dark:text-white dir-ltr">
                     +20 155 994 9271
@@ -799,13 +799,13 @@ export function PublicCoachingStorefrontView({
               </div>
 
               <a
-                href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D9%86%D8%A7%20%D8%B5%D8%A7%D8%AD%D8%A8%20%D8%AC%D9%8A%D9%85/%D9%83%D9%88%D8%AA%D8%B4%20%D9%88%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%B4%D8%B1%D8%A7%D8%A1%20%D9%85%D9%86%D8%B5%D8%A9%20TitanFit%20White-Label"
+                href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D9%81%D9%8A%20%D8%A7%D9%84%D8%A7%D9%86%D8%B6%D9%85%D8%A7%D9%85%20%D9%84%D9%82%D8%A7%D8%A6%D9%85%D8%A9%20%D8%A7%D9%86%D8%AA%D8%B8%D8%A7%D8%B1%20%D9%85%D9%86%D8%B5%D8%A9%20TitanFit"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-xs font-black text-white shadow-xs transition hover:bg-[#20bd5a]"
               >
                 <MessageSquare className="h-4 w-4 fill-white" />
-                <span>{isAr ? 'محادثة واتساب الآن' : 'Chat via WhatsApp'}</span>
+                <span>{isAr ? 'قائمة انتظار' : 'Join Waitlist'}</span>
               </a>
             </div>
           </div>
@@ -931,13 +931,13 @@ export function PublicCoachingStorefrontView({
 
                 <div className="flex items-center gap-2">
                   <a
-                    href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D9%82%D8%B1%D8%A3%D8%AA%20%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%AA%D9%85%D8%B1%D9%8A%D9%86%20%D8%A7%D9%84%D9%85%D8%AC%D8%A7%D9%86%D9%8A%20%D9%88%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%A7%D9%84%D9%85%D8%AA%D8%A7%D8%A8%D8%B9%D8%A9%20%D8%A7%D9%84%D8%B4%D8%AE%D8%B5%D9%8A%D8%A9"
+                    href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D9%82%D8%B1%D8%A3%D8%AA%20%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%AA%D9%85%D8%B1%D9%8A%D9%86%20%D8%A7%D9%84%D9%85%D8%AC%D8%A7%D9%86%D9%8A%20%D9%88%D8%A3%D8%B1%D8%BA%D8%A8%20%D9%81%D9%8A%20%D8%A7%D9%84%D8%A7%D9%86%D8%B6%D9%85%D8%A7%D9%85%20%D9%84%D9%82%D8%A7%D8%A6%D9%85%D8%A9%20%D8%A7%D9%84%D8%A7%D9%86%D8%AA%D8%B8%D8%A7%D9%85"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] px-4 py-2.5 text-xs font-black text-white hover:bg-[#20bd5a]"
                   >
                     <MessageSquare className="h-4 w-4 fill-white" />
-                    {isAr ? 'واتساب: 01559949271' : 'WhatsApp 01559949271'}
+                    {isAr ? 'قائمة انتظار (واتساب)' : 'Join Waitlist (WhatsApp)'}
                   </a>
                   <button
                     type="button"
