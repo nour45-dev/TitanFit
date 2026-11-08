@@ -1135,6 +1135,44 @@ function TitanFitEnterpriseShell() {
         </main>
       </div>
 
+      {/* SITE FOOTER WITH PRIVACY POLICY & TERMS OF USE LINKS */}
+      <footer
+        data-testid="site-legal-footer"
+        className="border-t border-slate-200 bg-slate-50 px-4 py-6 text-xs text-slate-600 dark:border-slate-800 dark:bg-[#070A12] dark:text-slate-400 sm:px-8"
+      >
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
+          <div className="flex flex-wrap items-center gap-2 text-center sm:text-start">
+            <span className="font-black text-slate-900 dark:text-white">{brandDisplayName}</span>
+            <span>•</span>
+            <span>
+              {isAr
+                ? 'نموذج تجريبي استعراضي (Demo Prototype) — البيانات التجريبية تُحفظ محلياً في متصفحك (localStorage / sessionStorage).'
+                : 'Interactive Demo Prototype — Demo data is stored locally in your browser (localStorage / sessionStorage).'}
+            </span>
+          </div>
+          <nav
+            aria-label={isAr ? 'روابط قانونية' : 'Legal links'}
+            className="flex flex-wrap items-center gap-4 font-bold"
+          >
+            <a
+              href="/privacy"
+              data-testid="footer-privacy-link"
+              className="text-slate-700 underline-offset-4 hover:text-amber-600 hover:underline dark:text-slate-300 dark:hover:text-amber-400"
+            >
+              {isAr ? 'سياسة الخصوصية (مسودة)' : 'Privacy Policy (Draft)'}
+            </a>
+            <span className="text-slate-300 dark:text-slate-700">|</span>
+            <a
+              href="/terms"
+              data-testid="footer-terms-link"
+              className="text-slate-700 underline-offset-4 hover:text-amber-600 hover:underline dark:text-slate-300 dark:hover:text-amber-400"
+            >
+              {isAr ? 'شروط الاستخدام (مسودة)' : 'Terms of Use (Draft)'}
+            </a>
+          </nav>
+        </div>
+      </footer>
+
       {/* MODERN MULTI-TENANT LOGIN MODAL */}
       {showLoginModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
