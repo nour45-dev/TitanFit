@@ -253,7 +253,9 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                     <span data-testid="calc-result-kcal" className="font-mono text-5xl font-black tracking-tight text-amber-400">
                       {t.kcal.toLocaleString('en-US')}
                     </span>
-                    <span className="text-xs font-bold text-slate-400">{isAr ? 'سعر حراري / يوم' : 'kcal / day'}</span>
+                    <span className="text-xs font-bold text-slate-400">
+                      {isAr ? 'سعر حراري / يوم (تقريبي)' : 'kcal / day (approx.)'}
+                    </span>
                   </p>
                 </div>
                 <Flame className="h-8 w-8 shrink-0 text-amber-400" />
@@ -357,12 +359,12 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
             {isAr ? 'وصفات مبنية على سعراتك' : 'RECIPES BUILT ON YOUR CALORIES'}
           </span>
           <h2 className="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">
-            {isAr ? `وجباتك اليوم — ${t.kcal.toLocaleString('en-US')} سعر` : `Your meals today — ${t.kcal.toLocaleString('en-US')} kcal`}
+            {isAr ? `وجباتك اليوم — ${t.kcal.toLocaleString('en-US')} سعر (تقريبي)` : `Your meals today — ~${t.kcal.toLocaleString('en-US')} kcal (approx.)`}
           </h2>
           <p className="mx-auto mt-2 max-w-2xl text-xs leading-relaxed text-slate-600 sm:text-sm">
             {isAr
-              ? 'كل وصفة تُضبط كمياتها تلقائياً لتناسب حصة الوجبة من سعراتك (فطار 25% • غداء 35% • سناك 15% • عشاء 25%). اختر الطبق الذي يعجبك، افتح التفاصيل وطريقة التحضير، أو نزّلها PDF.'
-              : 'Each recipe is auto-scaled to its share of your calories (breakfast 25% • lunch 35% • snack 15% • dinner 25%). Pick a dish, open the details & method, or download it as PDF.'}
+              ? 'كل وصفة تُضبط كمياتها تلقائياً لتناسب حصة الوجبة من سعراتك (فطار 25% • غداء 35% • سناك 15% • عشاء 25%)، وتُحسب السعرات بشكل موحّد من الماكروز (4×بروتين + 4×كارب + 9×دهون) كقيم تقريبية.'
+              : 'Each recipe is auto-scaled to its share of your calories (breakfast 25% • lunch 35% • snack 15% • dinner 25%), with unified macro-based calorie math (4P + 4C + 9F, approximate).'}
           </p>
         </div>
 
@@ -425,7 +427,7 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                     <p data-testid={`meal-kcal-${meal}`} className="font-mono text-sm font-black text-amber-400">
                       {scaled.macros.kcal}
                     </p>
-                    <p className="text-[9px] font-bold text-slate-300">kcal</p>
+                    <p className="text-[9px] font-bold text-slate-300">{isAr ? 'سعر تقريبي' : 'kcal (approx.)'}</p>
                   </div>
                   <div className="rounded-xl bg-slate-50 px-1 py-2">
                     <p className="font-mono text-sm font-black text-emerald-800 dark:text-emerald-400">{scaled.macros.proteinG}</p>
@@ -483,7 +485,7 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
                                 <li key={ing.key} className="flex items-center justify-between gap-2 px-3 py-2">
                                   <span className="font-semibold text-slate-800">{isAr ? n.ar : n.en}</span>
                                   <span className="font-mono text-[11px] font-bold text-slate-600">
-                                    {ing.grams} {g} • {Math.round((n.kcal * ing.grams) / 100)} kcal
+                                    {ing.grams} {g} • ≈ {Math.round(((n.p * 4 + n.c * 4 + n.f * 9) * ing.grams) / 100)} kcal ({isAr ? 'تقريبي' : 'approx.'})
                                   </span>
                                 </li>
                               );
@@ -518,7 +520,7 @@ export function CalorieAndMealPlanner({ onOpenFreeTrialHub }: { onOpenFreeTrialH
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-5">
           <div className="text-xs font-bold text-slate-700">
             <p>
-              {isAr ? 'إجمالي خطة اليوم:' : 'Plan total:'}{' '}
+              {isAr ? 'إجمالي خطة اليوم (تقريبي من الماكروز):' : 'Plan total (approx. from macros):'}{' '}
               <span data-testid="plan-total-kcal" className="font-mono text-base font-black text-slate-900">
                 {planKcal.toLocaleString('en-US')}
               </span>{' '}
