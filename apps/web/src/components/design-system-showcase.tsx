@@ -426,7 +426,7 @@ function TitanFitEnterpriseShell() {
       dir={dir}
       data-theme={theme}
       data-testid="gymos-root-shell"
-      className={`relative min-h-screen transition-colors duration-300 ${
+      className={`relative isolate min-h-screen transition-colors duration-300 ${
         theme === 'dark' ? 'bg-[#090D16] text-slate-100' : 'bg-[#FAFAFA] text-slate-900'
       }`}
     >
@@ -538,7 +538,7 @@ function TitanFitEnterpriseShell() {
 
       {/* TOP HEADER: Dynamic Clean Storefront for Visitors vs Sleek Management Bar for Logged-In Admins */}
       <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 px-3 py-2.5 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 sm:px-6 sm:py-3">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 sm:gap-4">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 sm:gap-4">
           {/* Brand Logo & Name */}
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             {isAuthenticated && activeRole !== 'MEMBER' && (
@@ -570,7 +570,7 @@ function TitanFitEnterpriseShell() {
                   <span
                     data-testid="brand-app-name"
                     title={brandDisplayName}
-                    className="block truncate max-w-[150px] sm:max-w-[180px] lg:max-w-[210px] text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white"
+                    className="block truncate max-w-[150px] sm:max-w-[200px] xl:max-w-[260px] text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white"
                   >
                     {activeTenantCustom ? brandDisplayName : PLATFORM_CONFIG.appName}
                   </span>
@@ -596,249 +596,100 @@ function TitanFitEnterpriseShell() {
             </button>
           </div>
 
-          {/* TOP NAVIGATION BAR — PERMANENT & NEVER DISAPPEARS */}
-          {isAuthenticated && (activeRole === 'SUPER_ADMIN' || activeRole === 'GYM_OWNER') ? (
-            /* 1. Logged-in Admin / Gym Owner Primary Navigation Bar */
-            <motion.nav
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="hidden lg:flex items-center gap-1.5 shrink-0 mx-2"
-            >
-              {activeRole === 'SUPER_ADMIN' && (
-                <button
-                  type="button"
-                  data-testid="header-nav-SUPER_ADMIN"
-                  onClick={() => setActiveSection('SUPER_ADMIN')}
-                  className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-black transition ${
-                    activeSection === 'SUPER_ADMIN'
-                      ? 'bg-amber-500 text-slate-950 shadow-xs'
-                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
-                  }`}
-                >
-                  <Crown className="h-3.5 w-3.5 text-amber-600 dark:text-slate-950 shrink-0" />
-                  <span>{isAr ? 'لوحة المنصة (SaaS)' : 'SaaS Console'}</span>
-                </button>
-              )}
+          {/* TOP NAVIGATION BAR — ONE UNIFIED SEGMENTED CONTROL FOR ALL ROLES */}
+          {(() => {
+            type SectionKey = Parameters<typeof setActiveSection>[0];
+            interface NavItem {
+              key: string;
+              labelAr: string;
+              labelEn: string;
+              icon: React.ComponentType<{ className?: string }>;
+              section: SectionKey;
+              match?: string[];
+              onClick?: () => void;
+              testId?: string;
+            }
+            const scrollTo = (id: string) => {
+              setActiveSection('PUBLIC_STOREFRONT');
+              setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 100);
+            };
+            const isAdmin = isAuthenticated && (activeRole === 'SUPER_ADMIN' || activeRole === 'GYM_OWNER');
+            const isMember = isAuthenticated && activeRole === 'MEMBER';
+            const items: NavItem[] = isAdmin
+              ? [
+                  ...(activeRole === 'SUPER_ADMIN'
+                    ? [{ key: 'sa', labelAr: 'المنصة', labelEn: 'Platform', icon: Crown, section: 'SUPER_ADMIN' as SectionKey, testId: 'header-nav-SUPER_ADMIN' }]
+                    : []),
+                  { key: 'ov', labelAr: 'القيادة', labelEn: 'Overview', icon: LayoutDashboard, section: 'OVERVIEW' as SectionKey, testId: 'header-nav-OVERVIEW' },
+                  { key: 'mb', labelAr: 'المشتركون', labelEn: 'Members', icon: Users, section: 'MEMBERS' as SectionKey, match: ['SUBSCRIPTIONS', 'PAYMENTS'], testId: 'header-nav-MEMBERS' },
+                  { key: 'cl', labelAr: 'الحصص', labelEn: 'Classes', icon: Calendar, section: 'CLASSES' as SectionKey, match: ['ACCESS_CONTROL'], testId: 'header-nav-CLASSES' },
+                  { key: 'pos', labelAr: 'المبيعات', labelEn: 'Sales', icon: ShoppingBag, section: 'POS_INVENTORY' as SectionKey, match: ['REPORTS'], testId: 'header-nav-POS' },
+                  { key: 'st', labelAr: 'الاستوديو', labelEn: 'Studio', icon: Video, section: 'CONTENT_LIBRARY' as SectionKey, testId: 'header-nav-CONTENT_LIBRARY' },
+                  { key: 'app', labelAr: 'تطبيق المتدرب', labelEn: 'Member App', icon: Smartphone, section: 'MEMBER_PWA' as SectionKey, testId: 'header-nav-MEMBER_PWA' },
+                  { key: 'web', labelAr: 'الموقع', labelEn: 'Storefront', icon: Sparkles, section: 'PUBLIC_STOREFRONT' as SectionKey, testId: 'header-nav-PUBLIC_STOREFRONT' },
+                  { key: 'free', labelAr: 'تجربة مجانية', labelEn: 'Free Trial', icon: Gift, section: 'FREE_TRIAL_HUB' as SectionKey, testId: 'header-nav-FREE_TRIAL_HUB' },
+                ]
+              : isMember
+                ? [
+                    { key: 'app', labelAr: 'تطبيقي الرياضي', labelEn: 'My App', icon: Smartphone, section: 'MEMBER_PWA' as SectionKey },
+                    { key: 'free', labelAr: 'تمارين مجانية', labelEn: 'Free Workouts', icon: Gift, section: 'FREE_TRIAL_HUB' as SectionKey },
+                    { key: 'web', labelAr: 'موقع النادي', labelEn: 'Storefront', icon: Sparkles, section: 'PUBLIC_STOREFRONT' as SectionKey },
+                  ]
+                : [
+                    { key: 'home', labelAr: 'الرئيسية', labelEn: 'Home', icon: Sparkles, section: 'PUBLIC_STOREFRONT' as SectionKey },
+                    { key: 'free', labelAr: 'جرب مجاناً', labelEn: 'Free Trial', icon: Gift, section: 'FREE_TRIAL_HUB' as SectionKey },
+                    { key: 'calc', labelAr: 'حاسبة السعرات', labelEn: 'Calculator', icon: Dumbbell, section: 'PUBLIC_STOREFRONT' as SectionKey, match: ['__never__'], onClick: () => scrollTo('free-calorie-calculator') },
+                    { key: 'stories', labelAr: 'قصص التحول', labelEn: 'Stories', icon: Award, section: 'PUBLIC_STOREFRONT' as SectionKey, match: ['__never__'], onClick: () => scrollTo('transformations-section') },
+                  ];
+            return (
+              <motion.nav
+                aria-label={isAr ? 'التنقل الرئيسي' : 'Primary navigation'}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="hidden min-w-0 md:flex"
+              >
+                <div className="no-scrollbar flex min-w-0 items-center gap-0.5 overflow-x-auto rounded-2xl border border-slate-200/80 bg-slate-100/70 p-1 shadow-inner dark:border-slate-800 dark:bg-slate-900/70">
+                  {items.map((item) => {
+                    const Icon = item.icon;
+                    const active =
+                      item.match?.[0] === '__never__'
+                        ? false
+                        : activeSection === item.section || (item.match?.includes(activeSection as string) ?? false);
+                    return (
+                      <button
+                        key={item.key}
+                        type="button"
+                        data-testid={item.testId}
+                        aria-current={active ? 'page' : undefined}
+                        title={isAr ? item.labelAr : item.labelEn}
+                        aria-label={isAr ? item.labelAr : item.labelEn}
+                        onClick={item.onClick ?? (() => setActiveSection(item.section))}
+                        className={`relative inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-xs font-bold transition-colors ${
+                          active
+                            ? 'text-slate-950'
+                            : 'text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
+                        }`}
+                      >
+                        {active && (
+                          <motion.span
+                            layoutId="tf-nav-active-pill"
+                            transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                            className="absolute inset-0 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 shadow-md shadow-amber-500/30"
+                          />
+                        )}
+                        <Icon className="relative z-10 h-3.5 w-3.5 shrink-0" />
+                        <span className={`relative z-10 ${items.length > 5 && !active ? 'hidden 2xl:inline' : ''}`}>
+                          {isAr ? item.labelAr : item.labelEn}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.nav>
+            );
+          })()}
 
-              <button
-                type="button"
-                data-testid="header-nav-OVERVIEW"
-                onClick={() => setActiveSection('OVERVIEW')}
-                className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold transition ${
-                  activeSection === 'OVERVIEW'
-                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
-                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
-                }`}
-              >
-                <LayoutDashboard className="h-3.5 w-3.5 shrink-0" />
-                <span>{isAr ? 'لوحة القيادة' : 'Overview'}</span>
-              </button>
-
-              <button
-                type="button"
-                data-testid="header-nav-MEMBERS"
-                onClick={() => setActiveSection('MEMBERS')}
-                className={`hidden 2xl:inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold transition ${
-                  activeSection === 'MEMBERS' || activeSection === 'SUBSCRIPTIONS' || activeSection === 'PAYMENTS'
-                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
-                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
-                }`}
-              >
-                <Users className="h-3.5 w-3.5 shrink-0" />
-                <span>{isAr ? 'المشتركون' : 'Members'}</span>
-              </button>
-
-              <button
-                type="button"
-                data-testid="header-nav-CLASSES"
-                onClick={() => setActiveSection('CLASSES')}
-                className={`hidden 2xl:inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold transition ${
-                  activeSection === 'CLASSES' || activeSection === 'ACCESS_CONTROL'
-                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
-                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
-                }`}
-              >
-                <Calendar className="h-3.5 w-3.5 shrink-0" />
-                <span>{isAr ? 'الحصص والدخول' : 'Classes'}</span>
-              </button>
-
-              <button
-                type="button"
-                data-testid="header-nav-POS"
-                onClick={() => setActiveSection('POS_INVENTORY')}
-                className={`hidden 2xl:inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold transition ${
-                  activeSection === 'POS_INVENTORY' || activeSection === 'REPORTS'
-                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
-                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
-                }`}
-              >
-                <ShoppingBag className="h-3.5 w-3.5 shrink-0" />
-                <span>{isAr ? 'الـ POS' : 'POS'}</span>
-              </button>
-
-              <button
-                type="button"
-                data-testid="header-nav-CONTENT_LIBRARY"
-                onClick={() => setActiveSection('CONTENT_LIBRARY')}
-                className={`hidden 2xl:inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold transition ${
-                  activeSection === 'CONTENT_LIBRARY'
-                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
-                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
-                }`}
-              >
-                <Video className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                <span>{isAr ? 'الاستوديو' : 'Studio'}</span>
-              </button>
-
-              <button
-                type="button"
-                data-testid="header-nav-MEMBER_PWA"
-                onClick={() => setActiveSection('MEMBER_PWA')}
-                className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold transition ${
-                  activeSection === 'MEMBER_PWA'
-                    ? 'bg-emerald-600 text-white shadow-xs font-black'
-                    : 'text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40'
-                }`}
-              >
-                <Smartphone className="h-3.5 w-3.5 shrink-0" />
-                <span>{isAr ? 'تطبيق المتدرب' : 'Member App'}</span>
-              </button>
-
-              <button
-                type="button"
-                data-testid="header-nav-PUBLIC_STOREFRONT"
-                onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
-                className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold transition ${
-                  activeSection === 'PUBLIC_STOREFRONT'
-                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800'
-                }`}
-              >
-                <Sparkles className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                <span>{isAr ? 'موقع الزوار' : 'Storefront'}</span>
-              </button>
-
-              <button
-                type="button"
-                data-testid="header-nav-FREE_TRIAL_HUB"
-                onClick={() => setActiveSection('FREE_TRIAL_HUB')}
-                className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold transition ${
-                  activeSection === 'FREE_TRIAL_HUB'
-                    ? 'bg-emerald-600 text-white shadow-xs font-black'
-                    : 'text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40'
-                }`}
-              >
-                <Gift className="h-3.5 w-3.5 shrink-0" />
-                <span>{isAr ? '🎁 جرب مجاناً' : 'Free Trial'}</span>
-              </button>
-            </motion.nav>
-          ) : isAuthenticated && activeRole === 'MEMBER' ? (
-            /* 2. Logged-in Trainee / Member Navigation Bar */
-            <motion.nav
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="hidden items-center gap-1.5 md:flex"
-            >
-              <button
-                type="button"
-                onClick={() => setActiveSection('MEMBER_PWA')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-black transition ${
-                  activeSection === 'MEMBER_PWA'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300'
-                }`}
-              >
-                <Smartphone className="h-4 w-4" />
-                <span>{isAr ? 'تطبيقي الرياضي' : 'My Member App'}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveSection('FREE_TRIAL_HUB')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition ${
-                  activeSection === 'FREE_TRIAL_HUB'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300'
-                }`}
-              >
-                <Gift className="h-4 w-4" />
-                <span>{isAr ? 'تمارين وفيديوهات مجانية' : 'Free Workouts'}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
-                className="rounded-xl px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:text-slate-300"
-              >
-                {isAr ? 'موقع النادي' : 'Storefront'}
-              </button>
-            </motion.nav>
-          ) : (
-            /* 3. Unauthenticated Public Visitor Navigation */
-            <motion.nav
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="hidden items-center gap-1.5 md:flex"
-            >
-              <motion.button
-                type="button"
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
-                className={`rounded-xl px-3.5 py-2 text-xs font-bold transition ${
-                  activeSection === 'PUBLIC_STOREFRONT'
-                    ? 'bg-amber-500 text-slate-950 shadow-xs dark:bg-amber-500 font-black'
-                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-                }`}
-              >
-                {isAr ? 'الرئيسية' : 'Home'}
-              </motion.button>
-
-              <motion.button
-                type="button"
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => setActiveSection('FREE_TRIAL_HUB')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-extrabold transition ${
-                  activeSection === 'FREE_TRIAL_HUB'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40'
-                }`}
-              >
-                <Gift className="h-3.5 w-3.5" />
-                {isAr ? '🎁 جرب مجاناً' : '🎁 Free Trial'}
-              </motion.button>
-
-              <motion.button
-                type="button"
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => {
-                  setActiveSection('PUBLIC_STOREFRONT');
-                  setTimeout(() => {
-                    document.getElementById('free-calorie-calculator')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
-                className="rounded-xl px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-              >
-                {isAr ? 'حاسبة السعرات' : 'Macro Calculator'}
-              </motion.button>
-
-              <motion.button
-                type="button"
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => {
-                  setActiveSection('PUBLIC_STOREFRONT');
-                  setTimeout(() => {
-                    document.getElementById('transformations-section')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
-                className="rounded-xl px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-              >
-                {isAr ? 'قصص التحول' : 'Success Stories'}
-              </motion.button>
-            </motion.nav>
-          )}
-
+          
           {/* Right Action Controls: Lang, Theme & Login/Profile */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Language Toggle */}

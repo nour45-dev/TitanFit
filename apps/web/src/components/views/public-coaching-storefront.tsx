@@ -36,6 +36,7 @@ import { PLATFORM_CONFIG } from '@gymos/config';
 import { usePlatformStore } from '../../lib/platform-store';
 import { downloadEbookPdf } from '../../lib/pdf-docs';
 import { CalorieAndMealPlanner } from './calorie-and-meal-planner';
+import { SportsHeroBackdrop, SportsTicker } from '../ui/modern-ambient-background';
 
 interface TransformationStory {
   id: string;
@@ -203,13 +204,15 @@ export function PublicCoachingStorefrontView({
   return (
     <div data-testid="panel-public-storefront" className="mx-auto max-w-7xl space-y-16 pb-20 text-slate-900 dark:text-slate-100">
       {/* 1. PURE WHITE LUXURY HERO SECTION — DIET & CHEAT HIGH-CONVERSION STYLE */}
+      <SportsTicker isAr={isAr} />
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
         className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white/95 p-6 shadow-sm backdrop-blur-md dark:border-slate-800 dark:bg-[#0E131F]/95 sm:p-12"
       >
-        {/* Modern Animated Ambient Glow Mesh in Hero */}
+        {/* Sports-themed animated backdrop: weight plate, activity rings, heartbeat */}
+        <SportsHeroBackdrop />
         <div className="pointer-events-none absolute -top-32 start-1/4 h-96 w-96 rounded-full bg-gradient-to-br from-amber-500/20 via-orange-500/10 to-transparent blur-3xl animate-ambient-float" />
         <div className="pointer-events-none absolute -bottom-32 end-1/4 h-80 w-80 rounded-full bg-gradient-to-tr from-emerald-500/15 via-teal-500/10 to-transparent blur-3xl animate-ambient-pulse" />
         <div className="pointer-events-none absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 h-[450px] w-full max-w-5xl rounded-full bg-amber-500/5 blur-3xl" />

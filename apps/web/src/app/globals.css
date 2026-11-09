@@ -272,6 +272,28 @@ body {
   }
 }
 
+@keyframes tf-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.tf-marquee {
+  animation: tf-marquee 38s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tf-marquee,
+  .animate-ambient-float,
+  .animate-ambient-pulse,
+  .animate-shine-sweep {
+    animation: none !important;
+  }
+}
+
 .animate-ambient-float {
   animation: ambient-float 16s ease-in-out infinite;
 }
