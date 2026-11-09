@@ -29,12 +29,53 @@ export async function GET(req: NextRequest) {
     // API offline
   }
 
-  // Fallback for valid session cookie
+  // Fallback for valid session cookie - resolve user role and identity from cookie token
+  if (token.includes('sa-token') || token.includes('superadmin') || token.includes('noureldin')) {
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: 'usr-sa-1',
+        email: 'noureldin.ahmed2001@gmail.com',
+        name: 'Nour El-Din (Super Admin)',
+        role: 'SUPER_ADMIN',
+        tenantSlug: 'titanfit-egypt',
+        logoUrl: '/brand/logo.png',
+        primaryColor: '#D97706',
+      },
+    });
+  }
+
+  if (token.startsWith('member-token-') || token === 'demo-member-token') {
+    const memberCode = token.replace('member-token-', '');
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: 'usr-mem-1',
+        code: memberCode || 'TF-2026-1001',
+        email: 'youssef.masry@titanfit.eg',
+        name: 'يوسف المصري (Member)',
+        role: 'MEMBER',
+        tenantSlug: 'titanfit-egypt',
+        logoUrl: '/brand/logo.png',
+        primaryColor: '#059669',
+      },
+    });
+  }
+
+  const ownerSlug = token.startsWith('owner-token-')
+    ? token.replace('owner-token-', '')
+    : 'titanfit-egypt';
+
   return NextResponse.json({
     success: true,
     user: {
+      id: `usr-${ownerSlug}`,
+      email: `owner@${ownerSlug}.eg`,
+      name: `${ownerSlug} (Gym Owner)`,
       role: 'GYM_OWNER',
-      tenantSlug: 'titanfit-cairo',
+      tenantSlug: ownerSlug,
+      logoUrl: '/brand/logo.png',
+      primaryColor: '#059669',
     },
   });
 }

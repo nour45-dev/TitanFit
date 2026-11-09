@@ -85,6 +85,8 @@ function TitanFitEnterpriseShell() {
     activeTenantCustom,
     login,
     loginWithGymCode,
+    requestMemberOtp,
+    verifyMemberOtp,
     logout,
     tenants,
   } = usePlatformStore();
@@ -114,10 +116,20 @@ function TitanFitEnterpriseShell() {
     } catch {}
   };
 
-  const [loginTab, setLoginTab] = useState<'ADMIN_OWNER' | 'TRAINEE_PIN'>('TRAINEE_PIN');
+  const [loginTab, setLoginTab] = useState<'ADMIN_OWNER' | 'TRAINEE_PIN' | 'TRAINEE_OTP'>('TRAINEE_OTP');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [traineeGymCode, setTraineeGymCode] = useState('');
+  const [traineeIdentifier, setTraineeIdentifier] = useState('');
+  const [traineeOtpInput, setTraineeOtpInput] = useState('');
+  const [otpStep, setOtpStep] = useState<'ENTER_CONTACT' | 'ENTER_CODE'>('ENTER_CONTACT');
+  const [otpSentInfo, setOtpSentInfo] = useState<{
+    memberName: string;
+    memberCode: string;
+    maskedPhone: string;
+    maskedEmail: string;
+  } | null>(null);
+  const [otpLoading, setOtpLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
 
   // Synchronize data-theme attribute on root HTML element
@@ -339,6 +351,55 @@ function TitanFitEnterpriseShell() {
       setLoginError('');
     } else {
       setLoginError(isAr ? 'كود الجيم غير صحيح' : (res.message || 'Invalid gym code'));
+    }
+  };
+
+  const handleRequestOtpSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!traineeIdentifier.trim()) {
+      setLoginError(isAr ? 'يرجى إدخال رقم الهاتف المسجل أو البريد الإلكتروني' : 'Please enter registered phone or email');
+      return;
+    }
+    setOtpLoading(true);
+    setLoginError('');
+    try {
+      const res = await requestMemberOtp(traineeIdentifier.trim());
+      if (res.success) {
+        setOtpSentInfo(res.targetInfo || null);
+        setOtpStep('ENTER_CODE');
+        if (res.simulatedOtp) {
+          setTraineeOtpInput(res.simulatedOtp);
+        }
+      } else {
+        setLoginError(res.message || (isAr ? 'تعذر إرسال رمز التحقق' : 'Failed to send OTP'));
+      }
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtpSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!traineeOtpInput.trim()) {
+      setLoginError(isAr ? 'يرجى إدخال رمز التحقق OTP المكون من 6 أرقام' : 'Please enter the 6-digit OTP code');
+      return;
+    }
+    setOtpLoading(true);
+    setLoginError('');
+    try {
+      const res = await verifyMemberOtp(traineeIdentifier.trim(), traineeOtpInput.trim());
+      if (res.success) {
+        setShowLoginModal(false);
+        setTraineeIdentifier('');
+        setTraineeOtpInput('');
+        setOtpStep('ENTER_CONTACT');
+        setOtpSentInfo(null);
+        setLoginError('');
+      } else {
+        setLoginError(res.message || (isAr ? 'رمز التحقق غير صحيح' : 'Invalid OTP code'));
+      }
+    } finally {
+      setOtpLoading(false);
     }
   };
 
@@ -1229,8 +1290,23 @@ function TitanFitEnterpriseShell() {
               </button>
             </div>
 
-            {/* Multi-Tenant Dual Tab Selector — trainees first (default) */}
+            {/* Multi-Tenant Dual Tab Selector — Trainee OTP verification first */}
             <div className="mt-4 flex rounded-2xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-800 dark:bg-slate-800">
+              <button
+                type="button"
+                data-testid="tab-trainee-otp"
+                onClick={() => {
+                  setLoginTab('TRAINEE_OTP');
+                  setLoginError('');
+                }}
+                className={`flex-1 rounded-xl px-2 py-2 text-xs font-black transition ${
+                  loginTab === 'TRAINEE_OTP'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
+                }`}
+              >
+                {isAr ? '📲 متدرب (رمز OTP / هاتف)' : '📲 Trainee OTP'}
+              </button>
               <button
                 type="button"
                 data-testid="tab-trainee-pin"
@@ -1244,7 +1320,7 @@ function TitanFitEnterpriseShell() {
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
                 }`}
               >
-                {isAr ? '🏋️‍♂️ المتدربون' : '🏋️‍♂️ Trainees'}
+                {isAr ? '🔑 كود النادي (PIN)' : '🔑 Gym PIN'}
               </button>
               <button
                 type="button"
@@ -1259,7 +1335,7 @@ function TitanFitEnterpriseShell() {
                     : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
                 }`}
               >
-                {isAr ? '👑 الأدمن / صاحب الجيم' : '👑 Admin / Gym Owner'}
+                {isAr ? '👑 المسؤول / صاحب الجيم' : '👑 Admin / Owner'}
               </button>
             </div>
 
@@ -1269,19 +1345,110 @@ function TitanFitEnterpriseShell() {
               </div>
             )}
 
-            {loginTab === 'ADMIN_OWNER' ? (
+            {loginTab === 'TRAINEE_OTP' ? (
+              /* Trainee OTP Verification Form (Phone or Email or Code) */
+              <div className="mt-4 space-y-3.5">
+                {otpStep === 'ENTER_CONTACT' ? (
+                  <form onSubmit={handleRequestOtpSubmit} className="space-y-3.5">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                      {isAr
+                        ? 'أدخل رقم هاتفك أو بريدك الإلكتروني المسجل في الجيم لاستلام رمز الدخول السريع (OTP) وتثبيت حسابك تلقائياً دون الحاجة لتسجيل الدخول في كل زيارة:'
+                        : 'Enter your registered phone or email to receive a secure OTP code and stay signed in on your device:'}
+                    </p>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                        {isAr ? 'رقم الهاتف المسجل أو البريد الإلكتروني أو كود العضوية' : 'Phone Number or Email'}
+                      </label>
+                      <input
+                        type="text"
+                        data-testid="trainee-identifier-input"
+                        value={traineeIdentifier}
+                        onChange={(e) => setTraineeIdentifier(e.target.value)}
+                        placeholder={isAr ? "مثال: 01001234567 أو بريدك المسجل" : "e.g. 01001234567 or email"}
+                        className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={otpLoading}
+                      data-testid="request-otp-btn"
+                      className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 py-2.5 text-xs font-black text-white shadow-md transition hover:opacity-95 disabled:opacity-50"
+                    >
+                      {otpLoading
+                        ? isAr ? 'جاري إرسال رمز التحقق...' : 'Sending OTP...'
+                        : isAr ? 'إرسال رمز التحقق (OTP) للواتساب والبريد' : 'Send Verification OTP'}
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleVerifyOtpSubmit} className="space-y-3.5">
+                    <div className="rounded-xl border border-emerald-300/60 bg-emerald-50/70 p-3 text-xs leading-relaxed text-emerald-950 dark:bg-emerald-950/30 dark:text-emerald-300">
+                      <p className="font-bold">
+                        {isAr
+                          ? `✅ تم إرسال رمز التحقق OTP إلى: ${otpSentInfo?.maskedPhone || otpSentInfo?.maskedEmail || traineeIdentifier}`
+                          : `✅ OTP code sent to: ${otpSentInfo?.maskedPhone || otpSentInfo?.maskedEmail || traineeIdentifier}`}
+                      </p>
+                      {otpSentInfo?.memberName && (
+                        <p className="mt-1 font-semibold text-[11px]">
+                          {isAr ? `مرحباً بك يا كابتن: ${otpSentInfo.memberName}` : `Member: ${otpSentInfo.memberName}`}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                        {isAr ? 'رمز التحقق (OTP)' : 'Enter 6-Digit OTP'}
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        data-testid="trainee-otp-code-input"
+                        value={traineeOtpInput}
+                        onChange={(e) => setTraineeOtpInput(e.target.value.replace(/\D/g, ''))}
+                        placeholder="••••••"
+                        className="mt-1.5 w-full text-center tracking-widest rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-base font-black text-slate-900 focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="submit"
+                        disabled={otpLoading}
+                        data-testid="verify-otp-btn"
+                        className="flex-1 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 py-2.5 text-xs font-black text-white shadow-md transition hover:opacity-95 disabled:opacity-50"
+                      >
+                        {otpLoading
+                          ? isAr ? 'جاري التحقق والدخول...' : 'Verifying...'
+                          : isAr ? 'تأكيد الرمز والدخول الدائم' : 'Verify & Stay Logged In'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOtpStep('ENTER_CONTACT');
+                          setLoginError('');
+                        }}
+                        className="rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
+                      >
+                        {isAr ? 'تغيير الرقم' : 'Change'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            ) : loginTab === 'ADMIN_OWNER' ? (
               /* Manual Admin/Owner Login Form */
               <form onSubmit={handleLoginSubmit} className="mt-4 space-y-3.5">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                    {isAr ? 'اسم المستخدم أو البريد الإلكتروني' : 'Username or Email'}
+                    {isAr ? 'اسم المستخدم، البريد، أو رقم الهاتف' : 'Username, Email, or Phone'}
                   </label>
                   <input
                     type="text"
                     data-testid="login-email-input"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder={isAr ? "البريد الإلكتروني أو اسم المستخدم" : "Email or username"}
+                    placeholder={isAr ? "مثال: 01002169889 أو noureldin أو الإيميل" : "01002169889 or username / email"}
                     className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                 </div>
@@ -1305,7 +1472,7 @@ function TitanFitEnterpriseShell() {
                   data-testid="login-submit-btn"
                   className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-[#D4AF37] py-2.5 text-xs font-black text-slate-950 shadow-md transition hover:opacity-95"
                 >
-                  {isAr ? 'تسجيل الدخول وفتح لوحة التحكم' : 'Sign In to Dashboard'}
+                  {isAr ? 'تسجيل الدخول الدائم وفتح لوحة التحكم' : 'Sign In & Stay Logged In'}
                 </button>
               </form>
             ) : (

@@ -82,6 +82,55 @@ export async function apiLogout(): Promise<{ success: boolean }> {
   }
 }
 
+export async function apiRequestOtp(identifier: string, matchedMember?: any): Promise<{
+  success: boolean;
+  message?: string;
+  targetInfo?: {
+    memberName: string;
+    memberCode: string;
+    maskedPhone: string;
+    maskedEmail: string;
+  };
+  simulatedOtp?: string;
+  demoBackupOtp?: string;
+}> {
+  try {
+    const res = await fetch('/api/auth/otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'REQUEST_OTP', identifier, matchedMember }),
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    });
+    return await res.json();
+  } catch (err) {
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : 'OTP request failed',
+    };
+  }
+}
+
+export async function apiVerifyOtp(identifier: string, otpCode: string): Promise<{
+  success: boolean;
+  message?: string;
+  user?: AuthSessionUser;
+}> {
+  try {
+    const res = await fetch('/api/auth/otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'VERIFY_OTP', identifier, otpCode }),
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    });
+    return await res.json();
+  } catch (err) {
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : 'OTP verification failed',
+    };
+  }
+}
+
 export async function apiGetMe(): Promise<{ success: boolean; user?: AuthSessionUser }> {
   try {
     const res = await fetch('/api/auth/me', {

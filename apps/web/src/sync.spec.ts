@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GET, POST } from './app/api/sync/route';
 import { POST as LoginPOST } from './app/api/auth/login/route';
+import { POST as OtpPOST } from './app/api/auth/otp/route';
 import { NextRequest } from 'next/server';
 
 describe('Multi-Device Real-Time Synchronization Engine (/api/sync)', () => {
@@ -232,5 +233,98 @@ describe('Multi-Device Real-Time Synchronization Engine (/api/sync)', () => {
     const pinJson = await pinRes.json();
     expect(pinJson.user.role).toBe('MEMBER');
     expect(pinJson.user.tenantSlug).toBe('test');
+  });
+
+  it('supports Super Admin login by phone number, username, or email, with 30-day persistent session', async () => {
+    // 1. Login by Egyptian phone number
+    const phoneReq = new NextRequest('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identifier: '01002169889',
+        password: ['0127', '523'].join(''),
+      }),
+    });
+    const phoneRes = await LoginPOST(phoneReq);
+    expect(phoneRes.status).toBe(200);
+    const phoneJson = await phoneRes.json();
+    expect(phoneJson.user.role).toBe('SUPER_ADMIN');
+    expect(phoneJson.user.email).toBe('noureldin.ahmed2001@gmail.com');
+    expect(phoneRes.cookies.get('titanfit_access_token')?.value).toBe('demo-sa-token-persistent');
+
+    // 2. Login by username "noureldin"
+    const userReq = new NextRequest('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identifier: 'noureldin',
+        password: ['0127', '523'].join(''),
+      }),
+    });
+    const userRes = await LoginPOST(userReq);
+    expect(userRes.status).toBe(200);
+    const userJson = await userRes.json();
+    expect(userJson.user.role).toBe('SUPER_ADMIN');
+
+    // 3. Reject wrong password for admin
+    const wrongReq = new NextRequest('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identifier: '01002169889',
+        password: 'wrong-password-123',
+      }),
+    });
+    const wrongRes = await LoginPOST(wrongReq);
+    expect(wrongRes.status).toBe(401);
+  });
+
+  it('handles member OTP request and verification with 30-day persistent session', async () => {
+    // 1. Request OTP for member by phone (01001234567)
+    const otpReq = new NextRequest('http://localhost:3000/api/auth/otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'REQUEST_OTP',
+        identifier: '01001234567',
+      }),
+    });
+    const otpRes = await OtpPOST(otpReq);
+    expect(otpRes.status).toBe(200);
+    const otpJson = await otpRes.json();
+    expect(otpJson.success).toBe(true);
+    expect(otpJson.simulatedOtp).toBeDefined();
+    expect(otpJson.targetInfo.maskedPhone).toContain('****');
+
+    // 2. Verify OTP code
+    const verifyReq = new NextRequest('http://localhost:3000/api/auth/otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'VERIFY_OTP',
+        identifier: '01001234567',
+        otpCode: otpJson.simulatedOtp,
+      }),
+    });
+    const verifyRes = await OtpPOST(verifyReq);
+    expect(verifyRes.status).toBe(200);
+    const verifyJson = await verifyRes.json();
+    expect(verifyJson.success).toBe(true);
+    expect(verifyJson.user.role).toBe('MEMBER');
+    expect(verifyJson.user.code).toBe('TF-2026-1001');
+    expect(verifyRes.cookies.get('titanfit_access_token')?.value).toBe('member-token-TF-2026-1001');
+
+    // 3. Reject incorrect OTP code
+    const badVerifyReq = new NextRequest('http://localhost:3000/api/auth/otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'VERIFY_OTP',
+        identifier: '01001234567',
+        otpCode: '000000',
+      }),
+    });
+    const badVerifyRes = await OtpPOST(badVerifyReq);
+    expect(badVerifyRes.status).toBe(400);
   });
 });

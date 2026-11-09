@@ -2,7 +2,16 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type { SupportedLocale } from '@gymos/config';
-import { apiLogin, apiLogout, apiGetMe, apiRevokeSessions, apiFetchSyncState, apiPushSyncAction } from './api-client';
+import {
+  apiLogin,
+  apiLogout,
+  apiGetMe,
+  apiRevokeSessions,
+  apiFetchSyncState,
+  apiPushSyncAction,
+  apiRequestOtp,
+  apiVerifyOtp,
+} from './api-client';
 
 export type WorkspaceSection =
   | 'PUBLIC_STOREFRONT'
@@ -847,6 +856,21 @@ export interface PlatformStoreContextValue {
   loginWithGymCode: (
     gymSecretCode: string,
   ) => Promise<{ success: boolean; role?: UserRoleKey; tenant?: TenantSaaSItem; message?: string }>;
+  requestMemberOtp: (identifier: string) => Promise<{
+    success: boolean;
+    message?: string;
+    targetInfo?: {
+      memberName: string;
+      memberCode: string;
+      maskedPhone: string;
+      maskedEmail: string;
+    };
+    simulatedOtp?: string;
+  }>;
+  verifyMemberOtp: (
+    identifier: string,
+    otpCode: string,
+  ) => Promise<{ success: boolean; role?: UserRoleKey; message?: string }>;
   logout: () => void;
   // Actions
   addMember: (data: {
@@ -1388,6 +1412,76 @@ export function PlatformProvider({
 
   const loginWithGymCode: PlatformStoreContextValue['loginWithGymCode'] = async (code) => {
     return login('', '', code);
+  };
+
+  const requestMemberOtp: PlatformStoreContextValue['requestMemberOtp'] = async (identifier) => {
+    const trimmed = (identifier || '').trim();
+    const cleanPhone = trimmed.replace(/[\s\-\(\)]/g, '');
+    const matchedMem = members.find(
+      (m) =>
+        m.phone.replace(/[\s\-\(\)]/g, '') === cleanPhone ||
+        (cleanPhone.startsWith('01') && m.phone.replace(/[\s\-\(\)]/g, '').endsWith(cleanPhone)) ||
+        m.email.toLowerCase() === trimmed.toLowerCase() ||
+        m.code.toLowerCase() === trimmed.toLowerCase(),
+    );
+
+    const res = await apiRequestOtp(
+      trimmed,
+      matchedMem
+        ? {
+            id: matchedMem.id,
+            code: matchedMem.code,
+            fullNameEn: matchedMem.fullNameEn,
+            fullNameAr: matchedMem.fullNameAr,
+            phone: matchedMem.phone,
+            email: matchedMem.email,
+            tenantSlug: activeTenantSlug,
+          }
+        : undefined,
+    );
+
+    if (res.success && res.simulatedOtp) {
+      showToast(
+        locale === 'ar'
+          ? `📲 تم إرسال الرمز: ${res.simulatedOtp} (نسخة تجريبية / محاكاة OTP)`
+          : `📲 OTP Sent: ${res.simulatedOtp}`,
+      );
+    }
+
+    return res;
+  };
+
+  const verifyMemberOtp: PlatformStoreContextValue['verifyMemberOtp'] = async (
+    identifier,
+    otpCode,
+  ) => {
+    const res = await apiVerifyOtp(identifier, otpCode);
+    if (res.success && res.user) {
+      const role: UserRoleKey = 'MEMBER';
+      setIsAuthenticated(true);
+      setCurrentUser({
+        id: res.user.id,
+        email: res.user.email,
+        name: res.user.name,
+        role,
+        tenantSlug: res.user.tenantSlug || activeTenantSlug,
+        logoUrl: res.user.logoUrl || '/brand/logo.png',
+        primaryColor: res.user.primaryColor || '#059669',
+      });
+      setActiveRole(role);
+      setActiveSection('MEMBER_PWA');
+      appendAudit('MEMBER_OTP_LOGIN', `Member logged in via OTP: ${res.user.email} (${res.user.name})`);
+      showToast(
+        locale === 'ar'
+          ? `مرحباً بك يا كابتن ${res.user.name} في تطبيقك الذكي!`
+          : `Welcome ${res.user.name} to your fitness app!`,
+      );
+      return { success: true, role };
+    }
+    return {
+      success: false,
+      message: res.message || (locale === 'ar' ? 'رمز OTP غير صحيح' : 'Invalid OTP code'),
+    };
   };
 
   const logout = () => {
@@ -2293,6 +2387,8 @@ export function PlatformProvider({
         activeTenantCustom,
         login,
         loginWithGymCode,
+        requestMemberOtp,
+        verifyMemberOtp,
         logout,
         addMember,
         updateMember,
