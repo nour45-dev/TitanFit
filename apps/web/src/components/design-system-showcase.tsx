@@ -61,6 +61,7 @@ import { PublicCoachingStorefrontView } from './views/public-coaching-storefront
 import { FreeTrialWorkoutsAndDietsView } from './views/free-trial-workouts-and-diets';
 import { GymOwnerContentStudioView } from './views/gym-owner-content-studio';
 import { SmartAiAssistantWidget } from './smart-ai-assistant';
+import { ModernAmbientBackground } from './ui/modern-ambient-background';
 
 function TitanFitEnterpriseShell() {
   const {
@@ -425,10 +426,12 @@ function TitanFitEnterpriseShell() {
       dir={dir}
       data-theme={theme}
       data-testid="gymos-root-shell"
-      className={`min-h-screen transition-colors duration-300 ${
+      className={`relative min-h-screen transition-colors duration-300 ${
         theme === 'dark' ? 'bg-[#090D16] text-slate-100' : 'bg-[#FAFAFA] text-slate-900'
       }`}
     >
+      {/* Modern Eye-Catching Ambient Background Animations */}
+      <ModernAmbientBackground />
       {/* Floating Toast Notification */}
       <AnimatePresence>
         {toastMessage && (
@@ -537,12 +540,12 @@ function TitanFitEnterpriseShell() {
       <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 px-3 py-2.5 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 sm:px-6 sm:py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 sm:gap-4">
           {/* Brand Logo & Name */}
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <div className="flex shrink-0 min-w-0 items-center gap-2 sm:gap-3 max-w-[210px] sm:max-w-xs xl:max-w-sm">
             {isAuthenticated && activeRole !== 'MEMBER' && (
               <button
                 type="button"
                 onClick={() => setMobileSidebarOpen(true)}
-                className="rounded-xl border border-slate-200 bg-slate-50 p-2 text-slate-800 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 lg:hidden"
+                className="shrink-0 rounded-xl border border-slate-200 bg-slate-50 p-2 text-slate-800 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 lg:hidden"
                 title={isAr ? 'القائمة الجانبية الكاملة' : 'Full Sidebar Menu'}
               >
                 <Menu className="h-5 w-5" />
@@ -552,7 +555,7 @@ function TitanFitEnterpriseShell() {
             <button
               type="button"
               onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
-              className="flex min-w-0 items-center gap-2.5 text-start sm:gap-3"
+              className="flex min-w-0 items-center gap-2 text-start sm:gap-2.5"
             >
               <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-amber-400/40 bg-slate-950 shadow-2xs sm:h-10 sm:w-10">
                 <img
@@ -562,31 +565,32 @@ function TitanFitEnterpriseShell() {
                   className="h-full w-full object-contain p-0.5"
                 />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <span
                     data-testid="brand-app-name"
-                    className="block whitespace-nowrap text-base font-black tracking-tight text-slate-900 dark:text-white sm:text-lg"
+                    title={brandDisplayName}
+                    className="block truncate text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white"
                   >
                     {activeTenantCustom ? brandDisplayName : PLATFORM_CONFIG.appName}
                   </span>
                   {activeTenantCustom ? (
                     <span
                       style={{ backgroundColor: `${activeTenantCustom.primaryColor || '#D97706'}20`, color: activeTenantCustom.primaryColor || '#D97706' }}
-                      className="hidden sm:inline-flex rounded-md px-1.5 py-0.5 font-mono text-[10px] font-black uppercase"
+                      className="shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[9px] sm:text-[10px] font-black uppercase"
                     >
                       {activeTenantCustom.planTier}
                     </span>
                   ) : (
-                    <span className="hidden sm:inline-flex rounded-md bg-amber-100 px-1.5 py-0.5 font-mono text-[10px] font-extrabold text-amber-800 dark:bg-amber-950/60 dark:text-amber-400">
-                      SaaS & Coaching
+                    <span className="shrink-0 rounded-md bg-amber-100 px-1.5 py-0.5 font-mono text-[9px] sm:text-[10px] font-extrabold text-amber-800 dark:bg-amber-950/60 dark:text-amber-400">
+                      SaaS
                     </span>
                   )}
                 </div>
-                <p className="hidden text-[11px] font-medium text-slate-500 dark:text-slate-400 lg:block">
+                <p className="hidden text-[10px] font-medium text-slate-500 dark:text-slate-400 xl:block truncate max-w-[190px]">
                   {isAr
-                    ? 'منصة إدارة الأندية الرياضية والتغذية والتدريب الأونلاين'
-                    : 'Smart Gym Management & Online Coaching Platform'}
+                    ? 'منصة إدارة الأندية الرياضية والتغذية'
+                    : 'Smart Gym Management & Coaching'}
                 </p>
               </div>
             </button>
@@ -598,20 +602,20 @@ function TitanFitEnterpriseShell() {
             <motion.nav
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="hidden items-center gap-1 lg:flex"
+              className="hidden min-w-0 flex-1 items-center justify-center gap-1 overflow-x-auto no-scrollbar px-2 lg:flex"
             >
               {activeRole === 'SUPER_ADMIN' && (
                 <button
                   type="button"
                   data-testid="header-nav-SUPER_ADMIN"
                   onClick={() => setActiveSection('SUPER_ADMIN')}
-                  className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-black transition ${
+                  className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 xl:px-3 py-2 text-xs font-black transition ${
                     activeSection === 'SUPER_ADMIN'
                       ? 'bg-amber-500 text-slate-950 shadow-xs'
                       : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
                   }`}
                 >
-                  <Crown className="h-4 w-4 text-amber-600 dark:text-slate-950" />
+                  <Crown className="h-4 w-4 text-amber-600 dark:text-slate-950 shrink-0" />
                   <span>{isAr ? 'لوحة المنصة (SaaS)' : 'SaaS Console'}</span>
                 </button>
               )}
@@ -620,13 +624,13 @@ function TitanFitEnterpriseShell() {
                 type="button"
                 data-testid="header-nav-OVERVIEW"
                 onClick={() => setActiveSection('OVERVIEW')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 xl:px-3 py-2 text-xs font-bold transition ${
                   activeSection === 'OVERVIEW'
                     ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
                     : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
                 }`}
               >
-                <LayoutDashboard className="h-4 w-4" />
+                <LayoutDashboard className="h-4 w-4 shrink-0" />
                 <span>{isAr ? 'لوحة القيادة' : 'Overview'}</span>
               </button>
 
@@ -634,13 +638,13 @@ function TitanFitEnterpriseShell() {
                 type="button"
                 data-testid="header-nav-MEMBERS"
                 onClick={() => setActiveSection('MEMBERS')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 xl:px-3 py-2 text-xs font-bold transition ${
                   activeSection === 'MEMBERS' || activeSection === 'SUBSCRIPTIONS' || activeSection === 'PAYMENTS'
                     ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
                     : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
                 }`}
               >
-                <Users className="h-4 w-4" />
+                <Users className="h-4 w-4 shrink-0" />
                 <span>{isAr ? 'المشتركون' : 'Members'}</span>
               </button>
 
@@ -648,13 +652,13 @@ function TitanFitEnterpriseShell() {
                 type="button"
                 data-testid="header-nav-CLASSES"
                 onClick={() => setActiveSection('CLASSES')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 xl:px-3 py-2 text-xs font-bold transition ${
                   activeSection === 'CLASSES' || activeSection === 'ACCESS_CONTROL'
                     ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
                     : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
                 }`}
               >
-                <Calendar className="h-4 w-4" />
+                <Calendar className="h-4 w-4 shrink-0" />
                 <span>{isAr ? 'الحصص والدخول' : 'Classes & Access'}</span>
               </button>
 
@@ -662,13 +666,13 @@ function TitanFitEnterpriseShell() {
                 type="button"
                 data-testid="header-nav-POS"
                 onClick={() => setActiveSection('POS_INVENTORY')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 xl:px-3 py-2 text-xs font-bold transition ${
                   activeSection === 'POS_INVENTORY' || activeSection === 'REPORTS'
                     ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
                     : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
                 }`}
               >
-                <ShoppingBag className="h-4 w-4" />
+                <ShoppingBag className="h-4 w-4 shrink-0" />
                 <span>{isAr ? 'الـ POS والتقارير' : 'POS & Sales'}</span>
               </button>
 
@@ -676,13 +680,13 @@ function TitanFitEnterpriseShell() {
                 type="button"
                 data-testid="header-nav-CONTENT_LIBRARY"
                 onClick={() => setActiveSection('CONTENT_LIBRARY')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 xl:px-3 py-2 text-xs font-bold transition ${
                   activeSection === 'CONTENT_LIBRARY'
                     ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
                     : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
                 }`}
               >
-                <Video className="h-4 w-4 text-amber-500" />
+                <Video className="h-4 w-4 text-amber-500 shrink-0" />
                 <span>{isAr ? 'رفع الفيديوهات والوصفات' : 'Media Studio'}</span>
               </button>
 
@@ -690,13 +694,13 @@ function TitanFitEnterpriseShell() {
                 type="button"
                 data-testid="header-nav-MEMBER_PWA"
                 onClick={() => setActiveSection('MEMBER_PWA')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 xl:px-3 py-2 text-xs font-bold transition ${
                   activeSection === 'MEMBER_PWA'
                     ? 'bg-emerald-600 text-white shadow-xs font-black'
                     : 'text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40'
                 }`}
               >
-                <Smartphone className="h-4 w-4" />
+                <Smartphone className="h-4 w-4 shrink-0" />
                 <span>{isAr ? 'تطبيق المتدرب' : 'Member App'}</span>
               </button>
 
@@ -704,13 +708,13 @@ function TitanFitEnterpriseShell() {
                 type="button"
                 data-testid="header-nav-PUBLIC_STOREFRONT"
                 onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 xl:px-3 py-2 text-xs font-bold transition ${
                   activeSection === 'PUBLIC_STOREFRONT'
                     ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800'
                 }`}
               >
-                <Sparkles className="h-4 w-4 text-amber-500" />
+                <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
                 <span>{isAr ? 'موقع الزوار' : 'Storefront'}</span>
               </button>
 
@@ -718,13 +722,13 @@ function TitanFitEnterpriseShell() {
                 type="button"
                 data-testid="header-nav-FREE_TRIAL_HUB"
                 onClick={() => setActiveSection('FREE_TRIAL_HUB')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition ${
+                className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl px-2.5 xl:px-3 py-2 text-xs font-bold transition ${
                   activeSection === 'FREE_TRIAL_HUB'
                     ? 'bg-emerald-600 text-white shadow-xs font-black'
                     : 'text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40'
                 }`}
               >
-                <Gift className="h-4 w-4" />
+                <Gift className="h-4 w-4 shrink-0" />
                 <span>{isAr ? '🎁 جرب مجاناً' : 'Free Trial'}</span>
               </button>
             </motion.nav>
@@ -898,12 +902,12 @@ function TitanFitEnterpriseShell() {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <div className="hidden text-end sm:block">
-                  <p className="text-xs font-extrabold text-slate-900 dark:text-white">
+              <div className="flex shrink-0 items-center gap-2">
+                <div className="hidden text-end sm:block max-w-[130px]">
+                  <p className="truncate text-xs font-extrabold text-slate-900 dark:text-white" title={currentUser?.name || ''}>
                     {currentUser?.name || (isAr ? 'مدير النظام' : 'Manager')}
                   </p>
-                  <p className="text-[10px] font-extrabold text-amber-800 dark:text-amber-300">
+                  <p className="truncate text-[10px] font-extrabold text-amber-800 dark:text-amber-300">
                     {activeRole}
                   </p>
                 </div>
@@ -911,9 +915,9 @@ function TitanFitEnterpriseShell() {
                   type="button"
                   onClick={logout}
                   title={isAr ? 'تسجيل الخروج' : 'Log Out'}
-                  className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-400"
+                  className="inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-400"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-4 w-4 shrink-0" />
                   <span className="hidden sm:inline">{isAr ? 'خروج' : 'Logout'}</span>
                 </button>
               </div>

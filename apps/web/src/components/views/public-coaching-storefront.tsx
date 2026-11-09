@@ -207,9 +207,12 @@ export function PublicCoachingStorefrontView({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#0E131F] sm:p-12"
+        className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white/95 p-6 shadow-sm backdrop-blur-md dark:border-slate-800 dark:bg-[#0E131F]/95 sm:p-12"
       >
-        <div className="pointer-events-none absolute -top-40 start-1/2 -translate-x-1/2 h-80 w-full max-w-4xl rounded-full bg-amber-500/10 blur-3xl" />
+        {/* Modern Animated Ambient Glow Mesh in Hero */}
+        <div className="pointer-events-none absolute -top-32 start-1/4 h-96 w-96 rounded-full bg-gradient-to-br from-amber-500/20 via-orange-500/10 to-transparent blur-3xl animate-ambient-float" />
+        <div className="pointer-events-none absolute -bottom-32 end-1/4 h-80 w-80 rounded-full bg-gradient-to-tr from-emerald-500/15 via-teal-500/10 to-transparent blur-3xl animate-ambient-pulse" />
+        <div className="pointer-events-none absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 h-[450px] w-full max-w-5xl rounded-full bg-amber-500/5 blur-3xl" />
         <div className="relative grid grid-cols-1 items-center gap-10 lg:grid-cols-12">
           {/* Right Text Column (in RTL) */}
           <div className="space-y-6 lg:col-span-7">
@@ -522,23 +525,31 @@ export function PublicCoachingStorefrontView({
           initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="rounded-3xl border border-slate-200/80 bg-slate-50/70 p-6 shadow-2xs dark:border-slate-800 dark:bg-slate-900/60 sm:p-8"
+          className="relative overflow-hidden rounded-3xl border-2 border-amber-500/30 bg-gradient-to-br from-slate-950 via-[#0F172A] to-slate-950 p-6 sm:p-10 text-white shadow-2xl"
         >
-          <div className="flex flex-wrap items-center justify-between gap-6">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-xs dark:bg-amber-500 dark:text-slate-950">
-                <Video className="h-6 w-6" />
-              </div>
-              <div className="space-y-1">
-                <span className="inline-block rounded-full border border-slate-200 bg-white px-3 py-0.5 text-[11px] font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-                  {isAr ? 'تجربة مجانية لزوار الموقع' : 'FREE ACCESS FOR VISITORS'}
-                </span>
-                <h2 className="text-xl font-black text-slate-900 dark:text-white sm:text-2xl">
+          {/* Animated Ambient Glow & Light Shimmer */}
+          <div className="pointer-events-none absolute -top-24 start-1/3 h-64 w-64 rounded-full bg-amber-500/20 blur-3xl animate-ambient-float" />
+          <div className="pointer-events-none absolute -bottom-24 end-10 h-64 w-64 rounded-full bg-emerald-500/15 blur-3xl animate-ambient-pulse" />
+
+          <div className="relative z-10 flex flex-wrap items-center justify-between gap-6">
+            <div className="flex items-start gap-4 max-w-2xl">
+              <motion.div
+                whileHover={{ scale: 1.08, rotate: 5 }}
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/25"
+              >
+                <Video className="h-7 w-7" />
+              </motion.div>
+              <div className="space-y-1.5">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-500/10 px-3 py-0.5 text-[11px] font-black text-amber-300 backdrop-blur-xs">
+                  <Sparkles className="h-3 w-3 text-amber-400" />
+                  <span>{isAr ? 'تجربة مجانية لزوار الموقع' : 'FREE ACCESS FOR VISITORS'}</span>
+                </div>
+                <h2 className="text-xl font-black text-white sm:text-2xl lg:text-3xl tracking-tight">
                   {isAr
                     ? 'داخل تجرب الأول؟ افتح مكتبة التمارين بالفيديو والأنظمة الغذائية المجانية!'
                     : 'Want to Try First? Open Our Free Video Workouts & Meal Plans Hub!'}
                 </h2>
-                <p className="text-xs text-slate-600 dark:text-slate-400 sm:text-sm">
+                <p className="text-xs text-slate-300 sm:text-sm leading-relaxed">
                   {isAr
                     ? 'شاهد فيديوهات التمارين مع إرشادات الأداء الحركي السليم، شغل تايمر التمرين التفاعلي، وحمل ٣ أنظمة غذائية كاملة بالجرامات والبدائل الاقتصادية مجاناً.'
                     : 'Watch HD exercise demos with proper form cues, use our interactive set & rest timer, and grab 3 complete meal plans for free.'}
@@ -546,27 +557,35 @@ export function PublicCoachingStorefrontView({
               </div>
             </div>
 
-            <button
+            <motion.button
               type="button"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
               onClick={onOpenFreeTrialHub}
-              className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-7 py-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-850 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
+              className="relative group overflow-hidden inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 px-8 py-4 text-sm font-black text-slate-950 shadow-xl shadow-amber-500/20 transition hover:shadow-amber-500/35"
             >
-              <Play className="h-4 w-4 fill-current" />
-              {isAr
-                ? 'افتح التمارين والأنظمة المجانية الآن ←'
-                : 'Open Free Workouts & Diets Now →'}
-            </button>
+              <span className="relative z-10 flex items-center gap-2">
+                <Play className="h-4 w-4 fill-slate-950" />
+                <span>
+                  {isAr
+                    ? 'افتح التمارين والأنظمة المجانية الآن ←'
+                    : 'Open Free Workouts & Diets Now →'}
+                </span>
+              </span>
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+            </motion.button>
           </div>
         </motion.section>
       )}
 
       {/* 3. HOW IT WORKS IN 4 STEPS — "إنت مش لوحدك" */}
-      <section className="space-y-8">
-        <div className="text-center">
-          <span className="text-xs font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-400">
-            {isAr ? 'رحلتك معانا خطوة بخطوة' : 'HOW YOUR TRANSFORMATION WORKS'}
-          </span>
-          <h2 className="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">
+      <section className="space-y-8 relative">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-black text-amber-800 dark:text-amber-300">
+            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+            <span>{isAr ? 'رحلتك معانا خطوة بخطوة' : 'HOW YOUR TRANSFORMATION WORKS'}</span>
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 sm:text-4xl dark:text-white">
             {isAr
               ? 'ابدأ رحلة تغيير جسمك وحياتك في ٤ خطوات بسيطة'
               : 'Start in 4 Simple Steps — You Are Never Alone'}
@@ -584,7 +603,8 @@ export function PublicCoachingStorefrontView({
               descEn:
                 'Browse coaching packages; digital payment gateways (InstaPay, Fawry, Vodafone Cash, and Card) are coming soon — currently in demo preview.',
               icon: CreditCard,
-              color: 'text-amber-600 bg-amber-50 border-amber-200',
+              color: 'text-amber-600 bg-amber-500/10 border-amber-300/30 dark:text-amber-400',
+              gradient: 'from-amber-500/20 to-transparent',
             },
             {
               step: '02',
@@ -595,7 +615,8 @@ export function PublicCoachingStorefrontView({
               descEn:
                 'We review your daily routine, food preferences, and current fitness level to tailor your plan.',
               icon: HeartPulse,
-              color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
+              color: 'text-emerald-600 bg-emerald-500/10 border-emerald-300/30 dark:text-emerald-400',
+              gradient: 'from-emerald-500/20 to-transparent',
             },
             {
               step: '03',
@@ -606,7 +627,8 @@ export function PublicCoachingStorefrontView({
               descEn:
                 'Receive your custom meal plan, illustrated recipes, and step-by-step video & animated workouts.',
               icon: Sparkles,
-              color: 'text-sky-600 bg-sky-50 border-sky-200',
+              color: 'text-sky-600 bg-sky-500/10 border-sky-300/30 dark:text-sky-400',
+              gradient: 'from-sky-500/20 to-transparent',
             },
             {
               step: '04',
@@ -617,7 +639,8 @@ export function PublicCoachingStorefrontView({
               descEn:
                 'Regular WhatsApp check-ins, exercise form feedback, and ongoing accountability until you reach your goal.',
               icon: MessageCircle,
-              color: 'text-purple-600 bg-purple-50 border-purple-200',
+              color: 'text-purple-600 bg-purple-500/10 border-purple-300/30 dark:text-purple-400',
+              gradient: 'from-purple-500/20 to-transparent',
             },
           ].map((item, idx) => {
             const Icon = item.icon;
@@ -628,19 +651,24 @@ export function PublicCoachingStorefrontView({
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.35, delay: idx * 0.08 }}
-                whileHover={{ y: -5 }}
-                className="relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white/85 p-6 shadow-sm backdrop-blur-md transition-all duration-300 hover:border-amber-400/50 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900/80"
               >
-                <div className="flex items-center justify-between">
+                {/* Subtle top glow highlight on hover */}
+                <div className={`pointer-events-none absolute -top-12 start-1/2 -translate-x-1/2 h-24 w-32 rounded-full bg-gradient-to-b ${item.gradient} blur-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
+
+                <div className="relative z-10 flex items-center justify-between">
                   <div className={`rounded-xl border p-3 ${item.color}`}>
                     <Icon className="h-6 w-6" />
                   </div>
-                  <span className="font-mono text-2xl font-black text-slate-200">{item.step}</span>
+                  <span className="font-mono text-3xl font-black bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 bg-clip-text text-transparent opacity-70 group-hover:opacity-100 transition-opacity">
+                    {item.step}
+                  </span>
                 </div>
-                <h3 className="mt-4 text-base font-extrabold text-slate-900">
+                <h3 className="relative z-10 mt-4 text-base font-extrabold text-slate-900 dark:text-white">
                   {isAr ? item.titleAr : item.titleEn}
                 </h3>
-                <p className="mt-2 text-xs leading-relaxed text-slate-600">
+                <p className="relative z-10 mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                   {isAr ? item.descAr : item.descEn}
                 </p>
               </motion.div>
