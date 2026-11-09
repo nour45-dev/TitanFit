@@ -6,15 +6,19 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  DollarSign,
   Download,
   Dumbbell,
   Edit3,
   Lock,
+  MessageCircle,
   Minus,
   Package,
+  Phone,
   Plus,
   QrCode,
   Radio,
+  Receipt,
   ShieldAlert,
   ShieldCheck,
   ShoppingBag,
@@ -31,6 +35,8 @@ import {
   type ClassSessionItem,
   type InvoiceItem,
   type PosProductItem,
+  type StaffMemberItem,
+  type TrainerPayoutTransaction,
   usePlatformStore,
 } from '../../lib/platform-store';
 
@@ -1036,76 +1042,852 @@ export function PosInventoryView() {
 }
 
 export function StaffTrainersView() {
-  const { locale, staff } = usePlatformStore();
+  const {
+    locale,
+    staff,
+    trainerPayouts,
+    addStaffMember,
+    updateStaffMember,
+    deleteStaffMember,
+    recordTrainerPayout,
+  } = usePlatformStore();
   const isAr = locale === 'ar';
 
+  const [showAddTrainerModal, setShowAddTrainerModal] = useState(false);
+  const [showPayoutModal, setShowPayoutModal] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<StaffMemberItem | null>(null);
+  const [deletingStaffId, setDeletingStaffId] = useState<string | null>(null);
+  const [selectedTrainerForPayout, setSelectedTrainerForPayout] = useState<StaffMemberItem | null>(null);
+
+  // New Trainer Form State
+  const [newStaffNameAr, setNewStaffNameAr] = useState('');
+  const [newStaffNameEn, setNewStaffNameEn] = useState('');
+  const [newStaffRole, setNewStaffRole] = useState<StaffMemberItem['role']>('TRAINER');
+  const [newStaffSpecialtyAr, setNewStaffSpecialtyAr] = useState('');
+  const [newStaffSpecialtyEn, setNewStaffSpecialtyEn] = useState('');
+  const [newStaffPhone, setNewStaffPhone] = useState('+20100');
+  const [newStaffWhatsapp, setNewStaffWhatsapp] = useState('20100');
+  const [newStaffShiftAr, setNewStaffShiftAr] = useState('٠٨:٠٠ ص – ٠٤:٠٠ م');
+  const [newStaffShiftEn, setNewStaffShiftEn] = useState('08:00 AM – 04:00 PM');
+  const [newStaffBaseSalary, setNewStaffBaseSalary] = useState(12000);
+  const [newStaffCommission, setNewStaffCommission] = useState(35);
+  const [newStaffPtRate, setNewStaffPtRate] = useState(450);
+  const [newStaffBioAr, setNewStaffBioAr] = useState('');
+  const [newStaffAvatarUrl, setNewStaffAvatarUrl] = useState('');
+
+  // Payout Form State
+  const [payoutTrainerId, setPayoutTrainerId] = useState(staff[0]?.id || 'stf-1');
+  const [payoutAmount, setPayoutAmount] = useState(15000);
+  const [payoutType, setPayoutType] = useState<TrainerPayoutTransaction['payoutType']>('COMMISSION');
+  const [payoutNote, setPayoutNote] = useState('');
+
+  const handleCreateTrainer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStaffNameAr.trim() && !newStaffNameEn.trim()) return;
+    addStaffMember({
+      nameAr: newStaffNameAr.trim() || newStaffNameEn.trim(),
+      nameEn: newStaffNameEn.trim() || newStaffNameAr.trim(),
+      role: newStaffRole,
+      specialtyAr: newStaffSpecialtyAr.trim() || (isAr ? 'مدرب معتمد' : 'Certified Coach'),
+      specialtyEn: newStaffSpecialtyEn.trim() || 'Certified Fitness Coach',
+      branchId: 'br-new-cairo',
+      phone: newStaffPhone,
+      whatsappNumber: newStaffWhatsapp.replace(/[^0-9]/g, ''),
+      shiftAr: newStaffShiftAr,
+      shiftEn: newStaffShiftEn,
+      baseSalaryEgp: Number(newStaffBaseSalary) || 10000,
+      commissionRatePercent: Number(newStaffCommission) || 30,
+      ptSessionRateEgp: Number(newStaffPtRate) || 400,
+      bioAr: newStaffBioAr || 'مدرب محترف معتمد في بناء الأجسام واللياقة البدنية.',
+      bioEn: 'Certified fitness and bodybuilding coach with customized training plans.',
+      avatarUrl:
+        newStaffAvatarUrl ||
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+    });
+    setNewStaffNameAr('');
+    setNewStaffNameEn('');
+    setNewStaffSpecialtyAr('');
+    setNewStaffSpecialtyEn('');
+    setNewStaffBioAr('');
+    setShowAddTrainerModal(false);
+  };
+
+  const handleRecordPayoutSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trainer = staff.find((s) => s.id === payoutTrainerId);
+    if (!trainer) return;
+    recordTrainerPayout({
+      trainerId: trainer.id,
+      trainerNameAr: trainer.nameAr,
+      trainerNameEn: trainer.nameEn,
+      amountEgp: Number(payoutAmount) || 0,
+      payoutType,
+      note: payoutNote || (isAr ? `صرف ${payoutType}` : `Payout ${payoutType}`),
+    });
+    setShowPayoutModal(false);
+    setPayoutNote('');
+  };
+
+  const handleUpdateFinancials = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingStaff) return;
+    updateStaffMember(editingStaff.id, {
+      baseSalaryEgp: editingStaff.baseSalaryEgp,
+      commissionRatePercent: editingStaff.commissionRatePercent,
+      ptSessionRateEgp: editingStaff.ptSessionRateEgp,
+      phone: editingStaff.phone,
+      whatsappNumber: editingStaff.whatsappNumber,
+      specialtyAr: editingStaff.specialtyAr,
+      specialtyEn: editingStaff.specialtyEn,
+    });
+    setEditingStaff(null);
+  };
+
+  const openPayoutForTrainer = (trainer: StaffMemberItem) => {
+    setSelectedTrainerForPayout(trainer);
+    setPayoutTrainerId(trainer.id);
+    const comm = Math.round((trainer.monthlyRevenueEgp * trainer.commissionRatePercent) / 100);
+    setPayoutAmount(comm > 0 ? comm : (trainer.baseSalaryEgp || 10000));
+    setPayoutNote(
+      isAr
+        ? `صرف مستحقات عمولة لشهر نوفمبر — ${trainer.nameAr}`
+        : `November commission payout — ${trainer.nameEn}`,
+    );
+    setShowPayoutModal(true);
+  };
+
+  const totalPtRevenue = staff.reduce((sum, s) => sum + s.monthlyRevenueEgp, 0);
+  const totalCommissionsEarned = staff.reduce(
+    (sum, s) => sum + Math.round((s.monthlyRevenueEgp * s.commissionRatePercent) / 100),
+    0,
+  );
+  const totalPayoutsGiven = trainerPayouts.reduce((sum, p) => sum + p.amountEgp, 0);
+
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
-        <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
-          {isAr
-            ? 'إدارة المدربين، الموظفين، والعمولات الشهرية (Staff & Trainers)'
-            : 'Coaching Staff, Shifts & PT Commission Performance'}
-        </h1>
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          {isAr
-            ? 'متابعة محافظ المتدربين لكل كابتن، نسب العمولات، التقييمات، ومواعيد الورديات'
-            : 'Track trainer client rosters, PT revenue commissions, member ratings, and branch shifts'}
-        </p>
+    <div data-testid="panel-staff-trainers" className="space-y-6">
+      {/* Header Banner & Financial Metrics KPI */}
+      <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm dark:border-slate-800/80 dark:bg-[#121623]">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-extrabold text-amber-800 dark:bg-[#D4AF37]/20 dark:text-[#F3E5AB]">
+              <Users className="h-3.5 w-3.5 text-[#D4AF37]" />
+              {isAr ? 'إدارة الكباتن والمدربين والعمولات المالية' : 'TRAINERS & FINANCIAL COMMISSIONS'}
+            </span>
+            <h1 className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">
+              {isAr
+                ? 'فريق التدريب والعمولات والمعاملات المالية'
+                : 'Coaching Staff, Shifts & PT Commissions'}
+            </h1>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              {isAr
+                ? 'إدارة حسابات المدربين، تحديد نسب العمولات، الراتب الأساسي، سعر الحصة، وتسجيل صرف المستحقات'
+                : 'Manage trainer profiles, commissions, base salaries, PT rates, and record payouts'}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setPayoutTrainerId(staff[0]?.id || '');
+                setShowPayoutModal(true);
+              }}
+              className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/15 px-4 py-2.5 text-xs font-extrabold text-emerald-700 hover:bg-emerald-500/25 dark:text-emerald-300"
+            >
+              <DollarSign className="h-4 w-4" />
+              {isAr ? 'صرف مستحقات / عمولات' : 'Record Payout'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAddTrainerModal(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#D4AF37] px-4 py-2.5 text-xs font-extrabold text-slate-950 hover:bg-amber-400"
+            >
+              <Plus className="h-4 w-4" />
+              {isAr ? '+ إضافة كابتن جديد' : '+ Add New Coach'}
+            </button>
+          </div>
+        </div>
+
+        {/* 4 Financial Metric Cards */}
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              {isAr ? 'إجمالي المدربين' : 'Active Coaches'}
+            </span>
+            <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-white">{staff.length}</p>
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400">
+              {isAr ? 'طاقم معتمد' : 'Certified Staff'}
+            </span>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              {isAr ? 'مبيعات التدريب الخاص (PT)' : 'Total PT Revenue'}
+            </span>
+            <p className="mt-1 font-mono text-xl font-extrabold text-slate-900 dark:text-white">
+              {totalPtRevenue.toLocaleString()} <span className="text-xs">ج.م</span>
+            </p>
+            <span className="text-[10px] text-amber-600 dark:text-amber-400">
+              {isAr ? 'خلال الشهر الجاري' : 'Current Month'}
+            </span>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              {isAr ? 'العمولات المستحقة' : 'Commissions Earned'}
+            </span>
+            <p className="mt-1 font-mono text-xl font-extrabold text-[#D4AF37]">
+              {totalCommissionsEarned.toLocaleString()} <span className="text-xs">ج.م</span>
+            </p>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">
+              {isAr ? 'محسوبة بالنسب المحددة' : 'Per trainer rates'}
+            </span>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              {isAr ? 'إجمالي المنصرف للمدربين' : 'Total Payouts Done'}
+            </span>
+            <p className="mt-1 font-mono text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
+              {totalPayoutsGiven.toLocaleString()} <span className="text-xs">ج.م</span>
+            </p>
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400">
+              {isAr ? 'مسجل بالدفاتر' : 'Audited transactions'}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      {/* Trainers Grid */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {staff.map((s) => {
           const commissionEgp = Math.round((s.monthlyRevenueEgp * s.commissionRatePercent) / 100);
+          const totalEstimatedIncome = (s.baseSalaryEgp || 0) + commissionEgp;
           return (
             <div
               key={s.id}
-              className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6"
+              className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm transition-all hover:border-[#D4AF37]/60 dark:border-slate-800/80 dark:bg-[#121623]"
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="rounded-lg bg-[#D4AF37]/15 px-2.5 py-0.5 text-xs font-extrabold text-[#D4AF37]">
-                    {s.role}
+              <div>
+                {/* Top Coach Info */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={
+                        s.avatarUrl ||
+                        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
+                      }
+                      alt={s.nameAr}
+                      className="h-14 w-14 rounded-2xl border-2 border-amber-500/40 object-cover shadow-sm"
+                    />
+                    <div>
+                      <span className="rounded-lg bg-amber-500/15 px-2 py-0.5 text-[10px] font-extrabold text-amber-800 dark:bg-[#D4AF37]/15 dark:text-[#D4AF37]">
+                        {s.role}
+                      </span>
+                      <h3 className="mt-1 text-base font-extrabold text-slate-900 dark:text-white">
+                        {isAr ? s.nameAr : s.nameEn}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {isAr ? s.specialtyAr : s.specialtyEn}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="shrink-0 rounded-xl bg-emerald-500/15 px-2.5 py-1 text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
+                    ★ {s.rating}
                   </span>
-                  <h3 className="mt-2 text-lg font-extrabold text-slate-900 dark:text-white">
-                    {isAr ? s.nameAr : s.nameEn}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {isAr ? s.specialtyAr : s.specialtyEn}
-                  </p>
                 </div>
-                <span className="rounded-xl bg-emerald-500/15 px-3 py-1 text-xs font-extrabold text-emerald-300">
-                  ★ {s.rating}
-                </span>
+
+                {/* Bio & Contact info */}
+                {s.bioAr && (
+                  <p className="mt-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                    {isAr ? s.bioAr : s.bioEn}
+                  </p>
+                )}
+
+                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+                  <a
+                    href={`tel:${s.phone}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"
+                  >
+                    <Phone className="h-3.5 w-3.5 text-slate-500" />
+                    <span className="font-mono text-[11px]">{s.phone}</span>
+                  </a>
+                  {s.whatsappNumber && (
+                    <a
+                      href={`https://wa.me/${s.whatsappNumber}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 font-bold text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-300"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      <span>{isAr ? 'واتساب' : 'WhatsApp'}</span>
+                    </a>
+                  )}
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {isAr ? `الوردية: ${s.shiftAr}` : `Shift: ${s.shiftEn}`}
+                  </span>
+                </div>
+
+                {/* Financial Terms Breakdown Box */}
+                <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-2 text-xs font-extrabold text-slate-800 dark:border-slate-800 dark:text-white">
+                    <span>{isAr ? 'البنود المالية والعمولات' : 'Financial Terms & Rates'}</span>
+                    <button
+                      type="button"
+                      onClick={() => setEditingStaff(s)}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 hover:underline dark:text-amber-400"
+                    >
+                      <Edit3 className="h-3 w-3" />
+                      {isAr ? 'تعديل' : 'Edit'}
+                    </button>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {isAr ? 'الراتب الأساسي' : 'Base Salary'}
+                      </span>
+                      <p className="font-mono text-sm font-extrabold text-slate-900 dark:text-white">
+                        {(s.baseSalaryEgp || 0).toLocaleString()} EGP
+                      </p>
+                    </div>
+
+                    <div>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {isAr ? 'نسبة العمولة' : 'Commission %'}
+                      </span>
+                      <p className="font-mono text-sm font-extrabold text-[#D4AF37]">
+                        {s.commissionRatePercent}%
+                      </p>
+                    </div>
+
+                    <div>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {isAr ? 'سعر الحصة PT' : 'PT Session Rate'}
+                      </span>
+                      <p className="font-mono text-sm font-extrabold text-slate-900 dark:text-white">
+                        {s.ptSessionRateEgp || 400} EGP
+                      </p>
+                    </div>
+
+                    <div>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {isAr ? 'المتدربون النشطون' : 'Active Clients'}
+                      </span>
+                      <p className="font-mono text-sm font-extrabold text-slate-900 dark:text-white">
+                        {s.activeClients}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 border-t border-slate-200 pt-2 dark:border-slate-800">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {isAr ? 'مبيعات الشهر الحالي:' : 'Month PT Revenue:'}
+                      </span>
+                      <span className="font-mono font-bold text-slate-900 dark:text-white">
+                        {s.monthlyRevenueEgp.toLocaleString()} EGP
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {isAr ? 'عمولة الشهر المستحقة:' : 'Earned Commission:'}
+                      </span>
+                      <span className="font-mono font-bold text-[#D4AF37]">
+                        {commissionEgp.toLocaleString()} EGP
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-t border-slate-200/80 pt-1 text-xs font-extrabold text-emerald-700 dark:border-slate-800 dark:text-emerald-400">
+                      <span>{isAr ? 'إجمالي مستحقات الشهر:' : 'Est. Total Earnings:'}</span>
+                      <span className="font-mono">{totalEstimatedIncome.toLocaleString()} EGP</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="mt-5 grid grid-cols-3 gap-2 border-t border-slate-800 pt-4 text-xs">
-                <div className="rounded-xl bg-slate-900/70 p-3">
-                  <span className="text-slate-400">{isAr ? 'المتدربون' : 'Clients'}</span>
-                  <p className="mt-1 text-base font-extrabold text-slate-900 dark:text-white">{s.activeClients}</p>
-                </div>
-                <div className="rounded-xl bg-slate-900/70 p-3">
-                  <span className="text-slate-400">{isAr ? 'مبيعات الشهر' : 'PT Revenue'}</span>
-                  <p className="mt-1 font-mono text-sm font-extrabold text-slate-900 dark:text-white">
-                    {s.monthlyRevenueEgp.toLocaleString()} EGP
-                  </p>
-                </div>
-                <div className="rounded-xl bg-slate-900/70 p-3">
-                  <span className="text-slate-400">
-                    {isAr ? `العمولة (${s.commissionRatePercent}%)` : `Commission (${s.commissionRatePercent}%)`}
-                  </span>
-                  <p className="mt-1 font-mono text-sm font-extrabold text-[#D4AF37]">
-                    {commissionEgp.toLocaleString()} EGP
-                  </p>
-                </div>
+              {/* Action Buttons: Payout & Delete */}
+              <div className="mt-4 flex items-center justify-between gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => openPayoutForTrainer(s)}
+                  className="flex-1 rounded-xl bg-emerald-600 px-3 py-2 text-center text-xs font-extrabold text-white hover:bg-emerald-700"
+                >
+                  {isAr ? 'صرف عمولة / مستحقات' : 'Record Payout'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeletingStaffId(s.id)}
+                  title={isAr ? 'مسح المدرب من الجيم' : 'Delete Trainer'}
+                  className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-2 text-rose-600 hover:bg-rose-500/20 dark:text-rose-400"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
-              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                {isAr ? `الوردية: ${s.shiftAr}` : `Shift: ${s.shiftEn}`} • {s.phone}
-              </p>
             </div>
           );
         })}
       </div>
+
+      {/* Financial Transactions / Payouts Ledger Table */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800/80 dark:bg-[#121623]">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+          <div>
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+              {isAr ? 'سجل صرف العمولات والمستحقات المالية للمدربين' : 'Trainer Financial Payouts Ledger'}
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {isAr
+                ? 'توثيق رسمي لجميع الرواتب والعمولات والمكافآت المصروفة لطاقم التدريب'
+                : 'Audited log of all salaries, commissions, and bonuses disbursed'}
+            </p>
+          </div>
+          <Receipt className="h-5 w-5 text-[#D4AF37]" />
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-start text-sm">
+            <thead className="border-b border-slate-200 bg-slate-50 text-xs font-bold uppercase text-slate-500 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-400">
+              <tr>
+                <th className="px-4 py-3 text-start">{isAr ? 'التاريخ' : 'Date'}</th>
+                <th className="px-4 py-3 text-start">{isAr ? 'اسم الكابتن' : 'Coach'}</th>
+                <th className="px-4 py-3 text-start">{isAr ? 'نوع الصرف' : 'Payout Type'}</th>
+                <th className="px-4 py-3 text-start">{isAr ? 'المبلغ' : 'Amount (EGP)'}</th>
+                <th className="px-4 py-3 text-start">{isAr ? 'البيان والملاحظات' : 'Note'}</th>
+                <th className="px-4 py-3 text-start">{isAr ? 'الحالة' : 'Status'}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
+              {trainerPayouts.map((tx) => (
+                <tr key={tx.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/40">
+                  <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400">{tx.date}</td>
+                  <td className="px-4 py-3 font-extrabold text-slate-900 dark:text-white">
+                    {isAr ? tx.trainerNameAr : tx.trainerNameEn}
+                  </td>
+                  <td className="px-4 py-3 text-xs">
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-[11px] font-extrabold ${
+                        tx.payoutType === 'COMMISSION'
+                          ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300'
+                          : tx.payoutType === 'SALARY'
+                            ? 'bg-sky-500/15 text-sky-800 dark:text-sky-300'
+                            : 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300'
+                      }`}
+                    >
+                      {tx.payoutType}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 font-mono font-extrabold text-slate-900 dark:text-white">
+                    {tx.amountEgp.toLocaleString()} EGP
+                  </td>
+                  <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-300">{tx.note}</td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {isAr ? 'تم التحويل والصرف' : 'Disbursed'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Modal 1: Add Trainer */}
+      {showAddTrainerModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
+              <h3 className="text-base font-extrabold">
+                {isAr ? 'إضافة مدرب / كابتن جديد للجيم' : 'Add New Gym Coach / Staff'}
+              </h3>
+              <button type="button" onClick={() => setShowAddTrainerModal(false)}>
+                <X className="h-5 w-5 text-slate-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateTrainer} className="mt-4 space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'الاسم بالعربية' : 'Name (Arabic)'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="مثال: كابتن أحمد طارق"
+                    value={newStaffNameAr}
+                    onChange={(e) => setNewStaffNameAr(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'الاسم بالإنجليزية' : 'Name (English)'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Coach Ahmed Tarek"
+                    value={newStaffNameEn}
+                    onChange={(e) => setNewStaffNameEn(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'التخصص (عربي)' : 'Specialty (Arabic)'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="كمال أجسام وقوة بدنية"
+                    value={newStaffSpecialtyAr}
+                    onChange={(e) => setNewStaffSpecialtyAr(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'الدور الوظيفي' : 'Role'}
+                  </label>
+                  <select
+                    value={newStaffRole}
+                    onChange={(e) => setNewStaffRole(e.target.value as StaffMemberItem['role'])}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  >
+                    <option value="TRAINER">TRAINER (مدرب خاص / كابتن)</option>
+                    <option value="BRANCH_MANAGER">BRANCH_MANAGER (مدير فرع)</option>
+                    <option value="RECEPTIONIST">RECEPTIONIST (موظف استقبال)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'رقم الهاتف' : 'Phone'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newStaffPhone}
+                    onChange={(e) => setNewStaffPhone(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'رقم الواتساب' : 'WhatsApp'}
+                  </label>
+                  <input
+                    type="text"
+                    value={newStaffWhatsapp}
+                    onChange={(e) => setNewStaffWhatsapp(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Financial Terms Section */}
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
+                <span className="block text-xs font-extrabold text-amber-900 dark:text-amber-200">
+                  {isAr ? '💰 الشروط المالية والعمولات' : 'Financial Terms & Rates'}
+                </span>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                      {isAr ? 'الراتب الأساسي (ج.م)' : 'Base Salary (EGP)'}
+                    </label>
+                    <input
+                      type="number"
+                      value={newStaffBaseSalary}
+                      onChange={(e) => setNewStaffBaseSalary(Number(e.target.value))}
+                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                      {isAr ? 'نسبة العمولة (%)' : 'Commission (%)'}
+                    </label>
+                    <input
+                      type="number"
+                      value={newStaffCommission}
+                      onChange={(e) => setNewStaffCommission(Number(e.target.value))}
+                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                      {isAr ? 'سعر الحصة PT (ج.م)' : 'PT Rate (EGP)'}
+                    </label>
+                    <input
+                      type="number"
+                      value={newStaffPtRate}
+                      onChange={(e) => setNewStaffPtRate(Number(e.target.value))}
+                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'نبذة عن خبرة الكابتن' : 'Coach Bio / Experience'}
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="مثال: خبرة 7 سنوات في إعداد الأبطال وبرامج التغذية المخصصة..."
+                  value={newStaffBioAr}
+                  onChange={(e) => setNewStaffBioAr(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 border-t border-slate-200 pt-2 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowAddTrainerModal(false)}
+                  className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                >
+                  {isAr ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-[#D4AF37] px-4 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400"
+                >
+                  {isAr ? 'إضافة وتثبيت المدرب' : 'Save Coach'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 2: Record Payout */}
+      {showPayoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-emerald-500/40 bg-white p-6 text-slate-900 shadow-2xl dark:border-emerald-500/40 dark:bg-[#121623] dark:text-white">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
+              <h3 className="text-base font-extrabold">
+                {isAr ? 'صرف مستحقات / عمولات لكابتن' : 'Record Trainer Payout'}
+              </h3>
+              <button type="button" onClick={() => setShowPayoutModal(false)}>
+                <X className="h-5 w-5 text-slate-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleRecordPayoutSubmit} className="mt-4 space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'اختر الكابتن' : 'Select Coach'}
+                </label>
+                <select
+                  value={payoutTrainerId}
+                  onChange={(e) => setPayoutTrainerId(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                >
+                  {staff.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {isAr ? s.nameAr : s.nameEn} — [عمولة: {s.commissionRatePercent}% • مبيعات:{' '}
+                      {s.monthlyRevenueEgp} EGP]
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'نوع المستحقات' : 'Payout Type'}
+                  </label>
+                  <select
+                    value={payoutType}
+                    onChange={(e) =>
+                      setPayoutType(e.target.value as TrainerPayoutTransaction['payoutType'])
+                    }
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  >
+                    <option value="COMMISSION">COMMISSION (عمولة حصص واشتراكات)</option>
+                    <option value="SALARY">SALARY (راتب أساسي)</option>
+                    <option value="BONUS">BONUS (مكافأة أداء وتميز)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'المبلغ (ج.م)' : 'Amount (EGP)'}
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={payoutAmount}
+                    onChange={(e) => setPayoutAmount(Number(e.target.value))}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'ملاحظات وسند الصرف' : 'Note / Reference'}
+                </label>
+                <input
+                  type="text"
+                  placeholder="مثال: تسوية مبيعات شهر أكتوبر عبر إنستاباي"
+                  value={payoutNote}
+                  onChange={(e) => setPayoutNote(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 border-t border-slate-200 pt-2 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowPayoutModal(false)}
+                  className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                >
+                  {isAr ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-extrabold text-white hover:bg-emerald-700"
+                >
+                  {isAr ? 'تأكيد وصرف المستحقات' : 'Disburse Payout'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 3: Edit Financial Terms */}
+      {editingStaff && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
+              <h3 className="text-base font-extrabold">
+                {isAr
+                  ? `تعديل البنود المالية: ${editingStaff.nameAr}`
+                  : `Edit Financial Terms: ${editingStaff.nameEn}`}
+              </h3>
+              <button type="button" onClick={() => setEditingStaff(null)}>
+                <X className="h-5 w-5 text-slate-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateFinancials} className="mt-4 space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'الراتب الأساسي (ج.م)' : 'Base Salary (EGP)'}
+                  </label>
+                  <input
+                    type="number"
+                    value={editingStaff.baseSalaryEgp || 0}
+                    onChange={(e) =>
+                      setEditingStaff({ ...editingStaff, baseSalaryEgp: Number(e.target.value) })
+                    }
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'نسبة العمولة (%)' : 'Commission (%)'}
+                  </label>
+                  <input
+                    type="number"
+                    value={editingStaff.commissionRatePercent}
+                    onChange={(e) =>
+                      setEditingStaff({
+                        ...editingStaff,
+                        commissionRatePercent: Number(e.target.value),
+                      })
+                    }
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'سعر حصة التدريب الخاص PT (ج.م)' : 'PT Session Rate (EGP)'}
+                </label>
+                <input
+                  type="number"
+                  value={editingStaff.ptSessionRateEgp || 400}
+                  onChange={(e) =>
+                    setEditingStaff({ ...editingStaff, ptSessionRateEgp: Number(e.target.value) })
+                  }
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 border-t border-slate-200 pt-2 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingStaff(null)}
+                  className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                >
+                  {isAr ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-[#D4AF37] px-4 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400"
+                >
+                  {isAr ? 'حفظ التعديلات' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 4: Delete Trainer Confirmation */}
+      {deletingStaffId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-rose-500/40 bg-white p-6 text-slate-900 shadow-2xl dark:border-rose-500/40 dark:bg-[#121623] dark:text-white">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/15 text-rose-500">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold">
+                  {isAr ? 'تأكيد مسح الكابتن / المدرب' : 'Confirm Coach Deletion'}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {isAr
+                    ? 'هل أنت متأكد من حذف هذا الكابتن نهائياً من سجلات الجيم وفريق التدريب؟'
+                    : 'Are you sure you want to permanently delete this trainer from gym records?'}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeletingStaffId(null)}
+                className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              >
+                {isAr ? 'إلغاء' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteStaffMember(deletingStaffId);
+                  setDeletingStaffId(null);
+                }}
+                className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-extrabold text-white hover:bg-rose-700"
+              >
+                {isAr ? 'نعم، احذف الكابتن' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

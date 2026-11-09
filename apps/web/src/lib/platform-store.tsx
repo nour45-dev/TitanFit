@@ -78,6 +78,7 @@ export interface MemberItem {
   bloodType: string;
   medicalConditions: string;
   injuries: string;
+  assignedTrainerId?: string;
   assignedTrainerEn: string;
   assignedTrainerAr: string;
   checkInsCount: number;
@@ -174,12 +175,30 @@ export interface StaffMemberItem {
   specialtyAr: string;
   branchId: string;
   phone: string;
+  whatsappNumber?: string;
   activeClients: number;
   commissionRatePercent: number;
   monthlyRevenueEgp: number;
+  baseSalaryEgp?: number;
+  ptSessionRateEgp?: number;
+  totalPayoutsEgp?: number;
   rating: number;
   shiftEn: string;
   shiftAr: string;
+  bioAr?: string;
+  bioEn?: string;
+  avatarUrl?: string;
+}
+
+export interface TrainerPayoutTransaction {
+  id: string;
+  trainerId: string;
+  trainerNameAr: string;
+  trainerNameEn: string;
+  amountEgp: number;
+  payoutType: 'SALARY' | 'COMMISSION' | 'BONUS';
+  date: string;
+  note: string;
 }
 
 export interface WorkoutLogEntry {
@@ -202,6 +221,8 @@ export interface ChatMessageItem {
   textEn: string;
   textAr: string;
   time: string;
+  memberId?: string;
+  trainerId?: string;
 }
 
 export interface TenantSaaSItem {
@@ -337,6 +358,7 @@ const INITIAL_MEMBERS: MemberItem[] = [
     bloodType: 'O+',
     medicalConditions: 'None — cleared for high-intensity training',
     injuries: 'Mild left rotator cuff stiffness (2024)',
+    assignedTrainerId: 'stf-1',
     assignedTrainerEn: 'Coach Omar Hassan',
     assignedTrainerAr: 'كابتن عمر حسن',
     checkInsCount: 142,
@@ -440,16 +462,92 @@ const INITIAL_STAFF: StaffMemberItem[] = [
     nameEn: 'Coach Omar Hassan',
     nameAr: 'كابتن عمر حسن',
     role: 'TRAINER',
-    specialtyEn: 'Head Strength & Conditioning Coach (CSCS)',
-    specialtyAr: 'كبير مدربي القوة والتكييف البدني (CSCS)',
+    specialtyEn: 'Head Strength & Conditioning Lead (CSCS)',
+    specialtyAr: 'كبير مدربي القوة والتكييف البدني وبناء الأجسام (CSCS)',
     branchId: 'br-new-cairo',
     phone: '+201005551122',
+    whatsappNumber: '201005551122',
     activeClients: 28,
     commissionRatePercent: 35,
     monthlyRevenueEgp: 112000,
+    baseSalaryEgp: 12000,
+    ptSessionRateEgp: 450,
+    totalPayoutsEgp: 39200,
     rating: 4.95,
     shiftEn: '06:00 AM – 03:00 PM',
     shiftAr: '٠٦:٠٠ ص – ٠٣:٠٠ م',
+    bioAr: 'خبرة ١٠ سنوات في تدريب كبار الرياضيين وتأهيل بطولات كمال الأجسام والفيزيك مع برامج مخصصة للماكروز.',
+    bioEn: '10+ years coaching elite athletes, hypertrophy and powerlifting with custom macro programming.',
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    id: 'stf-2',
+    nameEn: 'Coach Sarah Ahmed',
+    nameAr: 'كابتن سارة أحمد',
+    role: 'TRAINER',
+    specialtyEn: 'Clinical Sports Nutritionist & Women Fitness Specialist',
+    specialtyAr: 'أخصائية التغذية العلاجية ونحت القوام ولياقة السيدات',
+    branchId: 'br-new-cairo',
+    phone: '+201007773344',
+    whatsappNumber: '201007773344',
+    activeClients: 34,
+    commissionRatePercent: 40,
+    monthlyRevenueEgp: 136000,
+    baseSalaryEgp: 13500,
+    ptSessionRateEgp: 500,
+    totalPayoutsEgp: 54400,
+    rating: 4.98,
+    shiftEn: '09:00 AM – 05:00 PM',
+    shiftAr: '٠٩:٠٠ ص – ٠٥:٠٠ م',
+    bioAr: 'ماجستير التغذية الرياضية، متخصصة في خسارة الدهون العنيدة، تصحيح الهرمونات، وبرامج ما بعد الحمل.',
+    bioEn: 'M.Sc. Sports Nutrition, fat loss and body contouring specialist with individualized meal plans.',
+    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    id: 'stf-3',
+    nameEn: 'Coach Tarek El-Shazly',
+    nameAr: 'كابتن طارق الشاذلي',
+    role: 'TRAINER',
+    specialtyEn: 'Powerlifting, Functional Mobility & Injury Rehab',
+    specialtyAr: 'مدرب القوة البدنية، الموبيليتي وتأهيل إصابات المفاصل',
+    branchId: 'br-zayed',
+    phone: '+201008882211',
+    whatsappNumber: '201008882211',
+    activeClients: 22,
+    commissionRatePercent: 30,
+    monthlyRevenueEgp: 88000,
+    baseSalaryEgp: 10000,
+    ptSessionRateEgp: 400,
+    totalPayoutsEgp: 26400,
+    rating: 4.91,
+    shiftEn: '01:00 PM – 10:00 PM',
+    shiftAr: '٠١:٠٠ م – ١٠:٠٠ م',
+    bioAr: 'بطل جمهورية سابق في رفع الأثقال، معتمد دولياً في تصحيح المسار الحركي والتعافي من تمزقات الأوتار.',
+    bioEn: 'Former national powerlifter, certified in biomechanical correction and tendon rehabilitation.',
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+  },
+];
+
+const INITIAL_TRAINER_PAYOUTS: TrainerPayoutTransaction[] = [
+  {
+    id: 'pay-1',
+    trainerId: 'stf-1',
+    trainerNameAr: 'كابتن عمر حسن',
+    trainerNameEn: 'Coach Omar Hassan',
+    amountEgp: 39200,
+    payoutType: 'COMMISSION',
+    date: '2026-11-01',
+    note: 'صرف عمولة شهر أكتوبر (35% من مبيعات 112,000 ج.م)',
+  },
+  {
+    id: 'pay-2',
+    trainerId: 'stf-2',
+    trainerNameAr: 'كابتن سارة أحمد',
+    trainerNameEn: 'Coach Sarah Ahmed',
+    amountEgp: 54400,
+    payoutType: 'COMMISSION',
+    date: '2026-11-01',
+    note: 'صرف عمولة شهر أكتوبر (40% من مبيعات 136,000 ج.م)',
   },
 ];
 
@@ -557,6 +655,10 @@ export interface CustomWorkoutVideoItem {
   safetyTipAr: string;
   safetyTipEn: string;
   daySplit?: 'PUSH' | 'PULL' | 'LEGS' | 'UPPER' | 'CARDIO_CORE';
+  targetAudience?: 'ALL' | 'SPECIFIC_MEMBER';
+  targetMemberId?: string;
+  targetMemberNameAr?: string;
+  targetMemberNameEn?: string;
   createdAt: string;
 }
 
@@ -592,6 +694,10 @@ export interface CustomClubFileItem {
   fileUrl: string;
   fileType: string;
   uploadedBy: string;
+  targetAudience?: 'ALL' | 'SPECIFIC_MEMBER';
+  targetMemberId?: string;
+  targetMemberNameAr?: string;
+  targetMemberNameEn?: string;
   createdAt: string;
 }
 
@@ -823,6 +929,7 @@ export interface PlatformStoreContextValue {
   accessLogs: AccessLogItem[];
   posProducts: PosProductItem[];
   staff: StaffMemberItem[];
+  trainerPayouts: TrainerPayoutTransaction[];
   workoutLogs: WorkoutLogEntry[];
   chatMessages: ChatMessageItem[];
   tenants: TenantSaaSItem[];
@@ -927,6 +1034,35 @@ export interface PlatformStoreContextValue {
     method: InvoiceItem['method'],
     memberId?: string,
   ) => void;
+  addStaffMember: (data: {
+    nameEn: string;
+    nameAr: string;
+    role: StaffMemberItem['role'];
+    specialtyEn: string;
+    specialtyAr: string;
+    branchId: string;
+    phone: string;
+    whatsappNumber?: string;
+    shiftEn: string;
+    shiftAr: string;
+    baseSalaryEgp?: number;
+    commissionRatePercent?: number;
+    ptSessionRateEgp?: number;
+    bioAr?: string;
+    bioEn?: string;
+    avatarUrl?: string;
+  }) => StaffMemberItem;
+  updateStaffMember: (id: string, updates: Partial<StaffMemberItem>) => void;
+  deleteStaffMember: (id: string) => void;
+  recordTrainerPayout: (payout: {
+    trainerId: string;
+    amountEgp: number;
+    payoutType: TrainerPayoutTransaction['payoutType'];
+    note: string;
+    trainerNameAr?: string;
+    trainerNameEn?: string;
+  }) => void;
+  assignMemberTrainer: (memberId: string, trainerId: string) => void;
   logWorkoutSet: (exerciseEn: string, exerciseAr: string, weightKg: number, reps: number, sets: number) => WorkoutLogEntry;
   sendChatMessage: (text: string, senderRole?: 'TRAINER' | 'MEMBER') => void;
   addTenant: (
@@ -990,7 +1126,8 @@ export function PlatformProvider({
   const [classes, setClasses] = useState<ClassSessionItem[]>(INITIAL_CLASSES);
   const [accessLogs, setAccessLogs] = useState<AccessLogItem[]>(INITIAL_ACCESS_LOGS);
   const [posProducts, setPosProducts] = useState<PosProductItem[]>(INITIAL_POS_PRODUCTS);
-  const [staff] = useState<StaffMemberItem[]>(INITIAL_STAFF);
+  const [staff, setStaff] = useState<StaffMemberItem[]>(INITIAL_STAFF);
+  const [trainerPayouts, setTrainerPayouts] = useState<TrainerPayoutTransaction[]>(INITIAL_TRAINER_PAYOUTS);
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLogEntry[]>(INITIAL_WORKOUT_LOGS);
   const [chatMessages, setChatMessages] = useState<ChatMessageItem[]>(INITIAL_CHAT);
   const [tenants, setTenants] = useState<TenantSaaSItem[]>(INITIAL_TENANTS);
@@ -2095,18 +2232,151 @@ export function PlatformProvider({
     return entry;
   };
 
+  const addStaffMember: PlatformStoreContextValue['addStaffMember'] = (data) => {
+    const id = `stf-${Date.now()}`;
+    const newStaff: StaffMemberItem = {
+      id,
+      ...data,
+      activeClients: 0,
+      monthlyRevenueEgp: 0,
+      totalPayoutsEgp: 0,
+      rating: 5.0,
+      baseSalaryEgp: data.baseSalaryEgp ?? 10000,
+      ptSessionRateEgp: data.ptSessionRateEgp ?? 400,
+      commissionRatePercent: data.commissionRatePercent ?? 30,
+    };
+    setStaff((prev) => [newStaff, ...prev]);
+    appendAudit('STAFF_MEMBER_CREATED', `${newStaff.nameEn} (${newStaff.role})`);
+    showToast(
+      locale === 'ar'
+        ? `تمت إضافة الكابتن / الموظف "${newStaff.nameAr}" بنجاح!`
+        : `Added staff member "${newStaff.nameEn}"!`,
+    );
+    return newStaff;
+  };
+
+  const updateStaffMember: PlatformStoreContextValue['updateStaffMember'] = (id, updates) => {
+    setStaff((prev) => prev.map((s) => (s.id === id ? { ...s, ...updates } : s)));
+    appendAudit('STAFF_MEMBER_UPDATED', `Staff ${id}`);
+    showToast(locale === 'ar' ? 'تم تحديث بيانات الكابتن بنجاح' : 'Staff details updated');
+  };
+
+  const deleteStaffMember: PlatformStoreContextValue['deleteStaffMember'] = (id) => {
+    const target = staff.find((s) => s.id === id);
+    setStaff((prev) => prev.filter((s) => s.id !== id));
+    appendAudit('STAFF_MEMBER_DELETED', `Deleted staff ${target?.nameEn || id}`);
+    showToast(
+      locale === 'ar'
+        ? `تم حذف المدرب "${target?.nameAr || ''}" بنجاح من النظام`
+        : `Deleted staff member "${target?.nameEn || ''}"`,
+    );
+  };
+
+  const recordTrainerPayout: PlatformStoreContextValue['recordTrainerPayout'] = (payout) => {
+    const target = staff.find((s) => s.id === payout.trainerId);
+    const newTx: TrainerPayoutTransaction = {
+      id: `pay-${Date.now()}`,
+      trainerId: payout.trainerId,
+      trainerNameAr: target?.nameAr || payout.trainerNameAr || 'كابتن النادي',
+      trainerNameEn: target?.nameEn || payout.trainerNameEn || 'Gym Coach',
+      amountEgp: payout.amountEgp,
+      payoutType: payout.payoutType,
+      date: new Date().toISOString().slice(0, 10),
+      note: payout.note,
+    };
+    setTrainerPayouts((prev) => [newTx, ...prev]);
+    setStaff((prev) =>
+      prev.map((s) =>
+        s.id === payout.trainerId
+          ? { ...s, totalPayoutsEgp: (s.totalPayoutsEgp || 0) + payout.amountEgp }
+          : s,
+      ),
+    );
+    appendAudit(
+      'TRAINER_PAYOUT_RECORDED',
+      `${newTx.trainerNameEn}: ${newTx.amountEgp} EGP (${newTx.payoutType})`,
+    );
+    showToast(
+      locale === 'ar'
+        ? `تم صرف مستحقات بقيمة ${payout.amountEgp.toLocaleString()} ج.م للكابتن ${newTx.trainerNameAr}`
+        : `Recorded payout of ${payout.amountEgp.toLocaleString()} EGP for ${newTx.trainerNameEn}`,
+    );
+  };
+
+  const assignMemberTrainer: PlatformStoreContextValue['assignMemberTrainer'] = (memberId, trainerId) => {
+    const trainer = staff.find((s) => s.id === trainerId);
+    if (!trainer) return;
+    setMembers((prev) =>
+      prev.map((m) =>
+        m.id === memberId
+          ? {
+              ...m,
+              assignedTrainerId: trainer.id,
+              assignedTrainerAr: trainer.nameAr,
+              assignedTrainerEn: trainer.nameEn,
+            }
+          : m,
+      ),
+    );
+    appendAudit('MEMBER_TRAINER_ASSIGNED', `Member ${memberId} assigned to Coach ${trainer.nameEn}`);
+    showToast(
+      locale === 'ar'
+        ? `تم تعيين الكابتن ${trainer.nameAr} كمدربك الشخصي بنجاح 🏋️‍♂️`
+        : `Assigned Coach ${trainer.nameEn} as personal trainer!`,
+    );
+  };
+
   const sendChatMessage = (text: string, senderRole: 'TRAINER' | 'MEMBER' = 'MEMBER') => {
     if (!text.trim()) return;
+    const currentMember = members[0];
+    const assignedCoach = staff.find((s) => s.id === currentMember?.assignedTrainerId) || staff[0];
+    const coachNameAr = assignedCoach ? assignedCoach.nameAr : 'كابتن عمر حسن';
+    const coachNameEn = assignedCoach ? assignedCoach.nameEn : 'Coach Omar Hassan';
+
     const newMsg: ChatMessageItem = {
       id: `msg-${Date.now()}`,
       senderRole,
-      senderNameEn: senderRole === 'TRAINER' ? 'Coach Omar Hassan' : 'Youssef El-Masry',
-      senderNameAr: senderRole === 'TRAINER' ? 'كابتن عمر حسن' : 'يوسف المصري',
+      senderNameEn: senderRole === 'TRAINER' ? coachNameEn : (currentMember?.fullNameEn || 'Youssef El-Masry'),
+      senderNameAr: senderRole === 'TRAINER' ? coachNameAr : (currentMember?.fullNameAr || 'يوسف المصري'),
       textEn: text,
       textAr: text,
       time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      memberId: currentMember?.id,
+      trainerId: assignedCoach?.id,
     };
     setChatMessages((prev) => [...prev, newMsg]);
+
+    // If sent by member, simulate an intelligent coach auto-reply after 1.2s
+    if (senderRole === 'MEMBER') {
+      setTimeout(() => {
+        let replyAr = `عاش يا ${currentMember?.fullNameAr || 'بطل'}! بتابع تمرينك ونظامك الغذائي أولاً بأول. حافظ على شرب المياه والراحة بين المجموعات.`;
+        let replyEn = `Great work! I am monitoring your progress closely. Keep up your hydration and recovery!`;
+
+        if (text.includes('وزن') || text.includes('سكوات') || text.includes('بنش') || text.includes('ديدليفت') || text.includes('تمرين') || text.includes('حمل')) {
+          replyAr = `عاش يا وحش! ركز دايماً على الإيقاع المنضبط (٣ ثوانٍ نزول وتحكم كامل)، وهنزود الوزن تدريجياً الحصة الجاية بدون التضحية بالأداء السليم.`;
+          replyEn = `Awesome effort! Focus on controlled tempo and full range of motion. We will progressively overload next session safely!`;
+        } else if (text.includes('أكل') || text.includes('دايت') || text.includes('بروتين') || text.includes('سعرات') || text.includes('وجبة') || text.includes('جوع')) {
+          replyAr = `ممتاز جداً! خليك ملتزم بهدف البروتين واشرب كوب ماء كبير قبل الوجبة. لو حسيت بجوع بدّل الكارب بسلطة ورقية أو ١٠٠ جم جبن قريش.`;
+          replyEn = `Spot on! Hit your protein goal and drink plenty of water. If you feel hungry, snack on cottage cheese or fresh greens.`;
+        } else if (text.includes('إصابة') || text.includes('وجع') || text.includes('ألم') || text.includes('كتف') || text.includes('ركبة')) {
+          replyAr = `سلامتك يا بطل! وقف أي ضغط مباشر على المفصل مؤقتاً، واعمل كمادات باردة خفيفة مع إطالات ديناميكية وهنفحصها سوا في الجيم قبل التمرين.`;
+          replyEn = `Take care! Halt direct axial load, apply light ice compresses, and we will assess mobility together before your next session.`;
+        }
+
+        const coachReply: ChatMessageItem = {
+          id: `msg-${Date.now() + 1}`,
+          senderRole: 'TRAINER',
+          senderNameEn: coachNameEn,
+          senderNameAr: coachNameAr,
+          textEn: replyEn,
+          textAr: replyAr,
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          memberId: currentMember?.id,
+          trainerId: assignedCoach?.id,
+        };
+        setChatMessages((prev) => [...prev, coachReply]);
+      }, 1200);
+    }
   };
 
   const addTenant: PlatformStoreContextValue['addTenant'] = (
@@ -2369,6 +2639,7 @@ export function PlatformProvider({
         accessLogs,
         posProducts,
         staff,
+        trainerPayouts,
         workoutLogs,
         chatMessages,
         tenants,
@@ -2407,6 +2678,11 @@ export function PlatformProvider({
         bookMemberIntoClass,
         simulateGateScan,
         completePosCheckout,
+        addStaffMember,
+        updateStaffMember,
+        deleteStaffMember,
+        recordTrainerPayout,
+        assignMemberTrainer,
         logWorkoutSet,
         sendChatMessage,
         addTenant,

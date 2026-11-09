@@ -43,6 +43,7 @@ export function GymOwnerContentStudioView() {
   const {
     locale,
     currentUser,
+    members,
     customWorkouts,
     customRecipes,
     customFiles,
@@ -81,6 +82,8 @@ export function GymOwnerContentStudioView() {
     'حافظ على ثبات لوحي الكتف وتحكم في النزول لمدة ٣ ثوانٍ.',
   );
   const [uploadedVideoFileName, setUploadedVideoFileName] = useState<string>('');
+  const [wkWkTargetAudience, setWkTargetAudience] = useState<'ALL' | 'SPECIFIC_MEMBER'>('ALL');
+  const [wkTargetMemberId, setWkTargetMemberId] = useState<string>(members[0]?.id || 'mem-1001');
 
   // --- Form 2: New Nutrition Recipe State ---
   const [rcTitleAr, setRcTitleAr] = useState('');
@@ -110,6 +113,8 @@ export function GymOwnerContentStudioView() {
   const [flFileSizeLabel, setFlFileSizeLabel] = useState('450 KB');
   const [flFileUrl, setFlFileUrl] = useState('');
   const [flFileType, setFlFileType] = useState('application/pdf');
+  const [flTargetAudience, setFlTargetAudience] = useState<'ALL' | 'SPECIFIC_MEMBER'>('ALL');
+  const [flTargetMemberId, setFlTargetMemberId] = useState<string>(members[0]?.id || 'mem-1001');
 
   const handleVideoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -173,6 +178,11 @@ export function GymOwnerContentStudioView() {
     const finalUrl =
       wkSourceType === 'VIDEO_URL' ? normalizeVideoUrl(wkVideoUrl) : wkVideoUrl;
 
+    const targetMember =
+      wkWkTargetAudience === 'SPECIFIC_MEMBER'
+        ? members.find((m) => m.id === wkTargetMemberId)
+        : undefined;
+
     const created = addCustomWorkout({
       titleAr: wkTitleAr.trim(),
       titleEn: wkTitleEn.trim() || wkTitleAr.trim(),
@@ -196,6 +206,10 @@ export function GymOwnerContentStudioView() {
       safetyTipAr: wkSafetyTipAr,
       safetyTipEn: wkSafetyTipAr,
       daySplit: 'PUSH',
+      targetAudience: wkWkTargetAudience,
+      targetMemberId: targetMember?.id,
+      targetMemberNameAr: targetMember?.fullNameAr,
+      targetMemberNameEn: targetMember?.fullNameEn,
     });
 
     setPreviewWorkoutId(created.id);
@@ -240,6 +254,11 @@ export function GymOwnerContentStudioView() {
   const handleAddFileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!flTitleAr.trim()) return;
+    const targetMember =
+      flTargetAudience === 'SPECIFIC_MEMBER'
+        ? members.find((m) => m.id === flTargetMemberId)
+        : undefined;
+
     addCustomFile({
       titleAr: flTitleAr.trim(),
       titleEn: flTitleAr.trim(),
@@ -254,6 +273,10 @@ export function GymOwnerContentStudioView() {
       fileUrl: flFileUrl || '#builtin-club-guide',
       fileType: flFileType,
       uploadedBy: currentUser?.name || 'مالك الجيم',
+      targetAudience: flTargetAudience,
+      targetMemberId: targetMember?.id,
+      targetMemberNameAr: targetMember?.fullNameAr,
+      targetMemberNameEn: targetMember?.fullNameEn,
     });
 
     setFlTitleAr('');
@@ -602,6 +625,56 @@ export function GymOwnerContentStudioView() {
               />
             </div>
 
+            {/* Target Audience Selector: ALL members vs SPECIFIC member */}
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-3.5 space-y-2">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
+                {isAr ? '🎯 إرسال الفيديو وتوجيهه إلى:' : 'Target Audience:'}
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setWkTargetAudience('ALL')}
+                  className={`rounded-xl py-2 px-3 text-xs font-extrabold transition ${
+                    wkWkTargetAudience === 'ALL'
+                      ? 'bg-amber-500 text-slate-950 shadow-xs'
+                      : 'border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                  }`}
+                >
+                  {isAr ? '🌐 عام لجميع المتدربين' : 'All Gym Members'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWkTargetAudience('SPECIFIC_MEMBER')}
+                  className={`rounded-xl py-2 px-3 text-xs font-extrabold transition ${
+                    wkWkTargetAudience === 'SPECIFIC_MEMBER'
+                      ? 'bg-amber-500 text-slate-950 shadow-xs'
+                      : 'border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                  }`}
+                >
+                  {isAr ? '🔒 متدرب محدد فقط' : 'Specific Member Only'}
+                </button>
+              </div>
+
+              {wkWkTargetAudience === 'SPECIFIC_MEMBER' && (
+                <div className="mt-2 pt-2 border-t border-amber-500/20">
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    {isAr ? 'اختر المتدرب المستهدف:' : 'Select Target Member:'}
+                  </label>
+                  <select
+                    value={wkTargetMemberId}
+                    onChange={(e) => setWkTargetMemberId(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                    {members.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {isAr ? m.fullNameAr : m.fullNameEn} — ({m.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
             <button
               type="submit"
               data-testid="submit-custom-workout-btn"
@@ -674,6 +747,17 @@ export function GymOwnerContentStudioView() {
                                 ? 'رابط يوتيوب/فيديو'
                                 : 'Video Link'}
                         </span>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          {cw.targetAudience === 'SPECIFIC_MEMBER' ? (
+                            <span className="rounded-md bg-purple-500/15 px-2 py-0.5 text-[10px] font-black text-purple-700 dark:text-purple-300">
+                              🔒 {isAr ? `خاص بالمتدرب: ${cw.targetMemberNameAr || ''}` : `Private: ${cw.targetMemberNameEn || ''}`}
+                            </span>
+                          ) : (
+                            <span className="rounded-md bg-emerald-500/15 px-2 py-0.5 text-[10px] font-black text-emerald-700 dark:text-emerald-300">
+                              🌐 {isAr ? 'عام للجميع' : 'All Members'}
+                            </span>
+                          )}
+                        </div>
                         <h4 className="mt-1 text-xs font-black text-slate-900 dark:text-white">
                           {isAr ? cw.titleAr : cw.titleEn}
                         </h4>
@@ -1029,6 +1113,56 @@ export function GymOwnerContentStudioView() {
               />
             </div>
 
+            {/* Target Audience Selector for Files: ALL members vs SPECIFIC member */}
+            <div className="rounded-2xl border border-sky-500/30 bg-sky-500/5 p-3.5 space-y-2">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
+                {isAr ? '🎯 إرسال وتخصيص الملف إلى:' : 'Target Audience:'}
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFlTargetAudience('ALL')}
+                  className={`rounded-xl py-2 px-3 text-xs font-extrabold transition ${
+                    flTargetAudience === 'ALL'
+                      ? 'bg-sky-600 text-white shadow-xs'
+                      : 'border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                  }`}
+                >
+                  {isAr ? '🌐 عام لجميع المتدربين' : 'All Gym Members'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFlTargetAudience('SPECIFIC_MEMBER')}
+                  className={`rounded-xl py-2 px-3 text-xs font-extrabold transition ${
+                    flTargetAudience === 'SPECIFIC_MEMBER'
+                      ? 'bg-sky-600 text-white shadow-xs'
+                      : 'border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                  }`}
+                >
+                  {isAr ? '🔒 متدرب محدد فقط' : 'Specific Member Only'}
+                </button>
+              </div>
+
+              {flTargetAudience === 'SPECIFIC_MEMBER' && (
+                <div className="mt-2 pt-2 border-t border-sky-500/20">
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    {isAr ? 'اختر المتدرب المستهدف:' : 'Select Target Member:'}
+                  </label>
+                  <select
+                    value={flTargetMemberId}
+                    onChange={(e) => setFlTargetMemberId(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                    {members.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {isAr ? m.fullNameAr : m.fullNameEn} — ({m.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
             <button
               type="submit"
               data-testid="submit-custom-file-btn"
@@ -1051,9 +1185,20 @@ export function GymOwnerContentStudioView() {
                     <FileText className="h-6 w-6" />
                   </div>
                   <div>
-                    <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[10px] font-black text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                      {file.category}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[10px] font-black text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                        {file.category}
+                      </span>
+                      {file.targetAudience === 'SPECIFIC_MEMBER' ? (
+                        <span className="rounded-md bg-purple-500/15 px-2 py-0.5 text-[10px] font-black text-purple-700 dark:text-purple-300">
+                          🔒 {isAr ? `خاص بالمتدرب: ${file.targetMemberNameAr || ''}` : `Private: ${file.targetMemberNameEn || ''}`}
+                        </span>
+                      ) : (
+                        <span className="rounded-md bg-emerald-500/15 px-2 py-0.5 text-[10px] font-black text-emerald-700 dark:text-emerald-300">
+                          🌐 {isAr ? 'عام للجميع' : 'All Members'}
+                        </span>
+                      )}
+                    </div>
                     <h3 className="mt-1 text-sm font-black text-slate-900 dark:text-white">
                       {isAr ? file.titleAr : file.titleEn}
                     </h3>

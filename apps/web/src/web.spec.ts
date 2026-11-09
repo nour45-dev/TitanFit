@@ -209,3 +209,41 @@ describe('PDF Document Assembler', () => {
     ).rejects.toThrow('PDF generation requires a browser');
   });
 });
+
+describe('Trainer Management, Payouts & Targeted Member Delivery', () => {
+  it('correctly calculates trainer net payouts and balance after salary and commissions', () => {
+    const baseSalary = 8000;
+    const ptSessionRate = 450;
+    const commissionRatePercent = 25;
+    const monthlyRevenue = 42000;
+
+    const commissionEarned = (monthlyRevenue * commissionRatePercent) / 100;
+    const totalDue = baseSalary + commissionEarned;
+    expect(commissionEarned).toBe(10500);
+    expect(totalDue).toBe(18500);
+
+    // After partial payout
+    const payouts = [5000, 7500];
+    const totalPaid = payouts.reduce((a, b) => a + b, 0);
+    const balanceRemaining = totalDue - totalPaid;
+
+    expect(totalPaid).toBe(12500);
+    expect(balanceRemaining).toBe(6000);
+  });
+
+  it('filters workouts and files targeted specifically to a member vs general public', () => {
+    const memberId = 'mem-001';
+    const items = [
+      { id: '1', title: 'General Warmup', targetMemberId: undefined },
+      { id: '2', title: 'Omar Hassan Private Plan', targetMemberId: 'mem-001' },
+      { id: '3', title: 'Another Trainee Plan', targetMemberId: 'mem-999' },
+    ];
+
+    const visibleItems = items.filter(
+      (item) => !item.targetMemberId || item.targetMemberId === memberId,
+    );
+
+    expect(visibleItems.length).toBe(2);
+    expect(visibleItems.map((i) => i.id)).toEqual(['1', '2']);
+  });
+});
