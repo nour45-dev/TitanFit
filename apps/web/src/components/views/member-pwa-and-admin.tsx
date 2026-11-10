@@ -846,37 +846,47 @@ export function MemberPwaPortalView() {
 
               {/* Messages Container with Crisp Contrast in Light & Dark */}
               <div className="mt-4 max-h-[380px] space-y-3 overflow-y-auto pe-1">
-                {chatMessages.map((msg) => {
-                  const isMember = msg.senderRole === 'MEMBER';
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex flex-col ${isMember ? 'items-end' : 'items-start'}`}
-                    >
+                {chatMessages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-center text-slate-400">
+                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                      {isAr
+                        ? '💬 لا توجد رسائل سابقة. ابدأ محادثتك المباشرة والخاصة مع مدربك الآن!'
+                        : '💬 No messages yet. Start your private coach chat now!'}
+                    </p>
+                  </div>
+                ) : (
+                  chatMessages.map((msg) => {
+                    const isMember = msg.senderRole === 'MEMBER';
+                    return (
                       <div
-                        className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs shadow-sm ${
-                          isMember
-                            ? 'bg-slate-900 text-white font-bold dark:bg-amber-500 dark:text-slate-950 dark:font-black'
-                            : 'border border-slate-200 bg-slate-100 text-slate-900 font-bold dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100'
-                        }`}
+                        key={msg.id}
+                        className={`flex flex-col ${isMember ? 'items-end' : 'items-start'}`}
                       >
                         <div
-                          className={`mb-1 flex items-center justify-between gap-3 text-[10px] font-extrabold ${
+                          className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs shadow-sm ${
                             isMember
-                              ? 'text-amber-400 dark:text-slate-900 opacity-90'
-                              : 'text-slate-500 dark:text-slate-400'
+                              ? 'bg-slate-900 text-white font-bold dark:bg-amber-500 dark:text-slate-950 dark:font-black'
+                              : 'border border-slate-200 bg-slate-100 text-slate-900 font-bold dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100'
                           }`}
                         >
-                          <span>{isAr ? msg.senderNameAr : msg.senderNameEn}</span>
-                          <span>{msg.time}</span>
+                          <div
+                            className={`mb-1 flex items-center justify-between gap-3 text-[10px] font-extrabold ${
+                              isMember
+                                ? 'text-amber-400 dark:text-slate-900 opacity-90'
+                                : 'text-slate-500 dark:text-slate-400'
+                            }`}
+                          >
+                            <span>{isAr ? msg.senderNameAr : msg.senderNameEn}</span>
+                            <span>{msg.time}</span>
+                          </div>
+                          <p className="leading-relaxed whitespace-pre-wrap">
+                            {isAr ? msg.textAr : msg.textEn}
+                          </p>
                         </div>
-                        <p className="leading-relaxed whitespace-pre-wrap">
-                          {isAr ? msg.textAr : msg.textEn}
-                        </p>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
                 <div ref={chatBottomRef} />
               </div>
             </div>

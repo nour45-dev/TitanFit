@@ -266,7 +266,7 @@ const INITIAL_BRANCHES: BranchItem[] = [
     addressAr: 'شارع التسعين الشمالي، بجوار ووتر واي ٢',
     phone: '+20 100 450 9901',
     capacity: 250,
-    currentOccupancy: 164,
+    currentOccupancy: 0,
     managerEn: 'Capt. Seif El-Din',
     managerAr: 'كابتن سيف الدين',
     workingHours: '05:30 AM – 12:00 AM',
@@ -281,7 +281,7 @@ const INITIAL_BRANCHES: BranchItem[] = [
     addressAr: 'امتداد أركان بلازا، بوابة ٣',
     phone: '+20 100 450 9902',
     capacity: 200,
-    currentOccupancy: 118,
+    currentOccupancy: 0,
     managerEn: 'Nourhan El-Shamy',
     managerAr: 'نورهان الشامي',
     workingHours: '06:00 AM – 11:30 PM',
@@ -296,7 +296,7 @@ const INITIAL_BRANCHES: BranchItem[] = [
     addressAr: 'شارع ٩، ميدان دجلة',
     phone: '+20 100 450 9903',
     capacity: 150,
-    currentOccupancy: 79,
+    currentOccupancy: 0,
     managerEn: 'Karim Abdelaziz',
     managerAr: 'كريم عبد العزيز',
     workingHours: '06:00 AM – 11:00 PM',
@@ -315,7 +315,7 @@ const INITIAL_PLANS: PlanItem[] = [
     sessionsCount: null,
     maxFreezeDays: 60,
     gracePeriodDays: 7,
-    activeSubscribers: 642,
+    activeSubscribers: 0,
     popular: true,
   },
   {
@@ -329,111 +329,17 @@ const INITIAL_PLANS: PlanItem[] = [
     sessionsCount: null,
     maxFreezeDays: 7,
     gracePeriodDays: 3,
-    activeSubscribers: 412,
+    activeSubscribers: 0,
   },
 ];
 
-const INITIAL_MEMBERS: MemberItem[] = [
-  {
-    id: 'mem-1001',
-    code: 'TF-2026-1001',
-    tempPassword: 'TF@2026',
-    fullNameEn: 'Youssef El-Masry',
-    fullNameAr: 'يوسف المصري',
-    phone: '+201001234567',
-    email: 'youssef.masry@titanfit.eg',
-    gender: 'MALE',
-    branchId: 'br-new-cairo',
-    status: 'ACTIVE',
-    planNameEn: 'Titan Elite Annual Pass (All Branches)',
-    planNameAr: 'باقة تيتان إيليت السنوية (جميع الفروع)',
-    planId: 'plan-annual-vip',
-    startDate: '2026-01-15',
-    endDate: '2027-01-15',
-    remainingSessions: 18,
-    freezeDaysRemaining: 45,
-    tags: ['VIP', 'Powerlifting', 'Morning Crew'],
-    emergencyContactName: 'Mona El-Masry',
-    emergencyContactPhone: '+201009998877',
-    bloodType: 'O+',
-    medicalConditions: 'None — cleared for high-intensity training',
-    injuries: 'Mild left rotator cuff stiffness (2024)',
-    assignedTrainerId: 'stf-1',
-    assignedTrainerEn: 'Coach Omar Hassan',
-    assignedTrainerAr: 'كابتن عمر حسن',
-    checkInsCount: 142,
-    lastCheckIn: 'Today, 07:45 AM',
-    avatarInitials: 'YM',
-    streakDays: 19,
-    points: 4850,
-  },
-];
+const INITIAL_MEMBERS: MemberItem[] = [];
 
-const INITIAL_INVOICES: InvoiceItem[] = [
-  {
-    id: 'inv-1',
-    invoiceNumber: 'INV-2026-8841',
-    memberId: 'mem-1001',
-    memberNameEn: 'Youssef El-Masry',
-    memberNameAr: 'يوسف المصري',
-    planNameEn: 'Titan Elite Annual Pass (All Branches)',
-    planNameAr: 'باقة تيتان إيليت السنوية (جميع الفروع)',
-    subtotalEgp: 14500,
-    discountEgp: 2900,
-    vatEgp: 1624,
-    totalEgp: 13224,
-    method: 'INSTAPAY',
-    referenceCode: 'IPA-992837412-CIB',
-    status: 'PAID',
-    createdAt: '2026-10-26 10:14 AM',
-    branchId: 'br-new-cairo',
-    cashierName: 'Nadia (Reception)',
-  },
-];
+const INITIAL_INVOICES: InvoiceItem[] = [];
 
-const INITIAL_CLASSES: ClassSessionItem[] = [
-  {
-    id: 'cls-101',
-    titleEn: 'Titan MetCon HIIT & Conditioning',
-    titleAr: 'تيتان هيت وتكييف بدني عالي الشدة',
-    category: 'HIIT',
-    trainerEn: 'Coach Omar Hassan',
-    trainerAr: 'كابتن عمر حسن',
-    roomEn: 'Arena Studio A (Main Floor)',
-    roomAr: 'قاعة أرينا A (الطابق الرئيسي)',
-    branchId: 'br-new-cairo',
-    dayEn: 'Today',
-    dayAr: 'اليوم',
-    timeRange: '06:00 PM – 07:00 PM',
-    capacity: 20,
-    bookedMembers: [
-      { id: 'mem-1001', nameEn: 'Youssef El-Masry', nameAr: 'يوسف المصري', status: 'CHECKED_IN' },
-      { id: 'mem-1002', nameEn: 'Mariam Abdel-Rahman', nameAr: 'مريم عبد الرحمن', status: 'BOOKED' },
-      { id: 'mem-1003', nameEn: 'Ahmed Khaled El-baz', nameAr: 'أحمد خالد الباز', status: 'BOOKED' },
-    ],
-    waitlistMembers: [
-      { id: 'mem-1004', nameEn: 'Salma El-Gendy', nameAr: 'سلمى الجندي', joinedAt: '02:15 PM' },
-      { id: 'mem-1005', nameEn: 'Mostafa Mahmoud', nameAr: 'مصطفى محمود', joinedAt: '03:05 PM' },
-    ],
-  },
-];
+const INITIAL_CLASSES: ClassSessionItem[] = [];
 
-const INITIAL_ACCESS_LOGS: AccessLogItem[] = [
-  {
-    id: 'acc-1',
-    timestamp: '09:12:04 AM',
-    memberCode: 'TF-2026-1001',
-    memberNameEn: 'Youssef El-Masry',
-    memberNameAr: 'يوسف المصري',
-    gateNameEn: 'Main Lobby Turnstile #1',
-    gateNameAr: 'بوابة الدخول الرئيسية #١',
-    method: 'QR_ROTATING_HMAC',
-    decision: 'ALLOW_ACCESS',
-    reasonEn: 'Valid rotating HMAC-SHA256 QR token — Active Annual Plan',
-    reasonAr: 'رمز QR مشفر صالح — باقة سنوية نشطة',
-    relayPulseMs: 1500,
-  },
-];
+const INITIAL_ACCESS_LOGS: AccessLogItem[] = [];
 
 const INITIAL_POS_PRODUCTS: PosProductItem[] = [
   {
@@ -459,132 +365,34 @@ const INITIAL_POS_PRODUCTS: PosProductItem[] = [
 const INITIAL_STAFF: StaffMemberItem[] = [
   {
     id: 'stf-1',
-    nameEn: 'Coach Omar Hassan',
-    nameAr: 'كابتن عمر حسن',
+    nameEn: 'Coach Omar Hassan (Head Coach)',
+    nameAr: 'كابتن عمر حسن (كبير المدربين)',
     role: 'TRAINER',
     specialtyEn: 'Head Strength & Conditioning Lead (CSCS)',
     specialtyAr: 'كبير مدربي القوة والتكييف البدني وبناء الأجسام (CSCS)',
     branchId: 'br-new-cairo',
     phone: '+201005551122',
     whatsappNumber: '201005551122',
-    activeClients: 28,
-    commissionRatePercent: 35,
-    monthlyRevenueEgp: 112000,
-    baseSalaryEgp: 12000,
-    ptSessionRateEgp: 450,
-    totalPayoutsEgp: 39200,
-    rating: 4.95,
-    shiftEn: '06:00 AM – 03:00 PM',
-    shiftAr: '٠٦:٠٠ ص – ٠٣:٠٠ م',
-    bioAr: 'خبرة ١٠ سنوات في تدريب كبار الرياضيين وتأهيل بطولات كمال الأجسام والفيزيك مع برامج مخصصة للماكروز.',
-    bioEn: '10+ years coaching elite athletes, hypertrophy and powerlifting with custom macro programming.',
+    activeClients: 0,
+    commissionRatePercent: 25,
+    monthlyRevenueEgp: 0,
+    baseSalaryEgp: 15000,
+    ptSessionRateEgp: 500,
+    totalPayoutsEgp: 0,
+    rating: 5.0,
+    shiftEn: '08:00 AM – 04:00 PM',
+    shiftAr: '٠٨:٠٠ ص – ٠٤:٠٠ م',
+    bioAr: 'المدرب العام والمسؤول الفني لنادي تيتان فيت، معتمد دولياً في اللياقة والتحول البدني والمتابعة الشخصية.',
+    bioEn: 'Head trainer responsible for fitness programming, hypertrophy and athlete progression.',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
   },
-  {
-    id: 'stf-2',
-    nameEn: 'Coach Sarah Ahmed',
-    nameAr: 'كابتن سارة أحمد',
-    role: 'TRAINER',
-    specialtyEn: 'Clinical Sports Nutritionist & Women Fitness Specialist',
-    specialtyAr: 'أخصائية التغذية العلاجية ونحت القوام ولياقة السيدات',
-    branchId: 'br-new-cairo',
-    phone: '+201007773344',
-    whatsappNumber: '201007773344',
-    activeClients: 34,
-    commissionRatePercent: 40,
-    monthlyRevenueEgp: 136000,
-    baseSalaryEgp: 13500,
-    ptSessionRateEgp: 500,
-    totalPayoutsEgp: 54400,
-    rating: 4.98,
-    shiftEn: '09:00 AM – 05:00 PM',
-    shiftAr: '٠٩:٠٠ ص – ٠٥:٠٠ م',
-    bioAr: 'ماجستير التغذية الرياضية، متخصصة في خسارة الدهون العنيدة، تصحيح الهرمونات، وبرامج ما بعد الحمل.',
-    bioEn: 'M.Sc. Sports Nutrition, fat loss and body contouring specialist with individualized meal plans.',
-    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80',
-  },
-  {
-    id: 'stf-3',
-    nameEn: 'Coach Tarek El-Shazly',
-    nameAr: 'كابتن طارق الشاذلي',
-    role: 'TRAINER',
-    specialtyEn: 'Powerlifting, Functional Mobility & Injury Rehab',
-    specialtyAr: 'مدرب القوة البدنية، الموبيليتي وتأهيل إصابات المفاصل',
-    branchId: 'br-zayed',
-    phone: '+201008882211',
-    whatsappNumber: '201008882211',
-    activeClients: 22,
-    commissionRatePercent: 30,
-    monthlyRevenueEgp: 88000,
-    baseSalaryEgp: 10000,
-    ptSessionRateEgp: 400,
-    totalPayoutsEgp: 26400,
-    rating: 4.91,
-    shiftEn: '01:00 PM – 10:00 PM',
-    shiftAr: '٠١:٠٠ م – ١٠:٠٠ م',
-    bioAr: 'بطل جمهورية سابق في رفع الأثقال، معتمد دولياً في تصحيح المسار الحركي والتعافي من تمزقات الأوتار.',
-    bioEn: 'Former national powerlifter, certified in biomechanical correction and tendon rehabilitation.',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
-  },
 ];
 
-const INITIAL_TRAINER_PAYOUTS: TrainerPayoutTransaction[] = [
-  {
-    id: 'pay-1',
-    trainerId: 'stf-1',
-    trainerNameAr: 'كابتن عمر حسن',
-    trainerNameEn: 'Coach Omar Hassan',
-    amountEgp: 39200,
-    payoutType: 'COMMISSION',
-    date: '2026-11-01',
-    note: 'صرف عمولة شهر أكتوبر (35% من مبيعات 112,000 ج.م)',
-  },
-  {
-    id: 'pay-2',
-    trainerId: 'stf-2',
-    trainerNameAr: 'كابتن سارة أحمد',
-    trainerNameEn: 'Coach Sarah Ahmed',
-    amountEgp: 54400,
-    payoutType: 'COMMISSION',
-    date: '2026-11-01',
-    note: 'صرف عمولة شهر أكتوبر (40% من مبيعات 136,000 ج.م)',
-  },
-];
+const INITIAL_TRAINER_PAYOUTS: TrainerPayoutTransaction[] = [];
 
-const INITIAL_WORKOUT_LOGS: WorkoutLogEntry[] = [
-  {
-    id: 'wk-1',
-    exerciseEn: 'Barbell Back Squat',
-    exerciseAr: 'سكوات خلفي بالبار الحر',
-    weightKg: 140,
-    reps: 5,
-    sets: 4,
-    estimated1RmKg: 163.3,
-    isNewPr: true,
-    loggedAt: 'Today, 08:10 AM',
-  },
-];
+const INITIAL_WORKOUT_LOGS: WorkoutLogEntry[] = [];
 
-const INITIAL_CHAT: ChatMessageItem[] = [
-  {
-    id: 'msg-1',
-    senderRole: 'TRAINER',
-    senderNameEn: 'Coach Omar Hassan',
-    senderNameAr: 'كابتن عمر حسن',
-    textEn: 'Great squat depth this morning Youssef! Keep protein above 185g today and hydrate with 3.5L water.',
-    textAr: 'أداء ممتاز في السكوات صباح اليوم يا يوسف! حافظ على البروتين فوق ١٨٥ جم اليوم واشرب ٣.٥ لتر مياه.',
-    time: '09:05 AM',
-  },
-  {
-    id: 'msg-2',
-    senderRole: 'MEMBER',
-    senderNameEn: 'Youssef El-Masry',
-    senderNameAr: 'يوسف المصري',
-    textEn: 'Thanks Coach! Hit 140kg x 5 reps cleanly. Should we increase RDL load on Thursday?',
-    textAr: 'شكراً يا كابتن! جبت ١٤٠ كجم ٥ عدات بتركيز عالي. هل نزود وزن الديدليفت يوم الخميس؟',
-    time: '09:14 AM',
-  },
-];
+const INITIAL_CHAT: ChatMessageItem[] = [];
 
 const INITIAL_TENANTS: TenantSaaSItem[] = [
   {
@@ -897,18 +705,7 @@ const INITIAL_CUSTOM_FILES: CustomClubFileItem[] = [
   },
 ];
 
-const INITIAL_AUDITS: AuditEntry[] = [
-  {
-    id: 'aud-1',
-    timestamp: '2026-10-27 09:42:11',
-    actorEmail: 'owner@titanfit.eg',
-    actorRole: 'GYM_OWNER',
-    action: 'SUBSCRIPTION_PAYMENT_RECORDED',
-    target: 'INV-2026-8841 (EGP 13,224 via InstaPay)',
-    ipAddress: '197.55.142.18',
-    tenantSlug: 'titanfit-egypt',
-  },
-];
+const INITIAL_AUDITS: AuditEntry[] = [];
 
 export interface PlatformStoreContextValue {
   locale: SupportedLocale;
@@ -1169,7 +966,7 @@ export function PlatformProvider({
   const [customWorkouts, setCustomWorkouts] = useState<CustomWorkoutVideoItem[]>(INITIAL_CUSTOM_WORKOUTS);
   const [customRecipes, setCustomRecipes] = useState<CustomNutritionRecipeItem[]>(INITIAL_CUSTOM_RECIPES);
   const [customFiles, setCustomFiles] = useState<CustomClubFileItem[]>(INITIAL_CUSTOM_FILES);
-  const [gymStateMode, setGymStateModeState] = useState<'CLEAN_SLATE' | 'DEMO_DATA'>('DEMO_DATA');
+  const [gymStateMode, setGymStateModeState] = useState<'CLEAN_SLATE' | 'DEMO_DATA'>('CLEAN_SLATE');
   const tenantsHydrated = useRef(false);
   const customContentHydrated = useRef(false);
 

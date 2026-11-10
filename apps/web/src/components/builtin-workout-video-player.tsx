@@ -252,20 +252,67 @@ export function BuiltInWorkoutVideoPlayer({
                 onPlay={() => {
                   setVideoStarted(true);
                 }}
+                onLoadedMetadata={(e) => {
+                  // If browser cannot decode video track dimensions (e.g. iPhone HEVC on Windows)
+                  if (e.currentTarget.videoWidth === 0) {
+                    setCodecWarning(true);
+                  }
+                }}
                 onPlaying={(e) => {
                   setVideoStarted(true);
-                  if (e.currentTarget.currentTime > 0.5 && e.currentTarget.videoWidth === 0) {
+                  if (e.currentTarget.videoWidth === 0) {
                     setCodecWarning(true);
                   }
                 }}
                 onTimeUpdate={(e) => {
-                  if (e.currentTarget.currentTime > 0.5 && e.currentTarget.videoWidth === 0) {
+                  if (e.currentTarget.currentTime > 0.2 && e.currentTarget.videoWidth === 0) {
                     setCodecWarning(true);
                   }
                 }}
                 onEnded={() => setVideoStarted(false)}
                 className="h-full w-full object-contain"
               />
+
+              {/* When video track frames cannot be decoded natively by browser (e.g. iPhone QuickTime/HEVC on Windows),
+                  auto-render the animated biomechanical athlete in sync with the audio track so the user NEVER sees a black screen! */}
+              {codecWarning && (
+                <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-between bg-gradient-to-br from-slate-950 via-[#0B1222] to-slate-950 p-3">
+                  {/* Top Header Badge */}
+                  <div className="pointer-events-auto flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/25 px-3 py-1 text-xs font-black text-emerald-300 ring-1 ring-emerald-400/50 backdrop-blur-md">
+                      <Volume2 className="h-3.5 w-3.5 animate-pulse text-emerald-400" />
+                      {isAr
+                        ? '🎙️ صوت وتوجيهات الكابتن تعمل متزامنة مع المحاكاة الحركية ثلاثية الأبعاد (3D Motion)'
+                        : '🎙️ Coach Audio playing in sync with 3D Biomechanical Motion'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setCodecWarning(false)}
+                      className="rounded-lg bg-slate-800/90 px-2.5 py-1 text-[11px] font-bold text-slate-300 ring-1 ring-slate-700 hover:bg-slate-700"
+                    >
+                      {isAr ? '🔄 إظهار إطار الفيديو' : 'Show Video Frame'}
+                    </button>
+                  </div>
+
+                  {/* Centered Dynamic Biomechanical Motion Animation */}
+                  <div className="relative mx-auto my-auto flex h-[68%] w-full max-w-lg items-center justify-center">
+                    <CartoonAthleteVisualCanvas
+                      motionType={motionType}
+                      isPlaying={videoStarted}
+                      speedMultiplier={speedMultiplier}
+                    />
+                  </div>
+
+                  {/* Bottom explanation tip above native control bar */}
+                  <div className="pointer-events-auto mb-11 text-center">
+                    <span className="rounded-md bg-black/75 px-3 py-1 text-[10px] font-bold text-amber-300 backdrop-blur-xs ring-1 ring-amber-500/30">
+                      {isAr
+                        ? '✨ تم تحويل العرض تلقائياً إلى محاكاة الحركة 3D لمنع الشاشة السوداء مع استمرار الصوت الأصلي للمدرب'
+                        : 'Auto-rendered 3D motion in sync with coach audio track'}
+                    </span>
+                  </div>
+                </div>
+              )}
               {/* Separate Thumbnail Poster Overlay — completely unmounted once playback starts so it CAN NEVER cover the video! */}
               {!videoStarted && thumbnailUrl && (
                 <div
@@ -289,30 +336,7 @@ export function BuiltInWorkoutVideoPlayer({
                 </div>
               )}
 
-              {/* Codec Warning Banner if audio plays but video frame decoder fails (e.g. iPhone HEVC .mov on Windows Chrome) */}
-              {codecWarning && (
-                <div className="absolute inset-x-2 bottom-14 z-20 rounded-2xl border border-amber-500/80 bg-slate-950/95 p-3.5 text-xs text-white shadow-2xl backdrop-blur-md">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <span className="font-black text-amber-400">
-                        ⚠️ {isAr ? 'تنبيه توافق الفيديو (HEVC / QuickTime):' : 'Video Codec Notice (HEVC):'}
-                      </span>
-                      <p className="mt-0.5 text-[11px] text-slate-300">
-                        {isAr
-                          ? 'الصوت يعمل بنجاح! متصفحك على ويندوز لا يدعم فك ترميز H.265/HEVC مباشرة. يُنصح برفع بصيغة MP4 (H.264) أو تشغيل المحاكاة ثلاثية الأبعاد 3D فوراً.'
-                          : 'Audio is active! Windows Chromium requires H.264 MP4 to render video frames. Click below to view the 3D animated studio.'}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveMode('ANIMATED_STUDIO')}
-                      className="shrink-0 rounded-xl bg-amber-500 px-3 py-1.5 text-xs font-black text-slate-950 shadow-sm hover:bg-amber-400"
-                    >
-                      {isAr ? '🎬 الانتقال للمحاكاة ثلاثية الأبعاد 3D' : 'Switch to 3D Studio'}
-                    </button>
-                  </div>
-                </div>
-              )}
+
             </>
           ) : (
             <iframe

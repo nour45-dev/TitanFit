@@ -203,7 +203,7 @@ function TitanFitEnterpriseShell() {
           id: 'MEMBERS',
           labelEn: 'Members CRM & Vault',
           labelAr: 'المتدربون والملف الطبي',
-          badge: members.length,
+          badge: members.length > 0 ? members.length : undefined,
           icon: Users,
         },
         {
@@ -211,7 +211,7 @@ function TitanFitEnterpriseShell() {
           testId: 'nav-tab-CLASSES_QR_ACCESS',
           labelEn: 'Classes & Waitlists',
           labelAr: 'جدول الحصص والانتظار',
-          badge: classes.length,
+          badge: classes.length > 0 ? classes.length : undefined,
           icon: Calendar,
         },
         {
@@ -252,7 +252,7 @@ function TitanFitEnterpriseShell() {
           testId: 'nav-tab-MEMBERS_BILLING',
           labelEn: 'Cashier & Egypt Gateways',
           labelAr: 'تحصيل الفواتير والمدفوعات',
-          badge: invoices.length,
+          badge: invoices.length > 0 ? invoices.length : undefined,
           icon: CreditCard,
         },
         {
@@ -981,7 +981,7 @@ function TitanFitEnterpriseShell() {
                             <Icon className="h-4 w-4 shrink-0" />
                             <span>{isAr ? item.labelAr : item.labelEn}</span>
                           </span>
-                          {item.badge !== undefined && (
+                          {item.badge !== undefined && item.badge !== 0 && (
                             <span
                               className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
                                 active
