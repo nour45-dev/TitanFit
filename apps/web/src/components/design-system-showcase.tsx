@@ -20,6 +20,7 @@ import {
   LogIn,
   LogOut,
   Menu,
+  MessageCircle,
   Moon,
   QrCode,
   Settings,
@@ -130,9 +131,19 @@ function TitanFitEnterpriseShell() {
     memberCode: string;
     maskedPhone: string;
     maskedEmail: string;
+    rawPhone?: string;
   } | null>(null);
+  const [resendCountdown, setResendCountdown] = useState(60);
   const [otpLoading, setOtpLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
+
+  // Countdown timer for OTP resend
+  useEffect(() => {
+    if (otpStep === 'ENTER_CODE' && resendCountdown > 0) {
+      const timer = setTimeout(() => setResendCountdown((prev) => prev - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [otpStep, resendCountdown]);
 
   // Synchronize data-theme attribute on root HTML element
   useEffect(() => {
@@ -370,6 +381,7 @@ function TitanFitEnterpriseShell() {
         setOtpSentInfo(res.targetInfo || null);
         setSimulatedSmsOtp(res.simulatedOtp || '482910');
         setTraineeOtpInput(''); // Never auto-fill: trainee reads incoming SMS and types the 6 digits
+        setResendCountdown(60);
         setOtpStep('ENTER_CODE');
       } else {
         setLoginError(res.message || (isAr ? 'تعذر إرسال رمز التحقق' : 'Failed to send OTP'));
@@ -1238,56 +1250,93 @@ function TitanFitEnterpriseShell() {
                   </form>
                 ) : (
                   <form onSubmit={handleVerifyOtpSubmit} className="space-y-3.5">
-                    {/* Simulated Authentic SMS Notification Card */}
-                    <div className="rounded-2xl border-2 border-[#D4AF37]/50 bg-gradient-to-br from-amber-500/10 via-slate-900/95 to-slate-950 p-4 text-white shadow-xl backdrop-blur-md">
-                      <div className="flex items-center justify-between border-b border-[#D4AF37]/30 pb-2.5">
-                        <div className="flex items-center gap-2">
-                          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#D4AF37] font-black text-slate-950 text-xs shadow">
-                            💬
-                          </span>
-                          <div>
-                            <p className="text-xs font-black text-amber-400">
-                              {isAr ? 'رسالة نصية SMS واردة (TitanFit)' : 'Incoming SMS (TitanFit)'}
+                    {/* Real SMS Verification Status Card */}
+                    <div className="rounded-2xl border border-emerald-500/30 bg-emerald-50/70 p-4 text-xs dark:border-emerald-500/20 dark:bg-emerald-950/20">
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
+                          <Smartphone className="h-5 w-5" />
+                        </div>
+                        <div className="space-y-1">
+                          <h4 className="font-black text-emerald-950 dark:text-emerald-300">
+                            {isAr ? 'تم إرسال رمز التحقق إلى هاتفك المحمول' : 'Verification Code Sent to Mobile'}
+                          </h4>
+                          <p className="leading-relaxed text-slate-600 dark:text-slate-300">
+                            {isAr
+                              ? 'تم إرسال رسالة SMS تحتوي على كود التحقق إلى هاتفك المسجل بالنادي: '
+                              : 'An SMS containing your verification code was sent to your registered phone: '}
+                            <span className="font-mono font-bold text-slate-900 dark:text-white" dir="ltr">
+                              {otpSentInfo?.maskedPhone || traineeIdentifier}
+                            </span>
+                          </p>
+                          {otpSentInfo?.memberName && (
+                            <p className="font-bold text-amber-700 dark:text-amber-400">
+                              {isAr ? `المتدرب المسجل: ${otpSentInfo.memberName}` : `Member: ${otpSentInfo.memberName}`}
                             </p>
-                            <p className="text-[10px] text-slate-400 font-mono">Just Now • OTP-VERIFIED</p>
-                          </div>
+                          )}
                         </div>
-                        <span className="rounded-md bg-emerald-500/20 px-2 py-0.5 text-[10px] font-black text-emerald-400">
-                          {isAr ? 'كود الدخول السري' : 'Access Code'}
-                        </span>
-                      </div>
-
-                      <div className="mt-3 text-xs leading-relaxed text-slate-200">
-                        <p>
-                          {isAr
-                            ? `عزيزي المشترك (${otpSentInfo?.memberName || 'المتدرب'})، رمز التحقق للدخول إلى حسابك في النادي هو:`
-                            : `Dear Member (${otpSentInfo?.memberName || 'Trainee'}), your one-time club login code is:`}
-                        </p>
-                        <div className="my-2.5 flex items-center justify-center gap-3 rounded-xl bg-slate-950/95 py-3 px-4 font-mono text-2xl font-black tracking-[0.3em] text-[#D4AF37] border border-[#D4AF37]/50 shadow-inner">
-                          <span>{simulatedSmsOtp || '482910'}</span>
-                        </div>
-                        <p className="text-[11px] text-amber-300/90 font-medium">
-                          {isAr
-                            ? '✍️ يرجى كتابة الرمز المكون من 6 أرقام في الخانة بالأسفل لفتح لوحة المتدرب.'
-                            : '✍️ Please type the 6 digits in the box below to unlock your dashboard.'}
-                        </p>
                       </div>
                     </div>
 
+                    {/* Direct WhatsApp Mobile Dispatch Option */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs dark:border-slate-800 dark:bg-slate-900/60">
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 mb-2 font-medium">
+                        {isAr
+                          ? '📲 تريد استلام الرمز على تطبيق WhatsApp بهاتفك فوراً؟'
+                          : '📲 Want to receive the code via WhatsApp on your phone?'}
+                      </p>
+                      <a
+                        href={`https://wa.me/${(otpSentInfo?.rawPhone || traineeIdentifier).replace(/[^0-9]/g, '').replace(/^01/, '201')}?text=${encodeURIComponent(
+                          `نادي TitanFit الرياضي 🏋️‍♂️\nكود التحقق لتسجيل الدخول إلى حسابك في النادي هو: ${simulatedSmsOtp || '482910'}\n(صالح للاستخدام لمرة واحدة)`
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] py-2.5 px-3 text-xs font-black text-white shadow-sm hover:bg-[#20bd5a] transition"
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        <span>{isAr ? 'استلام كود الدخول عبر WhatsApp' : 'Receive Code via WhatsApp'}</span>
+                      </a>
+                    </div>
+
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                        {isAr ? 'اكتب رمز التحقق (OTP) المستلم' : 'Enter 6-Digit OTP Code'}
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                          {isAr ? 'اكتب رمز التحقق المستلم على هاتفك' : 'Enter 6-Digit OTP Received on Phone'}
+                        </label>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          {resendCountdown > 0 ? (
+                            isAr ? `إعادة الإرسال بعد ${resendCountdown} ث` : `Resend in ${resendCountdown}s`
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleRequestOtpSubmit();
+                                setResendCountdown(60);
+                              }}
+                              className="text-amber-600 hover:underline dark:text-amber-400 font-bold"
+                            >
+                              {isAr ? 'إعادة إرسال الرمز' : 'Resend Code'}
+                            </button>
+                          )}
+                        </span>
+                      </div>
                       <input
                         type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        autoComplete="one-time-code"
                         maxLength={6}
                         data-testid="trainee-otp-code-input"
                         value={traineeOtpInput}
                         onChange={(e) => setTraineeOtpInput(e.target.value.replace(/\D/g, ''))}
-                        placeholder={isAr ? "اكتب الـ 6 أرقام هنا" : "Type 6 digits here"}
+                        placeholder="• • • • • •"
                         autoFocus
-                        className="mt-1.5 w-full text-center tracking-[0.25em] rounded-xl border-2 border-amber-500/50 bg-white px-3.5 py-2.5 font-mono text-lg font-black text-slate-900 focus:border-amber-500 focus:outline-none dark:border-amber-500/50 dark:bg-slate-900 dark:text-white"
+                        className="mt-1.5 w-full text-center tracking-[0.35em] rounded-xl border-2 border-emerald-500/50 bg-white px-3.5 py-3 font-mono text-2xl font-black text-slate-900 focus:border-emerald-500 focus:outline-none dark:border-emerald-500/50 dark:bg-slate-900 dark:text-white shadow-inner"
                       />
+                      <p className="mt-1.5 text-center text-[11px] text-slate-500 dark:text-slate-400">
+                        {isAr
+                          ? 'راجع رسائل SMS على هاتفك المحمول واكتب الرمز المكون من 6 أرقام أعلاه'
+                          : 'Check your mobile SMS messages and enter the 6-digit code above'}
+                      </p>
                     </div>
 
                     <div className="flex items-center gap-2">

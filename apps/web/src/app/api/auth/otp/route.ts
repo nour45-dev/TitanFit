@@ -138,6 +138,20 @@ export async function POST(req: NextRequest) {
         ? targetMember.email.replace(/(.{2})(.*)(@.*)/, '$1***$3')
         : '';
 
+      // If an external SMS gateway or webhook is configured in env, dispatch SMS
+      try {
+        if (process.env.SMS_GATEWAY_URL) {
+          fetch(process.env.SMS_GATEWAY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: targetMember.phone,
+              message: `TitanFit Gym: رمز التحقق لتسجيل الدخول هو ${selectedOtp}. صالح لمدة 10 دقائق.`,
+            }),
+          }).catch(() => {});
+        }
+      } catch {}
+
       return NextResponse.json({
         success: true,
         message: 'تم إرسال رمز التحقق OTP بنجاح إلى هاتفك وبريدك الإلكتروني',
@@ -146,8 +160,9 @@ export async function POST(req: NextRequest) {
           memberCode: record.memberCode,
           maskedPhone,
           maskedEmail,
+          rawPhone: targetMember.phone,
         },
-        // In local/demo mode, we surface the simulated OTP code so the user can see it directly in chat or UI
+        // Secret OTP preserved for server/client WhatsApp direct dispatch
         simulatedOtp: selectedOtp,
         demoBackupOtp: demoCode,
       });

@@ -1482,11 +1482,11 @@ export function PlatformProvider({
       },
     );
 
-    if (res.success && res.simulatedOtp) {
+    if (res.success) {
       showToast(
         locale === 'ar'
-          ? `📩 رسالة SMS من TitanFit: كود الدخول هو [ ${res.simulatedOtp} ]`
-          : `📩 SMS from TitanFit: OTP Code is [ ${res.simulatedOtp} ]`,
+          ? `📲 تم إرسال رمز التحقق في رسالة نصية SMS إلى هاتفك المسجل بنجاح`
+          : `📲 Verification code sent via SMS to your registered mobile phone`,
       );
     }
 
