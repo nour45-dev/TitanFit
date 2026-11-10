@@ -82,6 +82,7 @@ export function GymOwnerContentStudioView() {
     'حافظ على ثبات لوحي الكتف وتحكم في النزول لمدة ٣ ثوانٍ.',
   );
   const [uploadedVideoFileName, setUploadedVideoFileName] = useState<string>('');
+  const [uploadedMediaKey, setUploadedMediaKey] = useState<string>('');
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadFileSizeLabel, setUploadFileSizeLabel] = useState('');
@@ -122,12 +123,22 @@ export function GymOwnerContentStudioView() {
   const handleVideoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Immediately create live object URL and storage key
+    const blobUrl = URL.createObjectURL(file);
+    const mediaKey = `vid-${Date.now()}`;
+
     setUploadedVideoFileName(file.name);
     const mb = file.size / (1024 * 1024);
     const sizeStr = mb >= 1 ? `${mb.toFixed(1)} MB` : `${Math.max(1, Math.round(file.size / 1024))} KB`;
     setUploadFileSizeLabel(sizeStr);
     setIsUploadingVideo(true);
-    setUploadProgress(20);
+    setUploadProgress(25);
+
+    // Instant update so preview player immediately mounts and plays coach video
+    setWkVideoUrl(blobUrl);
+    setWkSourceType('UPLOADED_FILE');
+    setUploadedMediaKey(mediaKey);
 
     // Auto populate Arabic title if blank
     if (!wkTitleAr.trim()) {
@@ -138,32 +149,21 @@ export function GymOwnerContentStudioView() {
       setWkTitleAr(`تمرين: ${cleanName}`);
     }
 
-    const blobUrl = URL.createObjectURL(file);
-    const mediaKey = `vid-${Date.now()}`;
-
-    // Animated upload progress simulation
-    setTimeout(() => setUploadProgress(55), 250);
-    setTimeout(() => setUploadProgress(85), 500);
-
+    // Persist to storage
     saveMediaBlob(mediaKey, file)
       .then(() => {
-        setTimeout(() => {
-          setUploadProgress(100);
-          setIsUploadingVideo(false);
-          setWkVideoUrl(blobUrl);
-          setWkSourceType('UPLOADED_FILE');
-          showToast(
-            isAr
-              ? `✅ تم رفع وتشفير الفيديو بنجاح (${sizeStr}) وجاهز للنشر ومحمي ضد التحميل 🛡️`
-              : `✅ Video uploaded & protected (${sizeStr})!`,
-          );
-        }, 750);
+        setUploadProgress(100);
+        setTimeout(() => setIsUploadingVideo(false), 300);
+        showToast(
+          isAr
+            ? `✅ تم تجهيز الفيديو بنجاح (${sizeStr}) وجاهز للعرض والنشر ومحمي ضد التحميل 🛡️`
+            : `✅ Video ready & protected (${sizeStr})!`,
+        );
       })
-      .catch(() => {
+      .catch((err) => {
+        console.warn('Failed to save media:', err);
         setUploadProgress(100);
         setIsUploadingVideo(false);
-        setWkVideoUrl(blobUrl);
-        setWkSourceType('UPLOADED_FILE');
       });
   };
 
@@ -206,7 +206,11 @@ export function GymOwnerContentStudioView() {
     e.preventDefault();
     if (!wkTitleAr.trim()) return;
     const finalUrl =
-      wkSourceType === 'VIDEO_URL' ? normalizeVideoUrl(wkVideoUrl) : wkVideoUrl;
+      wkSourceType === 'VIDEO_URL'
+        ? normalizeVideoUrl(wkVideoUrl)
+        : uploadedMediaKey
+          ? `idb://${uploadedMediaKey}`
+          : wkVideoUrl;
 
     const targetMember =
       wkWkTargetAudience === 'SPECIFIC_MEMBER'
@@ -902,11 +906,17 @@ export function GymOwnerContentStudioView() {
                     className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-slate-950/50"
                   >
                     <div className="flex items-center gap-3">
-                      <img
-                        src={cw.thumbnailUrl}
-                        alt={cw.titleAr}
-                        className="h-14 w-20 shrink-0 rounded-xl object-cover"
-                      />
+                      {cw.thumbnailUrl ? (
+                        <img
+                          src={cw.thumbnailUrl}
+                          alt={cw.titleAr}
+                          className="h-14 w-20 shrink-0 rounded-xl object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-14 w-20 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-500">
+                          <Video className="h-6 w-6" />
+                        </div>
+                      )}
                       <div>
                         <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-[10px] font-black text-amber-800 dark:text-amber-300">
                           {cw.videoSourceType === 'BUILTIN_ANIMATION'
@@ -944,7 +954,12 @@ export function GymOwnerContentStudioView() {
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => setPreviewWorkoutId(cw.id)}
+                        onClick={() => {
+                          setPreviewWorkoutId(cw.id);
+                          setWkVideoUrl('');
+                          setUploadedVideoFileName('');
+                          setUploadedMediaKey('');
+                        }}
                         className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 dark:bg-slate-800"
                       >
                         {isAr ? 'معاينة' : 'Preview'}

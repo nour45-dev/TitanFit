@@ -21,7 +21,7 @@ import {
   CartoonAthleteVisualCanvas,
   type ExerciseMotionType,
 } from './exercise-motion-card';
-import { getMediaBlob } from '../lib/media-storage';
+import { getMediaBlob, getMediaUrl } from '../lib/media-storage';
 
 export interface BuiltInWorkoutVideoPlayerProps {
   titleAr: string;
@@ -62,20 +62,31 @@ export function BuiltInWorkoutVideoPlayer({
   isAr,
   onCompleteWorkoutSet,
 }: BuiltInWorkoutVideoPlayerProps) {
-  const hasExternalOrUploadedVideo = Boolean(videoUrl && videoUrl.trim().length > 0);
+  const hasExternalOrUploadedVideo = Boolean(
+    (videoUrl && videoUrl.trim().length > 0) ||
+      videoSourceType === 'UPLOADED_FILE' ||
+      videoSourceType === 'VIDEO_URL',
+  );
   const [activeMode, setActiveMode] = useState<'ANIMATED_STUDIO' | 'EXTERNAL_VIDEO'>(
-    videoSourceType !== 'BUILTIN_ANIMATION' && hasExternalOrUploadedVideo
+    videoSourceType !== 'BUILTIN_ANIMATION' || hasExternalOrUploadedVideo
       ? 'EXTERNAL_VIDEO'
       : 'ANIMATED_STUDIO',
   );
 
+  const [resolvedSrc, setResolvedSrc] = useState<string>(videoUrl || '');
+
   useEffect(() => {
-    if (videoSourceType !== 'BUILTIN_ANIMATION' && videoUrl && videoUrl.trim().length > 0) {
+    if (
+      videoSourceType === 'UPLOADED_FILE' ||
+      videoSourceType === 'VIDEO_URL' ||
+      (videoUrl && videoUrl.trim().length > 0) ||
+      (resolvedSrc && resolvedSrc.trim().length > 0)
+    ) {
       setActiveMode('EXTERNAL_VIDEO');
     } else {
       setActiveMode('ANIMATED_STUDIO');
     }
-  }, [videoSourceType, videoUrl, motionType]);
+  }, [videoSourceType, videoUrl, resolvedSrc, motionType]);
 
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [speedMultiplier, setSpeedMultiplier] = useState<0.5 | 1 | 1.5>(1);
@@ -88,7 +99,6 @@ export function BuiltInWorkoutVideoPlayer({
   // External / Uploaded video playback state
   const [videoStarted, setVideoStarted] = useState<boolean>(false);
   const [codecWarning, setCodecWarning] = useState<boolean>(false);
-  const [resolvedSrc, setResolvedSrc] = useState<string>(videoUrl || '');
   const [videoCurrentTime, setVideoCurrentTime] = useState<number>(0);
   const [videoDuration, setVideoDuration] = useState<number>(0);
   const [isVideoPaused, setIsVideoPaused] = useState<boolean>(true);
@@ -104,10 +114,9 @@ export function BuiltInWorkoutVideoPlayer({
     let active = true;
     if (videoUrl?.startsWith('idb://')) {
       const key = videoUrl.replace('idb://', '');
-      getMediaBlob(key).then((blob) => {
-        if (active && blob) {
-          const url = URL.createObjectURL(blob);
-          setResolvedSrc(url);
+      getMediaUrl(key).then((liveUrl) => {
+        if (active && liveUrl) {
+          setResolvedSrc(liveUrl);
         }
       });
     } else {
@@ -267,7 +276,12 @@ export function BuiltInWorkoutVideoPlayer({
         (videoUrl.startsWith('data:video/') ||
           videoUrl.startsWith('data:application/octet-stream') ||
           videoUrl.startsWith('blob:') ||
-          /\.(mp4|webm|ogg|mov|m4v|mkv)(\?.*)?$/i.test(videoUrl))),
+          videoUrl.startsWith('idb://') ||
+          /\.(mp4|webm|ogg|mov|m4v|mkv)(\?.*)?$/i.test(videoUrl))) ||
+      (resolvedSrc &&
+        (resolvedSrc.startsWith('blob:') ||
+          resolvedSrc.startsWith('data:video/') ||
+          /\.(mp4|webm|ogg|mov|m4v|mkv)(\?.*)?$/i.test(resolvedSrc))),
   );
 
   const handleVideoPlaying = (e: React.SyntheticEvent<HTMLVideoElement>) => {
