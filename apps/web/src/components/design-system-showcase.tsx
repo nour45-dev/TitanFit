@@ -5,6 +5,8 @@ import { PLATFORM_CONFIG, getLocaleDirection } from '@gymos/config';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
   Award,
   BarChart3,
   Calendar,
@@ -23,6 +25,7 @@ import {
   MessageCircle,
   Moon,
   QrCode,
+  RefreshCw,
   Settings,
   ShieldCheck,
   ShoppingBag,
@@ -82,6 +85,8 @@ function TitanFitEnterpriseShell() {
     classes,
     toastMessage,
     showToast,
+    canGoBack,
+    goBack,
     isAuthenticated,
     currentUser,
     activeTenantCustom,
@@ -383,6 +388,18 @@ function TitanFitEnterpriseShell() {
         setTraineeOtpInput(''); // Never auto-fill: trainee reads incoming SMS and types the 6 digits
         setResendCountdown(60);
         setOtpStep('ENTER_CODE');
+
+        // Automatically dispatch via WhatsApp to user's registered phone
+        try {
+          const rawTargetPhone = ((res.targetInfo as any)?.rawPhone || traineeIdentifier).replace(/[^0-9]/g, '');
+          if (rawTargetPhone && (rawTargetPhone.startsWith('01') || rawTargetPhone.startsWith('201'))) {
+            const intlPhone = rawTargetPhone.startsWith('01') ? `2${rawTargetPhone}` : rawTargetPhone;
+            const waUrl = `https://wa.me/${intlPhone}?text=${encodeURIComponent(
+              `نادي TitanFit الرياضي 🏋️‍♂️\nكود التحقق لتسجيل الدخول إلى حسابك في النادي هو: [ ${res.simulatedOtp || '482910'} ]\n(صالح لمدة 60 ثانية فقط)`
+            )}`;
+            window.open(waUrl, '_blank', 'noopener,noreferrer');
+          }
+        } catch {}
       } else {
         setLoginError(res.message || (isAr ? 'تعذر إرسال رمز التحقق' : 'Failed to send OTP'));
       }
@@ -561,6 +578,24 @@ function TitanFitEnterpriseShell() {
                 title={isAr ? 'القائمة الجانبية الكاملة' : 'Full Sidebar Menu'}
               >
                 <Menu className="h-5 w-5" />
+              </button>
+            )}
+
+            {/* Universal Header Back Button */}
+            {canGoBack && (
+              <button
+                type="button"
+                data-testid="header-universal-back-btn"
+                onClick={goBack}
+                title={isAr ? 'الرجوع للصفحة السابقة' : 'Go Back to Previous Page'}
+                className="inline-flex min-h-[36px] sm:min-h-[38px] items-center gap-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 px-2.5 sm:px-3 py-1.5 text-xs font-black text-amber-700 hover:bg-amber-500/20 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-300 transition shrink-0 shadow-xs"
+              >
+                {isAr ? (
+                  <ArrowRight className="h-4 w-4" />
+                ) : (
+                  <ArrowLeft className="h-4 w-4" />
+                )}
+                <span>{isAr ? 'رجوع' : 'Back'}</span>
               </button>
             )}
 
@@ -1048,6 +1083,24 @@ function TitanFitEnterpriseShell() {
 
         {/* Main Content Area */}
         <main className="flex-1 bg-transparent p-4 transition-colors sm:p-6 lg:p-8">
+          {canGoBack && activeSection !== 'PUBLIC_STOREFRONT' && (
+            <div className="mb-4 flex items-center justify-between">
+              <button
+                type="button"
+                data-testid="page-universal-back-btn"
+                onClick={goBack}
+                className="group inline-flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white/95 px-3.5 py-2 text-xs font-black text-slate-800 shadow-sm backdrop-blur-md transition hover:border-amber-400 hover:bg-amber-50 hover:text-amber-900 dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-100 dark:hover:border-amber-500/50 dark:hover:bg-amber-950/40 dark:hover:text-amber-300"
+                title={isAr ? 'الرجوع إلى الصفحة السابقة' : 'Go back to previous page'}
+              >
+                {isAr ? (
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                ) : (
+                  <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                )}
+                <span>{isAr ? '← الرجوع للصفحة السابقة' : '← Back to Previous Page'}</span>
+              </button>
+            </div>
+          )}
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
@@ -1277,47 +1330,45 @@ function TitanFitEnterpriseShell() {
                       </div>
                     </div>
 
-                    {/* Direct WhatsApp Mobile Dispatch Option */}
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs dark:border-slate-800 dark:bg-slate-900/60">
-                      <p className="text-[11px] text-slate-600 dark:text-slate-400 mb-2 font-medium">
-                        {isAr
-                          ? '📲 تريد استلام الرمز على تطبيق WhatsApp بهاتفك فوراً؟'
-                          : '📲 Want to receive the code via WhatsApp on your phone?'}
-                      </p>
-                      <a
-                        href={`https://wa.me/${(otpSentInfo?.rawPhone || traineeIdentifier).replace(/[^0-9]/g, '').replace(/^01/, '201')}?text=${encodeURIComponent(
-                          `نادي TitanFit الرياضي 🏋️‍♂️\nكود التحقق لتسجيل الدخول إلى حسابك في النادي هو: ${simulatedSmsOtp || '482910'}\n(صالح للاستخدام لمرة واحدة)`
-                        )}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] py-2.5 px-3 text-xs font-black text-white shadow-sm hover:bg-[#20bd5a] transition"
-                      >
-                        <MessageCircle className="h-4 w-4" />
-                        <span>{isAr ? 'استلام كود الدخول عبر WhatsApp' : 'Receive Code via WhatsApp'}</span>
-                      </a>
-                    </div>
+                    {/* OTP 60s Strict Expiration & Auto Dispatch Notice */}
+                    {resendCountdown === 0 ? (
+                      <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-center dark:border-amber-900/50 dark:bg-amber-950/40">
+                        <p className="text-xs font-bold text-amber-900 dark:text-amber-300">
+                          ⚠️ {isAr ? 'انتهت صلاحية رمز التحقق (مرت 60 ثانية). يرجى طلب كود جديد للمتابعة.' : 'OTP code has expired (60s passed). Please request a new code.'}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleRequestOtpSubmit();
+                            setResendCountdown(60);
+                          }}
+                          className="mt-2.5 inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-600 px-4 py-2 text-xs font-black text-slate-950 shadow-sm transition"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                          <span>{isAr ? '🔄 إرسال كود جديد الآن' : '🔄 Send New Code Now'}</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs dark:border-slate-800 dark:bg-slate-900/40">
+                        <span className="font-bold text-slate-700 dark:text-slate-300">
+                          {isAr ? 'صلاحية الرمز المؤقت:' : 'Code Validity:'}
+                        </span>
+                        <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
+                          ⏳ {isAr ? `ينتهي الرمز خلال ${resendCountdown} ثانية` : `Expires in ${resendCountdown}s`}
+                        </span>
+                      </div>
+                    )}
 
                     <div>
                       <div className="flex items-center justify-between">
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                           {isAr ? 'اكتب رمز التحقق المستلم على هاتفك' : 'Enter 6-Digit OTP Received on Phone'}
                         </label>
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          {resendCountdown > 0 ? (
-                            isAr ? `إعادة الإرسال بعد ${resendCountdown} ث` : `Resend in ${resendCountdown}s`
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleRequestOtpSubmit();
-                                setResendCountdown(60);
-                              }}
-                              className="text-amber-600 hover:underline dark:text-amber-400 font-bold"
-                            >
-                              {isAr ? 'إعادة إرسال الرمز' : 'Resend Code'}
-                            </button>
-                          )}
-                        </span>
+                        {resendCountdown === 0 && (
+                          <span className="text-[11px] font-bold text-rose-500">
+                            {isAr ? 'منتهي الصلاحية' : 'Expired'}
+                          </span>
+                        )}
                       </div>
                       <input
                         type="text"
@@ -1325,24 +1376,25 @@ function TitanFitEnterpriseShell() {
                         pattern="[0-9]*"
                         autoComplete="one-time-code"
                         maxLength={6}
+                        disabled={resendCountdown === 0}
                         data-testid="trainee-otp-code-input"
                         value={traineeOtpInput}
                         onChange={(e) => setTraineeOtpInput(e.target.value.replace(/\D/g, ''))}
                         placeholder="• • • • • •"
                         autoFocus
-                        className="mt-1.5 w-full text-center tracking-[0.35em] rounded-xl border-2 border-emerald-500/50 bg-white px-3.5 py-3 font-mono text-2xl font-black text-slate-900 focus:border-emerald-500 focus:outline-none dark:border-emerald-500/50 dark:bg-slate-900 dark:text-white shadow-inner"
+                        className="mt-1.5 w-full text-center tracking-[0.35em] rounded-xl border-2 border-emerald-500/50 bg-white px-3.5 py-3 font-mono text-2xl font-black text-slate-900 focus:border-emerald-500 focus:outline-none disabled:bg-slate-100 disabled:opacity-60 dark:border-emerald-500/50 dark:bg-slate-900 dark:text-white dark:disabled:bg-slate-800 shadow-inner"
                       />
                       <p className="mt-1.5 text-center text-[11px] text-slate-500 dark:text-slate-400">
                         {isAr
-                          ? 'راجع رسائل SMS على هاتفك المحمول واكتب الرمز المكون من 6 أرقام أعلاه'
-                          : 'Check your mobile SMS messages and enter the 6-digit code above'}
+                          ? 'راجع رسائل هاتفك المحمول (SMS / WhatsApp) واكتب الرمز المكون من 6 أرقام أعلاه'
+                          : 'Check your phone messages (SMS / WhatsApp) and enter the 6-digit code above'}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <button
                         type="submit"
-                        disabled={otpLoading}
+                        disabled={otpLoading || resendCountdown === 0 || traineeOtpInput.length < 6}
                         data-testid="verify-otp-btn"
                         className="flex-1 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 py-2.5 text-xs font-black text-white shadow-md transition hover:opacity-95 disabled:opacity-50"
                       >

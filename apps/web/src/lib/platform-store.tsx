@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import type { SupportedLocale } from '@gymos/config';
 import {
   apiLogin,
@@ -723,6 +723,9 @@ export interface PlatformStoreContextValue {
   setTheme: (t: 'dark' | 'light') => void;
   activeSection: WorkspaceSection;
   setActiveSection: (s: WorkspaceSection) => void;
+  canGoBack: boolean;
+  goBack: () => void;
+  navigationHistory: WorkspaceSection[];
   activeRole: UserRoleKey;
   setActiveRole: (r: UserRoleKey) => void;
   selectedBranchId: string;
@@ -975,7 +978,104 @@ export function PlatformProvider({
 }) {
   const [locale, setLocale] = useState<SupportedLocale>(initialLocale);
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
-  const [activeSection, setActiveSection] = useState<WorkspaceSection>('PUBLIC_STOREFRONT');
+  const [activeSection, setActiveSectionState] = useState<WorkspaceSection>('PUBLIC_STOREFRONT');
+  const [navigationHistory, setNavigationHistory] = useState<WorkspaceSection[]>([]);
+
+  const setActiveSection = useCallback((newSection: WorkspaceSection) => {
+    setActiveSectionState((current) => {
+      if (current === newSection) return current;
+      setNavigationHistory((prev) => [...prev, current]);
+      try {
+        if (typeof window !== 'undefined' && window.history) {
+          window.history.pushState(
+            { section: newSection },
+            '',
+            `#${newSection.toLowerCase().replace(/_/g, '-')}`,
+          );
+        }
+      } catch {}
+      return newSection;
+    });
+  }, []);
+
+  const goBack = useCallback(() => {
+    setNavigationHistory((prev) => {
+      if (prev.length === 0) {
+        const fallback: WorkspaceSection = 'PUBLIC_STOREFRONT';
+        setActiveSectionState(fallback);
+        try {
+          if (typeof window !== 'undefined' && window.history) {
+            window.history.replaceState({ section: fallback }, '', '#public-storefront');
+          }
+        } catch {}
+        return [];
+      }
+      const prevSection = prev[prev.length - 1]!;
+      const remaining = prev.slice(0, prev.length - 1);
+      setActiveSectionState(prevSection);
+      try {
+        if (typeof window !== 'undefined' && window.history) {
+          window.history.replaceState(
+            { section: prevSection },
+            '',
+            `#${prevSection.toLowerCase().replace(/_/g, '-')}`,
+          );
+        }
+      } catch {}
+      return remaining;
+    });
+  }, []);
+
+  // Synchronize browser history and popstate events
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const hash = window.location.hash.replace(/^#/, '').toUpperCase().replace(/-/g, '_');
+    if (hash) {
+      const validSections: WorkspaceSection[] = [
+        'PUBLIC_STOREFRONT',
+        'FREE_TRIAL_HUB',
+        'OVERVIEW',
+        'MEMBERS',
+        'SUBSCRIPTIONS',
+        'PAYMENTS',
+        'CLASSES',
+        'ACCESS_CONTROL',
+        'POS_INVENTORY',
+        'STAFF_TRAINERS',
+        'CONTENT_LIBRARY',
+        'MEMBER_PWA',
+        'REPORTS',
+        'SETTINGS',
+        'SUPER_ADMIN',
+      ];
+      if (validSections.includes(hash as WorkspaceSection)) {
+        setActiveSectionState(hash as WorkspaceSection);
+      }
+    }
+
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state && e.state.section) {
+        setActiveSectionState(e.state.section);
+        setNavigationHistory((prev) => (prev.length > 0 ? prev.slice(0, -1) : []));
+      } else {
+        setNavigationHistory((prev) => {
+          if (prev.length > 0) {
+            const last = prev[prev.length - 1]!;
+            setActiveSectionState(last);
+            return prev.slice(0, -1);
+          }
+          setActiveSectionState('PUBLIC_STOREFRONT');
+          return [];
+        });
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const canGoBack = navigationHistory.length > 0 || activeSection !== 'PUBLIC_STOREFRONT';
   const [activeRole, setActiveRole] = useState<UserRoleKey>('GYM_OWNER');
   const [selectedBranchId, setSelectedBranchId] = useState<string>('ALL');
   const [branches, setBranches] = useState<BranchItem[]>(INITIAL_BRANCHES);
@@ -2707,6 +2807,9 @@ export function PlatformProvider({
         setTheme,
         activeSection,
         setActiveSection,
+        canGoBack,
+        goBack,
+        navigationHistory,
         activeRole,
         setActiveRole,
         selectedBranchId,
