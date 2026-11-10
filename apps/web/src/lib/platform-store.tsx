@@ -1154,7 +1154,7 @@ export function PlatformProvider({
   const [activeSection, setActiveSection] = useState<WorkspaceSection>('PUBLIC_STOREFRONT');
   const [activeRole, setActiveRole] = useState<UserRoleKey>('GYM_OWNER');
   const [selectedBranchId, setSelectedBranchId] = useState<string>('ALL');
-  const [branches] = useState<BranchItem[]>(INITIAL_BRANCHES);
+  const [branches, setBranches] = useState<BranchItem[]>(INITIAL_BRANCHES);
   const [members, setMembers] = useState<MemberItem[]>(INITIAL_MEMBERS);
   const [plans, setPlans] = useState<PlanItem[]>(INITIAL_PLANS);
   const [invoices, setInvoices] = useState<InvoiceItem[]>(INITIAL_INVOICES);
@@ -1245,6 +1245,39 @@ export function PlatformProvider({
       /* ignore quota errors */
     }
   }, [customWorkouts, customRecipes, customFiles, activeTenantSlug]);
+
+  // Hydrate clean-slate gym state mode if selected by owner
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const savedMode = window.localStorage.getItem('titanfit.gymStateMode');
+        if (savedMode === 'CLEAN_SLATE') {
+          setGymStateModeState('CLEAN_SLATE');
+          setMembers([]);
+          setInvoices([]);
+          setAccessLogs([]);
+          setTrainerPayouts([]);
+          setWorkoutLogs([]);
+          setChatMessages([]);
+          setBranches((prev) =>
+            prev.map((b) => ({
+              ...b,
+              currentOccupancy: 0,
+            })),
+          );
+          setStaff((prev) =>
+            prev.map((s) => ({
+              ...s,
+              activeClients: 0,
+              monthlyRevenueEgp: 0,
+            })),
+          );
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   // Hydrate & persist created gym tenants so newly created gym accounts work across refreshes
   useEffect(() => {
@@ -2670,6 +2703,19 @@ export function PlatformProvider({
       setTrainerPayouts([]);
       setWorkoutLogs([]);
       setChatMessages([]);
+      setBranches((prev) =>
+        prev.map((b) => ({
+          ...b,
+          currentOccupancy: 0,
+        })),
+      );
+      setStaff((prev) =>
+        prev.map((s) => ({
+          ...s,
+          activeClients: 0,
+          monthlyRevenueEgp: 0,
+        })),
+      );
       showToast(
         locale === 'ar'
           ? 'تم تفعيل الوضع الفعلي للنادي الجديد (جديدة لانج - 0 مشتركين و0 فواتير جاهز للعمل الحقيقي)!'
@@ -2682,6 +2728,8 @@ export function PlatformProvider({
       setTrainerPayouts(INITIAL_TRAINER_PAYOUTS);
       setWorkoutLogs(INITIAL_WORKOUT_LOGS);
       setChatMessages(INITIAL_CHAT);
+      setBranches(INITIAL_BRANCHES);
+      setStaff(INITIAL_STAFF);
       showToast(
         locale === 'ar'
           ? 'تم تفعيل وضع العرض التجريبي (Demo Showcase) مع بيانات استعراضية كاملة!'

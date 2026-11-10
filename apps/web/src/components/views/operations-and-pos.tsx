@@ -454,6 +454,9 @@ export function AccessControlTurnstilesView() {
               onChange={(e) => setSelectedMemberId(e.target.value)}
               className="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#121623] px-3 py-2 text-xs font-bold text-slate-900 dark:text-white"
             >
+              {members.length === 0 && (
+                <option value="">{isAr ? 'لا يوجد أعضاء مسجلين بعد (0 عضو)' : 'No members registered yet'}</option>
+              )}
               {members.map((m) => (
                 <option key={m.id} value={m.id}>
                   {isAr ? m.fullNameAr : m.fullNameEn} — [{m.status}]
@@ -492,6 +495,15 @@ export function AccessControlTurnstilesView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
+              {accessLogs.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-xs font-bold text-slate-500 dark:text-slate-400">
+                    {isAr
+                      ? 'لا توجد تسجيلات دخول اليوم (0 حركة دخول) — البوابات الإلكترونية في وضع الاستعداد بانتظار مسح QR.'
+                      : 'No gate access logs recorded today (0 check-ins).'}
+                  </td>
+                </tr>
+              )}
               {accessLogs.map((log) => (
                 <tr key={log.id} className="hover:bg-slate-900/40">
                   <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400">{log.timestamp}</td>
@@ -531,10 +543,8 @@ export function PosInventoryView() {
   const isAr = locale === 'ar';
 
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
-  const [cart, setCart] = useState<Array<{ productId: string; qty: number }>>([
-    { productId: 'pos-3', qty: 1 },
-  ]);
-  const [selectedMemberId, setSelectedMemberId] = useState(members[0]?.id ?? 'mem-1001');
+  const [cart, setCart] = useState<Array<{ productId: string; qty: number }>>([]);
+  const [selectedMemberId, setSelectedMemberId] = useState(members[0]?.id ?? '');
   const [paymentMethod, setPaymentMethod] = useState<InvoiceItem['method']>('INSTAPAY');
 
   const [showAddProductModal, setShowAddProductModal] = useState(false);

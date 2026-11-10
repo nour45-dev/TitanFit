@@ -1242,6 +1242,48 @@ export function ReportsAnalyticsView() {
   const { locale, invoices, members, branches, showToast } = usePlatformStore();
   const isAr = locale === 'ar';
 
+  const totalCollected = invoices
+    .filter((i) => i.status === 'PAID')
+    .reduce((sum, i) => sum + i.totalEgp, 0);
+
+  const instapayTotal = invoices
+    .filter((i) => i.status === 'PAID' && i.method === 'INSTAPAY')
+    .reduce((s, i) => s + i.totalEgp, 0);
+  const paymobTotal = invoices
+    .filter((i) => i.status === 'PAID' && i.method === 'PAYMOB_CARD')
+    .reduce((s, i) => s + i.totalEgp, 0);
+  const fawryVodafoneTotal = invoices
+    .filter((i) => i.status === 'PAID' && (i.method === 'FAWRY' || i.method === 'VODAFONE_CASH'))
+    .reduce((s, i) => s + i.totalEgp, 0);
+  const cashTotal = invoices
+    .filter((i) => i.status === 'PAID' && i.method === 'CASH')
+    .reduce((s, i) => s + i.totalEgp, 0);
+
+  const gatewayBreakdown = [
+    {
+      name: isAr ? 'InstaPay Egypt (إنستاباي)' : 'InstaPay Egypt',
+      amount: instapayTotal,
+      pct: totalCollected > 0 ? Math.round((instapayTotal / totalCollected) * 100) : 0,
+    },
+    {
+      name: isAr ? 'Paymob Card (بطاقات بنكية)' : 'Paymob Card',
+      amount: paymobTotal,
+      pct: totalCollected > 0 ? Math.round((paymobTotal / totalCollected) * 100) : 0,
+    },
+    {
+      name: isAr ? 'Vodafone Cash & Fawry' : 'Vodafone Cash & Fawry',
+      amount: fawryVodafoneTotal,
+      pct: totalCollected > 0 ? Math.round((fawryVodafoneTotal / totalCollected) * 100) : 0,
+    },
+    {
+      name: isAr ? 'Cash at Reception (نقدي)' : 'Cash at Reception',
+      amount: cashTotal,
+      pct: totalCollected > 0 ? Math.round((cashTotal / totalCollected) * 100) : 0,
+    },
+  ];
+
+  const avgLtv = members.length > 0 ? Math.round(totalCollected / members.length) : 0;
+
   const handleExportCsv = () => {
     const headers = ['InvoiceNumber,MemberName,Plan,Method,SubtotalEGP,VATEGP,TotalEGP,Status'];
     const rows = invoices.map(
@@ -1294,18 +1336,13 @@ export function ReportsAnalyticsView() {
             {isAr ? 'توزيع التحصيل حسب بوابة الدفع' : 'Revenue by Payment Gateway'}
           </h3>
           <div className="mt-4 space-y-3 text-xs">
-            {[
-              { name: 'InstaPay Egypt (إنستاباي)', pct: 42, amount: '353,850 EGP' },
-              { name: 'Paymob Card (بطاقات بنكية)', pct: 31, amount: '261,175 EGP' },
-              { name: 'Vodafone Cash & Fawry', pct: 16, amount: '134,800 EGP' },
-              { name: 'Cash at Reception (نقدي)', pct: 11, amount: '92,675 EGP' },
-            ].map((g) => (
+            {gatewayBreakdown.map((g) => (
               <div key={g.name}>
-                <div className="flex justify-between font-bold text-slate-200">
+                <div className="flex justify-between font-bold text-slate-800 dark:text-slate-200">
                   <span>{g.name}</span>
-                  <span className="font-mono text-[#D4AF37]">{g.amount}</span>
+                  <span className="font-mono text-[#D4AF37]">{g.amount.toLocaleString()} EGP</span>
                 </div>
-                <div className="mt-1.5 h-2 w-full rounded-full bg-slate-800">
+                <div className="mt-1.5 h-2 w-full rounded-full bg-slate-200 dark:bg-slate-800">
                   <div className="h-full rounded-full bg-[#D4AF37]" style={{ width: `${g.pct}%` }} />
                 </div>
               </div>
@@ -1318,20 +1355,25 @@ export function ReportsAnalyticsView() {
             {isAr ? 'أداء الفروع وصافي الربحية' : 'Branch Revenue Breakdown'}
           </h3>
           <div className="mt-4 space-y-3 text-xs">
-            {branches.map((b, i) => (
-              <div
-                key={b.id}
-                className="flex items-center justify-between rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60 p-3"
-              >
-                <div>
-                  <p className="font-bold text-slate-900 dark:text-white">{isAr ? b.nameAr : b.nameEn}</p>
-                  <p className="text-slate-400">{isAr ? b.managerAr : b.managerEn}</p>
+            {branches.map((b) => {
+              const bRevenue = invoices
+                .filter((i) => i.branchId === b.id && i.status === 'PAID')
+                .reduce((s, i) => s + i.totalEgp, 0);
+              return (
+                <div
+                  key={b.id}
+                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60 p-3"
+                >
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-white">{isAr ? b.nameAr : b.nameEn}</p>
+                    <p className="text-slate-400">{isAr ? b.managerAr : b.managerEn}</p>
+                  </div>
+                  <span className="font-mono font-extrabold text-emerald-400">
+                    {bRevenue.toLocaleString()} EGP
+                  </span>
                 </div>
-                <span className="font-mono font-extrabold text-emerald-400">
-                  {(420000 - i * 95000).toLocaleString()} EGP
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -1346,11 +1388,11 @@ export function ReportsAnalyticsView() {
               </span>
               <p className="mt-1 font-mono text-xl font-extrabold text-emerald-400">88.4%</p>
             </div>
-            <div className="rounded-xl bg-slate-900/70 p-3">
-              <span className="text-slate-400">
+            <div className="rounded-xl bg-slate-100 p-3 dark:bg-slate-900/70">
+              <span className="text-slate-500 dark:text-slate-400">
                 {isAr ? 'متوسط القيمة الدائمة للعضو (LTV)' : 'Average Member Lifetime Value (LTV)'}
               </span>
-              <p className="mt-1 font-mono text-xl font-extrabold text-[#D4AF37]">22,400 EGP</p>
+              <p className="mt-1 font-mono text-xl font-extrabold text-[#D4AF37]">{avgLtv.toLocaleString()} EGP</p>
             </div>
           </div>
         </div>

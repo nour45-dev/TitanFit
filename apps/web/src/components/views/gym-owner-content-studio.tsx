@@ -54,6 +54,7 @@ export function GymOwnerContentStudioView() {
     addCustomFile,
     deleteCustomFile,
     setActiveSection,
+    showToast,
   } = usePlatformStore();
 
   const isAr = locale === 'ar';
@@ -120,20 +121,26 @@ export function GymOwnerContentStudioView() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadedVideoFileName(file.name);
-    // Use DataURL for files up to 15MB for robust cross-session persistence, or ObjectURL if larger
-    if (file.size <= 15 * 1024 * 1024) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          setWkVideoUrl(reader.result);
-          setWkSourceType('UPLOADED_FILE');
-        }
-      };
-      reader.readAsDataURL(file);
+
+    // Native ObjectURL gives Chrome direct hardware-accelerated media streaming with both picture & audio
+    const blobUrl = URL.createObjectURL(file);
+    setWkVideoUrl(blobUrl);
+    setWkSourceType('UPLOADED_FILE');
+
+    // Check if file is .mov or HEVC which causes audio-only decoding on Windows Chrome
+    const isMovOrHevc = /\.(mov|qt|hevc)$/i.test(file.name) || file.type.includes('quicktime');
+    if (isMovOrHevc) {
+      showToast(
+        isAr
+          ? '⚠️ تنبيه: ملفات .mov من آيفون قد تعمل كصوت فقط على ويندوز. يفضل حفظ الفيديو بصيغة MP4 (H.264) من إعدادات كاميرا الهاتف.'
+          : '⚠️ Notice: iPhone .mov files may decode as audio-only on Windows. For best results, use standard H.264 MP4.',
+      );
     } else {
-      const blobUrl = URL.createObjectURL(file);
-      setWkVideoUrl(blobUrl);
-      setWkSourceType('UPLOADED_FILE');
+      showToast(
+        isAr
+          ? `✅ تم تحميل ملف الفيديو بنجاح: ${file.name}`
+          : `✅ Video file loaded: ${file.name}`,
+      );
     }
   };
 

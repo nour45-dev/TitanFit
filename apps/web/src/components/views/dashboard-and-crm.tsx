@@ -64,8 +64,10 @@ export function OverviewView() {
     customWorkouts,
     customRecipes,
     customFiles,
+    gymStateMode,
   } = usePlatformStore();
   const isAr = locale === 'ar';
+  const isCleanSlate = gymStateMode === 'CLEAN_SLATE' || (members.length === 0 && invoices.length === 0);
   const isolatedTenantSlug =
     currentUser?.tenantSlug || impersonatedTenant || activeTenantCustom?.slug || 'titanfit-egypt';
   const isolatedClubNameAr = activeTenantCustom?.nameAr || 'مجموعة أندية تيتان فيت مصر';
@@ -80,16 +82,18 @@ export function OverviewView() {
   const expiringCount = filteredMembers.filter((m) => m.status === 'EXPIRING_SOON').length;
   const totalRevenueEgp = invoices
     .filter((i) => i.status === 'PAID')
-    .reduce((acc, i) => acc + i.totalEgp, 842500);
+    .reduce((acc, i) => acc + i.totalEgp, 0);
 
   const revenueSeries =
-    chartPeriod === '7D'
-      ? [68, 74, 82, 79, 91, 96, 100]
-      : chartPeriod === '30D'
-        ? [52, 61, 58, 72, 78, 85, 94]
-        : chartPeriod === '90D'
-          ? [40, 49, 63, 71, 80, 88, 97]
-          : [30, 42, 55, 64, 76, 89, 100];
+    isCleanSlate || totalRevenueEgp === 0
+      ? [0, 0, 0, 0, 0, 0, 0]
+      : chartPeriod === '7D'
+        ? [68, 74, 82, 79, 91, 96, 100]
+        : chartPeriod === '30D'
+          ? [52, 61, 58, 72, 78, 85, 94]
+          : chartPeriod === '90D'
+            ? [40, 49, 63, 71, 80, 88, 97]
+            : [30, 42, 55, 64, 76, 89, 100];
 
   const daysLabels = isAr
     ? ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة']
@@ -247,14 +251,25 @@ export function OverviewView() {
                 ? `${totalRevenueEgp.toLocaleString('ar-EG')} ج.م`
                 : `EGP ${totalRevenueEgp.toLocaleString()}`}
             </p>
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-400">
-              <ArrowUpRight className="h-3.5 w-3.5" /> +18.4%
+            <span
+              className={`inline-flex items-center gap-0.5 rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                totalRevenueEgp > 0
+                  ? 'bg-emerald-500/15 text-emerald-400'
+                  : 'bg-slate-500/15 text-slate-400'
+              }`}
+            >
+              <ArrowUpRight className="h-3.5 w-3.5" />
+              {totalRevenueEgp > 0 ? '+18.4%' : '0%'}
             </span>
           </div>
           <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-            {isAr
-              ? 'إنستاباي 42% • بطاقات Paymob 31% • نقدي وفوري 27%'
-              : 'InstaPay 42% • Paymob 31% • Cash & Fawry 27%'}
+            {totalRevenueEgp > 0
+              ? isAr
+                ? 'إنستاباي • بطاقات Paymob • نقدي وفوري'
+                : 'InstaPay • Paymob Cards • Cash & Fawry'
+              : isAr
+                ? 'لا توجد فواتير محصلة بعد (0 ج.م)'
+                : 'No collected invoices yet (EGP 0)'}
           </p>
         </div>
 
@@ -269,14 +284,26 @@ export function OverviewView() {
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <p className="text-2xl font-extrabold text-slate-900 dark:text-white">
-              {isAr ? (2840 + activeCount).toLocaleString('ar-EG') : (2840 + activeCount).toLocaleString()}
+              {isAr ? activeCount.toLocaleString('ar-EG') : activeCount.toLocaleString()}
             </p>
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-400">
-              +12.1%
+            <span
+              className={`inline-flex items-center gap-0.5 rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                activeCount > 0
+                  ? 'bg-emerald-500/15 text-emerald-400'
+                  : 'bg-slate-500/15 text-slate-400'
+              }`}
+            >
+              {activeCount > 0 ? '+12.1%' : '0'}
             </span>
           </div>
           <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-            {isAr ? 'معدل الاحتفاظ بالأعضاء 96.6% (معدل تسرب 3.4%)' : '96.6% retention rate (3.4% monthly churn)'}
+            {filteredMembers.length > 0
+              ? isAr
+                ? `${Math.round((activeCount / Math.max(1, filteredMembers.length)) * 100)}% نسبة الأعضاء النشطين`
+                : `${Math.round((activeCount / Math.max(1, filteredMembers.length)) * 100)}% active ratio`
+              : isAr
+                ? 'لا يوجد أعضاء مسجلين بعد (0 عضو)'
+                : 'No members registered yet'}
           </p>
         </div>
 
@@ -291,10 +318,16 @@ export function OverviewView() {
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <p className="text-2xl font-extrabold text-slate-900 dark:text-white">
-              {isAr ? (412 + accessLogs.length).toLocaleString('ar-EG') : 412 + accessLogs.length}
+              {isAr ? accessLogs.length.toLocaleString('ar-EG') : accessLogs.length}
             </p>
             <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/15 px-2.5 py-0.5 text-xs font-bold text-sky-400">
-              {isAr ? '٣٦١ داخل النادي الآن' : '361 On-Floor Now'}
+              {accessLogs.length > 0
+                ? isAr
+                  ? `${Math.min(accessLogs.length, 12)} داخل النادي الآن`
+                  : `${Math.min(accessLogs.length, 12)} On-Floor Now`
+                : isAr
+                  ? '0 داخل النادي الآن'
+                  : '0 On-Floor Now'}
             </span>
           </div>
           <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
@@ -313,24 +346,30 @@ export function OverviewView() {
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <p className="text-2xl font-extrabold text-amber-700 dark:text-amber-400">
-              {isAr ? (38 + expiringCount).toLocaleString('ar-EG') : 38 + expiringCount}
+              {isAr ? expiringCount.toLocaleString('ar-EG') : expiringCount}
             </p>
             <button
               type="button"
               onClick={() =>
                 showToast(
                   isAr
-                    ? 'تم إرسال رسائل تذكير التجديد عبر واتساب لـ 39 عضواً مع رابط دفع فوري!'
-                    : 'Dispatched WhatsApp renewal reminders with instant Paymob/InstaPay links to 39 members!',
+                    ? `تم إرسال رسائل تذكير التجديد عبر واتساب لـ ${expiringCount} عضواً!`
+                    : `Dispatched WhatsApp renewal reminders to ${expiringCount} members!`,
                 )
               }
-              className="rounded-lg bg-amber-500/20 px-2.5 py-1 text-xs font-bold text-amber-200 transition hover:bg-amber-500/30"
+              className="rounded-lg bg-amber-500/20 px-2.5 py-1 text-xs font-bold text-amber-700 hover:bg-amber-500/30 dark:text-amber-200"
             >
               {isAr ? 'إرسال تذكير واتساب' : 'Send WhatsApp Blast'}
             </button>
           </div>
           <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-            {isAr ? 'إيرادات تجديد متوقعة: 164,000 ج.م' : 'Projected renewal pipeline: EGP 164,000'}
+            {expiringCount > 0
+              ? isAr
+                ? `إيرادات تجديد متوقعة: ${(expiringCount * 1400).toLocaleString('ar-EG')} ج.م`
+                : `Projected pipeline: EGP ${(expiringCount * 1400).toLocaleString()}`
+              : isAr
+                ? 'لا توجد اشتراكات تنتهي قريباً (0 ج.م)'
+                : 'No upcoming renewals'}
           </p>
         </div>
       </div>
@@ -419,7 +458,8 @@ export function OverviewView() {
 
           <div className="mt-5 space-y-4">
             {branches.map((br) => {
-              const pct = Math.round((br.currentOccupancy / br.capacity) * 100);
+              const occ = isCleanSlate ? 0 : br.currentOccupancy;
+              const pct = Math.round((occ / br.capacity) * 100);
               return (
                 <div
                   key={br.id}
@@ -441,7 +481,7 @@ export function OverviewView() {
                           : 'bg-emerald-500/20 text-emerald-300'
                       }`}
                     >
-                      {br.currentOccupancy}/{br.capacity} ({pct}%)
+                      {occ}/{br.capacity} ({pct}%)
                     </span>
                   </div>
                   <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-800">
@@ -758,6 +798,30 @@ export function MembersCrmView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
+              {filteredMembers.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center">
+                    <div className="mx-auto flex max-w-sm flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+                      <Users className="mb-3 h-10 w-10 text-slate-400 opacity-40" />
+                      <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                        {isAr ? 'لا يوجد أعضاء مسجلين حتى الآن (0 عضو)' : 'No registered members yet (0 members)'}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {isAr
+                          ? 'النادي جديد تماماً وجاهز لاستقبال أول مشترك في ناديك.'
+                          : 'Brand new club. Click (+ Register Member) to add your first member.'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setShowAddModal(true)}
+                        className="mt-4 rounded-xl bg-[#D4AF37] px-4 py-2 text-xs font-black text-slate-950 shadow-md hover:bg-[#e2bc3f]"
+                      >
+                        {isAr ? '+ إضافة أول مشترك الآن' : '+ Register First Member'}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )}
               {filteredMembers.map((m) => (
                 <tr key={m.id} className="transition hover:bg-slate-50 dark:hover:bg-slate-900/40">
                   <td className="px-4 py-3.5">
@@ -1553,7 +1617,9 @@ export function SubscriptionsView() {
               </div>
               <div className="col-span-2">
                 <span className="text-slate-500">{isAr ? 'المشتركون النشطون:' : 'Active Subscribers:'}</span>{' '}
-                <strong className="text-emerald-500 dark:text-emerald-400">{p.activeSubscribers}</strong>
+                <strong className="text-emerald-500 dark:text-emerald-400">
+                  {members.filter((m) => m.planId === p.id && m.status === 'ACTIVE').length}
+                </strong>
               </div>
             </div>
 
@@ -2034,6 +2100,15 @@ export function PaymentsBillingView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
+              {invoices.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="py-10 text-center text-xs font-bold text-slate-500 dark:text-slate-400">
+                    {isAr
+                      ? 'لا توجد فواتير أو مدفوعات مسجلة بعد — يمكنك إصدار أول فاتورة من محطة التحصيل أعلاه.'
+                      : 'No invoices or payments recorded yet — Issue your first invoice from the terminal above.'}
+                  </td>
+                </tr>
+              )}
               {invoices.map((inv) => (
                 <tr key={inv.id} className="hover:bg-slate-900/40">
                   <td className="px-4 py-3 font-mono text-xs font-bold text-[#F3E5AB]">

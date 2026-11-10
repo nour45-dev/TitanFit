@@ -246,34 +246,44 @@ export function BuiltInWorkoutVideoPlayer({
                 ref={videoRef}
                 key={videoUrl}
                 src={videoUrl}
-                poster={videoStarted ? undefined : thumbnailUrl}
                 controls
                 playsInline
-                preload="metadata"
-                onPlay={handleVideoPlaying}
-                onPlaying={handleVideoPlaying}
+                preload="auto"
+                onPlay={() => {
+                  setVideoStarted(true);
+                }}
+                onPlaying={(e) => {
+                  setVideoStarted(true);
+                  if (e.currentTarget.currentTime > 0.5 && e.currentTarget.videoWidth === 0) {
+                    setCodecWarning(true);
+                  }
+                }}
                 onTimeUpdate={(e) => {
-                  if (e.currentTarget.currentTime > 0) {
-                    handleVideoPlaying(e);
+                  if (e.currentTarget.currentTime > 0.5 && e.currentTarget.videoWidth === 0) {
+                    setCodecWarning(true);
                   }
                 }}
                 onEnded={() => setVideoStarted(false)}
                 className="h-full w-full object-contain"
               />
-              {/* Interactive Start Overlay so clicking the thumbnail immediately starts video & clears poster */}
+              {/* Separate Thumbnail Poster Overlay — completely unmounted once playback starts so it CAN NEVER cover the video! */}
               {!videoStarted && thumbnailUrl && (
                 <div
                   onClick={() => {
                     setVideoStarted(true);
                     if (videoRef.current) {
-                      videoRef.current.removeAttribute('poster');
                       videoRef.current.play().catch(() => {});
                     }
                   }}
-                  className="absolute inset-0 z-10 flex cursor-pointer items-center justify-center bg-black/40 transition hover:bg-black/25"
+                  className="absolute inset-0 z-10 flex cursor-pointer items-center justify-center bg-black/60 transition hover:bg-black/40"
                   title={isAr ? 'اضغط لتشغيل الفيديو' : 'Click to play video'}
                 >
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-500 text-slate-950 shadow-2xl transition hover:scale-110 hover:bg-amber-400">
+                  <img
+                    src={thumbnailUrl}
+                    alt={isAr ? titleAr : titleEn}
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                  <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500 text-slate-950 shadow-2xl transition hover:scale-110 hover:bg-amber-400">
                     <Play className="ms-1 h-8 w-8 fill-current" />
                   </div>
                 </div>
