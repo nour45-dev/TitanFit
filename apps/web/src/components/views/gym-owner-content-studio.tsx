@@ -317,8 +317,39 @@ export function GymOwnerContentStudioView() {
     setFlFileUrl('');
   };
 
+  const liveDraftWorkout: CustomWorkoutVideoItem | null = wkVideoUrl
+    ? {
+        id: 'draft-preview',
+        titleAr: wkTitleAr || (isAr ? 'معاينة الفيديو المرفوع' : 'Uploaded Video Preview'),
+        titleEn: wkTitleEn || wkTitleAr || 'Uploaded Video Preview',
+        categoryAr: wkCategoryAr,
+        categoryEn: wkCategoryAr,
+        levelAr: 'جميع المستويات',
+        levelEn: 'All Levels',
+        durationMin: 30,
+        kcalBurn: 300,
+        coachAr: currentUser?.name || (isAr ? 'كابتن النادي' : 'Club Head Coach'),
+        coachEn: currentUser?.name || 'Club Head Coach',
+        videoSourceType: wkSourceType,
+        videoUrl: wkVideoUrl,
+        thumbnailUrl: wkThumbnailUrl,
+        motionType: wkMotionType,
+        targetMuscleAr: wkTargetMuscleAr,
+        targetMuscleEn: wkTargetMuscleAr,
+        sets: Number(wkSets) || 4,
+        reps: wkReps || '10 - 12',
+        restSec: Number(wkRestSec) || 75,
+        safetyTipAr: wkSafetyTipAr,
+        safetyTipEn: wkSafetyTipAr,
+        createdAt: 'Now',
+      }
+    : null;
+
   const previewWorkout =
-    customWorkouts.find((w) => w.id === previewWorkoutId) ?? customWorkouts[0] ?? null;
+    liveDraftWorkout ??
+    customWorkouts.find((w) => w.id === previewWorkoutId) ??
+    customWorkouts[0] ??
+    null;
 
   const autoCalculatedRecipeKcal = Math.round(
     (Number(rcProteinG) || 0) * 4 +

@@ -374,43 +374,14 @@ export function BuiltInWorkoutVideoPlayer({
                 <span>{isAr ? '🔒 مشغل محمي ضد التحميل (Anti-Rip DRM)' : '🔒 Protected • No Download'}</span>
               </div>
 
-              {/* When video track frames cannot be decoded natively by browser (e.g. iPhone QuickTime/HEVC on Windows),
-                  auto-render the animated biomechanical athlete in sync with the audio track so the user NEVER sees a black screen! */}
-              {codecWarning && (
-                <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-between bg-gradient-to-br from-slate-950 via-[#0B1222] to-slate-950 p-3 pb-20">
-                  {/* Top Header Badge */}
-                  <div className="pointer-events-auto flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/25 px-3 py-1 text-xs font-black text-emerald-300 ring-1 ring-emerald-400/50 backdrop-blur-md">
-                      <Volume2 className="h-3.5 w-3.5 animate-pulse text-emerald-400" />
-                      {isAr
-                        ? '🎙️ صوت وتوجيهات الكابتن تعمل متزامنة مع المحاكاة الحركية ثلاثية الأبعاد (3D Motion)'
-                        : '🎙️ Coach Audio playing in sync with 3D Biomechanical Motion'}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setCodecWarning(false)}
-                      className="rounded-lg bg-slate-800/90 px-2.5 py-1 text-[11px] font-bold text-slate-300 ring-1 ring-slate-700 hover:bg-slate-700"
-                    >
-                      {isAr ? '🔄 إظهار إطار الفيديو' : 'Show Video Frame'}
-                    </button>
-                  </div>
-
-                  {/* Centered Dynamic Biomechanical Motion Animation */}
-                  <div className="relative mx-auto my-auto flex h-[62%] w-full max-w-lg items-center justify-center">
-                    <CartoonAthleteVisualCanvas
-                      motionType={motionType}
-                      isPlaying={!isVideoPaused}
-                      speedMultiplier={speedMultiplier}
-                    />
-                  </div>
-
-                  {/* Bottom explanation tip above progress bar */}
-                  <div className="pointer-events-auto text-center mb-1">
-                    <span className="rounded-md bg-black/75 px-3 py-1 text-[10px] font-bold text-amber-300 backdrop-blur-xs ring-1 ring-amber-500/30">
-                      {isAr
-                        ? '✨ تم تحويل العرض تلقائياً إلى محاكاة الحركة 3D لمنع الشاشة السوداء مع استمرار الصوت الأصلي والبروجريس بار'
-                        : 'Auto-rendered 3D motion in sync with coach audio track and progress bar'}
-                    </span>
+              {/* Centered Quick Play indicator if paused during playback */}
+              {isVideoPaused && videoStarted && (
+                <div
+                  onClick={togglePlayPause}
+                  className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/25 transition"
+                >
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/90 text-slate-950 shadow-2xl backdrop-blur-xs">
+                    <Play className="ms-1 h-8 w-8 fill-current" />
                   </div>
                 </div>
               )}
