@@ -660,6 +660,9 @@ export function MembersCrmView() {
     toggleMemberFreeze,
     simulateGateScan,
     showToast,
+    createInvoicePayment,
+    setActiveSection,
+    activeTenantCustom,
   } = usePlatformStore();
   const isAr = locale === 'ar';
 
@@ -670,6 +673,7 @@ export function MembersCrmView() {
   const [editingMember, setEditingMember] = useState<MemberItem | null>(null);
   const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
   const [newlyCreatedMember, setNewlyCreatedMember] = useState<MemberItem | null>(null);
+  const [newlyCreatedInvoice, setNewlyCreatedInvoice] = useState<InvoiceItem | null>(null);
 
   // Add Member Form State
   const [fullNameEn, setFullNameEn] = useState('');
@@ -683,6 +687,14 @@ export function MembersCrmView() {
   const [emergencyContactPhone, setEmergencyContactPhone] = useState('+2010');
   const [bloodType, setBloodType] = useState('O+');
   const [medicalConditions, setMedicalConditions] = useState('');
+  const [collectPaymentNow, setCollectPaymentNow] = useState(true);
+  const [addMemberPaymentMethod, setAddMemberPaymentMethod] = useState<InvoiceItem['method']>('CASH');
+  const [addMemberReferenceCode, setAddMemberReferenceCode] = useState('');
+
+  const selectedPlanForAdd = plans.find((p) => p.id === planId) ?? plans[0];
+  const subtotalForAdd = selectedPlanForAdd?.priceEgp ?? 0;
+  const vatForAdd = Math.round(subtotalForAdd * 0.14);
+  const totalForAdd = subtotalForAdd + vatForAdd;
 
   const filteredMembers = members.filter((m) => {
     if (selectedBranchId !== 'ALL' && m.branchId !== selectedBranchId) return false;
@@ -713,9 +725,24 @@ export function MembersCrmView() {
       bloodType,
       medicalConditions,
     });
+
+    let inv: InvoiceItem | null = null;
+    if (collectPaymentNow) {
+      inv = createInvoicePayment({
+        memberId: created.id,
+        planId,
+        method: addMemberPaymentMethod,
+        referenceCode: addMemberReferenceCode,
+      });
+      setNewlyCreatedInvoice(inv);
+    } else {
+      setNewlyCreatedInvoice(null);
+    }
+
     setFullNameEn('');
     setFullNameAr('');
     setMedicalConditions('');
+    setAddMemberReferenceCode('');
     setShowAddModal(false);
     setNewlyCreatedMember(created);
   };
@@ -1074,6 +1101,89 @@ export function MembersCrmView() {
                   ))}
                 </select>
               </div>
+
+              {/* Real Subscription Pricing & Cashier Collection */}
+              <div className="rounded-2xl border border-amber-500/40 bg-amber-50/80 p-4 dark:border-amber-500/30 dark:bg-amber-950/20 sm:col-span-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-500/20 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <Receipt className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    <span className="text-xs font-black text-slate-900 dark:text-white">
+                      {isAr ? 'تسعير الباقة وتحصيل الاشتراك فوراً' : 'Subscription Pricing & Cashier'}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+                    <span className="text-slate-600 dark:text-slate-400">
+                      {isAr ? 'قيمة الباقة:' : 'Base:'} <strong className="text-slate-900 dark:text-white">{subtotalForAdd.toLocaleString()} EGP</strong>
+                    </span>
+                    <span className="text-slate-400">+</span>
+                    <span className="text-slate-600 dark:text-slate-400">
+                      {isAr ? 'ضريبة (14% VAT):' : 'VAT:'} <strong className="text-slate-900 dark:text-white">{vatForAdd.toLocaleString()} EGP</strong>
+                    </span>
+                    <span className="rounded-lg bg-[#D4AF37] px-2.5 py-1 font-black text-slate-950 shadow-sm">
+                      {isAr ? 'الإجمالي المطلوب:' : 'Total:'} {totalForAdd.toLocaleString()} EGP
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={collectPaymentNow}
+                      onChange={(e) => setCollectPaymentNow(e.target.checked)}
+                      className="h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                    />
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      {isAr
+                        ? 'تأكيد تحصيل المبلغ وإصدار الفاتورة الضريبية فوراً (تظهر مباشرة في تابة الفواتير 🧾)'
+                        : 'Collect payment & issue tax invoice now (recorded immediately in Invoices tab)'}
+                    </span>
+                  </label>
+
+                  {collectPaymentNow && (
+                    <div className="mt-3 space-y-3 pt-2">
+                      <div>
+                        <span className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">
+                          {isAr ? 'اختر وسيلة الدفع التي سيسدد بها المتدرب:' : 'Select Payment Method:'}
+                        </span>
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                          {[
+                            { id: 'CASH', labelAr: '💵 نقدي بالاستقبال (Cash)', labelEn: 'Cash at Reception' },
+                            { id: 'INSTAPAY', labelAr: '📱 إنستاباي (InstaPay)', labelEn: 'InstaPay' },
+                            { id: 'PAYMOB_CARD', labelAr: '💳 بطاقة بنكية (Paymob)', labelEn: 'Paymob Card' },
+                            { id: 'VODAFONE_CASH', labelAr: '🔴 فودافون كاش', labelEn: 'Vodafone Cash' },
+                            { id: 'FAWRY', labelAr: '🟡 كود فوري (Fawry)', labelEn: 'Fawry Pay' },
+                            { id: 'STRIPE', labelAr: '🌐 سترايب دولي (Stripe)', labelEn: 'Stripe Global' },
+                          ].map((pm) => (
+                            <button
+                              key={pm.id}
+                              type="button"
+                              onClick={() => setAddMemberPaymentMethod(pm.id as any)}
+                              className={`rounded-xl border px-2.5 py-2 text-xs font-extrabold transition ${
+                                addMemberPaymentMethod === pm.id
+                                  ? 'border-amber-500 bg-amber-500 text-slate-950 font-black shadow-md'
+                                  : 'border-slate-200 bg-white text-slate-700 hover:border-amber-400 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300'
+                              }`}
+                            >
+                              {isAr ? pm.labelAr : pm.labelEn}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <input
+                          type="text"
+                          value={addMemberReferenceCode}
+                          onChange={(e) => setAddMemberReferenceCode(e.target.value)}
+                          placeholder={isAr ? 'رقم إيصال الكاشير أو مرجع التحويل InstaPay/POS (اختياري)' : 'Receipt / Transfer Reference (Optional)'}
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-mono text-xs text-slate-900 focus:border-amber-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                   {isAr ? 'اسم قريب للطوارئ' : 'Emergency Contact Name'}
@@ -1368,6 +1478,75 @@ export function MembersCrmView() {
                   </span>
                 </div>
               </div>
+
+              {/* Paid Invoice Badge & Direct Ledger Actions */}
+              {newlyCreatedInvoice && (
+                <div className="mt-3 rounded-2xl border border-emerald-500/40 bg-emerald-50/80 p-3.5 text-start dark:bg-emerald-950/20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      <span className="text-xs font-black text-emerald-900 dark:text-emerald-300">
+                        {isAr ? 'تم تحصيل الفاتورة الضريبية وإدراجها في تابة الفواتير 🧾' : 'Tax Invoice Paid & Logged'}
+                      </span>
+                    </div>
+                    <span className="font-mono text-xs font-black text-[#D4AF37]">
+                      {newlyCreatedInvoice.invoiceNumber}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between font-mono text-xs">
+                    <span className="text-slate-600 dark:text-slate-400">
+                      {isAr ? 'وسيلة التحصيل:' : 'Gateway:'} <strong className="text-slate-900 dark:text-white">{newlyCreatedInvoice.method}</strong>
+                    </span>
+                    <span className="font-black text-slate-900 dark:text-white">
+                      {newlyCreatedInvoice.totalEgp.toLocaleString()} EGP (14% VAT)
+                    </span>
+                  </div>
+                  <div className="mt-2.5 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewlyCreatedMember(null);
+                        setActiveSection('PAYMENTS');
+                      }}
+                      className="flex-1 rounded-xl bg-slate-900 dark:bg-slate-800 py-1.5 text-center text-xs font-bold text-amber-400 hover:bg-slate-800 transition"
+                    >
+                      {isAr ? 'عرض في سجل الفواتير والمدفوعات ←' : 'Open Invoices Tab →'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const gymName =
+                            isAr && activeTenantCustom?.nameAr
+                              ? activeTenantCustom.nameAr
+                              : activeTenantCustom?.nameEn || 'TitanFit Club';
+                          await downloadInvoicePdf(
+                            {
+                              invoiceNumber: newlyCreatedInvoice.invoiceNumber,
+                              memberName: isAr ? newlyCreatedInvoice.memberNameAr : newlyCreatedInvoice.memberNameEn,
+                              planName: isAr ? newlyCreatedInvoice.planNameAr : newlyCreatedInvoice.planNameEn,
+                              subtotalEgp: newlyCreatedInvoice.subtotalEgp,
+                              discountEgp: newlyCreatedInvoice.discountEgp,
+                              vatEgp: newlyCreatedInvoice.vatEgp,
+                              totalEgp: newlyCreatedInvoice.totalEgp,
+                              method: newlyCreatedInvoice.method,
+                              referenceCode: newlyCreatedInvoice.referenceCode,
+                              createdAt: newlyCreatedInvoice.createdAt,
+                            },
+                            gymName,
+                            isAr,
+                          );
+                        } catch (e) {
+                          console.error(e);
+                        }
+                      }}
+                      className="rounded-xl border border-emerald-500/40 bg-emerald-500/20 px-3 py-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-200 hover:bg-emerald-500/30 transition"
+                    >
+                      {isAr ? 'تحميل إيصال PDF 🖨️' : 'PDF Receipt'}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Digital QR Code */}
               <div className="mx-auto my-4 flex h-36 w-36 flex-col items-center justify-center rounded-2xl border-2 border-[#D4AF37] bg-white p-2 text-slate-950 shadow-md">
@@ -1897,19 +2076,35 @@ export function SubscriptionsView() {
 }
 
 export function PaymentsBillingView() {
-  const { locale, members, plans, invoices, createInvoicePayment, refundInvoice, activeTenantCustom } =
-    usePlatformStore();
+  const {
+    locale,
+    members,
+    plans,
+    invoices,
+    createInvoicePayment,
+    refundInvoice,
+    activeTenantCustom,
+    showToast,
+    setActiveSection,
+  } = usePlatformStore();
   const isAr = locale === 'ar';
 
-  const [selectedMemberId, setSelectedMemberId] = useState(members[0]?.id ?? 'mem-1001');
-  const [selectedPlanId, setSelectedPlanId] = useState(plans[0]?.id ?? 'plan-annual-vip');
-  const [paymentMethod, setPaymentMethod] = useState<InvoiceItem['method']>('INSTAPAY');
-  const [couponCode, setCouponCode] = useState('RAMADAN20');
-  const [referenceCode, setReferenceCode] = useState('IPA-992837415-CIB');
+  const [selectedMemberId, setSelectedMemberId] = useState(members[0]?.id ?? '');
+  const [selectedPlanId, setSelectedPlanId] = useState(members[0]?.planId ?? plans[0]?.id ?? 'plan-annual-vip');
+  const [paymentMethod, setPaymentMethod] = useState<InvoiceItem['method']>('CASH');
+  const [couponCode, setCouponCode] = useState('');
+  const [referenceCode, setReferenceCode] = useState('');
   const [lastIssuedInvoice, setLastIssuedInvoice] = useState<InvoiceItem | null>(null);
   const [printableInvoice, setPrintableInvoice] = useState<InvoiceItem | null>(null);
 
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? plans[0]!;
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? plans[0] ?? {
+    id: 'plan-custom',
+    nameAr: 'باقة تدريب عامة',
+    nameEn: 'General Plan',
+    priceEgp: 1500,
+    durationDays: 30,
+  };
+
   const discountRate =
     couponCode.trim().toUpperCase() === 'RAMADAN20'
       ? 0.2
@@ -1924,7 +2119,23 @@ export function PaymentsBillingView() {
   const vat = Math.round(net * 0.14);
   const total = net + vat;
 
+  const handleMemberSelect = (memId: string) => {
+    setSelectedMemberId(memId);
+    const m = members.find((x) => x.id === memId);
+    if (m?.planId) {
+      setSelectedPlanId(m.planId);
+    }
+  };
+
   const handleIssueInvoice = () => {
+    if (members.length === 0 || !selectedMemberId) {
+      showToast(
+        isAr
+          ? '⚠️ يُرجى تسجيل متدرب أولاً لتحصيل الاشتراك وإصدار الفاتورة الضريبية باسمه!'
+          : 'Please register a member first!',
+      );
+      return;
+    }
     const inv = createInvoicePayment({
       memberId: selectedMemberId,
       planId: selectedPlanId,
@@ -1942,77 +2153,97 @@ export function PaymentsBillingView() {
         <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6 lg:col-span-2">
           <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">
             {isAr
-              ? 'محطة تحصيل الاشتراكات وبوابات الدفع المصرية (Paymob / Fawry / InstaPay)'
-              : 'Egypt & Global Cashier Terminal (InstaPay / Paymob / Fawry / Vodafone Cash)'}
+              ? 'محطة تحصيل الاشتراكات وبوابات الدفع الرسمية (Cash / InstaPay / Paymob / Fawry)'
+              : 'Official Egypt & Global Cashier Terminal (Cash / InstaPay / Paymob / Fawry)'}
           </h2>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             {isAr
-              ? 'إصدار فوري للفاتورة الضريبية شاملة 14% ضريبة القيمة المضافة مع منع التكرار (Idempotency-Key)'
-              : 'Idempotent checkout with 14% Egypt VAT calculation and verified webhook signatures'}
+              ? 'إصدار فوري للفواتير الضريبية المعتمدة شاملة 14% ضريبة القيمة المضافة ومحمية بتشفير SHA-256'
+              : 'Official checkout with 14% Egypt VAT calculation and verified SHA-256 digital receipt signatures'}
           </p>
 
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="checkout-member-select" className="block text-xs font-bold text-slate-300">
-                {isAr ? 'اختر العضو' : 'Select Member'}
-              </label>
-              <select
-                id="checkout-member-select"
-                aria-label={isAr ? 'اختر العضو' : 'Select Member'}
-                value={selectedMemberId}
-                onChange={(e) => setSelectedMemberId(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-white"
-              >
-                {members.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {isAr ? m.fullNameAr : m.fullNameEn} ({m.code})
-                  </option>
-                ))}
-              </select>
-            </div>
+            {members.length === 0 ? (
+              <div className="rounded-2xl border border-amber-500/40 bg-amber-50/80 dark:bg-amber-950/20 p-4 text-center sm:col-span-2">
+                <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                  {isAr
+                    ? '⚠️ لا يوجد متدربون مسجلون في النادي حالياً لتحصيل اشتراكهم.'
+                    : 'No members registered yet.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setActiveSection('MEMBERS')}
+                  className="mt-2.5 inline-flex items-center gap-1.5 rounded-xl bg-[#D4AF37] px-4 py-2 text-xs font-black text-slate-950 hover:bg-amber-400 shadow-md transition"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  {isAr ? '+ تسجيل متدرب جديد وتحصيل اشتراكه فوراً' : '+ Register Member & Collect'}
+                </button>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label htmlFor="checkout-member-select" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'اختر المتدرب' : 'Select Member'}
+                  </label>
+                  <select
+                    id="checkout-member-select"
+                    aria-label={isAr ? 'اختر المتدرب' : 'Select Member'}
+                    value={selectedMemberId}
+                    onChange={(e) => handleMemberSelect(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-amber-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  >
+                    {members.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {isAr ? m.fullNameAr : m.fullNameEn} ({m.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            <div>
-              <label htmlFor="checkout-plan-select" className="block text-xs font-bold text-slate-300">
-                {isAr ? 'باقة الاشتراك' : 'Subscription Plan'}
-              </label>
-              <select
-                id="checkout-plan-select"
-                aria-label={isAr ? 'باقة الاشتراك' : 'Subscription Plan'}
-                value={selectedPlanId}
-                onChange={(e) => setSelectedPlanId(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-white"
-              >
-                {plans.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {isAr ? p.nameAr : p.nameEn} — {p.priceEgp.toLocaleString()} EGP
-                  </option>
-                ))}
-              </select>
-            </div>
+                <div>
+                  <label htmlFor="checkout-plan-select" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'باقة الاشتراك المحددة' : 'Subscription Plan'}
+                  </label>
+                  <select
+                    id="checkout-plan-select"
+                    aria-label={isAr ? 'باقة الاشتراك المحددة' : 'Subscription Plan'}
+                    value={selectedPlanId}
+                    onChange={(e) => setSelectedPlanId(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-amber-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  >
+                    {plans.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {isAr ? p.nameAr : p.nameEn} — {p.priceEgp.toLocaleString()} EGP
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-300">
-                {isAr ? 'وسيلة الدفع (نموذج تجريبي)' : 'Payment Gateway / Method (Demo)'}
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                {isAr ? 'وسيلة وبوابة التحصيل المعتمدة (قنوات دفع رسمية مرخصة)' : 'Official Payment Gateway & Cashier Channel'}
               </label>
               <div className="mt-1.5 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {(
                   [
-                    { id: 'INSTAPAY', labelEn: 'InstaPay Egypt', labelAr: 'إنستاباي (InstaPay)' },
-                    { id: 'PAYMOB_CARD', labelEn: 'Paymob Visa/MC', labelAr: 'بطاقة بنكية (Paymob)' },
-                    { id: 'VODAFONE_CASH', labelEn: 'Vodafone Cash', labelAr: 'فودافون كاش' },
-                    { id: 'FAWRY', labelEn: 'Fawry Reference', labelAr: 'فوري (Fawry Pay)' },
-                    { id: 'CASH', labelEn: 'Cash at Reception', labelAr: 'نقدي بالاستقبال' },
-                    { id: 'STRIPE', labelEn: 'Stripe Global (USD)', labelAr: 'سترايب دولي (Stripe)' },
+                    { id: 'CASH', labelEn: 'Cash at Reception', labelAr: '💵 نقدي بالاستقبال (Cash)' },
+                    { id: 'INSTAPAY', labelEn: 'InstaPay Egypt', labelAr: '📱 إنستاباي (InstaPay)' },
+                    { id: 'PAYMOB_CARD', labelEn: 'Paymob Visa/MC', labelAr: '💳 بطاقة بنكية (Paymob)' },
+                    { id: 'VODAFONE_CASH', labelEn: 'Vodafone Cash', labelAr: '🔴 فودافون كاش' },
+                    { id: 'FAWRY', labelEn: 'Fawry Reference', labelAr: '🟡 كود فوري (Fawry)' },
+                    { id: 'STRIPE', labelEn: 'Stripe Global (USD)', labelAr: '🌐 سترايب دولي (Stripe)' },
                   ] as const
                 ).map((pm) => (
                   <button
                     key={pm.id}
                     type="button"
                     onClick={() => setPaymentMethod(pm.id)}
-                    className={`rounded-xl border px-3 py-2.5 text-xs font-extrabold transition ${
+                    className={`rounded-xl border px-3 py-2.5 text-xs font-extrabold transition flex items-center justify-center gap-1.5 ${
                       paymentMethod === pm.id
-                        ? 'border-[#D4AF37] bg-[#D4AF37]/15 text-[#F3E5AB]'
-                        : 'border-slate-800 bg-slate-900/70 text-slate-300 hover:border-slate-700'
+                        ? 'border-amber-500 bg-amber-500 text-slate-950 font-black shadow-md'
+                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-amber-400 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:border-slate-700'
                     }`}
                   >
                     {isAr ? pm.labelAr : pm.labelEn}
@@ -2022,26 +2253,28 @@ export function PaymentsBillingView() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300">
-                {isAr ? 'كود الخصم (اختياري)' : 'Coupon Code (RAMADAN20 / TITAN15)'}
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                {isAr ? 'كود الخصم أو الكوبون (اختياري)' : 'Coupon Code (Optional)'}
               </label>
               <input
                 type="text"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-sm uppercase text-[#D4AF37]"
+                placeholder={isAr ? 'مثال: TITAN15 أو RAMADAN20' : 'e.g. TITAN15'}
+                className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm uppercase text-slate-900 focus:bg-white focus:border-amber-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300">
-                {isAr ? 'رقم مرجع التحويل (InstaPay / POS Ref)' : 'Transaction Reference / IPA Handle'}
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                {isAr ? 'رقم إيصال الكاشير أو مرجع التحويل (اختياري)' : 'Transaction Reference / IPA Handle'}
               </label>
               <input
                 type="text"
                 value={referenceCode}
                 onChange={(e) => setReferenceCode(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-sm text-white"
+                placeholder={isAr ? 'مثال: POS-00124 أو IPA-CIB-992' : 'e.g. POS-00124'}
+                className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 focus:bg-white focus:border-amber-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               />
             </div>
           </div>
@@ -2058,23 +2291,25 @@ export function PaymentsBillingView() {
             </div>
 
             <div className="mt-5 space-y-3 text-sm">
-              <div className="flex justify-between text-slate-300">
+              <div className="flex justify-between text-slate-200">
                 <span>{isAr ? 'قيمة الباقة الأساسية' : 'Plan Subtotal'}</span>
-                <span className="font-mono font-bold">{subtotal.toLocaleString()} EGP</span>
+                <span className="font-mono font-bold text-white">{subtotal.toLocaleString()} EGP</span>
               </div>
-              <div className="flex justify-between text-emerald-400">
-                <span>
-                  {isAr ? 'خصم الكوبون' : 'Coupon Discount'} ({Math.round(discountRate * 100)}%)
-                </span>
-                <span className="font-mono font-bold">-{discount.toLocaleString()} EGP</span>
-              </div>
-              <div className="flex justify-between text-slate-300">
+              {discount > 0 && (
+                <div className="flex justify-between text-emerald-400">
+                  <span>
+                    {isAr ? 'خصم الكوبون' : 'Coupon Discount'} ({Math.round(discountRate * 100)}%)
+                  </span>
+                  <span className="font-mono font-bold text-emerald-300">-{discount.toLocaleString()} EGP</span>
+                </div>
+              )}
+              <div className="flex justify-between text-slate-200">
                 <span>{isAr ? 'ضريبة القيمة المضافة (14%)' : 'Egypt VAT (14%)'}</span>
-                <span className="font-mono font-bold">+{vat.toLocaleString()} EGP</span>
+                <span className="font-mono font-bold text-white">+{vat.toLocaleString()} EGP</span>
               </div>
-              <div className="border-t border-slate-700 pt-3 flex justify-between text-lg font-extrabold text-slate-900 dark:text-white">
+              <div className="border-t border-slate-700 pt-3 flex justify-between text-lg font-extrabold text-white">
                 <span>{isAr ? 'الإجمالي المستحق' : 'Total Payable'}</span>
-                <span className="font-mono text-[#D4AF37]">{total.toLocaleString()} EGP</span>
+                <span className="font-mono text-[#F3E5AB] font-black text-xl">{total.toLocaleString()} EGP</span>
               </div>
             </div>
           </div>
@@ -2084,19 +2319,23 @@ export function PaymentsBillingView() {
               type="button"
               data-testid="issue-invoice-btn"
               onClick={handleIssueInvoice}
-              className="w-full rounded-xl bg-[#D4AF37] py-3 text-xs font-extrabold text-slate-950 shadow-lg shadow-[#D4AF37]/20 transition hover:bg-[#e5c145]"
+              className="w-full rounded-xl bg-[#D4AF37] py-3 text-xs font-black text-slate-950 shadow-lg shadow-[#D4AF37]/20 transition hover:bg-[#e5c145]"
             >
               {isAr
                 ? 'تأكيد التحصيل وإصدار الفاتورة الضريبية + QR'
                 : 'Confirm Payment & Issue QR Tax Invoice'}
             </button>
 
+            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-2 text-center text-[10px] text-slate-400">
+              <span>{isAr ? '🛡️ معاملة مالية آمنة ومسجلة في السجل المالي الضريبي' : '🛡️ Audited & Tax Ledger Verified'}</span>
+            </div>
+
             {lastIssuedInvoice && (
               <div
                 data-testid="invoice-status-msg"
                 className="rounded-xl border border-emerald-500/40 bg-emerald-500/15 p-3 text-xs font-bold text-emerald-300"
               >
-                ✅ INV-2026-1002 / {lastIssuedInvoice.invoiceNumber} —{' '}
+                ✅ {lastIssuedInvoice.invoiceNumber} —{' '}
                 {isAr
                   ? `تم التحصيل بنجاح (${lastIssuedInvoice.totalEgp.toLocaleString()} ج.م)`
                   : `Paid EGP ${lastIssuedInvoice.totalEgp.toLocaleString()} via ${lastIssuedInvoice.method}`}

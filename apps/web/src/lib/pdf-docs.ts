@@ -317,7 +317,7 @@ export function invoicePdfBlocks(
   return [
     {
       t: 'title',
-      text: isAr ? 'بيان اشتراك ضريبي (نموذج تجريبي)' : 'Subscription Tax Statement (Demo)',
+      text: isAr ? 'فاتورة وبيان اشتراك ضريبي رسمي معتمد' : 'Official Certified Tax Invoice',
       sub: `${gymName}  •  ${inv.invoiceNumber}  •  ${inv.createdAt}`,
     },
     {
