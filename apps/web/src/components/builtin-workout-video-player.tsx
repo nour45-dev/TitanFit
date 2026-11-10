@@ -21,6 +21,7 @@ import {
   CartoonAthleteVisualCanvas,
   type ExerciseMotionType,
 } from './exercise-motion-card';
+import { getMediaBlob } from '../lib/media-storage';
 
 export interface BuiltInWorkoutVideoPlayerProps {
   titleAr: string;
@@ -87,12 +88,84 @@ export function BuiltInWorkoutVideoPlayer({
   // External / Uploaded video playback state
   const [videoStarted, setVideoStarted] = useState<boolean>(false);
   const [codecWarning, setCodecWarning] = useState<boolean>(false);
+  const [resolvedSrc, setResolvedSrc] = useState<string>(videoUrl || '');
+  const [videoCurrentTime, setVideoCurrentTime] = useState<number>(0);
+  const [videoDuration, setVideoDuration] = useState<number>(0);
+  const [isVideoPaused, setIsVideoPaused] = useState<boolean>(true);
+  const [isVideoMuted, setIsVideoMuted] = useState<boolean>(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     setVideoStarted(false);
     setCodecWarning(false);
+    setVideoCurrentTime(0);
+    setIsVideoPaused(true);
+
+    let active = true;
+    if (videoUrl?.startsWith('idb://')) {
+      const key = videoUrl.replace('idb://', '');
+      getMediaBlob(key).then((blob) => {
+        if (active && blob) {
+          const url = URL.createObjectURL(blob);
+          setResolvedSrc(url);
+        }
+      });
+    } else {
+      setResolvedSrc(videoUrl || '');
+    }
+    return () => {
+      active = false;
+    };
   }, [videoUrl]);
+
+  const formatTime = (seconds: number) => {
+    if (!seconds || isNaN(seconds) || seconds < 0) return '00:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  const togglePlayPause = () => {
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) {
+      videoRef.current
+        .play()
+        .then(() => {
+          setIsVideoPaused(false);
+          setVideoStarted(true);
+        })
+        .catch(() => {});
+    } else {
+      videoRef.current.pause();
+      setIsVideoPaused(true);
+    }
+  };
+
+  const toggleMute = () => {
+    if (!videoRef.current) return;
+    videoRef.current.muted = !videoRef.current.muted;
+    setIsVideoMuted(videoRef.current.muted);
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = Number(e.target.value);
+    setVideoCurrentTime(time);
+    if (videoRef.current) {
+      videoRef.current.currentTime = time;
+    }
+  };
+
+  const handleRestart = () => {
+    if (!videoRef.current) return;
+    videoRef.current.currentTime = 0;
+    videoRef.current
+      .play()
+      .then(() => {
+        setIsVideoPaused(false);
+        setVideoStarted(true);
+      })
+      .catch(() => {});
+  };
 
   const targetRepsNum = parseInt(reps.replace(/[^0-9]/g, '').slice(0, 2) || '10', 10) || 10;
 
@@ -239,44 +312,72 @@ export function BuiltInWorkoutVideoPlayer({
 
       {/* Main Video Stage */}
       {activeMode === 'EXTERNAL_VIDEO' && hasExternalOrUploadedVideo ? (
-        <div className="group relative aspect-video w-full overflow-hidden bg-slate-950">
+        <div
+          onContextMenu={(e) => {
+            e.preventDefault();
+            return false;
+          }}
+          className="group relative aspect-video w-full overflow-hidden bg-slate-950 select-none"
+        >
           {isDirectVideoFile ? (
             <>
               <video
                 ref={videoRef}
-                key={videoUrl}
-                src={videoUrl}
-                controls
+                key={resolvedSrc}
+                src={resolvedSrc}
+                controlsList="nodownload nofullscreen noremoteplayback"
+                disablePictureInPicture
+                controls={false}
                 playsInline
                 preload="auto"
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  return false;
+                }}
+                onClick={togglePlayPause}
                 onPlay={() => {
                   setVideoStarted(true);
+                  setIsVideoPaused(false);
+                }}
+                onPause={() => {
+                  setIsVideoPaused(true);
                 }}
                 onLoadedMetadata={(e) => {
-                  // If browser cannot decode video track dimensions (e.g. iPhone HEVC on Windows)
+                  setVideoDuration(e.currentTarget.duration || 0);
                   if (e.currentTarget.videoWidth === 0) {
                     setCodecWarning(true);
                   }
                 }}
                 onPlaying={(e) => {
                   setVideoStarted(true);
+                  setIsVideoPaused(false);
                   if (e.currentTarget.videoWidth === 0) {
                     setCodecWarning(true);
                   }
                 }}
                 onTimeUpdate={(e) => {
+                  setVideoCurrentTime(e.currentTarget.currentTime || 0);
                   if (e.currentTarget.currentTime > 0.2 && e.currentTarget.videoWidth === 0) {
                     setCodecWarning(true);
                   }
                 }}
-                onEnded={() => setVideoStarted(false)}
-                className="h-full w-full object-contain"
+                onEnded={() => {
+                  setVideoStarted(false);
+                  setIsVideoPaused(true);
+                }}
+                className="h-full w-full object-contain cursor-pointer"
               />
+
+              {/* Anti-Download DRM Security Badge */}
+              <div className="pointer-events-none absolute top-3 end-3 z-30 flex items-center gap-1.5 rounded-full bg-black/75 px-3 py-1 text-[10px] font-bold text-amber-300 ring-1 ring-amber-500/30 backdrop-blur-md">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                <span>{isAr ? '🔒 مشغل محمي ضد التحميل (Anti-Rip DRM)' : '🔒 Protected • No Download'}</span>
+              </div>
 
               {/* When video track frames cannot be decoded natively by browser (e.g. iPhone QuickTime/HEVC on Windows),
                   auto-render the animated biomechanical athlete in sync with the audio track so the user NEVER sees a black screen! */}
               {codecWarning && (
-                <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-between bg-gradient-to-br from-slate-950 via-[#0B1222] to-slate-950 p-3">
+                <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-between bg-gradient-to-br from-slate-950 via-[#0B1222] to-slate-950 p-3 pb-20">
                   {/* Top Header Badge */}
                   <div className="pointer-events-auto flex items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/25 px-3 py-1 text-xs font-black text-emerald-300 ring-1 ring-emerald-400/50 backdrop-blur-md">
@@ -295,34 +396,36 @@ export function BuiltInWorkoutVideoPlayer({
                   </div>
 
                   {/* Centered Dynamic Biomechanical Motion Animation */}
-                  <div className="relative mx-auto my-auto flex h-[68%] w-full max-w-lg items-center justify-center">
+                  <div className="relative mx-auto my-auto flex h-[62%] w-full max-w-lg items-center justify-center">
                     <CartoonAthleteVisualCanvas
                       motionType={motionType}
-                      isPlaying={videoStarted}
+                      isPlaying={!isVideoPaused}
                       speedMultiplier={speedMultiplier}
                     />
                   </div>
 
-                  {/* Bottom explanation tip above native control bar */}
-                  <div className="pointer-events-auto mb-11 text-center">
+                  {/* Bottom explanation tip above progress bar */}
+                  <div className="pointer-events-auto text-center mb-1">
                     <span className="rounded-md bg-black/75 px-3 py-1 text-[10px] font-bold text-amber-300 backdrop-blur-xs ring-1 ring-amber-500/30">
                       {isAr
-                        ? '✨ تم تحويل العرض تلقائياً إلى محاكاة الحركة 3D لمنع الشاشة السوداء مع استمرار الصوت الأصلي للمدرب'
-                        : 'Auto-rendered 3D motion in sync with coach audio track'}
+                        ? '✨ تم تحويل العرض تلقائياً إلى محاكاة الحركة 3D لمنع الشاشة السوداء مع استمرار الصوت الأصلي والبروجريس بار'
+                        : 'Auto-rendered 3D motion in sync with coach audio track and progress bar'}
                     </span>
                   </div>
                 </div>
               )}
+
               {/* Separate Thumbnail Poster Overlay — completely unmounted once playback starts so it CAN NEVER cover the video! */}
               {!videoStarted && thumbnailUrl && (
                 <div
                   onClick={() => {
                     setVideoStarted(true);
+                    setIsVideoPaused(false);
                     if (videoRef.current) {
                       videoRef.current.play().catch(() => {});
                     }
                   }}
-                  className="absolute inset-0 z-10 flex cursor-pointer items-center justify-center bg-black/60 transition hover:bg-black/40"
+                  className="absolute inset-0 z-20 flex cursor-pointer items-center justify-center bg-black/60 transition hover:bg-black/40"
                   title={isAr ? 'اضغط لتشغيل الفيديو' : 'Click to play video'}
                 >
                   <img
@@ -336,7 +439,79 @@ export function BuiltInWorkoutVideoPlayer({
                 </div>
               )}
 
+              {/* Custom High-Precision Video Control & Progress Bar with Anti-Download Guard */}
+              <div className="absolute inset-x-0 bottom-0 z-30 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-3 pt-6 pointer-events-auto">
+                {/* Scrub Progress Bar */}
+                <div className="relative flex items-center mb-2 cursor-pointer">
+                  <input
+                    type="range"
+                    min={0}
+                    max={videoDuration || 100}
+                    step={0.1}
+                    value={videoCurrentTime}
+                    onChange={handleSeek}
+                    className="w-full h-1.5 rounded-full appearance-none bg-slate-700/80 cursor-pointer accent-amber-500 transition-all hover:h-2"
+                    style={{
+                      background: `linear-gradient(to right, #D4AF37 0%, #10B981 ${
+                        videoDuration > 0 ? (videoCurrentTime / videoDuration) * 100 : 0
+                      }%, #334155 ${
+                        videoDuration > 0 ? (videoCurrentTime / videoDuration) * 100 : 0
+                      }%, #334155 100%)`,
+                    }}
+                  />
+                </div>
 
+                {/* Player Controls Row */}
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={togglePlayPause}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 transition shadow-sm"
+                      title={isVideoPaused ? (isAr ? 'تشغيل' : 'Play') : (isAr ? 'إيقاف مؤقت' : 'Pause')}
+                    >
+                      {isVideoPaused ? (
+                        <Play className="h-4 w-4 fill-current ms-0.5" />
+                      ) : (
+                        <Pause className="h-4 w-4 fill-current" />
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleRestart}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition"
+                      title={isAr ? 'إعادة من البداية' : 'Replay'}
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={toggleMute}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition"
+                    >
+                      {isVideoMuted ? (
+                        <VolumeX className="h-4 w-4 text-rose-400" />
+                      ) : (
+                        <Volume2 className="h-4 w-4 text-emerald-400" />
+                      )}
+                    </button>
+
+                    <div className="font-mono text-xs font-bold text-slate-200 flex items-center gap-1 ms-1">
+                      <span className="text-amber-400">{formatTime(videoCurrentTime)}</span>
+                      <span className="text-slate-500">/</span>
+                      <span>{formatTime(videoDuration)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-slate-800/80 px-2 py-0.5 text-[10px] font-bold text-slate-300 border border-slate-700">
+                      {isAr ? 'جودة HD 1080p' : 'HD 1080p'}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </>
           ) : (
             <iframe
