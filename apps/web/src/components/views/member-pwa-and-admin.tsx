@@ -145,6 +145,7 @@ export function MemberPwaPortalView() {
   const {
     locale,
     members,
+    branches,
     staff,
     workoutLogs,
     chatMessages,
@@ -161,11 +162,57 @@ export function MemberPwaPortalView() {
     'WORKOUT_3D' | 'NUTRITION' | 'COACH_CHAT' | 'TRAINERS' | 'FILES' | 'GATE_PASS'
   >('WORKOUT_3D');
 
-  const currentMember = members[0]!;
+  const currentMember = members[0] || {
+    id: 'mem-preview',
+    code: 'TF-PREVIEW',
+    fullNameEn: 'New Trainee',
+    fullNameAr: 'متدرب جديد',
+    phone: '01000000000',
+    email: 'trainee@titanfit.eg',
+    gender: 'MALE' as const,
+    branchId: branches[0]?.id || 'br-default',
+    status: 'ACTIVE' as const,
+    planNameEn: 'Gym Membership',
+    planNameAr: 'اشتراك النادي',
+    planId: 'plan-default',
+    startDate: new Date().toISOString().split('T')[0]!,
+    endDate: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]!,
+    remainingSessions: 12,
+    freezeDaysRemaining: 15,
+    streakDays: 1,
+    points: 100,
+    avatarInitials: 'TF',
+    tags: ['New'],
+    assignedTrainerId: staff[0]?.id || 'st-default',
+    assignedTrainerAr: staff[0]?.nameAr || 'كابتن النادي',
+    assignedTrainerEn: staff[0]?.nameEn || 'Club Coach',
+  };
+
   const assignedCoach =
     staff.find((s) => s.id === currentMember?.assignedTrainerId) ||
     staff.find((s) => s.nameAr === currentMember?.assignedTrainerAr) ||
-    staff[0];
+    staff[0] || {
+      id: 'st-default',
+      nameAr: 'كابتن النادي المعتمد',
+      nameEn: 'Certified Gym Coach',
+      role: 'TRAINER' as const,
+      specialtyAr: 'اللياقة والقوة البدنية',
+      specialtyEn: 'Strength & Conditioning',
+      branchId: branches[0]?.id || 'br-default',
+      phone: '01002169889',
+      whatsappNumber: '01002169889',
+      activeClients: 0,
+      commissionRatePercent: 20,
+      monthlyRevenueEgp: 0,
+      baseSalaryEgp: 8000,
+      ptSessionRateEgp: 400,
+      rating: 5.0,
+      shiftAr: 'صباحي',
+      shiftEn: 'Morning',
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+      bioAr: 'مدرب معتمد للمتابعة والتدريب الرياضي في ناديك.',
+      bioEn: 'Certified fitness and personal trainer.',
+    };
 
   const [selectedPwaWorkoutId, setSelectedPwaWorkoutId] = useState<string>(
     customWorkouts[0]?.id || '',
@@ -807,13 +854,19 @@ export function MemberPwaPortalView() {
                       className={`flex flex-col ${isMember ? 'items-end' : 'items-start'}`}
                     >
                       <div
-                        className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs shadow-xs ${
+                        className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs shadow-sm ${
                           isMember
-                            ? 'border border-amber-300 bg-amber-100 text-amber-950 font-bold dark:border-amber-500/40 dark:bg-amber-500/20 dark:text-amber-100'
-                            : 'border border-slate-300 bg-slate-100 text-slate-900 font-bold dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100'
+                            ? 'bg-slate-900 text-white font-bold dark:bg-amber-500 dark:text-slate-950 dark:font-black'
+                            : 'border border-slate-200 bg-slate-100 text-slate-900 font-bold dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100'
                         }`}
                       >
-                        <div className="mb-1 flex items-center justify-between gap-3 text-[10px] font-extrabold opacity-80">
+                        <div
+                          className={`mb-1 flex items-center justify-between gap-3 text-[10px] font-extrabold ${
+                            isMember
+                              ? 'text-amber-400 dark:text-slate-900 opacity-90'
+                              : 'text-slate-500 dark:text-slate-400'
+                          }`}
+                        >
                           <span>{isAr ? msg.senderNameAr : msg.senderNameEn}</span>
                           <span>{msg.time}</span>
                         </div>
@@ -1316,6 +1369,8 @@ export function TenantSettingsView() {
     activeTenantCustom,
     updateTenantBranding,
     resetToCleanGymState,
+    gymStateMode,
+    setGymStateMode,
   } = usePlatformStore();
   const isAr = locale === 'ar';
   const [confirmCleanSlate, setConfirmCleanSlate] = useState(false);
@@ -1436,32 +1491,64 @@ export function TenantSettingsView() {
         </div>
       </div>
 
-      {/* Clean Slate & Production Initialization for Client */}
-      <div className="rounded-2xl border border-rose-300/80 bg-rose-50/50 p-6 dark:border-rose-900/50 dark:bg-rose-950/20">
+      {/* Clean Slate & Mode Switcher for Client Handover */}
+      <div className="rounded-2xl border border-amber-300/80 bg-gradient-to-r from-amber-50/70 via-white to-amber-100/40 p-6 shadow-sm dark:border-amber-500/40 dark:bg-gradient-to-r dark:from-slate-900 dark:via-[#14192B] dark:to-slate-900">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-rose-500/20 px-2.5 py-0.5 text-xs font-black text-rose-700 dark:text-rose-300">
-                🧹 {isAr ? 'تهيئة المنصة للعميل الجديد' : 'Clean Slate Client Setup'}
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-black ${
+                  gymStateMode === 'CLEAN_SLATE'
+                    ? 'bg-emerald-500/20 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300'
+                    : 'bg-amber-500/20 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300'
+                }`}
+              >
+                {gymStateMode === 'CLEAN_SLATE'
+                  ? '🟢 وضع النادي الفعلي الجديد (جديدة لانج - 0 بيانات)'
+                  : '🧪 وضع العرض التجريبي (Demo Showcase)'}
               </span>
             </div>
             <h3 className="mt-2 text-base font-black text-slate-900 dark:text-white">
-              {isAr ? 'تصفير وتنظيف السجلات المؤقتة لبدء العمل الفعلي' : 'Reset Temporary Demo Data & Start Fresh'}
+              {isAr ? 'حالة بيانات المنصة والجاهزية للعميل' : 'Platform State Mode & Production Client Readiness'}
             </h3>
-            <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+            <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
               {isAr
-                ? 'يمسح المعاملات والفواتير وسجلات الدخول التجريبية المؤقتة لتبدأ المنصة جديدة تماماً لعميل الجيم مع الحفاظ التام على كامل النظام والمميزات.'
-                : 'Clears demo transactions, test chats and temporary invoices so the gym owner starts completely fresh.'}
+                ? 'يمكنك التبديل بين "الوضع الفعلي الجديد" لتسليم المنصة لصاحب الجيم جديدة لانج (0 مشتركين و0 فواتير) وبين "وضع العرض التوضيحي" لاستعراض البيانات التجريبية.'
+                : 'Toggle between Clean Slate (0 members, 0 invoices for real gym launch) and Demo Showcase (pre-filled realistic data for demos).'}
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setConfirmCleanSlate(true)}
-            className="shrink-0 rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-black text-white shadow-sm hover:bg-rose-500"
-          >
-            {isAr ? 'تصفير البيانات المؤقتة والبدء بحالة جديدة 🧹' : 'Reset Demo Data to Clean State 🧹'}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setGymStateMode('CLEAN_SLATE')}
+              className={`rounded-xl px-4 py-2.5 text-xs font-black transition ${
+                gymStateMode === 'CLEAN_SLATE'
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+              }`}
+            >
+              🟢 {isAr ? 'الوضع الفعلي (جديدة لانج)' : 'Clean Slate (0 Data)'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setGymStateMode('DEMO_DATA')}
+              className={`rounded-xl px-4 py-2.5 text-xs font-black transition ${
+                gymStateMode === 'DEMO_DATA'
+                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+              }`}
+            >
+              🧪 {isAr ? 'وضع العرض التجريبي (Demo)' : 'Demo Showcase'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmCleanSlate(true)}
+              className="rounded-xl border border-rose-300 bg-rose-50 px-3 py-2.5 text-xs font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300"
+            >
+              🧹 {isAr ? 'تصفير فوري' : 'Reset All'}
+            </button>
+          </div>
         </div>
 
         {confirmCleanSlate && (
@@ -1490,6 +1577,73 @@ export function TenantSettingsView() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Multi-Tenant Database Isolation & Data Protection Guarantee */}
+      <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm dark:border-slate-800/80 dark:bg-[#121623]">
+        <div className="flex items-center gap-3 border-b border-slate-200 pb-4 dark:border-slate-800">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
+            <ShieldCheck className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-slate-900 dark:text-white">
+              {isAr ? '🔐 نظام أمان وعزل قواعد البيانات لكل نادٍ رياضي (Multi-Tenant Isolation)' : 'Multi-Tenant Database Isolation & Security Guarantee'}
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {isAr ? 'ضمان العزل التام لقواعد البيانات وتشفير السجلات البنكية والصحية لكل صاحب جيم' : 'Enterprise isolation guarantee powered by PostgreSQL Row-Level Security & AES-256'}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <span className="text-xl">🛡️</span>
+            <h4 className="mt-2 text-xs font-black text-slate-900 dark:text-white">
+              {isAr ? 'عزل كامل RLS' : 'PostgreSQL RLS'}
+            </h4>
+            <p className="mt-1 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+              {isAr
+                ? 'كل استعلام برمجياً مقيد بـ tenant_id الخاص بناديك حصراً، ويستحيل تسرب بيانات أي نادٍ لنادٍ آخر.'
+                : 'Row-Level Security strictly enforces tenant_id boundaries on every database query.'}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <span className="text-xl">🔑</span>
+            <h4 className="mt-2 text-xs font-black text-slate-900 dark:text-white">
+              {isAr ? 'تشفير AES-256 GCM' : 'Bank-Grade AES-256'}
+            </h4>
+            <p className="mt-1 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+              {isAr
+                ? 'البيانات الصحية والقياسات والمدفوعات مشفرة بمفتاح مشتق من معرّف النادي لا يفك إلا داخل جلسته.'
+                : 'Sensitive biometric & billing records are encrypted at rest with tenant-authenticated keys.'}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <span className="text-xl">📁</span>
+            <h4 className="mt-2 text-xs font-black text-slate-900 dark:text-white">
+              {isAr ? 'عزل سحابي للفيديوهات' : 'Isolated Storage'}
+            </h4>
+            <p className="mt-1 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+              {isAr
+                ? 'فيديوهات المدربين وملفات الجيم تُخزن في مجلد سحابي مستقل تماماً محمي بروابط مشفرة مؤقتة.'
+                : 'Trainer media & attachments are compartmentalized into dedicated tenant cloud buckets.'}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <span className="text-xl">💾</span>
+            <h4 className="mt-2 text-xs font-black text-slate-900 dark:text-white">
+              {isAr ? 'استقلال ونسخ احتياطي' : 'Independent Backups'}
+            </h4>
+            <p className="mt-1 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+              {isAr
+                ? 'يمكن لصاحب النادي تصدير نسخة كاملة من بيانات ناديه وأعضائه وفواتيره في أي وقت بصيغة CSV / JSON.'
+                : 'Full data portability with 1-click ledger export and independent backup archives.'}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

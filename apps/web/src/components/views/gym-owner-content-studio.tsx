@@ -461,7 +461,7 @@ export function GymOwnerContentStudioView() {
             </div>
 
             {wkSourceType === 'VIDEO_URL' && (
-              <div>
+              <div className="space-y-2">
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                   {isAr
                     ? 'رابط الفيديو (YouTube أو رابط MP4 مباشر)'
@@ -475,27 +475,80 @@ export function GymOwnerContentStudioView() {
                   onChange={(e) => setWkVideoUrl(e.target.value)}
                   className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-mono text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 />
+
+                {/* Quick 1-Click Verified H.264 MP4 Samples */}
+                <div className="rounded-xl border border-emerald-500/30 bg-emerald-50/50 p-2.5 dark:border-emerald-500/20 dark:bg-emerald-950/20">
+                  <span className="text-[10px] font-black text-emerald-800 dark:text-emerald-300">
+                    💡 {isAr ? 'روابط تجريبية موثقة (فيديو وصوت مضمونين على كل الأجهزة):' : 'Verified test MP4s (Guaranteed video & audio):'}
+                  </span>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWkVideoUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4');
+                        if (!wkTitleAr) setWkTitleAr('تمرين ضغط صدر قياسي بالبار (تجريبي)');
+                        setWkMotionType('BENCH_PRESS');
+                      }}
+                      className="rounded-lg bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-emerald-500"
+                    >
+                      ▶️ {isAr ? 'عينة ضغط الصدر (MP4)' : 'Bench Press (MP4)'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWkVideoUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4');
+                        if (!wkTitleAr) setWkTitleAr('تمرين سكوات خلفي متقدم (تجريبي)');
+                        setWkMotionType('BARBELL_SQUAT');
+                      }}
+                      className="rounded-lg bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-emerald-500"
+                    >
+                      ▶️ {isAr ? 'عينة سكوات الأرجل (MP4)' : 'Squat Sample (MP4)'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWkVideoUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4');
+                        if (!wkTitleAr) setWkTitleAr('تمرين سحب ظهر عالي واسع (تجريبي)');
+                        setWkMotionType('LAT_PULLDOWN');
+                      }}
+                      className="rounded-lg bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-emerald-500"
+                    >
+                      ▶️ {isAr ? 'عينة سحب الظهر (MP4)' : 'Lat Pulldown (MP4)'}
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 
             {wkSourceType === 'UPLOADED_FILE' && (
-              <div className="rounded-2xl border border-dashed border-amber-500/50 bg-amber-500/5 p-4">
-                <label className="flex cursor-pointer flex-col items-center justify-center gap-1.5 text-center">
-                  <Upload className="h-6 w-6 text-amber-500" />
-                  <span className="text-xs font-black text-slate-800 dark:text-slate-200">
-                    {uploadedVideoFileName
-                      ? `✅ تم اختيار الملف: ${uploadedVideoFileName}`
-                      : isAr
-                        ? 'اضغط هنا لرفع ملف فيديو (MP4 / WebM) من جهازك'
-                        : 'Click to upload MP4 / WebM video file'}
-                  </span>
-                  <input
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoFileUpload}
-                    className="hidden"
-                  />
-                </label>
+              <div className="space-y-2">
+                <div className="rounded-2xl border border-dashed border-amber-500/50 bg-amber-500/5 p-4">
+                  <label className="flex cursor-pointer flex-col items-center justify-center gap-1.5 text-center">
+                    <Upload className="h-6 w-6 text-amber-500" />
+                    <span className="text-xs font-black text-slate-800 dark:text-slate-200">
+                      {uploadedVideoFileName
+                        ? `✅ تم اختيار الملف: ${uploadedVideoFileName}`
+                        : isAr
+                          ? 'اضغط هنا لرفع ملف فيديو (MP4 / WebM) من جهازك'
+                          : 'Click to upload MP4 / WebM video file'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={handleVideoFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                {/* Notice regarding iPhone HEVC / MOV codec */}
+                <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-2.5 text-[11px] text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+                  <span className="font-black">💡 {isAr ? 'نصيحة لضمان ظهور الصورة والصوت معاً:' : 'Tip for full video + sound compatibility:'}</span>
+                  <p className="mt-0.5 leading-relaxed">
+                    {isAr
+                      ? 'يرجى رفع ملفات بصيغة MP4 القياسية (ترميز H.264). إذا تم تصوير الفيديو بآيفون، تأكد من اختيار (Most Compatible / الأكثر توافقاً) في إعدادات كاميرا الآيفون لتجنب صيغة HEVC/MOV التي قد تظهر كصوت فقط على أجهزة ويندوز.'
+                      : 'Please upload standard H.264 MP4 files. For iPhone videos, select "Most Compatible" in Camera Settings to avoid HEVC/MOV audio-only decoding on Windows.'}
+                  </p>
+                </div>
               </div>
             )}
 

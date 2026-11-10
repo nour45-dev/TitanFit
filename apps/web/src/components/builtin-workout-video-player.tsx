@@ -86,10 +86,12 @@ export function BuiltInWorkoutVideoPlayer({
 
   // External / Uploaded video playback state
   const [videoStarted, setVideoStarted] = useState<boolean>(false);
+  const [codecWarning, setCodecWarning] = useState<boolean>(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     setVideoStarted(false);
+    setCodecWarning(false);
   }, [videoUrl]);
 
   const targetRepsNum = parseInt(reps.replace(/[^0-9]/g, '').slice(0, 2) || '10', 10) || 10;
@@ -179,6 +181,10 @@ export function BuiltInWorkoutVideoPlayer({
   const handleVideoPlaying = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     setVideoStarted(true);
     e.currentTarget.removeAttribute('poster');
+    // Detect HEVC / QuickTime on Windows Chromium (audio plays but video track width is 0)
+    if (e.currentTarget.currentTime > 0.5 && e.currentTarget.videoWidth === 0) {
+      setCodecWarning(true);
+    }
   };
 
   return (
@@ -269,6 +275,31 @@ export function BuiltInWorkoutVideoPlayer({
                 >
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-500 text-slate-950 shadow-2xl transition hover:scale-110 hover:bg-amber-400">
                     <Play className="ms-1 h-8 w-8 fill-current" />
+                  </div>
+                </div>
+              )}
+
+              {/* Codec Warning Banner if audio plays but video frame decoder fails (e.g. iPhone HEVC .mov on Windows Chrome) */}
+              {codecWarning && (
+                <div className="absolute inset-x-2 bottom-14 z-20 rounded-2xl border border-amber-500/80 bg-slate-950/95 p-3.5 text-xs text-white shadow-2xl backdrop-blur-md">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <span className="font-black text-amber-400">
+                        ⚠️ {isAr ? 'تنبيه توافق الفيديو (HEVC / QuickTime):' : 'Video Codec Notice (HEVC):'}
+                      </span>
+                      <p className="mt-0.5 text-[11px] text-slate-300">
+                        {isAr
+                          ? 'الصوت يعمل بنجاح! متصفحك على ويندوز لا يدعم فك ترميز H.265/HEVC مباشرة. يُنصح برفع بصيغة MP4 (H.264) أو تشغيل المحاكاة ثلاثية الأبعاد 3D فوراً.'
+                          : 'Audio is active! Windows Chromium requires H.264 MP4 to render video frames. Click below to view the 3D animated studio.'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveMode('ANIMATED_STUDIO')}
+                      className="shrink-0 rounded-xl bg-amber-500 px-3 py-1.5 text-xs font-black text-slate-950 shadow-sm hover:bg-amber-400"
+                    >
+                      {isAr ? '🎬 الانتقال للمحاكاة ثلاثية الأبعاد 3D' : 'Switch to 3D Studio'}
+                    </button>
                   </div>
                 </div>
               )}

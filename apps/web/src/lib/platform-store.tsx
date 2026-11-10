@@ -1104,9 +1104,43 @@ export interface PlatformStoreContextValue {
   ) => CustomClubFileItem;
   deleteCustomFile: (fileId: string) => void;
   resetToCleanGymState: () => void;
+  gymStateMode: 'CLEAN_SLATE' | 'DEMO_DATA';
+  setGymStateMode: (mode: 'CLEAN_SLATE' | 'DEMO_DATA') => void;
 }
 
 const PlatformContext = createContext<PlatformStoreContextValue | null>(null);
+
+const FALLBACK_DEFAULT_MEMBER: MemberItem = {
+  id: 'mem-preview',
+  code: 'TF-PREVIEW',
+  fullNameEn: 'Walk-in Client',
+  fullNameAr: 'عميل النادي',
+  phone: '01000000000',
+  email: 'client@titanfit.eg',
+  gender: 'MALE',
+  branchId: 'br-nasrcity',
+  status: 'ACTIVE',
+  planNameEn: 'Day Pass',
+  planNameAr: 'تذكرة يومية',
+  planId: 'plan-day',
+  startDate: new Date().toISOString().split('T')[0]!,
+  endDate: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]!,
+  remainingSessions: 1,
+  freezeDaysRemaining: 0,
+  tags: ['New'],
+  emergencyContactName: 'Captain Omar',
+  emergencyContactPhone: '01002169889',
+  bloodType: 'O+',
+  medicalConditions: 'None',
+  injuries: 'None',
+  assignedTrainerEn: 'Head Coach',
+  assignedTrainerAr: 'المدرب العام',
+  checkInsCount: 1,
+  lastCheckIn: 'Today',
+  avatarInitials: 'TF',
+  streakDays: 1,
+  points: 100,
+};
 
 export function PlatformProvider({
   children,
@@ -1135,6 +1169,7 @@ export function PlatformProvider({
   const [customWorkouts, setCustomWorkouts] = useState<CustomWorkoutVideoItem[]>(INITIAL_CUSTOM_WORKOUTS);
   const [customRecipes, setCustomRecipes] = useState<CustomNutritionRecipeItem[]>(INITIAL_CUSTOM_RECIPES);
   const [customFiles, setCustomFiles] = useState<CustomClubFileItem[]>(INITIAL_CUSTOM_FILES);
+  const [gymStateMode, setGymStateModeState] = useState<'CLEAN_SLATE' | 'DEMO_DATA'>('DEMO_DATA');
   const tenantsHydrated = useRef(false);
   const customContentHydrated = useRef(false);
 
@@ -1798,7 +1833,7 @@ export function PlatformProvider({
   };
 
   const createInvoicePayment: PlatformStoreContextValue['createInvoicePayment'] = (data) => {
-    const member = members.find((m) => m.id === data.memberId) ?? members[0]!;
+    const member = members.find((m) => m.id === data.memberId) ?? members[0] ?? FALLBACK_DEFAULT_MEMBER;
     const plan = plans.find((p) => p.id === data.planId) ?? plans[0]!;
     const couponUpper = (data.couponCode ?? '').trim().toUpperCase();
     const discountRate =
@@ -1993,7 +2028,7 @@ export function PlatformProvider({
   };
 
   const bookMemberIntoClass = (classId: string, memberId: string) => {
-    const member = members.find((m) => m.id === memberId) ?? members[0]!;
+    const member = members.find((m) => m.id === memberId) ?? members[0] ?? FALLBACK_DEFAULT_MEMBER;
     setClasses((prev) =>
       prev.map((cls) => {
         if (cls.id !== classId) return cls;
@@ -2038,7 +2073,7 @@ export function PlatformProvider({
     gateNameEn: string,
     gateNameAr: string,
   ): AccessLogItem => {
-    const member = members.find((m) => m.id === memberId) ?? members[0]!;
+    const member = members.find((m) => m.id === memberId) ?? members[0] ?? FALLBACK_DEFAULT_MEMBER;
     let decision: AccessLogItem['decision'] = 'ALLOW_ACCESS';
     let reasonEn = `Valid rotating HMAC-SHA256 QR token — ${member.planNameEn}`;
     let reasonAr = `رمز QR مشفر صالح — ${member.planNameAr}`;
@@ -2113,7 +2148,7 @@ export function PlatformProvider({
     method,
     memberId,
   ) => {
-    const member = members.find((m) => m.id === memberId) ?? members[0]!;
+    const member = members.find((m) => m.id === memberId) ?? members[0] ?? FALLBACK_DEFAULT_MEMBER;
     let subtotalEgp = 0;
     const itemNamesEn: string[] = [];
     const itemNamesAr: string[] = [];
@@ -2619,14 +2654,45 @@ export function PlatformProvider({
     );
   };
 
+  const setGymStateMode: PlatformStoreContextValue['setGymStateMode'] = (mode) => {
+    setGymStateModeState(mode);
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem('titanfit.gymStateMode', mode);
+      } catch {
+        /* ignore */
+      }
+    }
+    if (mode === 'CLEAN_SLATE') {
+      setMembers([]);
+      setInvoices([]);
+      setAccessLogs([]);
+      setTrainerPayouts([]);
+      setWorkoutLogs([]);
+      setChatMessages([]);
+      showToast(
+        locale === 'ar'
+          ? 'تم تفعيل الوضع الفعلي للنادي الجديد (جديدة لانج - 0 مشتركين و0 فواتير جاهز للعمل الحقيقي)!'
+          : 'Clean Slate mode activated! 0 members, 0 invoices. Ready for your actual gym launch.',
+      );
+    } else {
+      setMembers(INITIAL_MEMBERS);
+      setInvoices(INITIAL_INVOICES);
+      setAccessLogs(INITIAL_ACCESS_LOGS);
+      setTrainerPayouts(INITIAL_TRAINER_PAYOUTS);
+      setWorkoutLogs(INITIAL_WORKOUT_LOGS);
+      setChatMessages(INITIAL_CHAT);
+      showToast(
+        locale === 'ar'
+          ? 'تم تفعيل وضع العرض التجريبي (Demo Showcase) مع بيانات استعراضية كاملة!'
+          : 'Demo Showcase mode activated with full realistic data!',
+      );
+    }
+  };
+
   const resetToCleanGymState: PlatformStoreContextValue['resetToCleanGymState'] = () => {
-    // 1. Clear temporary transactional logs while preserving base member & coach catalog
-    setInvoices([]);
-    setAccessLogs([]);
-    setTrainerPayouts([]);
-    setWorkoutLogs([]);
-    setChatMessages([]);
-    // 2. Clear any lingering local test files or temporary uploads
+    setGymStateMode('CLEAN_SLATE');
+    // Clear any lingering local test files or temporary uploads
     try {
       if (typeof window !== 'undefined') {
         const keysToRemove: string[] = [];
@@ -2641,15 +2707,9 @@ export function PlatformProvider({
     } catch {
       /* ignore */
     }
-    // 3. Restore pristine default training templates
     setCustomWorkouts(INITIAL_CUSTOM_WORKOUTS);
     setCustomRecipes(INITIAL_CUSTOM_RECIPES);
     setCustomFiles(INITIAL_CUSTOM_FILES);
-    showToast(
-      locale === 'ar'
-        ? 'تمت تهيئة بيانات المنصة بالكامل وتنظيف السجلات المؤقتة بنجاح! المنصة الآن جديدة وجاهزة للعميل.'
-        : 'Platform reset to pristine clean state! Ready for client production launch.',
-    );
   };
 
   return (
@@ -2732,6 +2792,8 @@ export function PlatformProvider({
         addCustomFile,
         deleteCustomFile,
         resetToCleanGymState,
+        gymStateMode,
+        setGymStateMode,
       }}
     >
       {children}
