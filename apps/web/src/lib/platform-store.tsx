@@ -798,6 +798,7 @@ export interface PlatformStoreContextValue {
     emergencyContactPhone: string;
     bloodType: string;
     medicalConditions: string;
+    assignedTrainerId?: string;
   }) => MemberItem;
   updateMember: (memberId: string, updates: Partial<MemberItem>) => void;
   deleteMember: (memberId: string) => void;
@@ -1453,30 +1454,39 @@ export function PlatformProvider({
       (m) =>
         m.phone.replace(/[\s\-\(\)]/g, '') === cleanPhone ||
         (cleanPhone.startsWith('01') && m.phone.replace(/[\s\-\(\)]/g, '').endsWith(cleanPhone)) ||
+        (cleanPhone.startsWith('+20') && cleanPhone.endsWith(m.phone.replace(/[\s\-\(\)]/g, '').replace('+20', ''))) ||
         m.email.toLowerCase() === trimmed.toLowerCase() ||
         m.code.toLowerCase() === trimmed.toLowerCase(),
     );
 
+    if (!matchedMem) {
+      return {
+        success: false,
+        message:
+          locale === 'ar'
+            ? '⚠️ هذا الرقم غير مسجل في النادي. يُرجى مراجعة إدارة واستقبال الجيم لتسجيل اشتراكك أولاً.'
+            : '⚠️ This number is not registered in the gym. Please register with reception first.',
+      };
+    }
+
     const res = await apiRequestOtp(
       trimmed,
-      matchedMem
-        ? {
-            id: matchedMem.id,
-            code: matchedMem.code,
-            fullNameEn: matchedMem.fullNameEn,
-            fullNameAr: matchedMem.fullNameAr,
-            phone: matchedMem.phone,
-            email: matchedMem.email,
-            tenantSlug: activeTenantSlug,
-          }
-        : undefined,
+      {
+        id: matchedMem.id,
+        code: matchedMem.code,
+        fullNameEn: matchedMem.fullNameEn,
+        fullNameAr: matchedMem.fullNameAr,
+        phone: matchedMem.phone,
+        email: matchedMem.email,
+        tenantSlug: activeTenantSlug,
+      },
     );
 
     if (res.success && res.simulatedOtp) {
       showToast(
         locale === 'ar'
-          ? `📲 تم إرسال الرمز: ${res.simulatedOtp} (نسخة تجريبية / محاكاة OTP)`
-          : `📲 OTP Sent: ${res.simulatedOtp}`,
+          ? `📩 رسالة SMS من TitanFit: كود الدخول هو [ ${res.simulatedOtp} ]`
+          : `📩 SMS from TitanFit: OTP Code is [ ${res.simulatedOtp} ]`,
       );
     }
 
@@ -1583,6 +1593,7 @@ export function PlatformProvider({
       .slice(0, 2)
       .toUpperCase();
     const tempPassword = `TF@${Math.floor(1000 + Math.random() * 9000)}`;
+    const selectedCoach = staff.find((s) => s.id === data.assignedTrainerId) ?? staff[0];
     const newMember: MemberItem = {
       id: `mem-${Date.now()}`,
       code,
@@ -1607,8 +1618,9 @@ export function PlatformProvider({
       bloodType: data.bloodType || 'O+',
       medicalConditions: data.medicalConditions || 'None',
       injuries: 'None',
-      assignedTrainerEn: 'Coach Omar Hassan',
-      assignedTrainerAr: 'كابتن عمر حسن',
+      assignedTrainerId: selectedCoach?.id || 'stf-1',
+      assignedTrainerEn: selectedCoach?.nameEn || 'Coach Omar Hassan',
+      assignedTrainerAr: selectedCoach?.nameAr || 'كابتن عمر حسن',
       checkInsCount: 1,
       lastCheckIn: 'Just now',
       avatarInitials: initials || 'TF',

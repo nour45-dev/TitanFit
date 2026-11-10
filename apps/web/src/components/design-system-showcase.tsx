@@ -123,6 +123,7 @@ function TitanFitEnterpriseShell() {
   const [traineeGymCode, setTraineeGymCode] = useState('');
   const [traineeIdentifier, setTraineeIdentifier] = useState('');
   const [traineeOtpInput, setTraineeOtpInput] = useState('');
+  const [simulatedSmsOtp, setSimulatedSmsOtp] = useState<string | null>(null);
   const [otpStep, setOtpStep] = useState<'ENTER_CONTACT' | 'ENTER_CODE'>('ENTER_CONTACT');
   const [otpSentInfo, setOtpSentInfo] = useState<{
     memberName: string;
@@ -367,10 +368,9 @@ function TitanFitEnterpriseShell() {
       const res = await requestMemberOtp(traineeIdentifier.trim());
       if (res.success) {
         setOtpSentInfo(res.targetInfo || null);
+        setSimulatedSmsOtp(res.simulatedOtp || '482910');
+        setTraineeOtpInput(''); // Never auto-fill: trainee reads incoming SMS and types the 6 digits
         setOtpStep('ENTER_CODE');
-        if (res.simulatedOtp) {
-          setTraineeOtpInput(res.simulatedOtp);
-        }
       } else {
         setLoginError(res.message || (isAr ? 'تعذر إرسال رمز التحقق' : 'Failed to send OTP'));
       }
@@ -1238,22 +1238,45 @@ function TitanFitEnterpriseShell() {
                   </form>
                 ) : (
                   <form onSubmit={handleVerifyOtpSubmit} className="space-y-3.5">
-                    <div className="rounded-xl border border-emerald-300/60 bg-emerald-50/70 p-3 text-xs leading-relaxed text-emerald-950 dark:bg-emerald-950/30 dark:text-emerald-300">
-                      <p className="font-bold">
-                        {isAr
-                          ? `✅ تم إرسال رمز التحقق OTP إلى: ${otpSentInfo?.maskedPhone || otpSentInfo?.maskedEmail || traineeIdentifier}`
-                          : `✅ OTP code sent to: ${otpSentInfo?.maskedPhone || otpSentInfo?.maskedEmail || traineeIdentifier}`}
-                      </p>
-                      {otpSentInfo?.memberName && (
-                        <p className="mt-1 font-semibold text-[11px]">
-                          {isAr ? `مرحباً بك يا كابتن: ${otpSentInfo.memberName}` : `Member: ${otpSentInfo.memberName}`}
+                    {/* Simulated Authentic SMS Notification Card */}
+                    <div className="rounded-2xl border-2 border-[#D4AF37]/50 bg-gradient-to-br from-amber-500/10 via-slate-900/95 to-slate-950 p-4 text-white shadow-xl backdrop-blur-md">
+                      <div className="flex items-center justify-between border-b border-[#D4AF37]/30 pb-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#D4AF37] font-black text-slate-950 text-xs shadow">
+                            💬
+                          </span>
+                          <div>
+                            <p className="text-xs font-black text-amber-400">
+                              {isAr ? 'رسالة نصية SMS واردة (TitanFit)' : 'Incoming SMS (TitanFit)'}
+                            </p>
+                            <p className="text-[10px] text-slate-400 font-mono">Just Now • OTP-VERIFIED</p>
+                          </div>
+                        </div>
+                        <span className="rounded-md bg-emerald-500/20 px-2 py-0.5 text-[10px] font-black text-emerald-400">
+                          {isAr ? 'كود الدخول السري' : 'Access Code'}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 text-xs leading-relaxed text-slate-200">
+                        <p>
+                          {isAr
+                            ? `عزيزي المشترك (${otpSentInfo?.memberName || 'المتدرب'})، رمز التحقق للدخول إلى حسابك في النادي هو:`
+                            : `Dear Member (${otpSentInfo?.memberName || 'Trainee'}), your one-time club login code is:`}
                         </p>
-                      )}
+                        <div className="my-2.5 flex items-center justify-center gap-3 rounded-xl bg-slate-950/95 py-3 px-4 font-mono text-2xl font-black tracking-[0.3em] text-[#D4AF37] border border-[#D4AF37]/50 shadow-inner">
+                          <span>{simulatedSmsOtp || '482910'}</span>
+                        </div>
+                        <p className="text-[11px] text-amber-300/90 font-medium">
+                          {isAr
+                            ? '✍️ يرجى كتابة الرمز المكون من 6 أرقام في الخانة بالأسفل لفتح لوحة المتدرب.'
+                            : '✍️ Please type the 6 digits in the box below to unlock your dashboard.'}
+                        </p>
+                      </div>
                     </div>
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                        {isAr ? 'رمز التحقق (OTP)' : 'Enter 6-Digit OTP'}
+                        {isAr ? 'اكتب رمز التحقق (OTP) المستلم' : 'Enter 6-Digit OTP Code'}
                       </label>
                       <input
                         type="text"
@@ -1261,8 +1284,9 @@ function TitanFitEnterpriseShell() {
                         data-testid="trainee-otp-code-input"
                         value={traineeOtpInput}
                         onChange={(e) => setTraineeOtpInput(e.target.value.replace(/\D/g, ''))}
-                        placeholder="••••••"
-                        className="mt-1.5 w-full text-center tracking-widest rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-base font-black text-slate-900 focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                        placeholder={isAr ? "اكتب الـ 6 أرقام هنا" : "Type 6 digits here"}
+                        autoFocus
+                        className="mt-1.5 w-full text-center tracking-[0.25em] rounded-xl border-2 border-amber-500/50 bg-white px-3.5 py-2.5 font-mono text-lg font-black text-slate-900 focus:border-amber-500 focus:outline-none dark:border-amber-500/50 dark:bg-slate-900 dark:text-white"
                       />
                     </div>
 

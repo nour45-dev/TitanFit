@@ -1150,13 +1150,22 @@ export function StaffTrainersView() {
     e.preventDefault();
     if (!editingStaff) return;
     updateStaffMember(editingStaff.id, {
-      baseSalaryEgp: editingStaff.baseSalaryEgp,
-      commissionRatePercent: editingStaff.commissionRatePercent,
-      ptSessionRateEgp: editingStaff.ptSessionRateEgp,
+      nameAr: editingStaff.nameAr,
+      nameEn: editingStaff.nameEn,
       phone: editingStaff.phone,
       whatsappNumber: editingStaff.whatsappNumber,
       specialtyAr: editingStaff.specialtyAr,
       specialtyEn: editingStaff.specialtyEn,
+      role: editingStaff.role,
+      shiftAr: editingStaff.shiftAr,
+      shiftEn: editingStaff.shiftEn,
+      rating: editingStaff.rating,
+      avatarUrl: editingStaff.avatarUrl,
+      bioAr: editingStaff.bioAr,
+      bioEn: editingStaff.bioEn,
+      baseSalaryEgp: editingStaff.baseSalaryEgp,
+      commissionRatePercent: editingStaff.commissionRatePercent,
+      ptSessionRateEgp: editingStaff.ptSessionRateEgp,
     });
     setEditingStaff(null);
   };
@@ -1464,9 +1473,20 @@ export function StaffTrainersView() {
                     </div>
                   </div>
 
-                  <span className="shrink-0 rounded-xl bg-emerald-500/15 px-2.5 py-1 text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
-                    ★ {s.rating}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setEditingStaff(s)}
+                      title={isAr ? 'تعديل بيانات المدرب كاملة' : 'Edit Full Coach Profile'}
+                      className="inline-flex items-center gap-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-black text-amber-700 hover:bg-amber-500/20 dark:text-amber-400"
+                    >
+                      <Edit3 className="h-3 w-3" />
+                      <span>{isAr ? 'تعديل المدرب' : 'Edit Profile'}</span>
+                    </button>
+                    <span className="shrink-0 rounded-xl bg-emerald-500/15 px-2.5 py-1 text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
+                      ★ {s.rating}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Bio & Contact info */}
@@ -1938,69 +1958,244 @@ export function StaffTrainersView() {
         </div>
       )}
 
-      {/* Modal 3: Edit Financial Terms */}
+      {/* Modal 3: Full Coach Profile Editing */}
       {editingStaff && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
-              <h3 className="text-base font-extrabold">
-                {isAr
-                  ? `تعديل البنود المالية: ${editingStaff.nameAr}`
-                  : `Edit Financial Terms: ${editingStaff.nameEn}`}
-              </h3>
+              <div className="flex items-center gap-2">
+                <Edit3 className="h-5 w-5 text-[#D4AF37]" />
+                <h3 className="text-base font-extrabold">
+                  {isAr
+                    ? `تعديل بيانات المدرب كاملة: ${editingStaff.nameAr}`
+                    : `Edit Full Coach Profile: ${editingStaff.nameEn}`}
+                </h3>
+              </div>
               <button type="button" onClick={() => setEditingStaff(null)}>
                 <X className="h-5 w-5 text-slate-400" />
               </button>
             </div>
 
-            <form onSubmit={handleUpdateFinancials} className="mt-4 space-y-3">
-              <div className="grid grid-cols-2 gap-2">
+            <form onSubmit={handleUpdateFinancials} className="mt-4 space-y-3.5">
+              {/* Names */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                    {isAr ? 'الراتب الأساسي (ج.م)' : 'Base Salary (EGP)'}
+                    {isAr ? 'اسم المدرب (عربي)' : 'Trainer Name (Arabic)'}
                   </label>
                   <input
-                    type="number"
-                    value={editingStaff.baseSalaryEgp || 0}
+                    type="text"
+                    required
+                    value={editingStaff.nameAr}
+                    onChange={(e) => setEditingStaff({ ...editingStaff, nameAr: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'اسم المدرب (إنجليزي)' : 'Trainer Name (English)'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editingStaff.nameEn}
+                    onChange={(e) => setEditingStaff({ ...editingStaff, nameEn: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Contact info */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'رقم الهاتف (+20)' : 'Phone Number (+20)'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editingStaff.phone}
+                    onChange={(e) => setEditingStaff({ ...editingStaff, phone: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'رقم الواتساب (مثال: 201005551122)' : 'WhatsApp Number (e.g. 201005551122)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={editingStaff.whatsappNumber || ''}
                     onChange={(e) =>
-                      setEditingStaff({ ...editingStaff, baseSalaryEgp: Number(e.target.value) })
+                      setEditingStaff({ ...editingStaff, whatsappNumber: e.target.value })
+                    }
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Specialties */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'التخصص الرياضي (عربي)' : 'Specialty (Arabic)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={editingStaff.specialtyAr}
+                    onChange={(e) =>
+                      setEditingStaff({ ...editingStaff, specialtyAr: e.target.value })
                     }
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                    {isAr ? 'نسبة العمولة (%)' : 'Commission (%)'}
+                    {isAr ? 'التخصص الرياضي (إنجليزي)' : 'Specialty (English)'}
                   </label>
                   <input
-                    type="number"
-                    value={editingStaff.commissionRatePercent}
+                    type="text"
+                    value={editingStaff.specialtyEn}
                     onChange={(e) =>
-                      setEditingStaff({
-                        ...editingStaff,
-                        commissionRatePercent: Number(e.target.value),
-                      })
+                      setEditingStaff({ ...editingStaff, specialtyEn: e.target.value })
                     }
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                   />
                 </div>
               </div>
 
+              {/* Role & Shifts */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'الدور الوظيفي' : 'Role'}
+                  </label>
+                  <select
+                    value={editingStaff.role}
+                    onChange={(e) =>
+                      setEditingStaff({
+                        ...editingStaff,
+                        role: e.target.value as StaffMemberItem['role'],
+                      })
+                    }
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  >
+                    <option value="TRAINER">{isAr ? 'مدرب كابتن' : 'TRAINER'}</option>
+                    <option value="BRANCH_MANAGER">{isAr ? 'مدير فرع' : 'BRANCH_MANAGER'}</option>
+                    <option value="RECEPTIONIST">{isAr ? 'موظف استقبال' : 'RECEPTIONIST'}</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'الوردية (عربي)' : 'Shift (Arabic)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={editingStaff.shiftAr || '08:00 ص - 04:00 م'}
+                    onChange={(e) => setEditingStaff({ ...editingStaff, shiftAr: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'التقييم (من 5.0)' : 'Rating (out of 5.0)'}
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="1"
+                    max="5"
+                    value={editingStaff.rating || 5.0}
+                    onChange={(e) =>
+                      setEditingStaff({ ...editingStaff, rating: Number(e.target.value) })
+                    }
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Avatar URL & Bio */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  {isAr ? 'سعر حصة التدريب الخاص PT (ج.م)' : 'PT Session Rate (EGP)'}
+                  {isAr ? 'رابط صورة المدرب (Avatar URL)' : 'Avatar Image URL'}
                 </label>
                 <input
-                  type="number"
-                  value={editingStaff.ptSessionRateEgp || 400}
-                  onChange={(e) =>
-                    setEditingStaff({ ...editingStaff, ptSessionRateEgp: Number(e.target.value) })
-                  }
+                  type="text"
+                  value={editingStaff.avatarUrl || ''}
+                  onChange={(e) => setEditingStaff({ ...editingStaff, avatarUrl: e.target.value })}
+                  placeholder="https://images.unsplash.com/photo-..."
                   className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 border-t border-slate-200 pt-2 dark:border-slate-800">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'نبذة تعريفية عن المدرب وخبراته' : 'Trainer Bio'}
+                </label>
+                <textarea
+                  rows={2}
+                  value={editingStaff.bioAr || ''}
+                  onChange={(e) => setEditingStaff({ ...editingStaff, bioAr: e.target.value })}
+                  placeholder="خبرة 8 سنوات في الإعداد البدني والتغذية الرياضية..."
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+
+              {/* Financial Terms */}
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 dark:bg-amber-950/20">
+                <span className="block text-xs font-black text-amber-600 dark:text-amber-400">
+                  {isAr ? 'البنود المالية والعمولات' : 'Financial Terms & Compensation'}
+                </span>
+                <div className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                      {isAr ? 'الراتب الأساسي (ج.م)' : 'Base Salary (EGP)'}
+                    </label>
+                    <input
+                      type="number"
+                      value={editingStaff.baseSalaryEgp || 0}
+                      onChange={(e) =>
+                        setEditingStaff({ ...editingStaff, baseSalaryEgp: Number(e.target.value) })
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                      {isAr ? 'نسبة العمولة (%)' : 'Commission (%)'}
+                    </label>
+                    <input
+                      type="number"
+                      value={editingStaff.commissionRatePercent}
+                      onChange={(e) =>
+                        setEditingStaff({
+                          ...editingStaff,
+                          commissionRatePercent: Number(e.target.value),
+                        })
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                      {isAr ? 'سعر حصة PT (ج.م)' : 'PT Session Rate (EGP)'}
+                    </label>
+                    <input
+                      type="number"
+                      value={editingStaff.ptSessionRateEgp || 400}
+                      onChange={(e) =>
+                        setEditingStaff({
+                          ...editingStaff,
+                          ptSessionRateEgp: Number(e.target.value),
+                        })
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 border-t border-slate-200 pt-3 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setEditingStaff(null)}
@@ -2010,9 +2205,9 @@ export function StaffTrainersView() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-[#D4AF37] px-4 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400"
+                  className="rounded-xl bg-[#D4AF37] px-5 py-2 text-xs font-black text-slate-950 shadow-md hover:bg-amber-400"
                 >
-                  {isAr ? 'حفظ التعديلات' : 'Save Changes'}
+                  {isAr ? 'حفظ كامل بيانات المدرب' : 'Save Full Coach Profile'}
                 </button>
               </div>
             </form>

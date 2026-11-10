@@ -658,6 +658,7 @@ export function MembersCrmView() {
     members,
     plans,
     branches,
+    staff,
     selectedBranchId,
     addMember,
     updateMember,
@@ -688,6 +689,7 @@ export function MembersCrmView() {
   const [gender, setGender] = useState<'MALE' | 'FEMALE'>('MALE');
   const [planId, setPlanId] = useState(plans[0]?.id ?? 'plan-annual-vip');
   const [branchId, setBranchId] = useState(branches[0]?.id ?? 'br-new-cairo');
+  const [assignedTrainerIdForAdd, setAssignedTrainerIdForAdd] = useState(staff[0]?.id || 'stf-1');
   const [emergencyContactName, setEmergencyContactName] = useState('');
   const [emergencyContactPhone, setEmergencyContactPhone] = useState('+2010');
   const [bloodType, setBloodType] = useState('O+');
@@ -733,6 +735,7 @@ export function MembersCrmView() {
       emergencyContactPhone,
       bloodType,
       medicalConditions,
+      assignedTrainerId: assignedTrainerIdForAdd,
     });
 
     let inv: InvoiceItem | null = null;
@@ -764,6 +767,7 @@ export function MembersCrmView() {
     e.preventDefault();
     if (!editingMember) return;
     const selectedPlan = plans.find((p) => p.id === editingMember.planId);
+    const selectedCoach = staff.find((s) => s.id === editingMember.assignedTrainerId);
     updateMember(editingMember.id, {
       fullNameAr: editingMember.fullNameAr,
       fullNameEn: editingMember.fullNameEn,
@@ -773,6 +777,9 @@ export function MembersCrmView() {
       planNameAr: selectedPlan?.nameAr || editingMember.planNameAr,
       planNameEn: selectedPlan?.nameEn || editingMember.planNameEn,
       status: editingMember.status,
+      assignedTrainerId: editingMember.assignedTrainerId,
+      assignedTrainerAr: selectedCoach?.nameAr || editingMember.assignedTrainerAr,
+      assignedTrainerEn: selectedCoach?.nameEn || editingMember.assignedTrainerEn,
     });
     setEditingMember(null);
   };
@@ -1115,6 +1122,25 @@ export function MembersCrmView() {
                 </select>
               </div>
 
+              <div>
+                <label htmlFor="member-trainer-select" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'الكابتن / المدرب الشخصي المعين' : 'Assigned Coach / Trainer'}
+                </label>
+                <select
+                  id="member-trainer-select"
+                  aria-label={isAr ? 'الكابتن / المدرب الشخصي المعين' : 'Assigned Coach / Trainer'}
+                  value={assignedTrainerIdForAdd}
+                  onChange={(e) => setAssignedTrainerIdForAdd(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                >
+                  {staff.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {isAr ? s.nameAr : s.nameEn} ({isAr ? s.specialtyAr : s.specialtyEn})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* Real Subscription Pricing & Cashier Collection */}
               <div className="rounded-2xl border border-amber-500/40 bg-amber-50/80 p-4 dark:border-amber-500/30 dark:bg-amber-950/20 sm:col-span-2">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-500/20 pb-2.5">
@@ -1432,6 +1458,31 @@ export function MembersCrmView() {
                     <option value="EXPIRED">EXPIRED</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {isAr ? 'الكابتن / المدرب المخصص للعضو' : 'Assigned Personal Trainer'}
+                </label>
+                <select
+                  value={editingMember.assignedTrainerId || staff[0]?.id || ''}
+                  onChange={(e) => {
+                    const c = staff.find((s) => s.id === e.target.value);
+                    setEditingMember({
+                      ...editingMember,
+                      assignedTrainerId: e.target.value,
+                      assignedTrainerAr: c?.nameAr || editingMember.assignedTrainerAr,
+                      assignedTrainerEn: c?.nameEn || editingMember.assignedTrainerEn,
+                    });
+                  }}
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                >
+                  {staff.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {isAr ? s.nameAr : s.nameEn} ({isAr ? s.specialtyAr : s.specialtyEn})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="mt-4 flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
