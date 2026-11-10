@@ -492,7 +492,7 @@ export function BuiltInWorkoutVideoPlayer({
                       )}
                     </button>
 
-                    <div className="font-mono text-xs font-bold text-slate-200 flex items-center gap-1 ms-1">
+                    <div dir="ltr" className="font-mono text-xs font-bold text-slate-200 flex items-center gap-1 ms-1">
                       <span className="text-amber-400">{formatTime(videoCurrentTime)}</span>
                       <span className="text-slate-500">/</span>
                       <span>{formatTime(Math.max(videoDuration, videoCurrentTime))}</span>

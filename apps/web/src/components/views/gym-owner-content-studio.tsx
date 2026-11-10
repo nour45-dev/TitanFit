@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
+  AlertTriangle,
   CheckCircle2,
   Download,
   Dumbbell,
@@ -119,10 +120,39 @@ export function GymOwnerContentStudioView() {
   const [flFileType, setFlFileType] = useState('application/pdf');
   const [flTargetAudience, setFlTargetAudience] = useState<'ALL' | 'SPECIFIC_MEMBER'>('ALL');
   const [flTargetMemberId, setFlTargetMemberId] = useState<string>(members[0]?.id || 'mem-1001');
+  const [isHevcDetected, setIsHevcDetected] = useState<boolean>(false);
 
   const handleVideoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    setIsHevcDetected(false);
+    // Inspect first 65KB for HEVC FourCC atom
+    try {
+      const slice = file.slice(0, 65536);
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result instanceof ArrayBuffer) {
+          const u8 = new Uint8Array(reader.result);
+          let foundHevc = false;
+          for (let i = 0; i < u8.length - 4; i++) {
+            if (
+              (u8[i] === 0x68 && u8[i + 1] === 0x76 && u8[i + 2] === 0x63 && u8[i + 3] === 0x31) || // hvc1
+              (u8[i] === 0x68 && u8[i + 1] === 0x65 && u8[i + 2] === 0x76 && u8[i + 3] === 0x31)    // hev1
+            ) {
+              foundHevc = true;
+              break;
+            }
+          }
+          if (foundHevc) {
+            setIsHevcDetected(true);
+          }
+        }
+      };
+      reader.readAsArrayBuffer(slice);
+    } catch {
+      /* ignore */
+    }
 
     // Immediately create live object URL and storage key
     const blobUrl = URL.createObjectURL(file);
@@ -665,6 +695,24 @@ export function GymOwnerContentStudioView() {
                     </label>
                   </div>
                 )}
+                {isHevcDetected && (
+                  <div className="rounded-xl border border-rose-500/50 bg-rose-500/10 p-3 text-xs text-rose-900 dark:text-rose-200">
+                    <div className="flex items-center gap-2 font-bold">
+                      <AlertTriangle className="h-4 w-4 text-rose-500 shrink-0" />
+                      <span>
+                        {isAr
+                          ? '⚠️ تم رصد ترميز HEVC (H.265) في هذا الفيديو'
+                          : '⚠️ HEVC (H.265) detected in this file'}
+                      </span>
+                    </div>
+                    <p className="mt-1 leading-relaxed text-[11px]">
+                      {isAr
+                        ? 'متصفحات كروم على ويندوز لا تدعم فك صورة فيديو HEVC وتكتفي بالصوت بشاشة سوداء. لتشغيل الصورة والصوت معاً، استخدم نسخة H.264 المحولة الجاهزة في مجلد التنزيلات باسم (VID_20260920_103920_944_H264.mp4).'
+                        : 'Chrome on Windows cannot decode HEVC video frames. Please use the converted H.264 file in your Downloads folder.'}
+                    </p>
+                  </div>
+                )}
+
                 {/* Notice regarding iPhone HEVC / MOV codec */}
                 <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-2.5 text-[11px] text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
                   <span className="font-black">💡 {isAr ? 'نصيحة لضمان ظهور الصورة والصوت معاً:' : 'Tip for full video + sound compatibility:'}</span>

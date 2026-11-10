@@ -65,6 +65,7 @@ export function OverviewView() {
     customRecipes,
     customFiles,
     gymStateMode,
+    resetToCleanGymState,
   } = usePlatformStore();
   const isAr = locale === 'ar';
   const isCleanSlate = gymStateMode === 'CLEAN_SLATE' || (members.length === 0 && invoices.length === 0);
@@ -161,6 +162,22 @@ export function OverviewView() {
             >
               <QrCode className="h-4 w-4" />
               {isAr ? 'مسح QR سريع' : 'Quick QR Check-in'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                resetToCleanGymState();
+                showToast(
+                  isAr
+                    ? '🧼 تم تصفير المنصة بالكامل (جديدة لانج): 0 مشتركين • 0 فواتير • 0 إيرادات • 1 مدرب عام جاهز لعميلك!'
+                    : 'Pristine Clean Slate activated: 0 members, 0 invoices, 0 EGP, 1 head trainer ready!',
+                );
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/40 bg-rose-500/15 px-3 py-2.5 text-xs font-bold text-rose-700 transition hover:bg-rose-500/25 dark:text-rose-300"
+              title={isAr ? 'تصفير كافة الفواتير والمشتركين والتحصيلات ليبدأ الجيم من الصفر' : 'Reset all data to 0'}
+            >
+              <Trash2 className="h-4 w-4" />
+              {isAr ? 'تصفير المنصة (جديدة لانج 🧼)' : 'Clean Slate 🧼'}
             </button>
           </div>
         </div>
@@ -408,7 +425,17 @@ export function OverviewView() {
           </div>
 
           {/* Interactive Bar + Trend Visual */}
-          <div className="mt-6 grid grid-cols-7 items-end gap-3 pt-4" style={{ height: '210px' }}>
+          <div className="relative mt-6 grid grid-cols-7 items-end gap-3 pt-4" style={{ height: '210px' }}>
+            {totalRevenueEgp === 0 && (
+              <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center text-center p-4 bg-slate-900/40 rounded-xl backdrop-blur-[1px]">
+                <p className="text-sm font-bold text-amber-300">
+                  {isAr ? 'قاعدة بيانات جديدة كلياً — لا توجد تحصيلات بعد (٠ ج.م)' : 'Pristine Launch State — No collected revenues yet (EGP 0)'}
+                </p>
+                <p className="mt-1 text-xs text-slate-400">
+                  {isAr ? 'ستظهر التحليلات البيانية تلقائياً بمجرد إصدار أول فاتورة اشتراك أو بيع كاشير POS.' : 'Analytics will populate dynamically once the first membership or POS sale is recorded.'}
+                </p>
+              </div>
+            )}
             {revenueSeries.map((val, idx) => (
               <div key={idx} className="group flex h-full flex-col items-center justify-end gap-2">
                 <div className="opacity-0 transition group-hover:opacity-100">
@@ -458,8 +485,11 @@ export function OverviewView() {
 
           <div className="mt-5 space-y-4">
             {branches.map((br) => {
-              const occ = isCleanSlate ? 0 : br.currentOccupancy;
-              const pct = Math.round((occ / br.capacity) * 100);
+              const activeOnFloor = accessLogs.filter(
+                (log) => log.decision === 'ALLOW_ACCESS',
+              ).length;
+              const occ = isCleanSlate ? 0 : activeOnFloor;
+              const pct = br.capacity > 0 ? Math.round((occ / br.capacity) * 100) : 0;
               return (
                 <div
                   key={br.id}

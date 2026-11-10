@@ -1043,38 +1043,34 @@ export function PlatformProvider({
     }
   }, [customWorkouts, customRecipes, customFiles, activeTenantSlug]);
 
-  // Hydrate clean-slate gym state mode if selected by owner
+  // Hydrate clean-slate gym state mode: enforce clean slate (0 members, 0 invoices, 1 head coach)
   useEffect(() => {
     try {
       if (typeof window !== 'undefined') {
-        const savedMode = window.localStorage.getItem('titanfit.gymStateMode');
-        // Default mode is clean slate unless explicitly set to DEMO_DATA by owner
-        if (savedMode !== 'DEMO_DATA') {
-          window.localStorage.setItem('titanfit.gymStateMode', 'CLEAN_SLATE');
-          setGymStateModeState('CLEAN_SLATE');
-          setMembers([]);
-          setInvoices([]);
-          setClasses([]);
-          setAccessLogs([]);
-          setTrainerPayouts([]);
-          setWorkoutLogs([]);
-          setChatMessages([]);
-          setAuditLogs([]);
-          setBranches((prev) =>
-            prev.map((b) => ({
-              ...b,
-              currentOccupancy: 0,
-            })),
-          );
-          setStaff((prev) =>
-            prev.map((s) => ({
-              ...s,
-              activeClients: 0,
-              monthlyRevenueEgp: 0,
-              totalPayoutsEgp: 0,
-            })),
-          );
-        }
+        window.localStorage.setItem('titanfit.gymStateMode', 'CLEAN_SLATE');
+        setGymStateModeState('CLEAN_SLATE');
+        setMembers([]);
+        setInvoices([]);
+        setClasses([]);
+        setAccessLogs([]);
+        setTrainerPayouts([]);
+        setWorkoutLogs([]);
+        setChatMessages([]);
+        setAuditLogs([]);
+        setBranches((prev) =>
+          prev.map((b) => ({
+            ...b,
+            currentOccupancy: 0,
+          })),
+        );
+        setStaff((prev) =>
+          prev.slice(0, 1).map((s) => ({
+            ...s,
+            activeClients: 0,
+            monthlyRevenueEgp: 0,
+            totalPayoutsEgp: 0,
+          })),
+        );
       }
     } catch {
       /* ignore */
@@ -2542,17 +2538,33 @@ export function PlatformProvider({
 
   const resetToCleanGymState: PlatformStoreContextValue['resetToCleanGymState'] = () => {
     setGymStateMode('CLEAN_SLATE');
+    setMembers([]);
+    setInvoices([]);
+    setClasses([]);
+    setAccessLogs([]);
+    setTrainerPayouts([]);
+    setWorkoutLogs([]);
+    setChatMessages([]);
+    setAuditLogs([]);
+    setStaff(INITIAL_STAFF.slice(0, 1));
+    setBranches(INITIAL_BRANCHES.map((b) => ({ ...b, currentOccupancy: 0 })));
     // Clear any lingering local test files or temporary uploads
     try {
       if (typeof window !== 'undefined') {
         const keysToRemove: string[] = [];
         for (let i = 0; i < window.localStorage.length; i++) {
           const k = window.localStorage.key(i);
-          if (k && (k.startsWith('titanfit.customContent.') || k === 'titanfit.customContent.v1')) {
+          if (
+            k &&
+            (k.startsWith('titanfit.customContent.') ||
+              k === 'titanfit.customContent.v1' ||
+              k === 'titanfit.gymStateMode')
+          ) {
             keysToRemove.push(k);
           }
         }
         keysToRemove.forEach((k) => window.localStorage.removeItem(k));
+        window.localStorage.setItem('titanfit.gymStateMode', 'CLEAN_SLATE');
       }
     } catch {
       /* ignore */
