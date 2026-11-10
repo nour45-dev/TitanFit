@@ -71,9 +71,7 @@ export function GymOwnerContentStudioView() {
   const [wkSourceType, setWkSourceType] =
     useState<CustomWorkoutVideoItem['videoSourceType']>('BUILTIN_ANIMATION');
   const [wkVideoUrl, setWkVideoUrl] = useState('');
-  const [wkThumbnailUrl, setWkThumbnailUrl] = useState(
-    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=85',
-  );
+  const [wkThumbnailUrl, setWkThumbnailUrl] = useState('');
   const [wkMotionType, setWkMotionType] =
     useState<CustomWorkoutVideoItem['motionType']>('BENCH_PRESS');
   const [wkTargetMuscleAr, setWkTargetMuscleAr] = useState('الصدر الأوسط والعلوي والترايسبس');

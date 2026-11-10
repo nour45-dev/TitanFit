@@ -1048,14 +1048,18 @@ export function PlatformProvider({
     try {
       if (typeof window !== 'undefined') {
         const savedMode = window.localStorage.getItem('titanfit.gymStateMode');
-        if (savedMode === 'CLEAN_SLATE') {
+        // Default mode is clean slate unless explicitly set to DEMO_DATA by owner
+        if (savedMode !== 'DEMO_DATA') {
+          window.localStorage.setItem('titanfit.gymStateMode', 'CLEAN_SLATE');
           setGymStateModeState('CLEAN_SLATE');
           setMembers([]);
           setInvoices([]);
+          setClasses([]);
           setAccessLogs([]);
           setTrainerPayouts([]);
           setWorkoutLogs([]);
           setChatMessages([]);
+          setAuditLogs([]);
           setBranches((prev) =>
             prev.map((b) => ({
               ...b,
@@ -1067,6 +1071,7 @@ export function PlatformProvider({
               ...s,
               activeClients: 0,
               monthlyRevenueEgp: 0,
+              totalPayoutsEgp: 0,
             })),
           );
         }

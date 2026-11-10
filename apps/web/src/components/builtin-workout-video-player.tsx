@@ -125,16 +125,34 @@ export function BuiltInWorkoutVideoPlayer({
     return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
+  const syncDuration = (el: HTMLVideoElement) => {
+    const d = el.duration;
+    if (d && !isNaN(d) && isFinite(d) && d > 0) {
+      setVideoDuration(d);
+    }
+  };
+
   const togglePlayPause = () => {
     if (!videoRef.current) return;
-    if (videoRef.current.paused) {
+    if (videoRef.current.paused || videoRef.current.ended) {
+      // If video reached the end or is within 0.3s of the end, restart cleanly from 0
+      if (
+        videoRef.current.ended ||
+        (videoRef.current.duration > 0 &&
+          videoRef.current.currentTime >= videoRef.current.duration - 0.3)
+      ) {
+        videoRef.current.currentTime = 0;
+        setVideoCurrentTime(0);
+      }
       videoRef.current
         .play()
         .then(() => {
           setIsVideoPaused(false);
           setVideoStarted(true);
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.warn('Playback error or policy:', err);
+        });
     } else {
       videoRef.current.pause();
       setIsVideoPaused(true);
@@ -158,6 +176,7 @@ export function BuiltInWorkoutVideoPlayer({
   const handleRestart = () => {
     if (!videoRef.current) return;
     videoRef.current.currentTime = 0;
+    setVideoCurrentTime(0);
     videoRef.current
       .play()
       .then(() => {
@@ -325,12 +344,17 @@ export function BuiltInWorkoutVideoPlayer({
                 ref={videoRef}
                 key={resolvedSrc}
                 src={resolvedSrc}
+                poster={thumbnailUrl || undefined}
                 controlsList="nodownload nofullscreen noremoteplayback"
                 disablePictureInPicture
                 controls={false}
                 playsInline
                 preload="auto"
                 onContextMenu={(e) => {
+                  e.preventDefault();
+                  return false;
+                }}
+                onDragStart={(e) => {
                   e.preventDefault();
                   return false;
                 }}
@@ -343,29 +367,31 @@ export function BuiltInWorkoutVideoPlayer({
                   setIsVideoPaused(true);
                 }}
                 onLoadedMetadata={(e) => {
-                  setVideoDuration(e.currentTarget.duration || 0);
-                  if (e.currentTarget.videoWidth === 0) {
-                    setCodecWarning(true);
-                  }
+                  syncDuration(e.currentTarget);
                 }}
-                onPlaying={(e) => {
+                onDurationChange={(e) => {
+                  syncDuration(e.currentTarget);
+                }}
+                onCanPlay={(e) => {
+                  syncDuration(e.currentTarget);
+                }}
+                onPlaying={() => {
                   setVideoStarted(true);
                   setIsVideoPaused(false);
-                  if (e.currentTarget.videoWidth === 0) {
-                    setCodecWarning(true);
-                  }
                 }}
                 onTimeUpdate={(e) => {
-                  setVideoCurrentTime(e.currentTarget.currentTime || 0);
-                  if (e.currentTarget.currentTime > 0.2 && e.currentTarget.videoWidth === 0) {
-                    setCodecWarning(true);
+                  const cur = e.currentTarget.currentTime || 0;
+                  setVideoCurrentTime(cur);
+                  const d = e.currentTarget.duration;
+                  if (d && !isNaN(d) && isFinite(d) && d > 0 && Math.abs(d - videoDuration) > 0.5) {
+                    setVideoDuration(d);
                   }
                 }}
                 onEnded={() => {
                   setVideoStarted(false);
                   setIsVideoPaused(true);
                 }}
-                className="h-full w-full object-contain cursor-pointer"
+                className="h-full w-full object-contain cursor-pointer bg-black"
               />
 
               {/* Anti-Download DRM Security Badge */}
@@ -374,37 +400,14 @@ export function BuiltInWorkoutVideoPlayer({
                 <span>{isAr ? '🔒 مشغل محمي ضد التحميل (Anti-Rip DRM)' : '🔒 Protected • No Download'}</span>
               </div>
 
-              {/* Centered Quick Play indicator if paused during playback */}
-              {isVideoPaused && videoStarted && (
+              {/* Centered Clickable Play Indicator when video is paused */}
+              {isVideoPaused && (
                 <div
                   onClick={togglePlayPause}
-                  className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/25 transition"
+                  className="pointer-events-auto cursor-pointer absolute inset-0 z-20 flex items-center justify-center bg-black/35 transition hover:bg-black/25"
+                  title={isAr ? 'اضغط لتشغيل الفيديو والصوت' : 'Click to Play Video & Audio'}
                 >
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/90 text-slate-950 shadow-2xl backdrop-blur-xs">
-                    <Play className="ms-1 h-8 w-8 fill-current" />
-                  </div>
-                </div>
-              )}
-
-              {/* Separate Thumbnail Poster Overlay — completely unmounted once playback starts so it CAN NEVER cover the video! */}
-              {!videoStarted && thumbnailUrl && (
-                <div
-                  onClick={() => {
-                    setVideoStarted(true);
-                    setIsVideoPaused(false);
-                    if (videoRef.current) {
-                      videoRef.current.play().catch(() => {});
-                    }
-                  }}
-                  className="absolute inset-0 z-20 flex cursor-pointer items-center justify-center bg-black/60 transition hover:bg-black/40"
-                  title={isAr ? 'اضغط لتشغيل الفيديو' : 'Click to play video'}
-                >
-                  <img
-                    src={thumbnailUrl}
-                    alt={isAr ? titleAr : titleEn}
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                  <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500 text-slate-950 shadow-2xl transition hover:scale-110 hover:bg-amber-400">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-500 text-slate-950 shadow-2xl transition hover:scale-110 hover:bg-amber-400">
                     <Play className="ms-1 h-8 w-8 fill-current" />
                   </div>
                 </div>
@@ -414,22 +417,27 @@ export function BuiltInWorkoutVideoPlayer({
               <div className="absolute inset-x-0 bottom-0 z-30 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-3 pt-6 pointer-events-auto">
                 {/* Scrub Progress Bar */}
                 <div className="relative flex items-center mb-2 cursor-pointer">
-                  <input
-                    type="range"
-                    min={0}
-                    max={videoDuration || 100}
-                    step={0.1}
-                    value={videoCurrentTime}
-                    onChange={handleSeek}
-                    className="w-full h-1.5 rounded-full appearance-none bg-slate-700/80 cursor-pointer accent-amber-500 transition-all hover:h-2"
-                    style={{
-                      background: `linear-gradient(to right, #D4AF37 0%, #10B981 ${
-                        videoDuration > 0 ? (videoCurrentTime / videoDuration) * 100 : 0
-                      }%, #334155 ${
-                        videoDuration > 0 ? (videoCurrentTime / videoDuration) * 100 : 0
-                      }%, #334155 100%)`,
-                    }}
-                  />
+                  {(() => {
+                    const effectiveDuration = Math.max(videoDuration, videoCurrentTime, 1);
+                    return (
+                      <input
+                        type="range"
+                        min={0}
+                        max={effectiveDuration}
+                        step={0.1}
+                        value={Math.min(videoCurrentTime, effectiveDuration)}
+                        onChange={handleSeek}
+                        className="w-full h-1.5 rounded-full appearance-none bg-slate-700/80 cursor-pointer accent-amber-500 transition-all hover:h-2"
+                        style={{
+                          background: `linear-gradient(to right, #D4AF37 0%, #10B981 ${
+                            effectiveDuration > 0 ? (videoCurrentTime / effectiveDuration) * 100 : 0
+                          }%, #334155 ${
+                            effectiveDuration > 0 ? (videoCurrentTime / effectiveDuration) * 100 : 0
+                          }%, #334155 100%)`,
+                        }}
+                      />
+                    );
+                  })()}
                 </div>
 
                 {/* Player Controls Row */}
@@ -461,6 +469,7 @@ export function BuiltInWorkoutVideoPlayer({
                       type="button"
                       onClick={toggleMute}
                       className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition"
+                      title={isVideoMuted ? (isAr ? 'تشغيل الصوت' : 'Unmute') : (isAr ? 'كتم الصوت' : 'Mute')}
                     >
                       {isVideoMuted ? (
                         <VolumeX className="h-4 w-4 text-rose-400" />
@@ -472,13 +481,13 @@ export function BuiltInWorkoutVideoPlayer({
                     <div className="font-mono text-xs font-bold text-slate-200 flex items-center gap-1 ms-1">
                       <span className="text-amber-400">{formatTime(videoCurrentTime)}</span>
                       <span className="text-slate-500">/</span>
-                      <span>{formatTime(videoDuration)}</span>
+                      <span>{formatTime(Math.max(videoDuration, videoCurrentTime))}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <span className="rounded-full bg-slate-800/80 px-2 py-0.5 text-[10px] font-bold text-slate-300 border border-slate-700">
-                      {isAr ? 'جودة HD 1080p' : 'HD 1080p'}
+                      {isAr ? '🔒 ضد التحميل • HD 1080p' : '🔒 Protected • HD 1080p'}
                     </span>
                   </div>
                 </div>
