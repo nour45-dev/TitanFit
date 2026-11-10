@@ -41,6 +41,7 @@ import {
 import { LogoPicker } from '../logo-picker';
 import { ExerciseMotionCard, type ExerciseMotionItem } from '../exercise-motion-card';
 import { BuiltInWorkoutVideoPlayer } from '../builtin-workout-video-player';
+import { WhatsAppLiveChat } from '../whatsapp-live-chat';
 import {
   type StaffMemberItem,
   type TenantSaaSItem,
@@ -789,126 +790,23 @@ export function MemberPwaPortalView() {
             </div>
           </div>
 
-          {/* Chat Messenger with High Contrast Light/Dark Theme */}
-          <div className="flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#121623] lg:col-span-2">
-            <div>
-              <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
-                  <div>
-                    <h3 className="text-base font-black text-slate-900 dark:text-white">
-                      {isAr
-                        ? `محادثة خاصة ومشفرة مع ${assignedCoach?.nameAr || 'المدرب الشخصي'}`
-                        : `Private Encrypted Chat with ${assignedCoach?.nameEn || 'Coach'}`}
-                    </h3>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      {isAr
-                        ? 'محادثة مخصصة لك فقط مع إجابات ذكية فورية على استفساراتك'
-                        : 'Dedicated private session with instant smart assistant support'}
-                    </p>
-                  </div>
-                </div>
-                <MessageSquare className="h-5 w-5 text-amber-500" />
-              </div>
-
-              {/* Quick Prompt Chips */}
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {[
-                  {
-                    ar: 'عايز أزود وزني في البنش ومحتاج نصيحة تكنيك',
-                    en: 'Tips to increase my bench press weight?',
-                  },
-                  {
-                    ar: 'إيه أفضل وجبة بعد التمرين لبناء العضلات؟',
-                    en: 'Best post-workout meal for muscle synthesis?',
-                  },
-                  {
-                    ar: 'عندي إرهاق خفيف في الركبة، هل ألعب رجلين؟',
-                    en: 'Slight knee fatigue, should I train legs?',
-                  },
-                  {
-                    ar: 'محتاج مراجعة على سعراتي والماكروز اليوم',
-                    en: 'Review my daily macros and calorie budget',
-                  },
-                ].map((chip, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => {
-                      sendChatMessage(isAr ? chip.ar : chip.en, 'MEMBER');
-                    }}
-                    className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-bold text-slate-700 hover:border-amber-400 hover:bg-amber-50 hover:text-amber-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-amber-500/50 dark:hover:bg-amber-500/10 dark:hover:text-amber-200"
-                  >
-                    💬 {isAr ? chip.ar : chip.en}
-                  </button>
-                ))}
-              </div>
-
-              {/* Messages Container with Crisp Contrast in Light & Dark */}
-              <div className="mt-4 max-h-[380px] space-y-3 overflow-y-auto pe-1">
-                {chatMessages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-10 text-center text-slate-400">
-                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                      {isAr
-                        ? '💬 لا توجد رسائل سابقة. ابدأ محادثتك المباشرة والخاصة مع مدربك الآن!'
-                        : '💬 No messages yet. Start your private coach chat now!'}
-                    </p>
-                  </div>
-                ) : (
-                  chatMessages.map((msg) => {
-                    const isMember = msg.senderRole === 'MEMBER';
-                    return (
-                      <div
-                        key={msg.id}
-                        className={`flex flex-col ${isMember ? 'items-end' : 'items-start'}`}
-                      >
-                        <div
-                          className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs shadow-sm ${
-                            isMember
-                              ? 'bg-slate-900 text-white font-bold dark:bg-amber-500 dark:text-slate-950 dark:font-black'
-                              : 'border border-slate-200 bg-slate-100 text-slate-900 font-bold dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100'
-                          }`}
-                        >
-                          <div
-                            className={`mb-1 flex items-center justify-between gap-3 text-[10px] font-extrabold ${
-                              isMember
-                                ? 'text-amber-400 dark:text-slate-900 opacity-90'
-                                : 'text-slate-500 dark:text-slate-400'
-                            }`}
-                          >
-                            <span>{isAr ? msg.senderNameAr : msg.senderNameEn}</span>
-                            <span>{msg.time}</span>
-                          </div>
-                          <p className="leading-relaxed whitespace-pre-wrap">
-                            {isAr ? msg.textAr : msg.textEn}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-                <div ref={chatBottomRef} />
-              </div>
-            </div>
-
-            {/* Chat Input Form */}
-            <form onSubmit={handleSendMessage} className="mt-4 flex gap-2">
-              <input
-                type="text"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder={isAr ? 'اكتب استفسارك أو سؤالك للكابتن هنا...' : 'Type a message to your coach...'}
-                className="flex-1 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-xs font-bold text-slate-900 placeholder-slate-400 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-              />
-              <button
-                type="submit"
-                aria-label={isAr ? 'إرسال الرسالة للمدرب' : 'Send message to coach'}
-                className="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-5 py-3 text-xs font-black text-slate-950 shadow-md hover:bg-amber-400"
-              >
-                <span>{isAr ? 'إرسال' : 'Send'}</span>
-                <Send className="h-4 w-4" />
-              </button>
-            </form>
+          {/* Real-Time WhatsApp Live Chat with Coach */}
+          <div className="lg:col-span-2">
+            <WhatsAppLiveChat
+              currentRole="MEMBER"
+              contactNameAr={assignedCoach?.nameAr || 'كابتن عمر حسن'}
+              contactNameEn={assignedCoach?.nameEn || 'Coach Omar Hassan'}
+              contactAvatar={
+                assignedCoach?.avatarUrl ||
+                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
+              }
+              contactSubtitleAr={assignedCoach?.specialtyAr || 'مدربك الشخصي المعتمد (متصل الآن)'}
+              contactSubtitleEn={assignedCoach?.specialtyEn || 'Personal Certified Coach (online)'}
+              contactPhone={assignedCoach?.whatsappNumber || assignedCoach?.phone || '01002169889'}
+              isAr={isAr}
+              memberId={currentMember?.id}
+              trainerId={assignedCoach?.id}
+            />
           </div>
         </div>
       )}

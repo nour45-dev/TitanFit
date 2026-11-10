@@ -121,6 +121,9 @@ export interface InvoiceItem {
   createdAt: string;
   branchId: string;
   cashierName: string;
+  receiptUrl?: string;
+  receiptFileName?: string;
+  receiptUploadedAt?: string;
 }
 
 export interface ClassSessionItem {
@@ -221,6 +224,12 @@ export interface ChatMessageItem {
   textEn: string;
   textAr: string;
   time: string;
+  timestamp?: number;
+  status?: 'SENT' | 'DELIVERED' | 'READ';
+  type?: 'TEXT' | 'IMAGE' | 'VOICE';
+  mediaUrl?: string;
+  voiceDurationSec?: number;
+  reactions?: string[];
   memberId?: string;
   trainerId?: string;
 }
@@ -799,7 +808,10 @@ export interface PlatformStoreContextValue {
     method: InvoiceItem['method'];
     couponCode?: string;
     referenceCode?: string;
+    receiptUrl?: string;
+    receiptFileName?: string;
   }) => InvoiceItem;
+  attachReceiptToInvoice: (invoiceId: string, receiptUrl: string, receiptFileName?: string) => void;
   refundInvoice: (invoiceId: string) => void;
   createPlan: (data: {
     nameEn: string;
@@ -861,7 +873,21 @@ export interface PlatformStoreContextValue {
   }) => void;
   assignMemberTrainer: (memberId: string, trainerId: string) => void;
   logWorkoutSet: (exerciseEn: string, exerciseAr: string, weightKg: number, reps: number, sets: number) => WorkoutLogEntry;
-  sendChatMessage: (text: string, senderRole?: 'TRAINER' | 'MEMBER') => void;
+  sendChatMessage: (
+    text: string,
+    senderRole?: 'TRAINER' | 'MEMBER',
+    options?: {
+      type?: 'TEXT' | 'IMAGE' | 'VOICE';
+      mediaUrl?: string;
+      voiceDurationSec?: number;
+      memberId?: string;
+      trainerId?: string;
+    },
+  ) => void;
+  toggleMessageReaction: (messageId: string, emoji: string) => void;
+  isCoachTyping: boolean;
+  activeTraineeChatId: string;
+  setActiveTraineeChatId: (id: string) => void;
   addTenant: (
     nameEn: string,
     nameAr: string,
@@ -962,6 +988,8 @@ export function PlatformProvider({
   const [trainerPayouts, setTrainerPayouts] = useState<TrainerPayoutTransaction[]>(INITIAL_TRAINER_PAYOUTS);
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLogEntry[]>(INITIAL_WORKOUT_LOGS);
   const [chatMessages, setChatMessages] = useState<ChatMessageItem[]>(INITIAL_CHAT);
+  const [isCoachTyping, setIsCoachTyping] = useState<boolean>(false);
+  const [activeTraineeChatId, setActiveTraineeChatId] = useState<string>('mem-1');
   const [tenants, setTenants] = useState<TenantSaaSItem[]>(INITIAL_TENANTS);
   const [customWorkouts, setCustomWorkouts] = useState<CustomWorkoutVideoItem[]>(INITIAL_CUSTOM_WORKOUTS);
   const [customRecipes, setCustomRecipes] = useState<CustomNutritionRecipeItem[]>(INITIAL_CUSTOM_RECIPES);
@@ -1700,6 +1728,9 @@ export function PlatformProvider({
       createdAt: 'Just now',
       branchId: member.branchId,
       cashierName: 'TitanFit Cashier POS',
+      receiptUrl: data.receiptUrl,
+      receiptFileName: data.receiptFileName,
+      receiptUploadedAt: data.receiptUrl ? 'Just now' : undefined,
     };
 
     setInvoices((prev) => [newInvoice, ...prev]);
@@ -1724,6 +1755,31 @@ export function PlatformProvider({
         : `Issued Tax Invoice ${invoiceNumber} for EGP ${totalEgp.toLocaleString()}`,
     );
     return newInvoice;
+  };
+
+  const attachReceiptToInvoice: PlatformStoreContextValue['attachReceiptToInvoice'] = (
+    invoiceId,
+    receiptUrl,
+    receiptFileName,
+  ) => {
+    setInvoices((prev) =>
+      prev.map((inv) =>
+        inv.id === invoiceId
+          ? {
+              ...inv,
+              receiptUrl,
+              receiptFileName: receiptFileName || 'receipt.jpg',
+              receiptUploadedAt: 'Just now',
+            }
+          : inv,
+      ),
+    );
+    appendAudit('RECEIPT_ATTACHED', `Attached receipt to ${invoiceId}`);
+    showToast(
+      locale === 'ar'
+        ? 'تم مسح وإرفاق صورة الوصل بالفاتورة بنجاح 🧾'
+        : 'Payment receipt scanned and attached successfully',
+    );
   };
 
   const refundInvoice = (invoiceId: string) => {
@@ -2193,30 +2249,60 @@ export function PlatformProvider({
     );
   };
 
-  const sendChatMessage = (text: string, senderRole: 'TRAINER' | 'MEMBER' = 'MEMBER') => {
-    if (!text.trim()) return;
-    const currentMember = members[0];
-    const assignedCoach = staff.find((s) => s.id === currentMember?.assignedTrainerId) || staff[0];
+  const sendChatMessage: PlatformStoreContextValue['sendChatMessage'] = (
+    text,
+    senderRole = 'MEMBER',
+    options,
+  ) => {
+    if (!text.trim() && !options?.mediaUrl) return;
+    const targetMemberId = options?.memberId || activeTraineeChatId || members[0]?.id;
+    const targetMember = members.find((m) => m.id === targetMemberId) || members[0];
+    const assignedCoach = staff.find((s) => s.id === targetMember?.assignedTrainerId) || staff[0];
     const coachNameAr = assignedCoach ? assignedCoach.nameAr : 'كابتن عمر حسن';
     const coachNameEn = assignedCoach ? assignedCoach.nameEn : 'Coach Omar Hassan';
 
+    const msgId = `msg-${Date.now()}`;
     const newMsg: ChatMessageItem = {
-      id: `msg-${Date.now()}`,
+      id: msgId,
       senderRole,
-      senderNameEn: senderRole === 'TRAINER' ? coachNameEn : (currentMember?.fullNameEn || 'Youssef El-Masry'),
-      senderNameAr: senderRole === 'TRAINER' ? coachNameAr : (currentMember?.fullNameAr || 'يوسف المصري'),
+      senderNameEn: senderRole === 'TRAINER' ? coachNameEn : (targetMember?.fullNameEn || 'Youssef El-Masry'),
+      senderNameAr: senderRole === 'TRAINER' ? coachNameAr : (targetMember?.fullNameAr || 'يوسف المصري'),
       textEn: text,
       textAr: text,
-      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      memberId: currentMember?.id,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: Date.now(),
+      status: senderRole === 'MEMBER' ? 'SENT' : 'READ',
+      type: options?.type || 'TEXT',
+      mediaUrl: options?.mediaUrl,
+      voiceDurationSec: options?.voiceDurationSec,
+      reactions: [],
+      memberId: targetMember?.id,
       trainerId: assignedCoach?.id,
     };
+
     setChatMessages((prev) => [...prev, newMsg]);
 
-    // If sent by member, simulate an intelligent coach auto-reply after 1.2s
+    // If sent by member, simulate WhatsApp delivery lifecycle and coach reply
     if (senderRole === 'MEMBER') {
+      // 1. WhatsApp double check (delivered) after 300ms
       setTimeout(() => {
-        let replyAr = `عاش يا ${currentMember?.fullNameAr || 'بطل'}! بتابع تمرينك ونظامك الغذائي أولاً بأول. حافظ على شرب المياه والراحة بين المجموعات.`;
+        setChatMessages((prev) =>
+          prev.map((m) => (m.id === msgId ? { ...m, status: 'DELIVERED' } : m)),
+        );
+      }, 300);
+
+      // 2. WhatsApp blue checks (read) + typing indicator after 750ms
+      setTimeout(() => {
+        setChatMessages((prev) =>
+          prev.map((m) => (m.id === msgId ? { ...m, status: 'READ' } : m)),
+        );
+        setIsCoachTyping(true);
+      }, 750);
+
+      // 3. Coach message arrives after 1800ms
+      setTimeout(() => {
+        setIsCoachTyping(false);
+        let replyAr = `عاش يا ${targetMember?.fullNameAr || 'بطل'}! بتابع تمرينك ونظامك الغذائي أولاً بأول. حافظ على شرب المياه والراحة بين المجموعات.`;
         let replyEn = `Great work! I am monitoring your progress closely. Keep up your hydration and recovery!`;
 
         if (text.includes('وزن') || text.includes('سكوات') || text.includes('بنش') || text.includes('ديدليفت') || text.includes('تمرين') || text.includes('حمل')) {
@@ -2228,6 +2314,12 @@ export function PlatformProvider({
         } else if (text.includes('إصابة') || text.includes('وجع') || text.includes('ألم') || text.includes('كتف') || text.includes('ركبة')) {
           replyAr = `سلامتك يا بطل! وقف أي ضغط مباشر على المفصل مؤقتاً، واعمل كمادات باردة خفيفة مع إطالات ديناميكية وهنفحصها سوا في الجيم قبل التمرين.`;
           replyEn = `Take care! Halt direct axial load, apply light ice compresses, and we will assess mobility together before your next session.`;
+        } else if (options?.type === 'VOICE') {
+          replyAr = `سمعت الفويس نوت يا كابتن! نصيحتي ليك تريح النهاردة تماماً ونبدأ بكرة تسخين خفيف ١٠ دقائق ومجموعات إحماء تصاعدية.`;
+          replyEn = `Got your voice note! Take a complete rest day today and we will warm up thoroughly tomorrow.`;
+        } else if (options?.type === 'IMAGE') {
+          replyAr = `شفت الصورة المرفقة، عاش جداً الاستمرارية دي! زاوية الكوع ممتازة والعمق سليم ١٠٠٪.`;
+          replyEn = `Reviewed the photo/form check! Excellent depth and solid elbow angle.`;
         }
 
         const coachReply: ChatMessageItem = {
@@ -2237,13 +2329,33 @@ export function PlatformProvider({
           senderNameAr: coachNameAr,
           textEn: replyEn,
           textAr: replyAr,
-          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-          memberId: currentMember?.id,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          timestamp: Date.now(),
+          status: 'READ',
+          type: 'TEXT',
+          reactions: ['💪'],
+          memberId: targetMember?.id,
           trainerId: assignedCoach?.id,
         };
         setChatMessages((prev) => [...prev, coachReply]);
-      }, 1200);
+      }, 1800);
     }
+  };
+
+  const toggleMessageReaction: PlatformStoreContextValue['toggleMessageReaction'] = (
+    messageId,
+    emoji,
+  ) => {
+    setChatMessages((prev) =>
+      prev.map((msg) => {
+        if (msg.id !== messageId) return msg;
+        const current = msg.reactions || [];
+        const next = current.includes(emoji)
+          ? current.filter((r) => r !== emoji)
+          : [...current, emoji];
+        return { ...msg, reactions: next };
+      }),
+    );
   };
 
   const addTenant: PlatformStoreContextValue['addTenant'] = (
@@ -2622,6 +2734,7 @@ export function PlatformProvider({
         deleteMember,
         toggleMemberFreeze,
         createInvoicePayment,
+        attachReceiptToInvoice,
         refundInvoice,
         createPlan,
         updatePlan,
@@ -2641,6 +2754,10 @@ export function PlatformProvider({
         assignMemberTrainer,
         logWorkoutSet,
         sendChatMessage,
+        toggleMessageReaction,
+        isCoachTyping,
+        activeTraineeChatId,
+        setActiveTraineeChatId,
         addTenant,
         toggleTenantStatus,
         deleteTenant,

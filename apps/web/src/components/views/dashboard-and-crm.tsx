@@ -37,8 +37,13 @@ import {
   Video,
   Wallet,
   X,
+  Camera,
+  Upload,
+  FileText,
+  CheckCircle,
 } from 'lucide-react';
 import { downloadInvoicePdf } from '../../lib/pdf-docs';
+import { ReceiptScannerModal, ReceiptViewerModal } from '../receipt-scanner-modal';
 import {
   type InvoiceItem,
   type MemberItem,
@@ -690,6 +695,10 @@ export function MembersCrmView() {
   const [collectPaymentNow, setCollectPaymentNow] = useState(true);
   const [addMemberPaymentMethod, setAddMemberPaymentMethod] = useState<InvoiceItem['method']>('CASH');
   const [addMemberReferenceCode, setAddMemberReferenceCode] = useState('');
+  const [addMemberReceiptUrl, setAddMemberReceiptUrl] = useState<string | null>(null);
+  const [addMemberReceiptFileName, setAddMemberReceiptFileName] = useState<string | null>(null);
+  const [showAddMemberReceiptScanner, setShowAddMemberReceiptScanner] = useState(false);
+  const [viewingReceiptUrl, setViewingReceiptUrl] = useState<string | null>(null);
 
   const selectedPlanForAdd = plans.find((p) => p.id === planId) ?? plans[0];
   const subtotalForAdd = selectedPlanForAdd?.priceEgp ?? 0;
@@ -733,6 +742,8 @@ export function MembersCrmView() {
         planId,
         method: addMemberPaymentMethod,
         referenceCode: addMemberReferenceCode,
+        receiptUrl: addMemberReceiptUrl || undefined,
+        receiptFileName: addMemberReceiptFileName || undefined,
       });
       setNewlyCreatedInvoice(inv);
     } else {
@@ -743,6 +754,8 @@ export function MembersCrmView() {
     setFullNameAr('');
     setMedicalConditions('');
     setAddMemberReferenceCode('');
+    setAddMemberReceiptUrl(null);
+    setAddMemberReceiptFileName(null);
     setShowAddModal(false);
     setNewlyCreatedMember(created);
   };
@@ -1180,6 +1193,59 @@ export function MembersCrmView() {
                           className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-mono text-xs text-slate-900 focus:border-amber-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                         />
                       </div>
+
+                      {/* Receipt Scanner / Attachment in Add Member */}
+                      <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900/60">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                            {isAr ? '🧾 إرفاق أو مسح وصل الدفع / التحويل البنكي:' : 'Attach or Scan Payment Receipt:'}
+                          </span>
+                          {addMemberReceiptUrl ? (
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-0.5 text-[10px] font-black text-emerald-700 dark:text-emerald-400">
+                                <CheckCircle className="h-3 w-3" />
+                                {addMemberReceiptFileName || 'receipt.jpg'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setViewingReceiptUrl(addMemberReceiptUrl)}
+                                className="rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-white"
+                              >
+                                {isAr ? 'معاينة' : 'View'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAddMemberReceiptUrl(null);
+                                  setAddMemberReceiptFileName(null);
+                                }}
+                                className="rounded-lg bg-rose-100 px-2 py-1 text-[11px] font-bold text-rose-700 hover:bg-rose-200 dark:bg-rose-950/40 dark:text-rose-400"
+                              >
+                                {isAr ? 'إزالة' : 'Remove'}
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setShowAddMemberReceiptScanner(true)}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-xs font-black text-amber-800 hover:bg-amber-500/20 dark:text-amber-300"
+                              >
+                                <Camera className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                                <span>{isAr ? 'مسح بالكاميرا' : 'Camera'}</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setShowAddMemberReceiptScanner(true)}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-slate-100 px-2.5 py-1 text-xs font-black text-slate-800 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                              >
+                                <Upload className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
+                                <span>{isAr ? 'رفع ملف' : 'Upload'}</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1501,6 +1567,23 @@ export function MembersCrmView() {
                       {newlyCreatedInvoice.totalEgp.toLocaleString()} EGP (14% VAT)
                     </span>
                   </div>
+                  {newlyCreatedInvoice.receiptUrl && (
+                    <div className="mt-2 flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-2 text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <FileText className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          {isAr ? 'وصل التحويل المرفق:' : 'Attached Receipt:'} {newlyCreatedInvoice.receiptFileName || 'receipt.jpg'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setViewingReceiptUrl(newlyCreatedInvoice.receiptUrl || null)}
+                        className="rounded-lg bg-emerald-600 px-2 py-0.5 text-[11px] font-black text-white hover:bg-emerald-500"
+                      >
+                        {isAr ? 'معاينة الوصل 👁️' : 'View Receipt 👁️'}
+                      </button>
+                    </div>
+                  )}
                   <div className="mt-2.5 flex items-center gap-2">
                     <button
                       type="button"
@@ -1712,6 +1795,27 @@ export function MembersCrmView() {
           </div>
         </div>
       )}
+
+      {/* Receipt Scanner & Fullscreen Viewer Modals in Members View */}
+      <ReceiptScannerModal
+        isOpen={showAddMemberReceiptScanner}
+        onClose={() => setShowAddMemberReceiptScanner(false)}
+        onReceiptCaptured={(dataUrl, fName) => {
+          setAddMemberReceiptUrl(dataUrl);
+          setAddMemberReceiptFileName(fName || 'receipt.jpg');
+          if (!addMemberReferenceCode) {
+            setAddMemberReferenceCode(`REC-INSTA-${Date.now().toString().slice(-6)}`);
+          }
+        }}
+        isAr={isAr}
+      />
+
+      <ReceiptViewerModal
+        isOpen={Boolean(viewingReceiptUrl)}
+        onClose={() => setViewingReceiptUrl(null)}
+        receiptUrl={viewingReceiptUrl}
+        isAr={isAr}
+      />
     </div>
   );
 }
@@ -2082,6 +2186,7 @@ export function PaymentsBillingView() {
     plans,
     invoices,
     createInvoicePayment,
+    attachReceiptToInvoice,
     refundInvoice,
     activeTenantCustom,
     showToast,
@@ -2096,6 +2201,12 @@ export function PaymentsBillingView() {
   const [referenceCode, setReferenceCode] = useState('');
   const [lastIssuedInvoice, setLastIssuedInvoice] = useState<InvoiceItem | null>(null);
   const [printableInvoice, setPrintableInvoice] = useState<InvoiceItem | null>(null);
+  const [cashierReceiptUrl, setCashierReceiptUrl] = useState<string | null>(null);
+  const [cashierReceiptFileName, setCashierReceiptFileName] = useState<string | null>(null);
+  const [showCashierScanner, setShowCashierScanner] = useState(false);
+  const [activeReceiptInvoiceId, setActiveReceiptInvoiceId] = useState<string | null>(null);
+  const [viewingReceiptUrl, setViewingReceiptUrl] = useState<string | null>(null);
+  const [viewingReceiptInvoiceNum, setViewingReceiptInvoiceNum] = useState<string | undefined>(undefined);
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? plans[0] ?? {
     id: 'plan-custom',
@@ -2142,8 +2253,12 @@ export function PaymentsBillingView() {
       method: paymentMethod,
       couponCode,
       referenceCode,
+      receiptUrl: cashierReceiptUrl || undefined,
+      receiptFileName: cashierReceiptFileName || undefined,
     });
     setLastIssuedInvoice(inv);
+    setCashierReceiptUrl(null);
+    setCashierReceiptFileName(null);
   };
 
   return (
@@ -2277,6 +2392,70 @@ export function PaymentsBillingView() {
                 className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-900 focus:bg-white focus:border-amber-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               />
             </div>
+
+            {/* Live Camera Scan or Upload Receipt in Cashier Terminal */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 dark:border-slate-800 dark:bg-slate-900/60 sm:col-span-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <span className="block text-xs font-bold text-slate-900 dark:text-white">
+                    {isAr ? '📷 إيصال أو وصل الدفع والتحويل (مسح بالكاميرا أو رفع صورة)' : 'Receipt (Camera Scan / Upload Image)'}
+                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {isAr ? 'اربط صورة إيصال إنستاباي / التحويل البنكي مباشرة بالفاتورة' : 'Attach InstaPay or POS receipt image'}
+                  </span>
+                </div>
+                {cashierReceiptUrl ? (
+                  <div className="flex items-center gap-2">
+                    <img src={cashierReceiptUrl} alt="Receipt preview" className="h-9 w-9 rounded-lg object-cover ring-1 ring-amber-500" />
+                    <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      ✓ {cashierReceiptFileName || 'receipt.jpg'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setViewingReceiptUrl(cashierReceiptUrl)}
+                      className="rounded-lg bg-white px-2.5 py-1 text-xs font-bold text-slate-800 shadow-sm hover:bg-slate-100 dark:bg-slate-800 dark:text-white"
+                    >
+                      {isAr ? 'معاينة' : 'Preview'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCashierReceiptUrl(null);
+                        setCashierReceiptFileName(null);
+                      }}
+                      className="rounded-lg bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-700 hover:bg-rose-200 dark:bg-rose-950/40 dark:text-rose-400"
+                    >
+                      {isAr ? 'إزالة' : 'Remove'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveReceiptInvoiceId(null);
+                        setShowCashierScanner(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-black text-amber-800 hover:bg-amber-500/20 dark:text-amber-300"
+                    >
+                      <Camera className="h-4 w-4 text-amber-500" />
+                      <span>{isAr ? '📷 مسح الوصل بالكاميرا' : 'Live Camera Scan'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveReceiptInvoiceId(null);
+                        setShowCashierScanner(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-black text-slate-800 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                    >
+                      <Upload className="h-4 w-4 text-slate-500" />
+                      <span>{isAr ? '📁 رفع صورة الوصل' : 'Upload File'}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -2364,6 +2543,7 @@ export function PaymentsBillingView() {
                 <th className="px-4 py-3 text-start">{isAr ? 'البيان' : 'Description'}</th>
                 <th className="px-4 py-3 text-start">{isAr ? 'بوابة الدفع' : 'Gateway'}</th>
                 <th className="px-4 py-3 text-start">{isAr ? 'الإجمالي (شامل الضريبة)' : 'Total (Incl. VAT)'}</th>
+                <th className="px-4 py-3 text-start">{isAr ? 'الوصل المرفق' : 'Receipt'}</th>
                 <th className="px-4 py-3 text-start">{isAr ? 'الحالة' : 'Status'}</th>
                 <th className="px-4 py-3 text-end">{isAr ? 'إجراءات' : 'Actions'}</th>
               </tr>
@@ -2371,7 +2551,7 @@ export function PaymentsBillingView() {
             <tbody className="divide-y divide-slate-800/60">
               {invoices.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-xs font-bold text-slate-500 dark:text-slate-400">
+                  <td colSpan={8} className="py-10 text-center text-xs font-bold text-slate-500 dark:text-slate-400">
                     {isAr
                       ? 'لا توجد فواتير أو مدفوعات مسجلة بعد — يمكنك إصدار أول فاتورة من محطة التحصيل أعلاه.'
                       : 'No invoices or payments recorded yet — Issue your first invoice from the terminal above.'}
@@ -2396,6 +2576,33 @@ export function PaymentsBillingView() {
                   </td>
                   <td className="px-4 py-3 font-mono font-bold text-slate-900 dark:text-white">
                     {inv.totalEgp.toLocaleString()} EGP
+                  </td>
+                  <td className="px-4 py-3">
+                    {inv.receiptUrl ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setViewingReceiptUrl(inv.receiptUrl || null);
+                          setViewingReceiptInvoiceNum(inv.invoiceNumber);
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-xs font-black text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25 transition shadow-sm"
+                      >
+                        <FileText className="h-3.5 w-3.5 text-emerald-500" />
+                        <span>{isAr ? '🧾 عرض الوصل' : 'View Receipt'}</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveReceiptInvoiceId(inv.id);
+                          setShowCashierScanner(true);
+                        }}
+                        className="inline-flex items-center gap-1 rounded-lg border border-dashed border-amber-500/50 bg-amber-50/50 px-2.5 py-1 text-[11px] font-bold text-amber-800 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-950/20 dark:text-amber-300"
+                      >
+                        <Camera className="h-3 w-3 text-amber-500" />
+                        <span>{isAr ? '+ مسح/إرفاق وصل' : '+ Attach'}</span>
+                      </button>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <span
@@ -2523,6 +2730,40 @@ export function PaymentsBillingView() {
           </div>
         </div>
       )}
+
+      {/* Receipt Live Camera Scanner Modal */}
+      <ReceiptScannerModal
+        isOpen={showCashierScanner}
+        onClose={() => {
+          setShowCashierScanner(false);
+          setActiveReceiptInvoiceId(null);
+        }}
+        onReceiptCaptured={(dataUrl, fName) => {
+          if (activeReceiptInvoiceId) {
+            attachReceiptToInvoice(activeReceiptInvoiceId, dataUrl, fName);
+            setActiveReceiptInvoiceId(null);
+          } else {
+            setCashierReceiptUrl(dataUrl);
+            setCashierReceiptFileName(fName || 'receipt.jpg');
+            if (!referenceCode) {
+              setReferenceCode(`REC-INSTA-${Date.now().toString().slice(-6)}`);
+            }
+          }
+        }}
+        isAr={isAr}
+      />
+
+      {/* Attached Receipt High-Res Inspector Viewer */}
+      <ReceiptViewerModal
+        isOpen={Boolean(viewingReceiptUrl)}
+        onClose={() => {
+          setViewingReceiptUrl(null);
+          setViewingReceiptInvoiceNum(undefined);
+        }}
+        receiptUrl={viewingReceiptUrl}
+        invoiceNumber={viewingReceiptInvoiceNum}
+        isAr={isAr}
+      />
     </div>
   );
 }

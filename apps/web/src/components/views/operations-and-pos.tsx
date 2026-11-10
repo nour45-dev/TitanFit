@@ -12,6 +12,7 @@ import {
   Edit3,
   Lock,
   MessageCircle,
+  MessageSquare,
   Minus,
   Package,
   Phone,
@@ -19,6 +20,7 @@ import {
   QrCode,
   Radio,
   Receipt,
+  Search,
   ShieldAlert,
   ShieldCheck,
   ShoppingBag,
@@ -30,6 +32,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import { WhatsAppLiveChat } from '../whatsapp-live-chat';
 import {
   type AccessLogItem,
   type ClassSessionItem,
@@ -1055,14 +1058,19 @@ export function StaffTrainersView() {
   const {
     locale,
     staff,
+    members,
     trainerPayouts,
     addStaffMember,
     updateStaffMember,
     deleteStaffMember,
     recordTrainerPayout,
+    activeTraineeChatId,
+    setActiveTraineeChatId,
   } = usePlatformStore();
   const isAr = locale === 'ar';
 
+  const [trainersViewMode, setTrainersViewMode] = useState<'STAFF_GRID' | 'WHATSAPP_LIVE'>('STAFF_GRID');
+  const [traineeSearch, setTraineeSearch] = useState('');
   const [showAddTrainerModal, setShowAddTrainerModal] = useState(false);
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [editingStaff, setEditingStaff] = useState<StaffMemberItem | null>(null);
@@ -1175,8 +1183,161 @@ export function StaffTrainersView() {
 
   return (
     <div data-testid="panel-staff-trainers" className="space-y-6">
-      {/* Header Banner & Financial Metrics KPI */}
-      <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm dark:border-slate-800/80 dark:bg-[#121623]">
+      {/* Top Switcher: Staff Grid vs WhatsApp Live Trainee Console */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setTrainersViewMode('STAFF_GRID')}
+          className={`flex items-center gap-2 rounded-2xl px-5 py-3 text-xs font-black transition ${
+            trainersViewMode === 'STAFF_GRID'
+              ? 'bg-[#D4AF37] text-slate-950 shadow-md'
+              : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-[#121623] dark:text-slate-300'
+          }`}
+        >
+          <Users className="h-4 w-4" />
+          <span>{isAr ? '👥 طاقم المدربين والعمولات المالية' : 'Staff Coaches & Commissions'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTrainersViewMode('WHATSAPP_LIVE')}
+          className={`flex items-center gap-2 rounded-2xl px-5 py-3 text-xs font-black transition ${
+            trainersViewMode === 'WHATSAPP_LIVE'
+              ? 'bg-emerald-600 text-white shadow-md'
+              : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-[#121623] dark:text-slate-300'
+          }`}
+        >
+          <MessageCircle className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+          <span>{isAr ? '💬 محادثات الواتساب الحية مع المتدربين' : 'WhatsApp Live Trainee Chat'}</span>
+          <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:text-emerald-300">
+            Real-Time
+          </span>
+        </button>
+      </div>
+
+      {trainersViewMode === 'WHATSAPP_LIVE' ? (
+        /* Real-Time WhatsApp Web Coach Console */
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Left Trainees Contacts Sidebar */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-[#121623]">
+            <div className="border-b border-slate-200 pb-3 dark:border-slate-800">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-slate-900 dark:text-white">
+                  {isAr ? 'قائمة متدربي النادي' : 'Trainees Directory'}
+                </span>
+                <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                  {members.length} {isAr ? 'متدرب' : 'members'}
+                </span>
+              </div>
+              <div className="relative mt-2.5">
+                <Search className="absolute start-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  value={traineeSearch}
+                  onChange={(e) => setTraineeSearch(e.target.value)}
+                  placeholder={isAr ? 'بحث بالاسم أو رقم الهاتف...' : 'Search trainee...'}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-1.5 pe-3 ps-8 text-xs text-slate-900 focus:bg-white focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div className="mt-3 max-h-[500px] space-y-1.5 overflow-y-auto">
+              {members.length === 0 ? (
+                <div className="py-10 text-center text-xs text-slate-400">
+                  {isAr ? 'لا يوجد متدربون مسجلون بعد' : 'No members yet'}
+                </div>
+              ) : (
+                members
+                  .filter((m) => {
+                    if (!traineeSearch.trim()) return true;
+                    const q = traineeSearch.toLowerCase();
+                    return (
+                      m.fullNameAr.includes(q) ||
+                      m.fullNameEn.toLowerCase().includes(q) ||
+                      m.phone.includes(q)
+                    );
+                  })
+                  .map((m) => {
+                    const isSelected = (activeTraineeChatId || members[0]?.id) === m.id;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setActiveTraineeChatId(m.id)}
+                        className={`w-full text-start flex items-center gap-3 rounded-2xl p-2.5 transition ${
+                          isSelected
+                            ? 'bg-emerald-500/15 ring-1 ring-emerald-500/50 dark:bg-emerald-500/20'
+                            : 'hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                        }`}
+                      >
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D4AF37]/20 font-black text-[#D4AF37] ring-1 ring-[#D4AF37]/30">
+                          {m.avatarInitials || m.fullNameAr.slice(0, 1)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="truncate text-xs font-black text-slate-900 dark:text-white">
+                              {isAr ? m.fullNameAr : m.fullNameEn}
+                            </span>
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400">●</span>
+                          </div>
+                          <span className="block truncate text-[11px] text-slate-500 dark:text-slate-400">
+                            {isAr ? m.planNameAr : m.planNameEn} • {m.phone}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })
+              )}
+            </div>
+          </div>
+
+          {/* Right Live WhatsApp Chat Window */}
+          <div className="lg:col-span-2">
+            {members.length === 0 ? (
+              <div className="flex h-[620px] flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center dark:border-slate-800 dark:bg-[#121623]">
+                <MessageCircle className="h-12 w-12 text-slate-400 mb-3" />
+                <h3 className="text-sm font-black text-slate-900 dark:text-white">
+                  {isAr ? 'لا يوجد متدربون للتواصل معهم بعد' : 'No trainees to message yet'}
+                </h3>
+              </div>
+            ) : (
+              <WhatsAppLiveChat
+                currentRole="TRAINER"
+                contactNameAr={
+                  (members.find((m) => m.id === (activeTraineeChatId || members[0]?.id)) || members[0])
+                    ?.fullNameAr || 'المتدرب'
+                }
+                contactNameEn={
+                  (members.find((m) => m.id === (activeTraineeChatId || members[0]?.id)) || members[0])
+                    ?.fullNameEn || 'Trainee'
+                }
+                contactAvatar="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80"
+                contactSubtitleAr={
+                  ((members.find((m) => m.id === (activeTraineeChatId || members[0]?.id)) || members[0])
+                    ?.planNameAr || 'عضوية نشطة') + ' • متدرب'
+                }
+                contactSubtitleEn={
+                  ((members.find((m) => m.id === (activeTraineeChatId || members[0]?.id)) || members[0])
+                    ?.planNameEn || 'Active Member') + ' • Trainee'
+                }
+                contactPhone={
+                  (members.find((m) => m.id === (activeTraineeChatId || members[0]?.id)) || members[0])
+                    ?.phone
+                }
+                isAr={isAr}
+                memberId={
+                  (members.find((m) => m.id === (activeTraineeChatId || members[0]?.id)) || members[0])
+                    ?.id
+                }
+              />
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Staff Grid & Financial Payouts View */
+        <>
+          {/* Header Banner & Financial Metrics KPI */}
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm dark:border-slate-800/80 dark:bg-[#121623]">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-extrabold text-amber-800 dark:bg-[#D4AF37]/20 dark:text-[#F3E5AB]">
@@ -1503,8 +1664,10 @@ export function StaffTrainersView() {
           </table>
         </div>
       </div>
+    </>
+  )}
 
-      {/* Modal 1: Add Trainer */}
+  {/* Modal 1: Add Trainer */}
       {showAddTrainerModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-[#121623] dark:text-white">
