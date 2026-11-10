@@ -120,8 +120,8 @@ export function GymOwnerContentStudioView() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadedVideoFileName(file.name);
-    // Use URL.createObjectURL for instant smooth playback of large video files, or DataURL if small
-    if (file.size <= 3 * 1024 * 1024) {
+    // Use DataURL for files up to 15MB for robust cross-session persistence, or ObjectURL if larger
+    if (file.size <= 15 * 1024 * 1024) {
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {

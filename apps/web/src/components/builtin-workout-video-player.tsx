@@ -84,6 +84,14 @@ export function BuiltInWorkoutVideoPlayer({
   const [restCountdown, setRestCountdown] = useState<number | null>(null);
   const [voiceCueEnabled, setVoiceCueEnabled] = useState<boolean>(false);
 
+  // External / Uploaded video playback state
+  const [videoStarted, setVideoStarted] = useState<boolean>(false);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    setVideoStarted(false);
+  }, [videoUrl]);
+
   const targetRepsNum = parseInt(reps.replace(/[^0-9]/g, '').slice(0, 2) || '10', 10) || 10;
 
   // Cycle through biomechanical phases and reps when playing
@@ -159,13 +167,19 @@ export function BuiltInWorkoutVideoPlayer({
     }
   };
 
-  const isDirectVideoFile =
-    videoUrl &&
-    (videoUrl.startsWith('data:video/') ||
-      videoUrl.startsWith('blob:') ||
-      videoUrl.endsWith('.mp4') ||
-      videoUrl.endsWith('.webm') ||
-      videoUrl.endsWith('.ogg'));
+  const isDirectVideoFile = Boolean(
+    videoSourceType === 'UPLOADED_FILE' ||
+      (videoUrl &&
+        (videoUrl.startsWith('data:video/') ||
+          videoUrl.startsWith('data:application/octet-stream') ||
+          videoUrl.startsWith('blob:') ||
+          /\.(mp4|webm|ogg|mov|m4v|mkv)(\?.*)?$/i.test(videoUrl))),
+  );
+
+  const handleVideoPlaying = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    setVideoStarted(true);
+    e.currentTarget.removeAttribute('poster');
+  };
 
   return (
     <div
@@ -219,16 +233,46 @@ export function BuiltInWorkoutVideoPlayer({
 
       {/* Main Video Stage */}
       {activeMode === 'EXTERNAL_VIDEO' && hasExternalOrUploadedVideo ? (
-        <div className="relative aspect-video w-full bg-slate-950">
+        <div className="group relative aspect-video w-full overflow-hidden bg-slate-950">
           {isDirectVideoFile ? (
-            <video
-              key={videoUrl}
-              src={videoUrl}
-              poster={thumbnailUrl}
-              controls
-              playsInline
-              className="h-full w-full object-contain"
-            />
+            <>
+              <video
+                ref={videoRef}
+                key={videoUrl}
+                src={videoUrl}
+                poster={videoStarted ? undefined : thumbnailUrl}
+                controls
+                playsInline
+                preload="metadata"
+                onPlay={handleVideoPlaying}
+                onPlaying={handleVideoPlaying}
+                onTimeUpdate={(e) => {
+                  if (e.currentTarget.currentTime > 0) {
+                    handleVideoPlaying(e);
+                  }
+                }}
+                onEnded={() => setVideoStarted(false)}
+                className="h-full w-full object-contain"
+              />
+              {/* Interactive Start Overlay so clicking the thumbnail immediately starts video & clears poster */}
+              {!videoStarted && thumbnailUrl && (
+                <div
+                  onClick={() => {
+                    setVideoStarted(true);
+                    if (videoRef.current) {
+                      videoRef.current.removeAttribute('poster');
+                      videoRef.current.play().catch(() => {});
+                    }
+                  }}
+                  className="absolute inset-0 z-10 flex cursor-pointer items-center justify-center bg-black/40 transition hover:bg-black/25"
+                  title={isAr ? 'اضغط لتشغيل الفيديو' : 'Click to play video'}
+                >
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-500 text-slate-950 shadow-2xl transition hover:scale-110 hover:bg-amber-400">
+                    <Play className="ms-1 h-8 w-8 fill-current" />
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <iframe
               key={videoUrl}

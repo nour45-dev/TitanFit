@@ -1103,6 +1103,7 @@ export interface PlatformStoreContextValue {
     file: Omit<CustomClubFileItem, 'id' | 'createdAt'>,
   ) => CustomClubFileItem;
   deleteCustomFile: (fileId: string) => void;
+  resetToCleanGymState: () => void;
 }
 
 const PlatformContext = createContext<PlatformStoreContextValue | null>(null);
@@ -2618,6 +2619,39 @@ export function PlatformProvider({
     );
   };
 
+  const resetToCleanGymState: PlatformStoreContextValue['resetToCleanGymState'] = () => {
+    // 1. Clear temporary transactional logs while preserving base member & coach catalog
+    setInvoices([]);
+    setAccessLogs([]);
+    setTrainerPayouts([]);
+    setWorkoutLogs([]);
+    setChatMessages([]);
+    // 2. Clear any lingering local test files or temporary uploads
+    try {
+      if (typeof window !== 'undefined') {
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const k = window.localStorage.key(i);
+          if (k && (k.startsWith('titanfit.customContent.') || k === 'titanfit.customContent.v1')) {
+            keysToRemove.push(k);
+          }
+        }
+        keysToRemove.forEach((k) => window.localStorage.removeItem(k));
+      }
+    } catch {
+      /* ignore */
+    }
+    // 3. Restore pristine default training templates
+    setCustomWorkouts(INITIAL_CUSTOM_WORKOUTS);
+    setCustomRecipes(INITIAL_CUSTOM_RECIPES);
+    setCustomFiles(INITIAL_CUSTOM_FILES);
+    showToast(
+      locale === 'ar'
+        ? 'تمت تهيئة بيانات المنصة بالكامل وتنظيف السجلات المؤقتة بنجاح! المنصة الآن جديدة وجاهزة للعميل.'
+        : 'Platform reset to pristine clean state! Ready for client production launch.',
+    );
+  };
+
   return (
     <PlatformContext.Provider
       value={{
@@ -2697,6 +2731,7 @@ export function PlatformProvider({
         deleteCustomRecipe,
         addCustomFile,
         deleteCustomFile,
+        resetToCleanGymState,
       }}
     >
       {children}

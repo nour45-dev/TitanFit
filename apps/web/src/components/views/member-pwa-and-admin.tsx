@@ -1315,8 +1315,10 @@ export function TenantSettingsView() {
     showToast,
     activeTenantCustom,
     updateTenantBranding,
+    resetToCleanGymState,
   } = usePlatformStore();
   const isAr = locale === 'ar';
+  const [confirmCleanSlate, setConfirmCleanSlate] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -1432,6 +1434,62 @@ export function TenantSettingsView() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Clean Slate & Production Initialization for Client */}
+      <div className="rounded-2xl border border-rose-300/80 bg-rose-50/50 p-6 dark:border-rose-900/50 dark:bg-rose-950/20">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-rose-500/20 px-2.5 py-0.5 text-xs font-black text-rose-700 dark:text-rose-300">
+                🧹 {isAr ? 'تهيئة المنصة للعميل الجديد' : 'Clean Slate Client Setup'}
+              </span>
+            </div>
+            <h3 className="mt-2 text-base font-black text-slate-900 dark:text-white">
+              {isAr ? 'تصفير وتنظيف السجلات المؤقتة لبدء العمل الفعلي' : 'Reset Temporary Demo Data & Start Fresh'}
+            </h3>
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+              {isAr
+                ? 'يمسح المعاملات والفواتير وسجلات الدخول التجريبية المؤقتة لتبدأ المنصة جديدة تماماً لعميل الجيم مع الحفاظ التام على كامل النظام والمميزات.'
+                : 'Clears demo transactions, test chats and temporary invoices so the gym owner starts completely fresh.'}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setConfirmCleanSlate(true)}
+            className="shrink-0 rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-black text-white shadow-sm hover:bg-rose-500"
+          >
+            {isAr ? 'تصفير البيانات المؤقتة والبدء بحالة جديدة 🧹' : 'Reset Demo Data to Clean State 🧹'}
+          </button>
+        </div>
+
+        {confirmCleanSlate && (
+          <div className="mt-4 rounded-xl border border-rose-400 bg-white p-4 dark:border-rose-800 dark:bg-slate-900">
+            <p className="text-xs font-bold text-slate-900 dark:text-white">
+              ⚠️ {isAr ? 'هل أنت متأكد من تصفير البيانات المؤقتة؟ سيتم تنظيف سجلات الفواتير والحركات التجريبية والبدء بسجل نظيف جديد.' : 'Are you sure you want to reset demo data to a clean state?'}
+            </p>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  resetToCleanGymState();
+                  setConfirmCleanSlate(false);
+                }}
+                className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-black text-white hover:bg-rose-500"
+              >
+                {isAr ? 'نعم، تصفير وبدء نسخة نظيفة' : 'Yes, Reset to Clean State'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmCleanSlate(false)}
+                className="rounded-lg border border-slate-300 bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              >
+                {isAr ? 'إلغاء' : 'Cancel'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
