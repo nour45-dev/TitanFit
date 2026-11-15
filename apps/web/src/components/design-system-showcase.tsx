@@ -19,6 +19,7 @@ import {
   Globe,
   KeyRound,
   LayoutDashboard,
+  Lock,
   LogIn,
   LogOut,
   Menu,
@@ -36,6 +37,7 @@ import {
   Users,
   Video,
   X,
+  Zap,
 } from 'lucide-react';
 import {
   PlatformProvider,
@@ -64,6 +66,7 @@ import {
 import { PublicCoachingStorefrontView } from './views/public-coaching-storefront';
 import { FreeTrialWorkoutsAndDietsView } from './views/free-trial-workouts-and-diets';
 import { GymOwnerContentStudioView } from './views/gym-owner-content-studio';
+import { PlanUpgradePaywallView } from './views/plan-upgrade-paywall';
 import { SmartAiAssistantWidget } from './smart-ai-assistant';
 import { ModernAmbientBackground } from './ui/modern-ambient-background';
 
@@ -96,6 +99,11 @@ function TitanFitEnterpriseShell() {
     verifyMemberOtp,
     logout,
     tenants,
+    isSectionAllowed,
+    getRequiredPlanForSection,
+    activePlanConfig,
+    activePlanTier,
+    saasPlans,
   } = usePlatformStore();
 
   const isAr = locale === 'ar';
@@ -1009,6 +1017,8 @@ function TitanFitEnterpriseShell() {
                     {grp.items.map((item) => {
                       const Icon = item.icon;
                       const active = activeSection === item.id;
+                      const isLocked = !isSectionAllowed(item.id);
+                      const reqPlan = getRequiredPlanForSection(item.id);
                       return (
                         <button
                           key={item.id}
@@ -1021,23 +1031,32 @@ function TitanFitEnterpriseShell() {
                           className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold transition ${
                             active
                               ? 'bg-gradient-to-r from-amber-500 to-[#D4AF37] font-black text-slate-950 shadow-sm'
-                              : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'
+                              : isLocked
+                                ? 'text-slate-400 hover:bg-slate-50 dark:text-slate-500 dark:hover:bg-slate-900/40'
+                                : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'
                           }`}
                         >
                           <span className="flex items-center gap-2.5">
-                            <Icon className="h-4 w-4 shrink-0" />
+                            <Icon className={`h-4 w-4 shrink-0 ${isLocked ? 'text-slate-400' : ''}`} />
                             <span>{isAr ? item.labelAr : item.labelEn}</span>
                           </span>
-                          {item.badge !== undefined && item.badge !== 0 && (
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
-                                active
-                                  ? 'bg-slate-950/20 text-slate-950'
-                                  : 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300'
-                              }`}
-                            >
-                              {item.badge}
+                          {isLocked ? (
+                            <span className="flex items-center gap-1 rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-black text-amber-800 dark:text-amber-400">
+                              <Lock className="h-2.5 w-2.5" />
+                              <span>{reqPlan.id === 'ENTERPRISE' ? (isAr ? 'إيليت' : 'Elite') : (isAr ? 'برو' : 'Pro')}</span>
                             </span>
+                          ) : (
+                            item.badge !== undefined && item.badge !== 0 && (
+                              <span
+                                className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                                  active
+                                    ? 'bg-slate-950/20 text-slate-950'
+                                    : 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300'
+                                }`}
+                              >
+                                {item.badge}
+                              </span>
+                            )
                           )}
                         </button>
                       );
@@ -1046,6 +1065,39 @@ function TitanFitEnterpriseShell() {
                 </div>
               ))}
             </nav>
+
+            {/* Active Gym SaaS Subscription Tier Card */}
+            {activeRole !== 'SUPER_ADMIN' && (
+              <div className="mx-3 mb-2 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-3 dark:border-amber-500/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-400">
+                    {isAr ? 'باقة النادي الحالية' : 'Gym SaaS Tier'}
+                  </span>
+                  <span className="rounded-md bg-amber-500 px-1.5 py-0.5 font-mono text-[9px] font-black text-slate-950">
+                    {activePlanConfig.nameEn.split(' ')[0]}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs font-black text-slate-900 dark:text-white">
+                  {isAr ? activePlanConfig.nameAr : activePlanConfig.nameEn}
+                </p>
+                <div className="mt-1.5 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                  <span>{isAr ? 'الاشتراك:' : 'Price:'}</span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {activePlanConfig.monthlyPriceEgp.toLocaleString()} EGP / {isAr ? 'شهر' : 'mo'}
+                  </span>
+                </div>
+                {activePlanTier !== 'ENTERPRISE' && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection('SETTINGS')}
+                    className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl bg-amber-500 py-1.5 text-xs font-black text-slate-950 shadow-xs hover:bg-amber-400 transition"
+                  >
+                    <Zap className="h-3.5 w-3.5" />
+                    <span>{isAr ? 'ترقية الباقة وفتح الصفحات' : 'Upgrade Plan'}</span>
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Bottom User & Security Session Footer */}
             <div className="border-t border-slate-200 p-3.5 dark:border-slate-800">
@@ -1123,19 +1175,29 @@ function TitanFitEnterpriseShell() {
                   onBackToHome={() => setActiveSection('PUBLIC_STOREFRONT')}
                 />
               )}
-              {activeSection === 'OVERVIEW' && <OverviewView />}
-              {activeSection === 'MEMBERS' && <MembersCrmView />}
-              {activeSection === 'SUBSCRIPTIONS' && <SubscriptionsView />}
-              {activeSection === 'PAYMENTS' && <PaymentsBillingView />}
-              {activeSection === 'CLASSES' && <ClassesScheduleView />}
-              {activeSection === 'ACCESS_CONTROL' && <AccessControlTurnstilesView />}
-              {activeSection === 'POS_INVENTORY' && <PosInventoryView />}
-              {activeSection === 'STAFF_TRAINERS' && <StaffTrainersView />}
-              {activeSection === 'CONTENT_LIBRARY' && <GymOwnerContentStudioView />}
-              {activeSection === 'MEMBER_PWA' && <MemberPwaPortalView />}
-              {activeSection === 'REPORTS' && <ReportsAnalyticsView />}
-              {activeSection === 'SETTINGS' && <TenantSettingsView />}
-              {activeSection === 'SUPER_ADMIN' && <SuperAdminConsoleView />}
+              {/* SaaS Plan Feature Gating — Locked Section Upgrade Paywall */}
+              {activeSection !== 'PUBLIC_STOREFRONT' &&
+              activeSection !== 'FREE_TRIAL_HUB' &&
+              activeSection !== 'SUPER_ADMIN' &&
+              !isSectionAllowed(activeSection) ? (
+                <PlanUpgradePaywallView section={activeSection} onBack={goBack} />
+              ) : (
+                <>
+                  {activeSection === 'OVERVIEW' && <OverviewView />}
+                  {activeSection === 'MEMBERS' && <MembersCrmView />}
+                  {activeSection === 'SUBSCRIPTIONS' && <SubscriptionsView />}
+                  {activeSection === 'PAYMENTS' && <PaymentsBillingView />}
+                  {activeSection === 'CLASSES' && <ClassesScheduleView />}
+                  {activeSection === 'ACCESS_CONTROL' && <AccessControlTurnstilesView />}
+                  {activeSection === 'POS_INVENTORY' && <PosInventoryView />}
+                  {activeSection === 'STAFF_TRAINERS' && <StaffTrainersView />}
+                  {activeSection === 'CONTENT_LIBRARY' && <GymOwnerContentStudioView />}
+                  {activeSection === 'MEMBER_PWA' && <MemberPwaPortalView />}
+                  {activeSection === 'REPORTS' && <ReportsAnalyticsView />}
+                  {activeSection === 'SETTINGS' && <TenantSettingsView />}
+                  {activeSection === 'SUPER_ADMIN' && <SuperAdminConsoleView />}
+                </>
+              )}
             </motion.div>
           </AnimatePresence>
         </main>

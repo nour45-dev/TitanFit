@@ -253,6 +253,185 @@ export interface TenantSaaSItem {
   cityAr: string;
 }
 
+export type GymPlanTierKey = 'STARTER' | 'PRO' | 'ENTERPRISE';
+
+export interface SaaSSubscriptionPlanConfig {
+  id: GymPlanTierKey;
+  nameAr: string;
+  nameEn: string;
+  taglineAr: string;
+  taglineEn: string;
+  badgeAr?: string;
+  badgeEn?: string;
+  badgeColor?: string;
+  monthlyPriceEgp: number;
+  annualMonthlyPriceEgp: number;
+  annualTotalEgp: number;
+  maxBranches: number | 'UNLIMITED';
+  maxMembers: number | 'UNLIMITED';
+  maxStaff: number | 'UNLIMITED';
+  allowedSections: WorkspaceSection[];
+  lockedSections: WorkspaceSection[];
+  highlightsAr: string[];
+  highlightsEn: string[];
+}
+
+export const SAAS_SUBSCRIPTION_PLANS: SaaSSubscriptionPlanConfig[] = [
+  {
+    id: 'STARTER',
+    nameAr: 'باقة البداية (Starter)',
+    nameEn: 'Starter Gym Plan',
+    taglineAr: 'للصالات الفردية واستوديوهات التدريب الخاص في بداية انطلاقها',
+    taglineEn: 'For independent studios and boutique gyms getting started',
+    badgeAr: 'للمبتدئين',
+    badgeEn: 'Starter',
+    badgeColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700',
+    monthlyPriceEgp: 950,
+    annualMonthlyPriceEgp: 800,
+    annualTotalEgp: 9600,
+    maxBranches: 1,
+    maxMembers: 150,
+    maxStaff: 2,
+    allowedSections: [
+      'PUBLIC_STOREFRONT',
+      'FREE_TRIAL_HUB',
+      'OVERVIEW',
+      'MEMBERS',
+      'SUBSCRIPTIONS',
+      'PAYMENTS',
+      'MEMBER_PWA',
+    ],
+    lockedSections: [
+      'CLASSES',
+      'ACCESS_CONTROL',
+      'STAFF_TRAINERS',
+      'POS_INVENTORY',
+      'CONTENT_LIBRARY',
+      'REPORTS',
+      'SETTINGS',
+    ],
+    highlightsAr: [
+      'إدارة حتى 150 مشترك نشط وفرع واحد',
+      'تسجيل بيانات المشتركين والملف الطبي الأساسي',
+      'باقات الاشتراكات ونظام الكوبونات والخصومات',
+      'تحصيل الفواتير (فودافون كاش، إنستاباي، فوري، كاش)',
+      'تطبيق المتدرب PWA لمتابعة العضوية والتمارين المجانية',
+      'دعم فني عبر البريد والواتساب',
+    ],
+    highlightsEn: [
+      'Up to 150 active members & 1 branch',
+      'Member CRM & basic medical profile',
+      'Membership packages & discount coupons',
+      'Cashier & Egyptian billing gateways (InstaPay, Fawry, Cash)',
+      'Trainee PWA app for membership tracking',
+      'Standard WhatsApp & email support',
+    ],
+  },
+  {
+    id: 'PRO',
+    nameAr: 'باقة النمو الاحترافي (Pro Growth)',
+    nameEn: 'Pro Growth Plan',
+    taglineAr: 'للجيمات المتوسطة والنوادي النشطة التي تحتاج حصصاً وبوابات ذكية وبار مكملات',
+    taglineEn: 'For established gyms needing turnstile gates, classes & supplement POS',
+    badgeAr: 'الأكثر طلباً ⭐',
+    badgeEn: 'Most Popular ⭐',
+    badgeColor: 'bg-amber-500/20 text-amber-900 border border-amber-500/40 dark:bg-amber-500/20 dark:text-amber-300',
+    monthlyPriceEgp: 1950,
+    annualMonthlyPriceEgp: 1650,
+    annualTotalEgp: 19800,
+    maxBranches: 2,
+    maxMembers: 600,
+    maxStaff: 8,
+    allowedSections: [
+      'PUBLIC_STOREFRONT',
+      'FREE_TRIAL_HUB',
+      'OVERVIEW',
+      'MEMBERS',
+      'CLASSES',
+      'ACCESS_CONTROL',
+      'STAFF_TRAINERS',
+      'SUBSCRIPTIONS',
+      'PAYMENTS',
+      'POS_INVENTORY',
+      'MEMBER_PWA',
+    ],
+    lockedSections: [
+      'CONTENT_LIBRARY',
+      'REPORTS',
+      'SETTINGS',
+    ],
+    highlightsAr: [
+      'جميع مميزات باقة البداية بالكامل',
+      'إدارة فرعين وحتى 600 مشترك نشط و8 مدربين',
+      'بوابات الدخول والـ QR Code الذكي لمنع التلاعب',
+      'جدول الحصص الجماعية وقوائم الانتظار التلقائية',
+      'إدارة المدربين، نسب العمولات، وصرف الأرباح',
+      'كاشير بار المكملات (POS) وتنبيهات المخزون',
+      'شات المدرب والمتدرب الفوري Real-time في تطبيق PWA',
+    ],
+    highlightsEn: [
+      'All Starter features included',
+      'Up to 2 branches, 600 active members & 8 staff',
+      'Smart QR turnstile access control',
+      'Group class schedules & automated waiting lists',
+      'Trainer management & commission payouts',
+      'Supplement bar POS cashier & low-stock alerts',
+      'Real-time Coach-Member WhatsApp-style chat in PWA',
+    ],
+  },
+  {
+    id: 'ENTERPRISE',
+    nameAr: 'باقة النخبة والسلاسل (Elite Enterprise)',
+    nameEn: 'Elite Enterprise Plan',
+    taglineAr: 'للأندية الكبرى وسلاسل الفروع: استوديو فيديوهات محمي DRM، تقارير مالية، وهوية كاملة',
+    taglineEn: 'For chains & elite clubs: DRM Video Studio, BI reports & custom branding',
+    badgeAr: 'المنظومة الكاملة 👑',
+    badgeEn: 'Full Suite 👑',
+    badgeColor: 'bg-emerald-500/20 text-emerald-900 border border-emerald-500/40 dark:bg-emerald-500/20 dark:text-emerald-300',
+    monthlyPriceEgp: 3450,
+    annualMonthlyPriceEgp: 2900,
+    annualTotalEgp: 34800,
+    maxBranches: 'UNLIMITED',
+    maxMembers: 'UNLIMITED',
+    maxStaff: 'UNLIMITED',
+    allowedSections: [
+      'PUBLIC_STOREFRONT',
+      'FREE_TRIAL_HUB',
+      'OVERVIEW',
+      'MEMBERS',
+      'CLASSES',
+      'ACCESS_CONTROL',
+      'STAFF_TRAINERS',
+      'CONTENT_LIBRARY',
+      'SUBSCRIPTIONS',
+      'PAYMENTS',
+      'POS_INVENTORY',
+      'REPORTS',
+      'SETTINGS',
+      'MEMBER_PWA',
+    ],
+    lockedSections: [],
+    highlightsAr: [
+      'فتح كافة صفحات ومميزات المنصة بنسبة 100%',
+      'فروع غير محدودة، مشتركون غير محدودين، وطاقم عمل كامل',
+      'استوديو رفع فيديوهات التمارين والوصفات المحمي ضد التحميل (DRM)',
+      'التقارير المالية الموسعة وتصدير شيتات إكسيل CSV للضرائب',
+      'تخصيص الهوية البصرية وشعار النادي ودومين مخصص',
+      'المدرب الذكي وأخصائي التغذية بالذكاء الاصطناعي (AI)',
+      'سيرفرات فائقة السرعة وأولوية دعم فني مخصص 24/7',
+    ],
+    highlightsEn: [
+      '100% full platform features & pages unlocked',
+      'Unlimited branches, members & trainer seats',
+      'Anti-Rip DRM protected Video & Nutrition Studio',
+      'Advanced financial BI reporting & CSV spreadsheet export',
+      'White-label branding, custom domain & brand theme tokens',
+      'AI Coach & Nutritionist assistants for member engagement',
+      'Dedicated SLA server infrastructure & 24/7 VIP support',
+    ],
+  },
+];
+
 export interface AuditEntry {
   id: string;
   timestamp: string;
@@ -933,6 +1112,12 @@ export interface PlatformStoreContextValue {
   resetToCleanGymState: () => void;
   gymStateMode: 'CLEAN_SLATE' | 'DEMO_DATA';
   setGymStateMode: (mode: 'CLEAN_SLATE' | 'DEMO_DATA') => void;
+  saasPlans: SaaSSubscriptionPlanConfig[];
+  activePlanTier: GymPlanTierKey;
+  activePlanConfig: SaaSSubscriptionPlanConfig;
+  isSectionAllowed: (section: WorkspaceSection) => boolean;
+  getRequiredPlanForSection: (section: WorkspaceSection) => SaaSSubscriptionPlanConfig;
+  upgradeActiveTenantPlan: (newPlanTier: GymPlanTierKey) => void;
 }
 
 const PlatformContext = createContext<PlatformStoreContextValue | null>(null);
@@ -2798,6 +2983,63 @@ export function PlatformProvider({
     setCustomFiles(INITIAL_CUSTOM_FILES);
   };
 
+  const activePlanTier: GymPlanTierKey = activeTenantCustom?.planTier || 'PRO';
+  const activePlanConfig =
+    SAAS_SUBSCRIPTION_PLANS.find((p) => p.id === activePlanTier) || SAAS_SUBSCRIPTION_PLANS[1]!;
+
+  const isSectionAllowed = useCallback(
+    (section: WorkspaceSection) => {
+      if (activeRole === 'SUPER_ADMIN') return true;
+      if (section === 'PUBLIC_STOREFRONT' || section === 'FREE_TRIAL_HUB') return true;
+      if (section === 'SUPER_ADMIN') return false;
+      const plan = SAAS_SUBSCRIPTION_PLANS.find((p) => p.id === (activeTenantCustom?.planTier || 'PRO'));
+      return plan ? plan.allowedSections.includes(section) : true;
+    },
+    [activeRole, activeTenantCustom?.planTier],
+  );
+
+  const getRequiredPlanForSection = useCallback((section: WorkspaceSection): SaaSSubscriptionPlanConfig => {
+    if (['CONTENT_LIBRARY', 'REPORTS', 'SETTINGS'].includes(section)) {
+      return SAAS_SUBSCRIPTION_PLANS.find((p) => p.id === 'ENTERPRISE')!;
+    }
+    if (['CLASSES', 'ACCESS_CONTROL', 'STAFF_TRAINERS', 'POS_INVENTORY'].includes(section)) {
+      return SAAS_SUBSCRIPTION_PLANS.find((p) => p.id === 'PRO')!;
+    }
+    return SAAS_SUBSCRIPTION_PLANS.find((p) => p.id === 'STARTER')!;
+  }, []);
+
+  const upgradeActiveTenantPlan = useCallback(
+    (newPlanTier: GymPlanTierKey) => {
+      const targetSlug = activeTenantCustom?.slug || activeTenantSlug;
+      const planConfig = SAAS_SUBSCRIPTION_PLANS.find((p) => p.id === newPlanTier) || SAAS_SUBSCRIPTION_PLANS[1]!;
+
+      setTenants((prev) =>
+        prev.map((t) => {
+          if (t.slug === targetSlug) {
+            return {
+              ...t,
+              planTier: newPlanTier,
+              mrrEgp: planConfig.monthlyPriceEgp,
+            };
+          }
+          return t;
+        }),
+      );
+
+      appendAudit(
+        'TENANT_PLAN_UPGRADED',
+        `Upgraded tenant ${targetSlug} to ${newPlanTier} (${planConfig.nameEn}) at ${planConfig.monthlyPriceEgp} EGP/mo`,
+      );
+
+      showToast(
+        locale === 'ar'
+          ? `🎉 تم ترقية باقة النادي بنجاح إلى "${planConfig.nameAr}" وفتح جميع مميزاتها!`
+          : `🎉 Gym plan upgraded to "${planConfig.nameEn}" with all features unlocked!`,
+      );
+    },
+    [activeTenantCustom?.slug, activeTenantSlug, locale],
+  );
+
   return (
     <PlatformContext.Provider
       value={{
@@ -2888,6 +3130,12 @@ export function PlatformProvider({
         resetToCleanGymState,
         gymStateMode,
         setGymStateMode,
+        saasPlans: SAAS_SUBSCRIPTION_PLANS,
+        activePlanTier,
+        activePlanConfig,
+        isSectionAllowed,
+        getRequiredPlanForSection,
+        upgradeActiveTenantPlan,
       }}
     >
       {children}

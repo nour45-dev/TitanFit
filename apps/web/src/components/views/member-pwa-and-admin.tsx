@@ -37,6 +37,7 @@ import {
   Users,
   Utensils,
   X,
+  Zap,
 } from 'lucide-react';
 import { LogoPicker } from '../logo-picker';
 import { ExerciseMotionCard, type ExerciseMotionItem } from '../exercise-motion-card';
@@ -1334,23 +1335,151 @@ export function TenantSettingsView() {
     resetToCleanGymState,
     gymStateMode,
     setGymStateMode,
+    activePlanTier,
+    activePlanConfig,
+    saasPlans,
+    upgradeActiveTenantPlan,
   } = usePlatformStore();
   const isAr = locale === 'ar';
   const [confirmCleanSlate, setConfirmCleanSlate] = useState(false);
+  const [settingsBillingCycle, setSettingsBillingCycle] = useState<'MONTHLY' | 'ANNUAL'>('ANNUAL');
 
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
         <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
           {isAr
-            ? 'إعدادات النادي، الفروع، الهوية البصرية، والضرائب المصرية'
-            : 'Club Settings, Multi-Branch Setup, White-Label Branding & Tax'}
+            ? 'إعدادات النادي، باقة SaaS، الهوية البصرية، والضرائب المصرية'
+            : 'Club Settings, SaaS Plan, White-Label Branding & Tax'}
         </h1>
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           {isAr
-            ? 'تخصيص ألوان الهوية البصرية للمستأجر، مواعيد عمل الفروع، وقوالب رسائل واتساب التلقائية'
-            : 'Customize tenant white-label theme tokens, branch working hours, Egypt 14% VAT, and WhatsApp templates'}
+            ? 'تخصيص ألوان الهوية البصرية للمستأجر، باقة اشتراك النادي في منصة TitanFit، ومواعيد عمل الفروع'
+            : 'Customize tenant white-label theme tokens, TitanFit SaaS subscription tier, and branch setup'}
         </p>
+      </div>
+
+      {/* Gym SaaS Subscription Tier Hub */}
+      <div className="rounded-3xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-white to-amber-50/20 p-6 dark:from-slate-900 dark:via-[#121625] dark:to-slate-900 dark:border-amber-500/30 shadow-md">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-amber-500/20 pb-5">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-500 text-slate-950 font-black shadow-xs">
+                <Zap className="h-4 w-4" />
+              </span>
+              <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                {isAr ? 'باقة اشتراك النادي في منصة TitanFit' : 'TitanFit Gym SaaS Subscription Plan'}
+              </h2>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300">
+              {isAr
+                ? `باقتك الحالية: ${activePlanConfig.nameAr} • الصفحات والمميزات المفتوحة تتحدد تلقائياً حسب باقتك.`
+                : `Current tier: ${activePlanConfig.nameEn} • Unlocked modules are automatically determined by your active tier.`}
+            </p>
+          </div>
+
+          <div className="inline-flex items-center rounded-2xl border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-800 shrink-0 shadow-xs">
+            <button
+              type="button"
+              onClick={() => setSettingsBillingCycle('MONTHLY')}
+              className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+                settingsBillingCycle === 'MONTHLY'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400'
+              }`}
+            >
+              {isAr ? 'شهري' : 'Monthly'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSettingsBillingCycle('ANNUAL')}
+              className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+                settingsBillingCycle === 'ANNUAL'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400'
+              }`}
+            >
+              <span>{isAr ? 'سنوي (خصم 20%)' : 'Annual (-20%)'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 3 Tier Selector Grid */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+          {saasPlans.map((plan) => {
+            const isCurrent = plan.id === activePlanTier;
+            const price = settingsBillingCycle === 'ANNUAL' ? plan.annualMonthlyPriceEgp : plan.monthlyPriceEgp;
+
+            return (
+              <div
+                key={plan.id}
+                className={`relative flex flex-col justify-between rounded-2xl p-5 transition ${
+                  isCurrent
+                    ? 'border-2 border-emerald-500 bg-emerald-500/10 shadow-md dark:bg-emerald-950/20'
+                    : 'border border-slate-200 bg-white hover:border-amber-400 dark:border-slate-800 dark:bg-slate-900/60'
+                }`}
+              >
+                {isCurrent && (
+                  <div className="absolute -top-3 start-4 rounded-full bg-emerald-600 px-3 py-0.5 text-[10px] font-black text-white shadow-xs">
+                    {isAr ? '✓ باقتك النشطة' : '✓ Active Tier'}
+                  </div>
+                )}
+
+                <div className="space-y-3.5">
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white">
+                      {isAr ? plan.nameAr : plan.nameEn}
+                    </h3>
+                    <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      {isAr ? plan.taglineAr : plan.taglineEn}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-slate-950/50">
+                    <div className="flex items-baseline gap-1 font-mono">
+                      <span className="text-2xl font-black text-slate-900 dark:text-white">
+                        {price.toLocaleString()}
+                      </span>
+                      <span className="text-[11px] font-bold text-slate-500">
+                        {isAr ? 'ج.م / شهرياً' : 'EGP/mo'}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-[10px] text-slate-500 font-bold">
+                      <span>{plan.maxBranches === 'UNLIMITED' ? 'فروع غير محدودة' : `${plan.maxBranches} فرع`}</span>
+                      <span>•</span>
+                      <span>{plan.maxMembers === 'UNLIMITED' ? 'مشتركين غير محدودين' : `${plan.maxMembers} مشترك`}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 pt-1">
+                    {(isAr ? plan.highlightsAr : plan.highlightsEn).slice(0, 4).map((h, i) => (
+                      <div key={i} className="flex items-start gap-1.5 text-[11px] text-slate-700 dark:text-slate-300">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                        <span className="line-clamp-2">{h}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 mt-3 border-t border-slate-100 dark:border-slate-800/80">
+                  {isCurrent ? (
+                    <div className="rounded-xl bg-emerald-500/20 py-2 text-center text-xs font-black text-emerald-800 dark:text-emerald-300">
+                      ✓ {isAr ? 'مفعلة حالياً للنادي' : 'Currently Active'}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => upgradeActiveTenantPlan(plan.id)}
+                      className="w-full rounded-xl bg-slate-900 py-2 text-xs font-black text-white hover:bg-amber-500 hover:text-slate-950 dark:bg-slate-800 dark:hover:bg-amber-500 dark:hover:text-slate-950 transition shadow-xs"
+                    >
+                      {isAr ? `التبديل إلى ${plan.nameAr.split(' ')[0]} الآن` : `Switch to ${plan.nameEn.split(' ')[0]}`}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6" data-testid="settings-logo-card">
@@ -1624,6 +1753,7 @@ export function SuperAdminConsoleView() {
     deleteTenant,
     login,
     showToast,
+    upgradeActiveTenantPlan,
   } = usePlatformStore();
   const isAr = locale === 'ar';
 
@@ -1788,9 +1918,19 @@ export function SuperAdminConsoleView() {
           >
             <div>
               <div className="flex items-center justify-between">
-                <span className="rounded-lg bg-amber-500/15 px-2.5 py-0.5 font-mono text-xs font-extrabold text-amber-700 dark:text-amber-400">
-                  {ten.planTier}
-                </span>
+                <select
+                  value={ten.planTier}
+                  onChange={(e) => {
+                    const nextTier = e.target.value as 'STARTER' | 'PRO' | 'ENTERPRISE';
+                    upgradeActiveTenantPlan(nextTier);
+                  }}
+                  className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-mono text-xs font-black text-amber-800 dark:text-amber-300 focus:outline-none"
+                  title={isAr ? 'تغيير باقة النادي' : 'Change Gym Plan'}
+                >
+                  <option value="STARTER">STARTER (950 ج.م)</option>
+                  <option value="PRO">PRO (1,950 ج.م)</option>
+                  <option value="ENTERPRISE">ENTERPRISE (3,450 ج.م)</option>
+                </select>
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-xs font-extrabold ${
                     ten.status === 'ACTIVE'

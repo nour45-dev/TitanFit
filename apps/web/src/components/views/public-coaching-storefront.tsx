@@ -135,8 +135,10 @@ export function PublicCoachingStorefrontView({
   onSwitchToSaaSPricing: () => void;
   onOpenFreeTrialHub?: () => void;
 }) {
-  const { locale, showToast } = usePlatformStore();
+  const { locale, showToast, saasPlans } = usePlatformStore();
   const isAr = locale === 'ar';
+
+  const [gymSaaSAnnual, setGymSaaSAnnual] = useState(true);
 
   // FAQ Accordion State
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
@@ -951,6 +953,174 @@ export function PublicCoachingStorefrontView({
           </div>
         </motion.div>
       </div>
+
+      {/* 9. B2B SAAS SUBSCRIPTION PLANS FOR GYM OWNERS & FITNESS CLUBS */}
+      <section id="gym-saas-plans" className="relative space-y-8 overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-slate-900/95 to-slate-950 p-6 sm:p-10 text-white shadow-2xl">
+        <div className="absolute -top-24 -end-24 h-72 w-72 rounded-full bg-amber-500/15 blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-amber-500/20 pb-6">
+          <div className="space-y-2 max-w-2xl">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/50 bg-amber-400/15 px-3 py-1 text-xs font-black text-amber-300">
+              <Zap className="h-3.5 w-3.5" />
+              <span>{isAr ? 'باقات اشتراك أصحاب الجيمات (SaaS)' : 'TitanFit B2B Gym SaaS Plans'}</span>
+            </span>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+              {isAr
+                ? 'اختر باقة إدارة ناديك الرياضي بالجنيه المصري وادفع حسب حجم صالتك'
+                : 'Choose the Right Gym Management Plan in EGP'}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              {isAr
+                ? 'نظام سحابي متكامل يجمع بين بوابات الـ QR، الكاشير المصري، إدارة المتدربين والمدربين، وتطبيق PWA متطور — بدون أي عمولات خفية.'
+                : 'All-in-one gym operating system: QR turnstiles, Egyptian cashier gateways, trainers CRM, and member PWA app.'}
+            </p>
+          </div>
+
+          <div className="inline-flex items-center rounded-2xl border border-slate-700 bg-slate-800/90 p-1 shrink-0 shadow-lg">
+            <button
+              type="button"
+              onClick={() => setGymSaaSAnnual(false)}
+              className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                !gymSaaSAnnual
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              {isAr ? 'اشتراك شهري' : 'Monthly'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setGymSaaSAnnual(true)}
+              className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                gymSaaSAnnual
+                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black shadow-xs'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              <span>{isAr ? 'اشتراك سنوي' : 'Annual'}</span>
+              <span className="ms-2 rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] text-white">
+                {isAr ? 'وفر 20%' : 'Save 20%'}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* 3 Tier Cards Comparison */}
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+          {saasPlans.map((plan) => {
+            const price = gymSaaSAnnual ? plan.annualMonthlyPriceEgp : plan.monthlyPriceEgp;
+            const isPro = plan.id === 'PRO';
+            const isEnterprise = plan.id === 'ENTERPRISE';
+
+            return (
+              <div
+                key={plan.id}
+                className={`relative flex flex-col justify-between rounded-3xl p-6 transition-all ${
+                  isPro
+                    ? 'border-2 border-amber-400 bg-slate-900/95 shadow-xl shadow-amber-500/10'
+                    : isEnterprise
+                      ? 'border border-emerald-500/60 bg-slate-900/90'
+                      : 'border border-slate-700/80 bg-slate-900/70'
+                }`}
+              >
+                {isPro && (
+                  <div className="absolute -top-3.5 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 px-4 py-1 text-[11px] font-black text-slate-950 shadow-md">
+                    {isAr ? '⭐ الأكثر طلباً ومبيعاً' : '⭐ Most Popular Choice'}
+                  </div>
+                )}
+                {isEnterprise && (
+                  <div className="absolute -top-3.5 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 rounded-full bg-emerald-600 px-3.5 py-1 text-[10px] font-black text-white shadow-md">
+                    {isAr ? '👑 المنظومة الشاملة' : '👑 Enterprise Suite'}
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-black text-white">
+                      {isAr ? plan.nameAr : plan.nameEn}
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+                      {isAr ? plan.taglineAr : plan.taglineEn}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                    <div className="flex items-baseline gap-1.5 font-mono">
+                      <span className="text-3xl font-black text-amber-400">
+                        {price.toLocaleString()}
+                      </span>
+                      <span className="text-xs font-bold text-slate-400">
+                        {isAr ? 'ج.م / شهرياً' : 'EGP / mo'}
+                      </span>
+                    </div>
+                    {gymSaaSAnnual ? (
+                      <p className="mt-1 text-[11px] font-bold text-emerald-400">
+                        {isAr
+                          ? `تدفع ${plan.annualTotalEgp.toLocaleString()} ج.م سنوياً (وفرت ${(plan.monthlyPriceEgp * 12 - plan.annualTotalEgp).toLocaleString()} ج.م)`
+                          : `Billed annually at ${plan.annualTotalEgp.toLocaleString()} EGP (Save ${(plan.monthlyPriceEgp * 12 - plan.annualTotalEgp).toLocaleString()} EGP)`}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-[11px] text-slate-400">
+                        {isAr ? 'تجديد شهري مرن بالكامل' : 'Flexible monthly renewal'}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-1.5 text-center text-xs">
+                    <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-2">
+                      <p className="font-mono font-black text-amber-300">
+                        {plan.maxBranches === 'UNLIMITED' ? '∞' : plan.maxBranches}
+                      </p>
+                      <p className="text-[10px] text-slate-400">{isAr ? 'فروع' : 'Branches'}</p>
+                    </div>
+                    <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-2">
+                      <p className="font-mono font-black text-amber-300">
+                        {plan.maxMembers === 'UNLIMITED' ? '∞' : plan.maxMembers}
+                      </p>
+                      <p className="text-[10px] text-slate-400">{isAr ? 'مشتركين' : 'Members'}</p>
+                    </div>
+                    <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-2">
+                      <p className="font-mono font-black text-amber-300">
+                        {plan.maxStaff === 'UNLIMITED' ? '∞' : plan.maxStaff}
+                      </p>
+                      <p className="text-[10px] text-slate-400">{isAr ? 'مدربين' : 'Staff'}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 pt-2 border-t border-slate-800">
+                    {(isAr ? plan.highlightsAr : plan.highlightsEn).map((h, i) => (
+                      <div key={i} className="flex items-start gap-2 text-xs leading-relaxed text-slate-300">
+                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400 mt-0.5" />
+                        <span>{h}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-6 mt-4 border-t border-slate-800">
+                  <a
+                    href={`https://wa.me/201559949271?text=${encodeURIComponent(
+                      `مرحباً، أود الاشتراك في منصة TitanFit للجيمات في [${plan.nameAr}] بسعر [${price} ج.م/شهرياً]`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-xs font-black shadow-md transition active:scale-95 ${
+                      isPro
+                        ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-[#D4AF37] text-slate-950 hover:brightness-105 shadow-amber-500/20'
+                        : isEnterprise
+                          ? 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-emerald-600/20'
+                          : 'border border-slate-600 bg-slate-800 text-white hover:bg-slate-750'
+                    }`}
+                  >
+                    <Zap className="h-3.5 w-3.5" />
+                    <span>{isAr ? 'اشترك في هذه الباقة كصاحب جيم' : 'Subscribe to this Plan'}</span>
+                  </a>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       {/* INTERACTIVE E-BOOK PREVIEW & READER MODAL */}
       <AnimatePresence>
