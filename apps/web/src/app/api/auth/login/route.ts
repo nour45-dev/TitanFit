@@ -88,10 +88,12 @@ export async function POST(req: NextRequest) {
     if (!foundTenant && lowerId && !gymSecretCode) {
       for (const t of registry.tenants.values()) {
         if (
+          (t.ownerUsername && t.ownerUsername.toLowerCase() === lowerId) ||
           t.ownerEmail.toLowerCase() === lowerId ||
           t.slug.toLowerCase() === lowerId ||
           t.nameEn.toLowerCase() === lowerId ||
           t.nameAr.toLowerCase() === lowerId ||
+          (t.ownerPhone && cleanPhone && t.ownerPhone.replace(/[\s\-\(\)]/g, '') === cleanPhone && cleanPhone !== '01002169889') ||
           (lowerId === 'titanfit-cairo' && t.slug === 'titanfit-egypt')
         ) {
           if (t.authVerifier && password && t.authVerifier === password) {
@@ -201,10 +203,12 @@ export async function POST(req: NextRequest) {
       if (!foundTenant) {
         for (const t of registry.tenants.values()) {
           if (
+            (t.ownerUsername && t.ownerUsername.toLowerCase() === lowerId) ||
             t.ownerEmail.toLowerCase() === lowerId ||
             t.slug.toLowerCase() === lowerId ||
             t.nameEn.toLowerCase() === lowerId ||
             t.nameAr.toLowerCase() === lowerId ||
+            (t.ownerPhone && cleanPhone && t.ownerPhone.replace(/[\s\-\(\)]/g, '') === cleanPhone) ||
             (lowerId === 'titanfit-cairo' && t.slug === 'titanfit-egypt')
           ) {
             if (t.authVerifier && password && t.authVerifier !== password) {

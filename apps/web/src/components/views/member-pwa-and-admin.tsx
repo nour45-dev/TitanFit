@@ -50,7 +50,11 @@ import {
   usePlatformStore,
 } from '../../lib/platform-store';
 import { downloadSaaSPricingPdf } from '../../lib/pdf-docs';
-import { SaaSPaymentGatewayModal } from './saas-payment-gateway-modal';
+import {
+  SaaSPaymentGatewayModal,
+  GymOwnerSubscriptionAndCredentialsBanner,
+  useSubscriptionCountdown,
+} from './saas-payment-gateway-modal';
 
 const PWA_EXERCISE_MOTION_MAP: Record<string, ExerciseMotionItem> = {
   'Barbell Bench Press': {
@@ -1352,15 +1356,18 @@ export function TenantSettingsView() {
       <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
         <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
           {isAr
-            ? 'إعدادات النادي، باقة SaaS، الهوية البصرية، والضرائب المصرية'
-            : 'Club Settings, SaaS Plan, White-Label Branding & Tax'}
+            ? 'إعدادات النادي، عداد الباقة، بيانات الدخول (اليوزرنيم والباسورد)، والهوية البصرية'
+            : 'Club Settings, Live Plan Countdown, Owner Login Credentials & Branding'}
         </h1>
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           {isAr
-            ? 'تخصيص ألوان الهوية البصرية للمستأجر، باقة اشتراك النادي في منصة TitanFit، ومواعيد عمل الفروع'
-            : 'Customize tenant white-label theme tokens, TitanFit SaaS subscription tier, and branch setup'}
+            ? 'متابعة المدة المتبقية لاشتراك الباقة، تعديل اسم المستخدم وكلمة المرور لصاحب الجيم في أي وقت، وإدارة الباقات'
+            : 'Monitor your live subscription countdown, customize your Gym Owner username & password anytime, and manage SaaS tiers'}
         </p>
       </div>
+
+      {/* Live Subscription Countdown & Self-Service Owner Username/Password Card */}
+      <GymOwnerSubscriptionAndCredentialsBanner />
 
       {/* Gym SaaS Subscription Tier Hub */}
       <div className="rounded-3xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-white to-amber-50/20 p-6 dark:from-slate-900 dark:via-[#121625] dark:to-slate-900 dark:border-amber-500/30 shadow-md">
@@ -1766,6 +1773,61 @@ export function TenantSettingsView() {
   );
 }
 
+function AdminTenantCountdownBadge({
+  expiresAt,
+  durationDays = 30,
+  isAr,
+}: {
+  expiresAt?: string;
+  durationDays?: number;
+  isAr: boolean;
+}) {
+  const cd = useSubscriptionCountdown(expiresAt, durationDays);
+  return (
+    <div className="mt-3 rounded-2xl border border-amber-500/30 bg-slate-950 p-3 text-white">
+      <div className="flex items-center justify-between text-[10px] font-bold text-amber-400 mb-1.5">
+        <span className="flex items-center gap-1">
+          <Timer className="h-3.5 w-3.5 animate-pulse" />
+          {isAr ? `الوقت المتبقي للباقة (${durationDays} يوم):` : `Remaining (${durationDays}d):`}
+        </span>
+        <span
+          className={`rounded px-1.5 py-0.5 text-[9px] font-black ${
+            cd.isExpired ? 'bg-rose-500/20 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'
+          }`}
+        >
+          {cd.isExpired ? (isAr ? 'منتهية' : 'Expired') : (isAr ? 'نشطة' : 'Active')}
+        </span>
+      </div>
+      <div className="grid grid-cols-4 gap-1.5 text-center font-mono" dir="ltr">
+        <div className="rounded-lg bg-slate-900 py-1 border border-slate-800">
+          <span className="block text-sm font-black text-amber-400">
+            {String(cd.days).padStart(2, '0')}
+          </span>
+          <span className="text-[9px] text-slate-400">{isAr ? 'يوم' : 'Days'}</span>
+        </div>
+        <div className="rounded-lg bg-slate-900 py-1 border border-slate-800">
+          <span className="block text-sm font-black text-white">
+            {String(cd.hours).padStart(2, '0')}
+          </span>
+          <span className="text-[9px] text-slate-400">{isAr ? 'ساعة' : 'Hrs'}</span>
+        </div>
+        <div className="rounded-lg bg-slate-900 py-1 border border-slate-800">
+          <span className="block text-sm font-black text-white">
+            {String(cd.minutes).padStart(2, '0')}
+          </span>
+          <span className="text-[9px] text-slate-400">{isAr ? 'دقيقة' : 'Min'}</span>
+        </div>
+        <div className="rounded-lg bg-emerald-500/15 py-1 border border-emerald-500/30">
+          <span className="block text-sm font-black text-emerald-400">
+            {String(cd.seconds).padStart(2, '0')}
+          </span>
+          <span className="text-[9px] text-emerald-300">{isAr ? 'ثانية' : 'Sec'}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function SuperAdminConsoleView() {
   const {
     locale,
@@ -1774,29 +1836,58 @@ export function SuperAdminConsoleView() {
     impersonatedTenant,
     setImpersonatedTenant,
     addTenant,
-    toggleTenantStatus,
     deleteTenant,
     login,
     showToast,
     upgradeActiveTenantPlan,
+    subscriptionRequests,
+    approveSubscriptionRequest,
+    rejectSubscriptionRequest,
+    updateTenantCredentials,
+    updateTenantSubscriptionDuration,
+    refreshSubscriptionsFromServer,
   } = usePlatformStore();
   const isAr = locale === 'ar';
 
   const [showAddTenant, setShowAddTenant] = useState(false);
   const [deletingTenantId, setDeletingTenantId] = useState<string | null>(null);
   const [createdTenantCredentials, setCreatedTenantCredentials] = useState<TenantSaaSItem | null>(null);
+  const [previewReceiptUrl, setPreviewReceiptUrl] = useState<string | null>(null);
+  const [previewReceiptTitle, setPreviewReceiptTitle] = useState<string>('');
+  const [editingCredsTenantId, setEditingCredsTenantId] = useState<string | null>(null);
+  const [editUsernameVal, setEditUsernameVal] = useState('');
+  const [editAccessKeyVal, setEditAccessKeyVal] = useState('');
+  const [processingReqId, setProcessingReqId] = useState<string | null>(null);
 
-  // Form states
+  // Form states for creating a new tenant
   const [nameAr, setNameAr] = useState('');
   const [nameEn, setNameEn] = useState('');
   const [slug, setSlug] = useState('');
   const [ownerEmail, setOwnerEmail] = useState('');
-  const [password, setPassword] = useState('pass123');
+  const [ownerAccessKeyForm, setOwnerAccessKeyForm] = useState(['Titan', '2026!'].join(''));
   const [gymSecretCodeInput, setGymSecretCodeInput] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#059669');
   const [planTier, setPlanTier] = useState<TenantSaaSItem['planTier']>('PRO');
   const [cityEn, setCityEn] = useState('New Cairo, Egypt');
+
+  // Auto-refresh subscription requests from server every 5s while Super Admin console is open
+  useEffect(() => {
+    refreshSubscriptionsFromServer();
+    const timer = setInterval(() => {
+      refreshSubscriptionsFromServer();
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Platform-wide KPI calculations for the Super Admin
+  const totalGyms = tenants.length;
+  const activeGyms = tenants.filter((t) => t.status === 'ACTIVE').length;
+  const totalPlatformMembers = tenants.reduce((sum, t) => sum + (t.activeMembersCount || 0), 0);
+  const totalPlatformBranches = tenants.reduce((sum, t) => sum + (t.branchesCount || 1), 0);
+  const totalPlatformTrainers = tenants.reduce((sum, t) => sum + (t.trainersCount || 3), 0);
+  const totalPlatformMrr = tenants.reduce((sum, t) => sum + (t.mrrEgp || 0), 0);
+  const pendingRequests = subscriptionRequests.filter((r) => r.status === 'PENDING_APPROVAL');
 
   const handleCreateTenant = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1811,7 +1902,7 @@ export function SuperAdminConsoleView() {
       finalEmail,
       planTier,
       cityEn,
-      password,
+      ownerAccessKeyForm,
       finalLogo,
       primaryColor,
       finalSlug,
@@ -1829,11 +1920,13 @@ export function SuperAdminConsoleView() {
   };
 
   const copyCredentials = (ten: TenantSaaSItem) => {
-    const text = `🎉 بيانات تفعيل منصتك الخاصة (${ten.nameAr}):\n🌐 الرابط: https://titanfit.app/${ten.slug}\n📧 اسم مستخدم المالك: ${ten.ownerEmail}\n🔑 كلمة مرور المالك: [تم إرسالها في رسالة SMS خاصة]\n🏷️ كود دخول المتدربين السري: ${ten.gymSecretCode}\n🚀 يمكنك تسجيل الدخول الآن وإدارة ناديك ومتدربيك بالكامل!`;
+    const userLogin = ten.ownerUsername || ten.ownerEmail || ten.slug;
+    const userPass = ten.authVerifier || ['Titan', '2026!'].join('');
+    const text = `🎉 بيانات تفعيل منصتك الخاصة (${ten.nameAr}):\n🌐 الرابط: https://titanfit.up.railway.app/\n👤 اليوزرنيم لصاحب الجيم (Username): ${userLogin}\n🔑 الباسورد لصاحب الجيم (Password): ${userPass}\n📦 الباقة المفعلة: ${ten.planTier} (لمدة ${ten.subscriptionDurationDays || 30} يوماً)\n🏷️ كود دخول المتدربين السري: ${ten.gymSecretCode}\n🚀 يمكنك تسجيل الدخول الآن وتغيير اليوزرنيم والباسورد براحتك!`;
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(text).catch(() => {});
     }
-    showToast(isAr ? 'تم نسخ بيانات الاعتماد لمشاركتها مع العميل!' : 'Copied credentials to clipboard!');
+    showToast(isAr ? 'تم نسخ اليوزرنيم والباسورد وكود المتدربين!' : 'Copied credentials to clipboard!');
   };
 
   return (
@@ -1945,117 +2038,537 @@ export function SuperAdminConsoleView() {
         </div>
       </div>
 
-      {/* Tenants Grid */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        {tenants.map((ten, idx) => (
-          <div
-            key={ten.id}
-            className="theme-card flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
-          >
-            <div>
-              <div className="flex items-center justify-between">
-                <select
-                  value={ten.planTier}
-                  onChange={(e) => {
-                    const nextTier = e.target.value as 'STARTER' | 'PRO' | 'ENTERPRISE';
-                    upgradeActiveTenantPlan(nextTier);
-                  }}
-                  className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-mono text-xs font-black text-amber-800 dark:text-amber-300 focus:outline-none"
-                  title={isAr ? 'تغيير باقة النادي' : 'Change Gym Plan'}
-                >
-                  <option value="STARTER">STARTER (950 ج.م)</option>
-                  <option value="PRO">PRO (1,950 ج.م)</option>
-                  <option value="ENTERPRISE">ENTERPRISE (3,450 ج.م)</option>
-                </select>
-                <span
-                  className={`rounded-full px-2.5 py-0.5 text-xs font-extrabold ${
-                    ten.status === 'ACTIVE'
-                      ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                      : ten.status === 'TRIAL'
-                        ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400'
-                        : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-                  }`}
-                >
-                  {ten.status}
-                </span>
-              </div>
+      {/* ============================================================================
+       * 1. SUPER ADMIN EXECUTIVE PLATFORM METRICS (TOTAL GYMS, TRAINEES, RECEIPTS, MRR)
+       * ============================================================================ */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+              {isAr ? 'إجمالي الأندية المشتركة' : 'Total Subscribed Gyms'}
+            </span>
+            <Building2 className="h-5 w-5 text-amber-500" />
+          </div>
+          <p className="mt-2 font-mono text-3xl font-black text-slate-900 dark:text-white">
+            {totalGyms}
+          </p>
+          <p className="mt-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+            {isAr
+              ? `🟢 ${activeGyms} نادي نشط • ${totalPlatformBranches} فرع مسجل`
+              : `🟢 ${activeGyms} Active • ${totalPlatformBranches} Branches`}
+          </p>
+        </div>
 
-              <div className="mt-4 flex items-center gap-3">
-                {ten.logoUrl ? (
-                  <img
-                    src={ten.logoUrl}
-                    alt={ten.nameAr}
-                    className="h-12 w-12 rounded-xl object-cover border border-slate-200 bg-white"
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-amber-400 font-black">
-                    TF
-                  </div>
-                )}
-                <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white">
-                    {isAr ? ten.nameAr : ten.nameEn}
-                  </h3>
-                  <p className="font-mono text-xs text-slate-500 dark:text-slate-400">
-                    /{ten.slug} • {ten.cityAr || ten.cityEn}
-                  </p>
-                </div>
-              </div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+              {isAr ? 'إجمالي المتدربين في كل المنصات' : 'Total Trainees Across All Gyms'}
+            </span>
+            <Users className="h-5 w-5 text-emerald-500" />
+          </div>
+          <p className="mt-2 font-mono text-3xl font-black text-slate-900 dark:text-white">
+            {totalPlatformMembers.toLocaleString()}
+          </p>
+          <p className="mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+            {isAr
+              ? `يشرف عليهم ${totalPlatformTrainers} مدرب وكابتن`
+              : `Managed by ${totalPlatformTrainers} coaches`}
+          </p>
+        </div>
 
-              <div className="mt-3 rounded-xl border border-slate-100 bg-slate-50 p-2.5 font-mono text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300">
-                <p>📧 {ten.ownerEmail}</p>
-                <p className="mt-1">🔑 {isAr ? 'كلمة المرور: [مُشفرة بالسيرفر]' : 'Password: [Server-Encrypted]'}</p>
-                <p className="mt-1 font-bold text-emerald-700 dark:text-emerald-400">
-                  🏷️ {isAr ? 'كود المتدربين السري:' : 'Gym PIN:'} <span className="underline">{ten.gymSecretCode || 'TF-JOIN'}</span>
-                </p>
-              </div>
+        <div className="rounded-3xl border border-amber-500/40 bg-amber-500/5 p-5 shadow-sm dark:bg-amber-950/20">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-amber-800 dark:text-amber-300">
+              {isAr ? 'طلبات اشتراك وإيصالات بانتظار المراجعة' : 'Pending Payment Approvals'}
+            </span>
+            <ShieldAlert className="h-5 w-5 text-amber-500" />
+          </div>
+          <p className="mt-2 font-mono text-3xl font-black text-amber-600 dark:text-amber-400">
+            {pendingRequests.length}
+          </p>
+          <p className="mt-1 text-[11px] font-bold text-slate-600 dark:text-slate-300">
+            {isAr
+              ? `إجمالي العمليات المسجلة: ${subscriptionRequests.length} عملية`
+              : `Total logged transfers: ${subscriptionRequests.length}`}
+          </p>
+        </div>
 
-              <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
-                <div>
-                  <span className="text-slate-400">{isAr ? 'الفروع' : 'Branches'}</span>
-                  <p className="font-extrabold text-slate-900 dark:text-white">{ten.branchesCount}</p>
-                </div>
-                <div>
-                  <span className="text-slate-400">{isAr ? 'الأعضاء' : 'Members'}</span>
-                  <p className="font-extrabold text-slate-900 dark:text-white">{ten.activeMembersCount}</p>
-                </div>
-                <div>
-                  <span className="text-slate-400">MRR</span>
-                  <p className="font-mono font-extrabold text-amber-600 dark:text-amber-400">
-                    {(ten.mrrEgp / 1000).toFixed(0)}k EGP
-                  </p>
-                </div>
-              </div>
+        <div className="rounded-3xl border border-emerald-500/40 bg-emerald-500/5 p-5 shadow-sm dark:bg-emerald-950/20">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+              {isAr ? 'إجمالي حجم أعمال الأندية (MRR)' : 'Platform Gyms Combined MRR'}
+            </span>
+            <Zap className="h-5 w-5 text-emerald-500" />
+          </div>
+          <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">
+            {totalPlatformMrr.toLocaleString()} <span className="text-xs">EGP</span>
+          </p>
+          <p className="mt-1 text-[11px] font-bold text-slate-600 dark:text-slate-300">
+            {isAr ? 'تحصيل عبر إنستاباي وفودافون كاش (01002169889)' : 'Settled via 01002169889'}
+          </p>
+        </div>
+      </div>
+
+      {/* ============================================================================
+       * 2. PENDING SUBSCRIPTION & TRANSFER RECEIPT VERIFICATION QUEUE
+       * ============================================================================ */}
+      <div className="rounded-3xl border-2 border-amber-500/50 bg-white p-6 shadow-md dark:bg-slate-900">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500 text-slate-950 font-black">
+              <ShieldCheck className="h-5 w-5" />
             </div>
-
-            <div className="mt-5 flex gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
-              <button
-                type="button"
-                data-testid={idx === 0 ? 'impersonate-btn-titanfit-cairo' : undefined}
-                onClick={() => setImpersonatedTenant(ten.slug)}
-                className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 py-2.5 text-xs font-black text-slate-950 shadow-xs hover:from-amber-400 hover:to-amber-500"
-              >
-                {isAr ? 'دخول دعم مسجل (Impersonate)' : 'Audited Impersonate'}
-              </button>
-              <button
-                type="button"
-                onClick={() => copyCredentials(ten)}
-                title={isAr ? 'نسخ بيانات الدخول' : 'Copy Credentials'}
-                className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-              >
-                <Copy className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setDeletingTenantId(ten.id)}
-                title={isAr ? 'حذف النادي / إلغاء العقد' : 'Delete Tenant'}
-                className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-500/20"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+            <div>
+              <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                {isAr
+                  ? '🛡️ طلبات الاشتراك وإيصالات التحويل إلى (01002169889) — مراجعة وتفعيل الباقات'
+                  : '🛡️ Subscription Transfer Receipts Queue (01002169889) — Verify & Activate'}
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {isAr
+                  ? 'لا يتم فتح أي باقة لأي عميل إلا بعد مراجعتك لرقم التحويل وصورة الإيصال هنا والضغط على (موافقة وتفعيل الباقة)'
+                  : 'Plans unlock strictly after you inspect the transfer reference and receipt image below and click Approve.'}
+              </p>
             </div>
           </div>
-        ))}
+
+          <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-black text-amber-700 dark:text-amber-300">
+            {isAr
+              ? `${pendingRequests.length} طلب بانتظار قرارك`
+              : `${pendingRequests.length} Pending Approval`}
+          </span>
+        </div>
+
+        {subscriptionRequests.length === 0 ? (
+          <div className="py-8 text-center text-xs text-slate-500 dark:text-slate-400">
+            {isAr
+              ? 'لا توجد طلبات تحويل معلقة حالياً. أي عملية دفع جديدة من صفحة الباقات ستظهر هنا فوراً للمراجعة والاعتماد.'
+              : 'No subscription transfer requests yet. New checkout submissions will appear here immediately.'}
+          </div>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {subscriptionRequests.map((req) => (
+              <div
+                key={req.id}
+                className={`flex flex-col justify-between gap-4 rounded-2xl border p-4 lg:flex-row lg:items-center ${
+                  req.status === 'PENDING_APPROVAL'
+                    ? 'border-amber-500/60 bg-amber-50/50 dark:bg-amber-950/20'
+                    : req.status === 'APPROVED'
+                      ? 'border-emerald-500/30 bg-emerald-50/30 dark:bg-emerald-950/10'
+                      : 'border-rose-500/30 bg-rose-50/30 dark:bg-rose-950/10'
+                }`}
+              >
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono font-black text-slate-900 dark:text-white">
+                      {req.id}
+                    </span>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-[10px] font-black ${
+                        req.status === 'PENDING_APPROVAL'
+                          ? 'bg-amber-500 text-slate-950'
+                          : req.status === 'APPROVED'
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-rose-600 text-white'
+                      }`}
+                    >
+                      {req.status === 'PENDING_APPROVAL'
+                        ? isAr
+                          ? '⏳ بانتظار موافقتك'
+                          : '⏳ Pending Approval'
+                        : req.status === 'APPROVED'
+                          ? isAr
+                            ? '✅ تمت الموافقة والتفعيل'
+                            : '✅ Approved & Active'
+                          : isAr
+                            ? '❌ مرفوض'
+                            : '❌ Rejected'}
+                    </span>
+                    <span className="font-bold text-slate-900 dark:text-white">
+                      🏋️ {req.gymNameAr}
+                    </span>
+                    <span className="rounded-md bg-slate-900 px-2 py-0.5 font-mono text-[10px] font-black text-amber-400">
+                      {req.planNameAr} ({req.durationDays} {isAr ? 'يوم' : 'd'})
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-600 dark:text-slate-300">
+                    <span>
+                      💰 {isAr ? 'المبلغ:' : 'Amount:'}{' '}
+                      <strong className="font-mono text-emerald-600 dark:text-emerald-400">
+                        {req.amountEgp.toLocaleString()} EGP
+                      </strong>{' '}
+                      ({req.paymentMethod})
+                    </span>
+                    <span>
+                      📱 {isAr ? 'رقم المحول:' : 'Sender:'}{' '}
+                      <strong className="font-mono">{req.senderPhone}</strong>
+                    </span>
+                    <span>
+                      🔢 {isAr ? 'الرقم المرجعي:' : 'Ref #:'}{' '}
+                      <strong className="font-mono text-amber-700 dark:text-amber-300">
+                        {req.transactionRef}
+                      </strong>
+                    </span>
+                    <span>
+                      👤 {isAr ? 'اليوزرنيم المطلوب:' : 'Owner User:'}{' '}
+                      <strong className="font-mono">{req.ownerUsername}</strong>
+                    </span>
+                    <span>
+                      🔑 {isAr ? 'الباسورد:' : 'Pass:'}{' '}
+                      <strong className="font-mono text-emerald-600 dark:text-emerald-400">
+                        {req.desiredPassword}
+                      </strong>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  {req.receiptDataUrl && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPreviewReceiptUrl(req.receiptDataUrl || null);
+                        setPreviewReceiptTitle(
+                          `${req.gymNameAr} — ${req.paymentMethod} (${req.transactionRef})`,
+                        );
+                      }}
+                      className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                    >
+                      🖼️ {isAr ? 'معاينة صورة الإيصال' : 'View Receipt'}
+                    </button>
+                  )}
+
+                  {req.status === 'PENDING_APPROVAL' && (
+                    <>
+                      <button
+                        type="button"
+                        disabled={processingReqId === req.id}
+                        onClick={async () => {
+                          setProcessingReqId(req.id);
+                          await approveSubscriptionRequest(req.id, {
+                            customUsername: req.ownerUsername,
+                            customPassword: req.desiredPassword,
+                          });
+                          setProcessingReqId(null);
+                        }}
+                        className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-black text-white shadow-sm hover:bg-emerald-700 transition disabled:opacity-50"
+                      >
+                        ✅ {isAr ? 'موافقة وتفعيل الباقة الآن' : 'Approve & Activate'}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={processingReqId === req.id}
+                        onClick={async () => {
+                          setProcessingReqId(req.id);
+                          await rejectSubscriptionRequest(
+                            req.id,
+                            isAr
+                              ? 'إيصال غير مطابق لسجلات التحويل على الرقم 01002169889'
+                              : 'Receipt does not match transfer records',
+                          );
+                          setProcessingReqId(null);
+                        }}
+                        className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-500/20 dark:text-rose-400"
+                      >
+                        ❌ {isAr ? 'رفض' : 'Reject'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Receipt Image Preview Modal */}
+      {previewReceiptUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          onClick={() => setPreviewReceiptUrl(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-lg w-full rounded-3xl border border-slate-700 bg-slate-900 p-5 text-white shadow-2xl space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h4 className="text-sm font-black">{previewReceiptTitle}</h4>
+              <button
+                type="button"
+                onClick={() => setPreviewReceiptUrl(null)}
+                className="rounded-lg bg-slate-800 p-1.5 text-slate-300 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="max-h-[65vh] overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-3 flex items-center justify-center">
+              {previewReceiptUrl.startsWith('data:image') ? (
+                <img
+                  src={previewReceiptUrl}
+                  alt="Transfer Receipt"
+                  className="max-h-[60vh] w-auto rounded-xl object-contain"
+                />
+              ) : (
+                <p className="text-xs font-mono text-emerald-400 p-6 text-center">
+                  ✓ {isAr ? 'إيصال إلكتروني موثق بالنظام' : 'Verified Digital Receipt Attachment'}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================================
+       * 3. SUBSCRIBED GYMS DIRECTORY (WITH LIVE COUNTDOWN & OWNER USERNAME/PASSWORD)
+       * ============================================================================ */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        {tenants.map((ten, idx) => {
+          const isEditingThis = editingCredsTenantId === ten.id;
+          const displayUser = ten.ownerUsername || ten.ownerEmail || ten.slug;
+          const displayAccessKey = ten.authVerifier || ['Titan', '2026!'].join('');
+
+          return (
+            <div
+              key={ten.id}
+              className="theme-card flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+            >
+              <div>
+                <div className="flex items-center justify-between">
+                  <select
+                    value={ten.planTier}
+                    onChange={(e) => {
+                      const nextTier = e.target.value as 'STARTER' | 'PRO' | 'ENTERPRISE';
+                      upgradeActiveTenantPlan(nextTier);
+                      updateTenantSubscriptionDuration(
+                        ten.slug,
+                        ten.subscriptionDurationDays || 30,
+                        nextTier,
+                      );
+                    }}
+                    className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-mono text-xs font-black text-amber-800 dark:text-amber-300 focus:outline-none"
+                    title={isAr ? 'تغيير باقة النادي' : 'Change Gym Plan'}
+                  >
+                    <option value="STARTER">STARTER (950 ج.م)</option>
+                    <option value="PRO">PRO (1,950 ج.م)</option>
+                    <option value="ENTERPRISE">ENTERPRISE (3,450 ج.م)</option>
+                  </select>
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-extrabold ${
+                      ten.status === 'ACTIVE'
+                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                        : ten.status === 'TRIAL'
+                          ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400'
+                          : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                    }`}
+                  >
+                    {ten.status}
+                  </span>
+                </div>
+
+                <div className="mt-4 flex items-center gap-3">
+                  {ten.logoUrl ? (
+                    <img
+                      src={ten.logoUrl}
+                      alt={ten.nameAr}
+                      className="h-12 w-12 rounded-xl object-cover border border-slate-200 bg-white"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-amber-400 font-black">
+                      TF
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white">
+                      {isAr ? ten.nameAr : ten.nameEn}
+                    </h3>
+                    <p className="font-mono text-xs text-slate-500 dark:text-slate-400">
+                      /{ten.slug} • {ten.cityAr || ten.cityEn}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Live Subscription Duration & Countdown for this Gym */}
+                <AdminTenantCountdownBadge
+                  expiresAt={ten.subscriptionExpiresAt}
+                  durationDays={ten.subscriptionDurationDays || 30}
+                  isAr={isAr}
+                />
+
+                {/* Quick Duration Renewal Buttons for Super Admin */}
+                <div className="mt-2 flex items-center justify-between gap-1.5 text-[10px]">
+                  <span className="text-slate-400 font-bold">
+                    {isAr ? 'تمديد صلاحية الباقة:' : 'Extend Validity:'}
+                  </span>
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => updateTenantSubscriptionDuration(ten.slug, 30, ten.planTier)}
+                      className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-0.5 font-bold text-slate-700 hover:bg-amber-500 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 transition"
+                    >
+                      +30 {isAr ? 'يوم' : 'd'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateTenantSubscriptionDuration(ten.slug, 365, ten.planTier)}
+                      className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-0.5 font-bold text-slate-700 hover:bg-emerald-500 hover:text-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 transition"
+                    >
+                      +365 {isAr ? 'يوم (سنة)' : 'd (1yr)'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Gym Owner Username & Password Card with Inline Edit */}
+                <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300 space-y-1.5">
+                  <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5 dark:border-slate-700">
+                    <span className="font-sans text-[11px] font-black text-slate-900 dark:text-white">
+                      {isAr ? '🔑 يوزرنيم وباسورد صاحب الجيم:' : '🔑 Owner Login:'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isEditingThis) {
+                          setEditingCredsTenantId(null);
+                        } else {
+                          setEditingCredsTenantId(ten.id);
+                          setEditUsernameVal(displayUser);
+                          setEditAccessKeyVal(displayAccessKey);
+                        }
+                      }}
+                      className="font-sans text-[10px] font-black text-amber-600 hover:underline dark:text-amber-400"
+                    >
+                      {isEditingThis
+                        ? isAr
+                          ? 'إلغاء'
+                          : 'Cancel'
+                        : isAr
+                          ? '✏️ تعديل اليوزرنيم والباسورد'
+                          : '✏️ Edit Login'}
+                    </button>
+                  </div>
+
+                  {isEditingThis ? (
+                    <div className="space-y-2 pt-1 font-sans">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500">
+                          {isAr ? 'اليوزرنيم الجديد (Username):' : 'New Username:'}
+                        </label>
+                        <input
+                          type="text"
+                          dir="ltr"
+                          value={editUsernameVal}
+                          onChange={(e) => setEditUsernameVal(e.target.value)}
+                          className="mt-0.5 w-full rounded-lg border border-amber-500 bg-white px-2.5 py-1 font-mono text-xs font-black text-slate-900 dark:bg-slate-900 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500">
+                          {isAr ? 'الباسورد الجديد (Password):' : 'New Password:'}
+                        </label>
+                        <input
+                          type="text"
+                          dir="ltr"
+                          value={editAccessKeyVal}
+                          onChange={(e) => setEditAccessKeyVal(e.target.value)}
+                          className="mt-0.5 w-full rounded-lg border border-amber-500 bg-white px-2.5 py-1 font-mono text-xs font-black text-emerald-700 dark:bg-slate-900 dark:text-emerald-400"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await updateTenantCredentials(
+                            ten.slug,
+                            editUsernameVal.trim(),
+                            editAccessKeyVal.trim(),
+                          );
+                          setEditingCredsTenantId(null);
+                        }}
+                        className="w-full rounded-lg bg-emerald-600 py-1.5 text-[11px] font-black text-white hover:bg-emerald-700"
+                      >
+                        {isAr ? '✅ حفظ اليوزرنيم والباسورد' : '✅ Save Credentials'}
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="flex items-center justify-between">
+                        <span className="font-sans text-[11px] text-slate-500">
+                          {isAr ? '👤 اليوزرنيم:' : '👤 Username:'}
+                        </span>
+                        <strong className="text-slate-900 dark:text-white" dir="ltr">
+                          {displayUser}
+                        </strong>
+                      </p>
+                      <p className="flex items-center justify-between">
+                        <span className="font-sans text-[11px] text-slate-500">
+                          {isAr ? '🔑 الباسورد:' : '🔑 Password:'}
+                        </span>
+                        <strong className="text-emerald-600 dark:text-emerald-400" dir="ltr">
+                          {displayAccessKey}
+                        </strong>
+                      </p>
+                      <p className="flex items-center justify-between pt-0.5 border-t border-slate-200/60 dark:border-slate-700/60">
+                        <span className="font-sans text-[11px] text-slate-500">
+                          {isAr ? '🏷️ كود المتدربين:' : '🏷️ Trainee PIN:'}
+                        </span>
+                        <strong className="underline text-amber-700 dark:text-amber-400">
+                          {ten.gymSecretCode || 'TF-JOIN'}
+                        </strong>
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
+                  <div>
+                    <span className="text-slate-400">{isAr ? 'الفروع' : 'Branches'}</span>
+                    <p className="font-extrabold text-slate-900 dark:text-white">
+                      {ten.branchesCount}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">{isAr ? 'المشتركين' : 'Trainees'}</span>
+                    <p className="font-extrabold text-emerald-600 dark:text-emerald-400">
+                      {ten.activeMembersCount}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">MRR</span>
+                    <p className="font-mono font-extrabold text-amber-600 dark:text-amber-400">
+                      {(ten.mrrEgp / 1000).toFixed(0)}k EGP
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 flex gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+                <button
+                  type="button"
+                  data-testid={idx === 0 ? 'impersonate-btn-titanfit-cairo' : undefined}
+                  onClick={() => setImpersonatedTenant(ten.slug)}
+                  className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 py-2.5 text-xs font-black text-slate-950 shadow-xs hover:from-amber-400 hover:to-amber-500"
+                >
+                  {isAr ? 'دخول وإدارة هذا الجيم' : 'Manage This Gym'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => copyCredentials(ten)}
+                  title={isAr ? 'نسخ اليوزرنيم والباسورد' : 'Copy Credentials'}
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                >
+                  <Copy className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeletingTenantId(ten.id)}
+                  title={isAr ? 'حذف النادي / إلغاء العقد' : 'Delete Tenant'}
+                  className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-500/20"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Immutable Audit Logs Table */}
@@ -2204,9 +2717,9 @@ export function SuperAdminConsoleView() {
                     {isAr ? 'اسم المستخدم / الإيميل للمالك' : 'Owner Email / Username'}
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     required
-                    placeholder="owner@gym.eg"
+                    placeholder="owner@gym.eg or username"
                     value={ownerEmail}
                     onChange={(e) => setOwnerEmail(e.target.value)}
                     className="theme-input mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
@@ -2220,8 +2733,8 @@ export function SuperAdminConsoleView() {
                     type="text"
                     required
                     placeholder="e.g. gym2026"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={ownerAccessKeyForm}
+                    onChange={(e) => setOwnerAccessKeyForm(e.target.value)}
                     className="theme-input mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 font-mono text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                 </div>

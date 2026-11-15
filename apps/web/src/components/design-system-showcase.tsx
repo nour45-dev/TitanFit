@@ -67,6 +67,7 @@ import { PublicCoachingStorefrontView } from './views/public-coaching-storefront
 import { FreeTrialWorkoutsAndDietsView } from './views/free-trial-workouts-and-diets';
 import { GymOwnerContentStudioView } from './views/gym-owner-content-studio';
 import { PlanUpgradePaywallView } from './views/plan-upgrade-paywall';
+import { GymOwnerSubscriptionAndCredentialsBanner } from './views/saas-payment-gateway-modal';
 import { SmartAiAssistantWidget } from './smart-ai-assistant';
 import { ModernAmbientBackground } from './ui/modern-ambient-background';
 
@@ -483,95 +484,6 @@ function TitanFitEnterpriseShell() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* TOP ANNOUNCEMENT BANNER: Enabled by default in production unless NEXT_PUBLIC_DEMO_NOTICE === 'false' */}
-      {(() => {
-        const isDemoNoticeEnabled = process.env.NEXT_PUBLIC_DEMO_NOTICE !== 'false';
-
-        if (isDemoNoticeEnabled) {
-          const isPortalOrAuth = isAuthenticated || !isPublicWebsiteView || showLoginModal;
-          const showBanner = isPortalOrAuth || !publicBannerDismissed;
-          const isDismissible = isPublicWebsiteView && !isAuthenticated && !showLoginModal;
-
-          if (!showBanner) return null;
-
-          return (
-            <aside
-              role="region"
-              data-testid="demo-prototype-banner"
-              aria-label={isAr ? 'تنبيه النسخة التجريبية' : 'Demo Prototype Notice'}
-              className="relative z-40 border-b border-amber-600 bg-amber-500 px-3 py-2 text-slate-950 dark:border-amber-500 dark:bg-amber-500 dark:text-slate-950 sm:px-6"
-            >
-              <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 text-xs font-black">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 shrink-0 text-slate-950" aria-hidden="true" />
-                  <span>
-                    {isAr
-                      ? '⚠️ نسخة تجريبية (Demo Prototype) — المنصة حالياً قيد الاختبار الفني والمعماري. يُرجى عدم إدخال أي بيانات حقيقية أو كلمات مرور شخصية.'
-                      : '⚠️ Demo Prototype — This platform is currently undergoing technical & security audit. Do not enter real personal data or production credentials.'}
-                  </span>
-                </div>
-                {isDismissible ? (
-                  <button
-                    type="button"
-                    onClick={handleDismissPublicBanner}
-                    aria-label={isAr ? 'إغلاق تنبيه النسخة التجريبية' : 'Dismiss demo prototype banner for this session'}
-                    className="rounded-lg p-1 text-slate-950 transition hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-slate-950"
-                  >
-                    <X className="h-4 w-4" aria-hidden="true" />
-                  </button>
-                ) : (
-                  <span className="rounded-full bg-slate-950/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-950">
-                    {isAr ? 'تنبيه إلزامي' : 'Mandatory Notice'}
-                  </span>
-                )}
-              </div>
-            </aside>
-          );
-        }
-
-        // Commercial Storefront Announcement Banner for Visitors
-        if (isPublicWebsiteView && !publicBannerDismissed && !isAuthenticated) {
-          return (
-            <aside
-              role="region"
-              aria-label={isAr ? 'إعلان المنصة التجريبية' : 'Platform Preview Announcement'}
-              className="relative z-40 border-b border-emerald-600 bg-emerald-600 px-3 py-2 text-white sm:px-6"
-            >
-              <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 text-xs font-black">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 shrink-0 text-amber-300" aria-hidden="true" />
-                  <span>
-                    {isAr
-                      ? '🚀 TitanFit — نموذج استعراضي لإدارة الأندية الرياضية والتغذية والتدريب • انضم لقائمة الانتظار'
-                      : '🚀 TitanFit — Interactive Gym Management & Nutrition Prototype • Join the Waitlist'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <a
-                    href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B4%D8%AA%D8%B1%D8%A7%D9%83%20%D9%81%D9%8A%20%D9%85%D9%86%D8%B5%D8%A9%20TitanFit%20%D9%84%D8%A5%D8%AF%D8%A7%D8%B1%D8%A9%20%D8%AC%D9%8A%D9%85"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-lg bg-white px-2.5 py-1 text-[11px] font-black text-emerald-900 transition hover:bg-slate-100"
-                  >
-                    {isAr ? 'تواصل معنا واتساب' : 'WhatsApp Us'}
-                  </a>
-                  <button
-                    type="button"
-                    onClick={handleDismissPublicBanner}
-                    aria-label={isAr ? 'إغلاق الإعلان' : 'Dismiss announcement'}
-                    className="rounded-lg p-1 text-white transition hover:bg-white/20 focus:outline-none"
-                  >
-                    <X className="h-4 w-4" aria-hidden="true" />
-                  </button>
-                </div>
-              </div>
-            </aside>
-          );
-        }
-
-        return null;
-      })()}
 
       {/* TOP HEADER: Dynamic Clean Storefront for Visitors vs Sleek Management Bar for Logged-In Admins */}
       <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 px-3 py-2.5 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 sm:px-6 sm:py-3">
@@ -1066,37 +978,12 @@ function TitanFitEnterpriseShell() {
               ))}
             </nav>
 
-            {/* Active Gym SaaS Subscription Tier Card */}
+            {/* Active Gym SaaS Subscription Tier + Live Countdown & Owner Credentials Card */}
             {activeRole !== 'SUPER_ADMIN' && (
-              <div className="mx-3 mb-2 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-3 dark:border-amber-500/20">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-400">
-                    {isAr ? 'باقة النادي الحالية' : 'Gym SaaS Tier'}
-                  </span>
-                  <span className="rounded-md bg-amber-500 px-1.5 py-0.5 font-mono text-[9px] font-black text-slate-950">
-                    {activePlanConfig.nameEn.split(' ')[0]}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs font-black text-slate-900 dark:text-white">
-                  {isAr ? activePlanConfig.nameAr : activePlanConfig.nameEn}
-                </p>
-                <div className="mt-1.5 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                  <span>{isAr ? 'الاشتراك:' : 'Price:'}</span>
-                  <span className="font-bold text-slate-900 dark:text-white">
-                    {activePlanConfig.monthlyPriceEgp.toLocaleString()} EGP / {isAr ? 'شهر' : 'mo'}
-                  </span>
-                </div>
-                {activePlanTier !== 'ENTERPRISE' && (
-                  <button
-                    type="button"
-                    onClick={() => setActiveSection('SETTINGS')}
-                    className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl bg-amber-500 py-1.5 text-xs font-black text-slate-950 shadow-xs hover:bg-amber-400 transition"
-                  >
-                    <Zap className="h-3.5 w-3.5" />
-                    <span>{isAr ? 'ترقية الباقة وفتح الصفحات' : 'Upgrade Plan'}</span>
-                  </button>
-                )}
-              </div>
+              <GymOwnerSubscriptionAndCredentialsBanner
+                compact
+                onUpgradeClick={() => setActiveSection('SETTINGS')}
+              />
             )}
 
             {/* Bottom User & Security Session Footer */}
@@ -1183,7 +1070,16 @@ function TitanFitEnterpriseShell() {
                 <PlanUpgradePaywallView section={activeSection} onBack={goBack} />
               ) : (
                 <>
-                  {activeSection === 'OVERVIEW' && <OverviewView />}
+                  {activeSection === 'OVERVIEW' && (
+                    <div className="space-y-6">
+                      {activeRole !== 'SUPER_ADMIN' && (
+                        <GymOwnerSubscriptionAndCredentialsBanner
+                          onUpgradeClick={() => setActiveSection('SETTINGS')}
+                        />
+                      )}
+                      <OverviewView />
+                    </div>
+                  )}
                   {activeSection === 'MEMBERS' && <MembersCrmView />}
                   {activeSection === 'SUBSCRIPTIONS' && <SubscriptionsView />}
                   {activeSection === 'PAYMENTS' && <PaymentsBillingView />}
@@ -1214,8 +1110,8 @@ function TitanFitEnterpriseShell() {
             <span>•</span>
             <span>
               {isAr
-                ? 'نموذج تجريبي استعراضي (Demo Prototype) — البيانات التجريبية تُحفظ محلياً في متصفحك (localStorage / sessionStorage).'
-                : 'Interactive Demo Prototype — Demo data is stored locally in your browser (localStorage / sessionStorage).'}
+                ? 'منصة سحابية متكاملة لإدارة الأندية الرياضية، التغذية الذكية، وبوابات الدفع الإلكتروني.'
+                : 'Enterprise Cloud Platform for Smart Gym Management, Nutrition & Electronic Payments.'}
             </span>
           </div>
           <nav

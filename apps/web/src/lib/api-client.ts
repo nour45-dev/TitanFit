@@ -14,7 +14,9 @@ export interface LoginCredentials {
     slug: string;
     nameEn: string;
     nameAr: string;
+    ownerUsername?: string;
     ownerEmail: string;
+    authVerifier?: string;
     logoUrl?: string;
     primaryColor?: string;
   };

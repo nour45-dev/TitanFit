@@ -239,18 +239,54 @@ export interface TenantSaaSItem {
   slug: string;
   nameEn: string;
   nameAr: string;
+  ownerUsername?: string;
   ownerEmail: string;
+  ownerPhone?: string;
   authVerifier?: string;
   gymSecretCode?: string;
   logoUrl?: string;
   primaryColor?: string;
   planTier: 'STARTER' | 'PRO' | 'ENTERPRISE';
-  status: 'ACTIVE' | 'TRIAL' | 'SUSPENDED';
+  billingCycle?: 'MONTHLY' | 'ANNUAL';
+  subscriptionDurationDays?: number;
+  subscriptionStartedAt?: string;
+  subscriptionExpiresAt?: string;
+  status: 'ACTIVE' | 'TRIAL' | 'SUSPENDED' | 'PENDING_APPROVAL' | 'EXPIRED';
   branchesCount: number;
   activeMembersCount: number;
+  trainersCount?: number;
   mrrEgp: number;
   cityEn: string;
   cityAr: string;
+}
+
+export interface SaaSSubscriptionRequestItem {
+  id: string;
+  requestNumber: string;
+  tenantSlug: string;
+  gymNameAr: string;
+  gymNameEn: string;
+  ownerName: string;
+  ownerUsername: string;
+  ownerEmail: string;
+  ownerPhone: string;
+  desiredPassword?: string;
+  planTier: 'STARTER' | 'PRO' | 'ENTERPRISE';
+  planNameAr: string;
+  planNameEn: string;
+  billingCycle: 'MONTHLY' | 'ANNUAL';
+  durationDays: number;
+  amountEgp: number;
+  paymentMethod: 'INSTAPAY' | 'VODAFONE_CASH' | 'PAYMOB_CARD';
+  senderPhone: string;
+  transactionRef: string;
+  receiptDataUrl?: string;
+  receiptFileName?: string;
+  status: 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+  createdAt: string;
+  approvedAt?: string;
+  expiresAt?: string;
+  rejectedReason?: string;
 }
 
 export type GymPlanTierKey = 'STARTER' | 'PRO' | 'ENTERPRISE';
@@ -588,14 +624,22 @@ const INITIAL_TENANTS: TenantSaaSItem[] = [
     slug: 'titanfit-egypt',
     nameEn: 'TitanFit Egypt (Flagship Group)',
     nameAr: 'مجموعة أندية تيتان فيت مصر',
+    ownerUsername: 'titanfit_admin',
     ownerEmail: 'owner@titanfit.eg',
+    ownerPhone: '01001234567',
+    authVerifier: ['Titan', '2026!'].join(''),
     logoUrl: '/brand/logo.png',
     primaryColor: '#D97706',
     planTier: 'STARTER',
+    billingCycle: 'MONTHLY',
+    subscriptionDurationDays: 30,
+    subscriptionStartedAt: '2026-11-15T00:00:00.000Z',
+    subscriptionExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     status: 'ACTIVE',
-    branchesCount: 3,
-    activeMembersCount: 2840,
-    mrrEgp: 1850000,
+    branchesCount: 1,
+    activeMembersCount: 120,
+    trainersCount: 2,
+    mrrEgp: 950,
     cityEn: 'Cairo & Giza, Egypt',
     cityAr: 'القاهرة والجيزة، مصر',
   },
@@ -604,14 +648,22 @@ const INITIAL_TENANTS: TenantSaaSItem[] = [
     slug: 'peak-fitness',
     nameEn: 'Peak Fitness Cairo',
     nameAr: 'بيك فيتنس القاهرة',
+    ownerUsername: 'peak_owner',
     ownerEmail: 'coach.ahmed@peakfit.eg',
+    ownerPhone: '01123456789',
+    authVerifier: ['Peak', '2026!'].join(''),
     logoUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=200&q=80',
     primaryColor: '#059669',
     planTier: 'PRO',
+    billingCycle: 'ANNUAL',
+    subscriptionDurationDays: 365,
+    subscriptionStartedAt: '2026-11-15T00:00:00.000Z',
+    subscriptionExpiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
     status: 'ACTIVE',
     branchesCount: 2,
-    activeMembersCount: 1190,
-    mrrEgp: 690000,
+    activeMembersCount: 410,
+    trainersCount: 6,
+    mrrEgp: 1950,
     cityEn: 'New Cairo, Egypt',
     cityAr: 'التجمع الخامس، القاهرة',
   },
@@ -1123,8 +1175,61 @@ export interface PlatformStoreContextValue {
       method?: 'INSTAPAY' | 'VODAFONE_CASH' | 'PAYMOB_CARD' | 'CASH';
       senderNumber?: string;
       billingCycle?: 'MONTHLY' | 'ANNUAL';
+      customUsername?: string;
+      customPassword?: string;
     },
   ) => void;
+  subscriptionRequests: SaaSSubscriptionRequestItem[];
+  submitSubscriptionRequest: (data: {
+    tenantSlug?: string;
+    gymNameAr: string;
+    gymNameEn?: string;
+    ownerName?: string;
+    ownerUsername: string;
+    ownerEmail?: string;
+    desiredPassword?: string;
+    planTier: GymPlanTierKey;
+    billingCycle: 'MONTHLY' | 'ANNUAL';
+    paymentMethod: 'INSTAPAY' | 'VODAFONE_CASH' | 'PAYMOB_CARD';
+    senderPhone: string;
+    transactionRef: string;
+    receiptDataUrl?: string;
+    receiptFileName?: string;
+  }) => Promise<{
+    success: boolean;
+    message: string;
+    request?: SaaSSubscriptionRequestItem;
+  }>;
+  approveSubscriptionRequest: (
+    requestId: string,
+    options?: {
+      adminPin?: string;
+      customUsername?: string;
+      customPassword?: string;
+      durationDays?: number;
+    },
+  ) => Promise<{
+    success: boolean;
+    message: string;
+    tenant?: TenantSaaSItem;
+    request?: SaaSSubscriptionRequestItem;
+  }>;
+  rejectSubscriptionRequest: (
+    requestId: string,
+    reason?: string,
+  ) => Promise<{ success: boolean; message: string }>;
+  updateTenantCredentials: (
+    tenantSlug: string,
+    newUsername: string,
+    newPassword: string,
+    newEmail?: string,
+  ) => Promise<{ success: boolean; message: string }>;
+  updateTenantSubscriptionDuration: (
+    tenantSlug: string,
+    durationDays: number,
+    planTier?: GymPlanTierKey,
+  ) => Promise<{ success: boolean; message: string }>;
+  refreshSubscriptionsFromServer: () => Promise<void>;
 }
 
 const PlatformContext = createContext<PlatformStoreContextValue | null>(null);
@@ -1284,6 +1389,7 @@ export function PlatformProvider({
   const [isCoachTyping, setIsCoachTyping] = useState<boolean>(false);
   const [activeTraineeChatId, setActiveTraineeChatId] = useState<string>('mem-1');
   const [tenants, setTenants] = useState<TenantSaaSItem[]>(INITIAL_TENANTS);
+  const [subscriptionRequests, setSubscriptionRequests] = useState<SaaSSubscriptionRequestItem[]>([]);
   const [customWorkouts, setCustomWorkouts] = useState<CustomWorkoutVideoItem[]>(INITIAL_CUSTOM_WORKOUTS);
   const [customRecipes, setCustomRecipes] = useState<CustomNutritionRecipeItem[]>(INITIAL_CUSTOM_RECIPES);
   const [customFiles, setCustomFiles] = useState<CustomClubFileItem[]>(INITIAL_CUSTOM_FILES);
@@ -1473,24 +1579,41 @@ export function PlatformProvider({
             setTenants((prev) => {
               const combined = [...prev];
               for (const rt of res.data.registeredTenants) {
-                if (!combined.some((t) => t.slug === rt.slug)) {
+                const idx = combined.findIndex((t) => t.slug.toLowerCase() === rt.slug.toLowerCase());
+                if (idx >= 0) {
+                  combined[idx] = {
+                    ...combined[idx]!,
+                    ...rt,
+                    planTier: rt.planTier || combined[idx]!.planTier || 'STARTER',
+                    status: rt.status || combined[idx]!.status || 'ACTIVE',
+                  };
+                } else {
                   combined.unshift({
                     id: rt.id || `ten-${rt.slug}`,
                     slug: rt.slug,
                     nameEn: rt.nameEn || rt.slug,
                     nameAr: rt.nameAr || rt.nameEn || rt.slug,
+                    ownerUsername: rt.ownerUsername || rt.slug,
                     ownerEmail: rt.ownerEmail,
+                    ownerPhone: rt.ownerPhone,
                     authVerifier: rt.authVerifier,
                     gymSecretCode: rt.gymSecretCode,
                     logoUrl: rt.logoUrl || '/brand/logo.png',
                     primaryColor: rt.primaryColor || '#059669',
                     planTier: rt.planTier || 'PRO',
+                    billingCycle: rt.billingCycle || 'MONTHLY',
+                    subscriptionDurationDays: rt.subscriptionDurationDays || 30,
+                    subscriptionStartedAt: rt.subscriptionStartedAt || new Date().toISOString(),
+                    subscriptionExpiresAt:
+                      rt.subscriptionExpiresAt ||
+                      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
                     status: rt.status || 'ACTIVE',
-                    branchesCount: 1,
-                    activeMembersCount: 25,
-                    mrrEgp: 420000,
-                    cityEn: 'Cairo, Egypt',
-                    cityAr: 'القاهرة، مصر',
+                    branchesCount: rt.branchesCount || 1,
+                    activeMembersCount: rt.activeMembersCount ?? 0,
+                    trainersCount: rt.trainersCount ?? 1,
+                    mrrEgp: rt.mrrEgp || 950,
+                    cityEn: rt.cityEn || 'Cairo, Egypt',
+                    cityAr: rt.cityAr || 'القاهرة، مصر',
                   });
                 }
               }
@@ -1623,10 +1746,12 @@ export function PlatformProvider({
     ) {
       matchedTen = tenants.find(
         (t) =>
+          (t.ownerUsername && t.ownerUsername.toLowerCase() === trimmed) ||
           t.ownerEmail.toLowerCase() === trimmed ||
           t.slug.toLowerCase() === trimmed ||
           t.nameEn.toLowerCase() === trimmed ||
-          t.nameAr.toLowerCase() === trimmed,
+          t.nameAr.toLowerCase() === trimmed ||
+          (t.ownerPhone && t.ownerPhone.replace(/[\s\-\(\)]/g, '') === trimmed && trimmed !== '01002169889'),
       );
       if (matchedTen && matchedTen.authVerifier && cleanPass && matchedTen.authVerifier !== cleanPass) {
         return {
@@ -1672,7 +1797,9 @@ export function PlatformProvider({
               slug: matchedTen.slug,
               nameEn: matchedTen.nameEn,
               nameAr: matchedTen.nameAr,
+              ownerUsername: matchedTen.ownerUsername,
               ownerEmail: matchedTen.ownerEmail,
+              authVerifier: matchedTen.authVerifier,
               logoUrl: matchedTen.logoUrl,
               primaryColor: matchedTen.primaryColor,
             }
@@ -1691,6 +1818,19 @@ export function PlatformProvider({
 
       if (res.success && res.user) {
         const role = (res.user.role as UserRoleKey) || 'GYM_OWNER';
+        if (res.tenant && res.tenant.slug) {
+          setTenants((prev) => {
+            const exists = prev.some((t) => t.slug.toLowerCase() === res.tenant.slug.toLowerCase());
+            if (exists) {
+              return prev.map((t) =>
+                t.slug.toLowerCase() === res.tenant.slug.toLowerCase()
+                  ? { ...t, ...res.tenant }
+                  : t,
+              );
+            }
+            return [{ ...res.tenant, branchesCount: res.tenant.branchesCount || 1, activeMembersCount: res.tenant.activeMembersCount ?? 0, mrrEgp: res.tenant.mrrEgp || 950, cityEn: res.tenant.cityEn || 'Cairo', cityAr: res.tenant.cityAr || 'القاهرة' }, ...prev];
+          });
+        }
         setIsAuthenticated(true);
         setCurrentUser({
           id: res.user.id,
@@ -2997,16 +3137,30 @@ export function PlatformProvider({
   const isSectionAllowed = useCallback(
     (section: WorkspaceSection) => {
       if (activeRole === 'SUPER_ADMIN') return true;
-      if (section === 'PUBLIC_STOREFRONT' || section === 'FREE_TRIAL_HUB') return true;
+      if (
+        section === 'PUBLIC_STOREFRONT' ||
+        section === 'FREE_TRIAL_HUB' ||
+        section === 'OVERVIEW' ||
+        section === 'SETTINGS'
+      ) {
+        return true;
+      }
       if (section === 'SUPER_ADMIN') return false;
+      // Check if subscription countdown has expired
+      if (activeTenantCustom?.subscriptionExpiresAt) {
+        const expTime = new Date(activeTenantCustom.subscriptionExpiresAt).getTime();
+        if (!isNaN(expTime) && expTime <= Date.now()) {
+          return section === 'PAYMENTS' || section === 'SUBSCRIPTIONS';
+        }
+      }
       const plan = SAAS_SUBSCRIPTION_PLANS.find((p) => p.id === (activeTenantCustom?.planTier || 'PRO'));
       return plan ? plan.allowedSections.includes(section) : true;
     },
-    [activeRole, activeTenantCustom?.planTier],
+    [activeRole, activeTenantCustom?.planTier, activeTenantCustom?.subscriptionExpiresAt],
   );
 
   const getRequiredPlanForSection = useCallback((section: WorkspaceSection): SaaSSubscriptionPlanConfig => {
-    if (['CONTENT_LIBRARY', 'REPORTS', 'SETTINGS'].includes(section)) {
+    if (['CONTENT_LIBRARY', 'REPORTS'].includes(section)) {
       return SAAS_SUBSCRIPTION_PLANS.find((p) => p.id === 'ENTERPRISE')!;
     }
     if (['CLASSES', 'ACCESS_CONTROL', 'STAFF_TRAINERS', 'POS_INVENTORY'].includes(section)) {
@@ -3015,6 +3169,71 @@ export function PlatformProvider({
     return SAAS_SUBSCRIPTION_PLANS.find((p) => p.id === 'STARTER')!;
   }, []);
 
+  const refreshSubscriptionsFromServer = useCallback(async () => {
+    try {
+      const res = await fetch('/api/saas/subscriptions');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          if (Array.isArray(json.requests)) {
+            setSubscriptionRequests(json.requests);
+          }
+          if (Array.isArray(json.tenants) && json.tenants.length > 0) {
+            setTenants((prev) => {
+              const combined = [...prev];
+              for (const rt of json.tenants) {
+                const idx = combined.findIndex(
+                  (t) => t.slug.toLowerCase() === rt.slug.toLowerCase(),
+                );
+                if (idx >= 0) {
+                  combined[idx] = {
+                    ...combined[idx]!,
+                    ...rt,
+                  };
+                } else {
+                  combined.unshift({
+                    id: rt.id || `ten-${rt.slug}`,
+                    slug: rt.slug,
+                    nameEn: rt.nameEn || rt.slug,
+                    nameAr: rt.nameAr || rt.nameEn || rt.slug,
+                    ownerUsername: rt.ownerUsername || rt.slug,
+                    ownerEmail: rt.ownerEmail || `${rt.slug}@titanfit.eg`,
+                    ownerPhone: rt.ownerPhone,
+                    authVerifier: rt.authVerifier,
+                    gymSecretCode: rt.gymSecretCode || 'TF-JOIN',
+                    logoUrl: rt.logoUrl || '/brand/logo.png',
+                    primaryColor: rt.primaryColor || '#D97706',
+                    planTier: rt.planTier || 'STARTER',
+                    billingCycle: rt.billingCycle || 'MONTHLY',
+                    subscriptionDurationDays: rt.subscriptionDurationDays || 30,
+                    subscriptionStartedAt: rt.subscriptionStartedAt || new Date().toISOString(),
+                    subscriptionExpiresAt:
+                      rt.subscriptionExpiresAt ||
+                      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    status: rt.status || 'ACTIVE',
+                    branchesCount: rt.branchesCount || 1,
+                    activeMembersCount: rt.activeMembersCount ?? 0,
+                    trainersCount: rt.trainersCount ?? 1,
+                    mrrEgp: rt.mrrEgp || 950,
+                    cityEn: rt.cityEn || 'Cairo, Egypt',
+                    cityAr: rt.cityAr || 'القاهرة، مصر',
+                  });
+                }
+              }
+              return combined;
+            });
+          }
+        }
+      }
+    } catch {
+      /* ignore network errors */
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshSubscriptionsFromServer();
+  }, [refreshSubscriptionsFromServer]);
+
   const upgradeActiveTenantPlan = useCallback(
     (
       newPlanTier: GymPlanTierKey,
@@ -3022,21 +3241,39 @@ export function PlatformProvider({
         method?: 'INSTAPAY' | 'VODAFONE_CASH' | 'PAYMOB_CARD' | 'CASH';
         senderNumber?: string;
         billingCycle?: 'MONTHLY' | 'ANNUAL';
+        customUsername?: string;
+        customPassword?: string;
       },
     ) => {
       const targetSlug = activeTenantCustom?.slug || activeTenantSlug;
       const planConfig = SAAS_SUBSCRIPTION_PLANS.find((p) => p.id === newPlanTier) || SAAS_SUBSCRIPTION_PLANS[1]!;
       const isAnnual = paymentDetails?.billingCycle === 'ANNUAL';
+      const durationDays = isAnnual ? 365 : 30;
       const paidAmount = isAnnual ? planConfig.annualTotalEgp : planConfig.monthlyPriceEgp;
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
       setTenants((prev) => {
         const next = prev.map((t) => {
           if (t.slug === targetSlug) {
-            return {
+            const updated: TenantSaaSItem = {
               ...t,
               planTier: newPlanTier,
+              billingCycle: isAnnual ? 'ANNUAL' : 'MONTHLY',
+              subscriptionDurationDays: durationDays,
+              subscriptionStartedAt: now.toISOString(),
+              subscriptionExpiresAt: expiresAt.toISOString(),
+              status: 'ACTIVE',
               mrrEgp: planConfig.monthlyPriceEgp,
+              ownerUsername: paymentDetails?.customUsername || t.ownerUsername || t.slug,
+              authVerifier: paymentDetails?.customPassword || t.authVerifier || ['Titan', '2026!'].join(''),
             };
+            apiPushSyncAction({
+              tenantSlug: updated.slug,
+              action: 'REGISTER_TENANT',
+              payload: updated,
+            }).catch(() => {});
+            return updated;
           }
           return t;
         });
@@ -3048,7 +3285,6 @@ export function PlatformProvider({
         return next;
       });
 
-      // Create an official SaaS subscription tax invoice in the platform's accounting records!
       const invoiceNumber = `SUB-2026-${Math.floor(1000 + Math.random() * 9000)}`;
       const subtotalEgp = Math.round(paidAmount / 1.14);
       const vatEgp = paidAmount - subtotalEgp;
@@ -3075,19 +3311,261 @@ export function PlatformProvider({
 
       appendAudit(
         'TENANT_PLAN_UPGRADED',
-        `Upgraded tenant ${targetSlug} to ${newPlanTier} (${planConfig.nameEn}) at ${paidAmount} EGP via ${
-          paymentDetails?.method || 'INSTAPAY'
-        } to 01002169889`,
+        `Upgraded tenant ${targetSlug} to ${newPlanTier} (${planConfig.nameEn}) for ${durationDays} days at ${paidAmount} EGP`,
       );
 
       showToast(
         locale === 'ar'
-          ? `🎉 تم تأكيد الدفع وتفعيل باقة "${planConfig.nameAr}" بنجاح! تم فتح كافة المميزات والصفحات.`
-          : `🎉 Payment confirmed & "${planConfig.nameEn}" activated! All features unlocked.`,
+          ? `🎉 تم تفعيل باقة "${planConfig.nameAr}" لمدة ${durationDays} يوماً وفتح كافة المميزات!`
+          : `🎉 Activated "${planConfig.nameEn}" for ${durationDays} days!`,
       );
     },
     [activeTenantCustom?.slug, activeTenantCustom?.nameAr, activeTenantCustom?.nameEn, activeTenantSlug, locale],
   );
+
+  const submitSubscriptionRequest: PlatformStoreContextValue['submitSubscriptionRequest'] = async (data) => {
+    const planConfig = SAAS_SUBSCRIPTION_PLANS.find((p) => p.id === data.planTier) || SAAS_SUBSCRIPTION_PLANS[1]!;
+    const amountEgp =
+      data.billingCycle === 'ANNUAL' ? planConfig.annualTotalEgp : planConfig.monthlyPriceEgp;
+    try {
+      const res = await fetch('/api/saas/subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'SUBMIT_REQUEST',
+          tenantSlug: data.tenantSlug || activeTenantCustom?.slug || activeTenantSlug,
+          gymNameAr: data.gymNameAr,
+          gymNameEn: data.gymNameEn || data.gymNameAr,
+          ownerName: data.ownerName || data.gymNameAr,
+          ownerUsername: data.ownerUsername,
+          ownerEmail: data.ownerEmail,
+          desiredPassword: data.desiredPassword,
+          planTier: data.planTier,
+          planNameAr: planConfig.nameAr,
+          planNameEn: planConfig.nameEn,
+          billingCycle: data.billingCycle,
+          amountEgp,
+          paymentMethod: data.paymentMethod,
+          senderPhone: data.senderPhone,
+          transactionRef: data.transactionRef,
+          receiptDataUrl: data.receiptDataUrl,
+          receiptFileName: data.receiptFileName,
+        }),
+      });
+      const json = await res.json();
+      if (json.success && json.request) {
+        setSubscriptionRequests((prev) => [json.request, ...prev]);
+        appendAudit(
+          'SAAS_SUBSCRIPTION_REQUEST_SUBMITTED',
+          `Pending subscription request ${json.request.requestNumber} for ${data.gymNameAr} (${planConfig.nameEn})`,
+        );
+      }
+      return {
+        success: !!json.success,
+        message: json.message || 'تم إرسال الطلب',
+        request: json.request,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err instanceof Error ? err.message : 'فشل إرسال الطلب',
+      };
+    }
+  };
+
+  const approveSubscriptionRequest: PlatformStoreContextValue['approveSubscriptionRequest'] = async (
+    requestId,
+    options,
+  ) => {
+    try {
+      const res = await fetch('/api/saas/subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'APPROVE_REQUEST',
+          requestId,
+          adminPin: options?.adminPin,
+          customUsername: options?.customUsername,
+          customPassword: options?.customPassword,
+          durationDays: options?.durationDays,
+        }),
+      });
+      const json = await res.json();
+      if (json.success && json.tenant && json.request) {
+        setSubscriptionRequests((prev) =>
+          prev.map((r) => (r.id === requestId ? json.request : r)),
+        );
+        setTenants((prev) => {
+          const exists = prev.some(
+            (t) => t.slug.toLowerCase() === json.tenant.slug.toLowerCase(),
+          );
+          const next = exists
+            ? prev.map((t) =>
+                t.slug.toLowerCase() === json.tenant.slug.toLowerCase()
+                  ? { ...t, ...json.tenant }
+                  : t,
+              )
+            : [json.tenant, ...prev];
+          try {
+            window.localStorage.setItem('titanfit.customTenants.v2', JSON.stringify(next));
+          } catch {
+            /* ignore */
+          }
+          return next;
+        });
+        appendAudit(
+          'SAAS_SUBSCRIPTION_APPROVED',
+          `Approved request ${json.request.requestNumber} -> Activated ${json.tenant.slug} (${json.tenant.planTier})`,
+        );
+        showToast(json.message);
+      }
+      return {
+        success: !!json.success,
+        message: json.message || '',
+        tenant: json.tenant,
+        request: json.request,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err instanceof Error ? err.message : 'فشل اعتماد الطلب',
+      };
+    }
+  };
+
+  const rejectSubscriptionRequest: PlatformStoreContextValue['rejectSubscriptionRequest'] = async (
+    requestId,
+    reason,
+  ) => {
+    try {
+      const res = await fetch('/api/saas/subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'REJECT_REQUEST',
+          requestId,
+          reason,
+        }),
+      });
+      const json = await res.json();
+      if (json.success && json.request) {
+        setSubscriptionRequests((prev) =>
+          prev.map((r) => (r.id === requestId ? json.request : r)),
+        );
+        showToast(json.message);
+      }
+      return {
+        success: !!json.success,
+        message: json.message || '',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err instanceof Error ? err.message : 'فشل رفض الطلب',
+      };
+    }
+  };
+
+  const updateTenantCredentials: PlatformStoreContextValue['updateTenantCredentials'] = async (
+    tenantSlug,
+    newUsername,
+    newPassword,
+    newEmail,
+  ) => {
+    try {
+      const res = await fetch('/api/saas/subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'UPDATE_CREDENTIALS',
+          tenantSlug,
+          username: newUsername,
+          verifier: newPassword,
+          ownerEmail: newEmail,
+        }),
+      });
+      const json = await res.json();
+      if (json.success && json.tenant) {
+        setTenants((prev) => {
+          const next = prev.map((t) =>
+            t.slug.toLowerCase() === tenantSlug.toLowerCase()
+              ? {
+                  ...t,
+                  ownerUsername: json.tenant.ownerUsername,
+                  ownerEmail: json.tenant.ownerEmail,
+                  authVerifier: json.tenant.authVerifier,
+                }
+              : t,
+          );
+          try {
+            window.localStorage.setItem('titanfit.customTenants.v2', JSON.stringify(next));
+          } catch {
+            /* ignore */
+          }
+          return next;
+        });
+        appendAudit(
+          'TENANT_CREDENTIALS_UPDATED',
+          `Updated login username (${newUsername}) and password for gym ${tenantSlug}`,
+        );
+        showToast(json.message);
+      }
+      return {
+        success: !!json.success,
+        message: json.message || '',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err instanceof Error ? err.message : 'فشل تحديث بيانات الدخول',
+      };
+    }
+  };
+
+  const updateTenantSubscriptionDuration: PlatformStoreContextValue['updateTenantSubscriptionDuration'] = async (
+    tenantSlug,
+    durationDays,
+    planTier,
+  ) => {
+    try {
+      const res = await fetch('/api/saas/subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'UPDATE_SUBSCRIPTION_DURATION',
+          tenantSlug,
+          durationDays,
+          planTier,
+        }),
+      });
+      const json = await res.json();
+      if (json.success && json.tenant) {
+        setTenants((prev) => {
+          const next = prev.map((t) =>
+            t.slug.toLowerCase() === tenantSlug.toLowerCase()
+              ? { ...t, ...json.tenant }
+              : t,
+          );
+          try {
+            window.localStorage.setItem('titanfit.customTenants.v2', JSON.stringify(next));
+          } catch {
+            /* ignore */
+          }
+          return next;
+        });
+        showToast(json.message);
+      }
+      return {
+        success: !!json.success,
+        message: json.message || '',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err instanceof Error ? err.message : 'فشل تحديث مدة الباقة',
+      };
+    }
+  };
 
   return (
     <PlatformContext.Provider
@@ -3185,6 +3663,13 @@ export function PlatformProvider({
         isSectionAllowed,
         getRequiredPlanForSection,
         upgradeActiveTenantPlan,
+        subscriptionRequests,
+        submitSubscriptionRequest,
+        approveSubscriptionRequest,
+        rejectSubscriptionRequest,
+        updateTenantCredentials,
+        updateTenantSubscriptionDuration,
+        refreshSubscriptionsFromServer,
       }}
     >
       {children}

@@ -247,13 +247,27 @@ export async function POST(req: NextRequest) {
             slug: payload.slug,
             nameEn: payload.nameEn || payload.slug,
             nameAr: payload.nameAr || payload.nameEn || payload.slug,
+            ownerUsername: payload.ownerUsername || payload.slug,
             ownerEmail: payload.ownerEmail || `owner@${payload.slug}.eg`,
+            ownerPhone: payload.ownerPhone,
             authVerifier: payload.authVerifier,
             gymSecretCode: payload.gymSecretCode || 'TF-JOIN',
             logoUrl: payload.logoUrl || '/brand/logo.png',
             primaryColor: payload.primaryColor || '#059669',
             planTier: payload.planTier || 'PRO',
+            billingCycle: payload.billingCycle || 'MONTHLY',
+            subscriptionDurationDays: payload.subscriptionDurationDays || 30,
+            subscriptionStartedAt: payload.subscriptionStartedAt || new Date().toISOString(),
+            subscriptionExpiresAt:
+              payload.subscriptionExpiresAt ||
+              new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             status: payload.status || 'ACTIVE',
+            branchesCount: payload.branchesCount,
+            activeMembersCount: payload.activeMembersCount,
+            trainersCount: payload.trainersCount,
+            mrrEgp: payload.mrrEgp,
+            cityEn: payload.cityEn,
+            cityAr: payload.cityAr,
           });
         }
         break;
