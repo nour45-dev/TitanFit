@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { usePlatformStore, WorkspaceSection, GymPlanTierKey } from '../../lib/platform-store';
 import { downloadSaaSPricingPdf } from '../../lib/pdf-docs';
+import { SaaSPaymentGatewayModal } from './saas-payment-gateway-modal';
 
 interface PlanUpgradePaywallProps {
   section: WorkspaceSection;
@@ -40,6 +41,7 @@ export function PlanUpgradePaywallView({ section, onBack }: PlanUpgradePaywallPr
 
   const [billingCycle, setBillingCycle] = useState<'MONTHLY' | 'ANNUAL'>('ANNUAL');
   const [upgrading, setUpgrading] = useState(false);
+  const [checkoutPlan, setCheckoutPlan] = useState<any>(null);
 
   const requiredPlan = getRequiredPlanForSection(section);
   const currentPlan = saasPlans.find((p) => p.id === activePlanTier) || saasPlans[0]!;
@@ -131,11 +133,8 @@ export function PlanUpgradePaywallView({ section, onBack }: PlanUpgradePaywallPr
   const SecIcon = secInfo.icon;
 
   const handleUpgrade = (tier: GymPlanTierKey) => {
-    setUpgrading(true);
-    setTimeout(() => {
-      upgradeActiveTenantPlan(tier);
-      setUpgrading(false);
-    }, 400);
+    const targetPlan = saasPlans.find((p) => p.id === tier) || requiredPlan;
+    setCheckoutPlan(targetPlan);
   };
 
   return (
@@ -395,6 +394,18 @@ export function PlanUpgradePaywallView({ section, onBack }: PlanUpgradePaywallPr
           })}
         </div>
       </div>
+
+      {checkoutPlan && (
+        <SaaSPaymentGatewayModal
+          isOpen={!!checkoutPlan}
+          plan={checkoutPlan}
+          billingCycle={billingCycle}
+          onClose={() => setCheckoutPlan(null)}
+          onSuccess={() => {
+            setCheckoutPlan(null);
+          }}
+        />
+      )}
     </div>
   );
 }

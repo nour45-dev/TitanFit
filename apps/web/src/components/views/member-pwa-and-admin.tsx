@@ -50,6 +50,7 @@ import {
   usePlatformStore,
 } from '../../lib/platform-store';
 import { downloadSaaSPricingPdf } from '../../lib/pdf-docs';
+import { SaaSPaymentGatewayModal } from './saas-payment-gateway-modal';
 
 const PWA_EXERCISE_MOTION_MAP: Record<string, ExerciseMotionItem> = {
   'Barbell Bench Press': {
@@ -1344,6 +1345,7 @@ export function TenantSettingsView() {
   const isAr = locale === 'ar';
   const [confirmCleanSlate, setConfirmCleanSlate] = useState(false);
   const [settingsBillingCycle, setSettingsBillingCycle] = useState<'MONTHLY' | 'ANNUAL'>('ANNUAL');
+  const [checkoutPlan, setCheckoutPlan] = useState<any>(null);
 
   return (
     <div className="space-y-6">
@@ -1482,10 +1484,10 @@ export function TenantSettingsView() {
                   ) : (
                     <button
                       type="button"
-                      onClick={() => upgradeActiveTenantPlan(plan.id)}
+                      onClick={() => setCheckoutPlan(plan)}
                       className="w-full rounded-xl bg-slate-900 py-2 text-xs font-black text-white hover:bg-amber-500 hover:text-slate-950 dark:bg-slate-800 dark:hover:bg-amber-500 dark:hover:text-slate-950 transition shadow-xs"
                     >
-                      {isAr ? `التبديل إلى ${plan.nameAr.split(' ')[0]} الآن` : `Switch to ${plan.nameEn.split(' ')[0]}`}
+                      {isAr ? `ترقية/التبديل إلى ${plan.nameAr.split(' ')[0]} (دفع إلكتروني)` : `Switch to ${plan.nameEn.split(' ')[0]} (Checkout)`}
                     </button>
                   )}
                 </div>
@@ -1493,6 +1495,16 @@ export function TenantSettingsView() {
             );
           })}
         </div>
+
+        {checkoutPlan && (
+          <SaaSPaymentGatewayModal
+            isOpen={!!checkoutPlan}
+            plan={checkoutPlan}
+            billingCycle={settingsBillingCycle}
+            onClose={() => setCheckoutPlan(null)}
+            onSuccess={() => setCheckoutPlan(null)}
+          />
+        )}
       </div>
 
       <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6" data-testid="settings-logo-card">

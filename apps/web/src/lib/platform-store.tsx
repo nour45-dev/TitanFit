@@ -591,7 +591,7 @@ const INITIAL_TENANTS: TenantSaaSItem[] = [
     ownerEmail: 'owner@titanfit.eg',
     logoUrl: '/brand/logo.png',
     primaryColor: '#D97706',
-    planTier: 'ENTERPRISE',
+    planTier: 'STARTER',
     status: 'ACTIVE',
     branchesCount: 3,
     activeMembersCount: 2840,
@@ -1117,7 +1117,14 @@ export interface PlatformStoreContextValue {
   activePlanConfig: SaaSSubscriptionPlanConfig;
   isSectionAllowed: (section: WorkspaceSection) => boolean;
   getRequiredPlanForSection: (section: WorkspaceSection) => SaaSSubscriptionPlanConfig;
-  upgradeActiveTenantPlan: (newPlanTier: GymPlanTierKey) => void;
+  upgradeActiveTenantPlan: (
+    newPlanTier: GymPlanTierKey,
+    paymentDetails?: {
+      method?: 'INSTAPAY' | 'VODAFONE_CASH' | 'PAYMOB_CARD' | 'CASH';
+      senderNumber?: string;
+      billingCycle?: 'MONTHLY' | 'ANNUAL';
+    },
+  ) => void;
 }
 
 const PlatformContext = createContext<PlatformStoreContextValue | null>(null);
@@ -1304,7 +1311,7 @@ export function PlatformProvider({
   const activeTenantSlug = currentUser?.tenantSlug || impersonatedTenant || 'titanfit-egypt';
 
   const activeTenantCustom =
-    tenants.find((t) => t.slug === (currentUser?.tenantSlug || impersonatedTenant)) ?? null;
+    tenants.find((t) => t.slug === activeTenantSlug) ?? tenants[0] ?? null;
 
   // Hydrate & persist Gym Owner Custom Content per isolated Tenant Slug in localStorage
   useEffect(() => {
@@ -3009,12 +3016,21 @@ export function PlatformProvider({
   }, []);
 
   const upgradeActiveTenantPlan = useCallback(
-    (newPlanTier: GymPlanTierKey) => {
+    (
+      newPlanTier: GymPlanTierKey,
+      paymentDetails?: {
+        method?: 'INSTAPAY' | 'VODAFONE_CASH' | 'PAYMOB_CARD' | 'CASH';
+        senderNumber?: string;
+        billingCycle?: 'MONTHLY' | 'ANNUAL';
+      },
+    ) => {
       const targetSlug = activeTenantCustom?.slug || activeTenantSlug;
       const planConfig = SAAS_SUBSCRIPTION_PLANS.find((p) => p.id === newPlanTier) || SAAS_SUBSCRIPTION_PLANS[1]!;
+      const isAnnual = paymentDetails?.billingCycle === 'ANNUAL';
+      const paidAmount = isAnnual ? planConfig.annualTotalEgp : planConfig.monthlyPriceEgp;
 
-      setTenants((prev) =>
-        prev.map((t) => {
+      setTenants((prev) => {
+        const next = prev.map((t) => {
           if (t.slug === targetSlug) {
             return {
               ...t,
@@ -3023,21 +3039,54 @@ export function PlatformProvider({
             };
           }
           return t;
-        }),
-      );
+        });
+        try {
+          window.localStorage.setItem('titanfit.customTenants.v2', JSON.stringify(next));
+        } catch {
+          /* ignore */
+        }
+        return next;
+      });
+
+      // Create an official SaaS subscription tax invoice in the platform's accounting records!
+      const invoiceNumber = `SUB-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      const subtotalEgp = Math.round(paidAmount / 1.14);
+      const vatEgp = paidAmount - subtotalEgp;
+      const newInvoice: InvoiceItem = {
+        id: `inv-${Date.now()}`,
+        invoiceNumber,
+        memberId: targetSlug,
+        memberNameAr: activeTenantCustom?.nameAr || 'اشتراك منصة TitanFit للجيم',
+        memberNameEn: activeTenantCustom?.nameEn || 'TitanFit Gym SaaS Subscription',
+        planNameAr: planConfig.nameAr,
+        planNameEn: planConfig.nameEn,
+        subtotalEgp,
+        discountEgp: 0,
+        vatEgp,
+        totalEgp: paidAmount,
+        method: paymentDetails?.method === 'VODAFONE_CASH' ? 'VODAFONE_CASH' : 'INSTAPAY',
+        referenceCode: `SAAS-01002169889-${invoiceNumber}`,
+        status: 'PAID',
+        createdAt: new Date().toISOString(),
+        branchId: 'br-hq',
+        cashierName: 'TitanFit SaaS Automated Gateway',
+      };
+      setInvoices((prev) => [newInvoice, ...prev]);
 
       appendAudit(
         'TENANT_PLAN_UPGRADED',
-        `Upgraded tenant ${targetSlug} to ${newPlanTier} (${planConfig.nameEn}) at ${planConfig.monthlyPriceEgp} EGP/mo`,
+        `Upgraded tenant ${targetSlug} to ${newPlanTier} (${planConfig.nameEn}) at ${paidAmount} EGP via ${
+          paymentDetails?.method || 'INSTAPAY'
+        } to 01002169889`,
       );
 
       showToast(
         locale === 'ar'
-          ? `🎉 تم ترقية باقة النادي بنجاح إلى "${planConfig.nameAr}" وفتح جميع مميزاتها!`
-          : `🎉 Gym plan upgraded to "${planConfig.nameEn}" with all features unlocked!`,
+          ? `🎉 تم تأكيد الدفع وتفعيل باقة "${planConfig.nameAr}" بنجاح! تم فتح كافة المميزات والصفحات.`
+          : `🎉 Payment confirmed & "${planConfig.nameEn}" activated! All features unlocked.`,
       );
     },
-    [activeTenantCustom?.slug, activeTenantSlug, locale],
+    [activeTenantCustom?.slug, activeTenantCustom?.nameAr, activeTenantCustom?.nameEn, activeTenantSlug, locale],
   );
 
   return (

@@ -33,8 +33,9 @@ import {
   Trophy,
 } from 'lucide-react';
 import { PLATFORM_CONFIG } from '@gymos/config';
-import { usePlatformStore } from '../../lib/platform-store';
+import { usePlatformStore, SaaSSubscriptionPlanConfig } from '../../lib/platform-store';
 import { downloadEbookPdf, downloadSaaSPricingPdf } from '../../lib/pdf-docs';
+import { SaaSPaymentGatewayModal } from './saas-payment-gateway-modal';
 import { CalorieAndMealPlanner } from './calorie-and-meal-planner';
 import { SportsHeroBackdrop, SportsTicker } from '../ui/modern-ambient-background';
 
@@ -139,6 +140,7 @@ export function PublicCoachingStorefrontView({
   const isAr = locale === 'ar';
 
   const [gymSaaSAnnual, setGymSaaSAnnual] = useState(true);
+  const [checkoutPlan, setCheckoutPlan] = useState<SaaSSubscriptionPlanConfig | null>(null);
 
   // FAQ Accordion State
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
@@ -1109,13 +1111,10 @@ export function PublicCoachingStorefrontView({
                   </div>
                 </div>
 
-                <div className="pt-6 mt-4 border-t border-slate-800">
-                  <a
-                    href={`https://wa.me/201559949271?text=${encodeURIComponent(
-                      `مرحباً، أود الاشتراك في منصة TitanFit للجيمات في [${plan.nameAr}] بسعر [${price} ج.م/شهرياً]`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                <div className="pt-6 mt-4 border-t border-slate-800 space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setCheckoutPlan(plan)}
                     className={`flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-xs font-black shadow-md transition active:scale-95 ${
                       isPro
                         ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-[#D4AF37] text-slate-950 hover:brightness-105 shadow-amber-500/20'
@@ -1125,7 +1124,18 @@ export function PublicCoachingStorefrontView({
                     }`}
                   >
                     <Zap className="h-3.5 w-3.5" />
-                    <span>{isAr ? 'اشترك في هذه الباقة كصاحب جيم' : 'Subscribe to this Plan'}</span>
+                    <span>{isAr ? 'اشترك الآن ودفع فوري (إنستاباي / فودافون)' : 'Subscribe & Instant Pay'}</span>
+                  </button>
+
+                  <a
+                    href={`https://wa.me/201002169889?text=${encodeURIComponent(
+                      `مرحباً، أود الاستفسار عن باقة [${plan.nameAr}] لمنصة TitanFit بسعر [${price} ج.م]`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-center text-[11px] text-slate-400 hover:text-amber-400 transition"
+                  >
+                    {isAr ? '💬 أو تواصل عبر واتساب للمساعدة (01002169889)' : '💬 Or chat on WhatsApp (01002169889)'}
                   </a>
                 </div>
               </div>
@@ -1133,6 +1143,20 @@ export function PublicCoachingStorefrontView({
           })}
         </div>
       </section>
+
+      {/* SAAS CHECKOUT & PAYMENT GATEWAY MODAL (INSTAPAY / VODAFONE CASH) */}
+      {checkoutPlan && (
+        <SaaSPaymentGatewayModal
+          isOpen={!!checkoutPlan}
+          plan={checkoutPlan}
+          billingCycle={gymSaaSAnnual ? 'ANNUAL' : 'MONTHLY'}
+          onClose={() => setCheckoutPlan(null)}
+          onSuccess={(planId) => {
+            setCheckoutPlan(null);
+            onSwitchToDashboard();
+          }}
+        />
+      )}
 
       {/* INTERACTIVE E-BOOK PREVIEW & READER MODAL */}
       <AnimatePresence>
