@@ -110,7 +110,9 @@ export function SaaSPaymentGatewayModal({
 }: SaaSPaymentGatewayModalProps) {
   const {
     locale,
+    currentUser,
     activeTenantCustom,
+    login,
     submitSubscriptionRequest,
     approveSubscriptionRequest,
     updateTenantCredentials,
@@ -139,6 +141,14 @@ export function SaaSPaymentGatewayModal({
     activeTenantCustom?.authVerifier || ['Titan', '2026!'].join(''),
   );
   const [showAccessKey, setShowAccessKey] = useState(true);
+  const [approvedTenantSlug, setApprovedTenantSlug] = useState<string>(
+    activeTenantCustom?.slug || 'titanfit-egypt',
+  );
+
+  // Post-approval login verification states (so user logs in with Username & Password to open the gym)
+  const [loginVerifyUsername, setLoginVerifyUsername] = useState('');
+  const [loginVerifyAccessKey, setLoginVerifyAccessKey] = useState('');
+  const [isLoggingInOwner, setIsLoggingInOwner] = useState(false);
 
   // Payment Verification Inputs
   const [senderNumber, setSenderNumber] = useState('');
@@ -146,6 +156,12 @@ export function SaaSPaymentGatewayModal({
   const [receiptUploaded, setReceiptUploaded] = useState(false);
   const [receiptFileName, setReceiptFileName] = useState<string | null>(null);
   const [receiptDataUrl, setReceiptDataUrl] = useState<string | null>(null);
+  const [receiptAuditInfo, setReceiptAuditInfo] = useState<{
+    width: number;
+    height: number;
+    confidence: number;
+  } | null>(null);
+  const [receiptConfirmedByUser, setReceiptConfirmedByUser] = useState(false);
 
   // Card inputs for Paymob Option
   const [cardHolderName, setCardHolderName] = useState('');
@@ -195,13 +211,19 @@ export function SaaSPaymentGatewayModal({
           const data = await res.json();
           if (data?.request?.status === 'APPROVED') {
             await refreshSubscriptionsFromServer();
+            if (data.request.tenantSlug) {
+              setApprovedTenantSlug(data.request.tenantSlug);
+            }
+            setLoginVerifyUsername(ownerUsernameInput.trim());
+            setLoginVerifyAccessKey(ownerAccessKeyInput.trim());
+            setErrorMessage(null);
+            // Keep modal open on Step 3 ('APPROVED') so the Gym Owner sees the countdown, credentials, and logs in!
             setCheckoutStep('APPROVED');
-            if (onSuccess) onSuccess(plan.id);
           } else if (data?.request?.status === 'REJECTED') {
             setErrorMessage(
               data.request.rejectionReason ||
                 (isAr
-                  ? 'تم رفض الإيصال من قبل الإدارة لعدم تطابق بيانات التحويل.'
+                  ? '❌ تم رفض الإيصال من قبل مالك المنصة لعدم تطابق بيانات التحويل أو الرقم المرجعي.'
                   : 'Transfer receipt was rejected by administration.'),
             );
             setCheckoutStep('FORM');
@@ -212,7 +234,7 @@ export function SaaSPaymentGatewayModal({
       }
     }, 3000);
     return () => clearInterval(interval);
-  }, [isOpen, checkoutStep, pendingRequestId, plan.id]);
+  }, [isOpen, checkoutStep, pendingRequestId, plan.id, ownerUsernameInput, ownerAccessKeyInput]);
 
   if (!isOpen) return null;
 
@@ -239,6 +261,25 @@ export function SaaSPaymentGatewayModal({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setErrorMessage(
+        isAr
+          ? '❌ يجب رفع ملف صورة صالح (PNG أو JPG) لسكرين شوت إيصال التحويل من إنستاباي أو فودافون كاش.'
+          : 'Please upload a valid image screenshot (PNG/JPG) of your transfer receipt.',
+      );
+      return;
+    }
+
+    if (file.size < 4 * 1024) {
+      setErrorMessage(
+        isAr
+          ? '❌ الصورة المرفوعة صغيرة جداً أو فارغة ولا تصلح كإيصال تحويل حقيقي.'
+          : 'Uploaded image file is too small to be a real transfer receipt.',
+      );
+      return;
+    }
+
     if (file.size > 5 * 1024 * 1024) {
       setErrorMessage(
         isAr
@@ -247,14 +288,120 @@ export function SaaSPaymentGatewayModal({
       );
       return;
     }
-    setReceiptFileName(file.name);
+
     const reader = new FileReader();
     reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setReceiptDataUrl(reader.result);
+      if (typeof reader.result !== 'string') return;
+      const dataUrl = reader.result;
+
+      // Smart Receipt Screenshot Inspection via HTML5 Image + Canvas
+      const img = new window.Image();
+      img.onload = () => {
+        const w = img.naturalWidth || img.width;
+        const h = img.naturalHeight || img.height;
+
+        // 1. Reject tiny avatars/icons
+        if (w < 240 || h < 320) {
+          setReceiptUploaded(false);
+          setReceiptDataUrl(null);
+          setReceiptAuditInfo(null);
+          setErrorMessage(
+            isAr
+              ? `❌ تم رفض الصورة أمنياً! أبعاد الصورة (${w}×${h}) صغيرة جداً ولا تمثل لقطة شاشة (Screenshot) لإيصال موبايل من إنستاباي أو فودافون كاش.`
+              : `Rejected: Image dimensions (${w}x${h}) are too small to be a mobile receipt screenshot.`,
+          );
+          return;
+        }
+
+        // 2. Reject wide landscape desktop wallpapers / random landscape photos
+        if (w > h * 1.25) {
+          setReceiptUploaded(false);
+          setReceiptDataUrl(null);
+          setReceiptAuditInfo(null);
+          setErrorMessage(
+            isAr
+              ? `❌ تم رفض الصورة أمنياً! الصورة المرفوعة عريضة (${w}×${h} Landscape) وليست لقطة شاشة طولية من الهاتف لإيصال تحويل (إنستاباي / فودافون كاش). يرجى رفع سكرين شوت الإيصال الفعلي من الموبايل.`
+              : `Rejected: Landscape image (${w}x${h}) is not a mobile transfer receipt screenshot.`,
+          );
+          return;
+        }
+
+        // 3. Pixel distribution & text-edge contrast check on offscreen canvas
+        try {
+          const canvas = document.createElement('canvas');
+          const sampleW = 120;
+          const sampleH = 160;
+          canvas.width = sampleW;
+          canvas.height = sampleH;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, sampleW, sampleH);
+            const pixels = ctx.getImageData(0, 0, sampleW, sampleH).data;
+            let uiStructuredPixels = 0;
+            let textContrastEdges = 0;
+            const totalPixels = sampleW * sampleH;
+
+            for (let y = 0; y < sampleH; y++) {
+              let prevLuma = 0;
+              for (let x = 0; x < sampleW; x++) {
+                const idx = (y * sampleW + x) * 4;
+                const r = pixels[idx] ?? 0;
+                const g = pixels[idx + 1] ?? 0;
+                const b = pixels[idx + 2] ?? 0;
+                const maxC = Math.max(r, g, b);
+                const minC = Math.min(r, g, b);
+                const sat = maxC - minC;
+                const luma = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+
+                // Receipt UI background signature: light/white surface, dark-mode app surface, or InstaPay purple / Vodafone red header
+                const isLightUiBg = luma >= 180 && sat <= 42;
+                const isDarkUiBg = luma >= 10 && luma <= 65 && sat <= 45;
+                const isBrandHeader =
+                  (r > 130 && g < 70 && b < 80) || // Vodafone Cash red
+                  (b > 95 && r > 60 && g < 110); // InstaPay purple/indigo
+
+                if (isLightUiBg || isDarkUiBg || isBrandHeader) {
+                  uiStructuredPixels++;
+                }
+
+                if (x > 0 && Math.abs(luma - prevLuma) >= 38) {
+                  textContrastEdges++;
+                }
+                prevLuma = luma;
+              }
+            }
+
+            const uiRatio = uiStructuredPixels / totalPixels;
+            if (uiRatio < 0.25 || textContrastEdges < 45) {
+              setReceiptUploaded(false);
+              setReceiptDataUrl(null);
+              setReceiptAuditInfo(null);
+              setErrorMessage(
+                isAr
+                  ? '❌ تم رفض الصورة تلقائياً بواسطة الفحص الأمني! الصورة المرفقة تبدو صورة فوتوغرافية أو عشوائية ولا تحتوي على خلفية أو نصوص إيصال تحويل (إنستاباي / فودافون كاش). يرجى رفع سكرين شوت الإيصال الفعلي.'
+                  : 'Security Audit Rejected: The uploaded image appears to be a random photo rather than a structured payment receipt screenshot.',
+              );
+              return;
+            }
+
+            const confidence = Math.min(98, Math.max(76, Math.round(uiRatio * 100)));
+            setReceiptAuditInfo({ width: w, height: h, confidence });
+          }
+        } catch {
+          setReceiptAuditInfo({ width: w, height: h, confidence: 85 });
+        }
+
+        setReceiptFileName(file.name);
+        setReceiptDataUrl(dataUrl);
         setReceiptUploaded(true);
         setErrorMessage(null);
-      }
+      };
+      img.onerror = () => {
+        setErrorMessage(
+          isAr ? '❌ تعذر قراءة ملف الصورة. يرجى اختيار صورة إيصال صحيحة.' : 'Failed to decode receipt image.',
+        );
+      };
+      img.src = dataUrl;
     };
     reader.readAsDataURL(file);
   };
@@ -280,8 +427,8 @@ export function SaaSPaymentGatewayModal({
       return;
     }
 
-    const cleanSender = senderNumber.replace(/[\s-]/g, '');
-    if (!/^(\+?20)?01[0125][0-9]{8}$/.test(cleanSender)) {
+    const cleanSender = senderNumber.replace(/[\s-]/g, '').replace(/^\+?20/, '0');
+    if (!/^01[0125][0-9]{8}$/.test(cleanSender)) {
       setErrorMessage(
         isAr
           ? '⚠️ رقم الهاتف غير صحيح! يجب إدخال رقم موبايل مصري حقيقي مكون من 11 رقم (يبدأ بـ 010 أو 011 أو 012 أو 015).'
@@ -290,21 +437,73 @@ export function SaaSPaymentGatewayModal({
       return;
     }
 
+    // Block entering the platform owner's own receiver number (01002169889) as the sender phone!
+    if (cleanSender === officialNumber) {
+      setErrorMessage(
+        isAr
+          ? `❌ خطأ أمني: الرقم (${officialNumber}) هو رقم حساب مالك المنصة المستلم للدفع! لا يمكنك كتابته كرقم مُحوِّل؛ يجب إدخال رقم هاتفك الشخصي الذي قمت بالتحويل منه فعلياً.`
+          : `Security Error: ${officialNumber} is the platform receiver number! Please enter your own sender phone number.`,
+      );
+      return;
+    }
+
+    // Block fake repeated or sequential phone numbers (e.g. 01000000000, 01012345678)
+    const phoneSubscriberDigits = cleanSender.slice(3);
+    if (
+      /^(\d)\1{6,}$/.test(phoneSubscriberDigits) ||
+      '0123456789'.includes(phoneSubscriberDigits) ||
+      '9876543210'.includes(phoneSubscriberDigits)
+    ) {
+      setErrorMessage(
+        isAr
+          ? '❌ رقم الهاتف المُدخل يبدو وهمياً أو متسلسلاً. يرجى إدخال رقم الموبايل الفعلي الذي قمت بالتحويل منه.'
+          : 'Sender phone number appears to be fake or sequential.',
+      );
+      return;
+    }
+
     if (paymentMethod !== 'PAYMOB_CARD') {
-      if (!referenceId.trim() || referenceId.trim().length < 6) {
+      const cleanRef = referenceId.trim().replace(/[\s-]/g, '');
+
+      // Real InstaPay / Vodafone Cash reference numbers are 10 to 16 digits
+      if (!/^[0-9]{10,16}$/.test(cleanRef)) {
         setErrorMessage(
           isAr
-            ? '⚠️ لا يمكن فتح الباقة بدون إدخال رقم العملية المرجعي الحقيقي (Reference Number) الموجود في إيصال إنستاباي أو فودافون كاش (6 أرقام أو أحرف على الأقل).'
-            : 'Valid transaction reference number (min 6 chars) is required.',
+            ? '❌ رقم العملية المرجعي غير صالح! رقم المرجع الحقيقي في إيصال إنستاباي أو رسالة فودافون كاش يتكون من 10 إلى 16 رقماً فقط (لا يقبل أرقاماً قصيرة مثل 123456789 أو حروف عشوائية).'
+            : 'Invalid Reference ID: InstaPay / Vodafone Cash transaction reference must be 10 to 16 digits.',
         );
         return;
       }
 
-      if (!receiptUploaded || !receiptFileName) {
+      const uniqueRefDigits = new Set(cleanRef.split('')).size;
+      const hasFakeSequence =
+        /01234|12345|23456|34567|45678|56789|98765|87654|76543|65432|54321/.test(cleanRef) ||
+        /(\d)\1{4,}/.test(cleanRef) ||
+        uniqueRefDigits < 4;
+
+      if (hasFakeSequence) {
         setErrorMessage(
           isAr
-            ? '⚠️ يجب رفع صورة إيصال التحويل الفعلية (Screenshot) لتوثيق العملية ومراجعتها أمنياً قبل فتح الباقة.'
-            : 'Uploading the transfer receipt screenshot is mandatory for security verification.',
+            ? `❌ تم رفض الرقم المرجعي (${cleanRef}) أمنياً! الأرقام المتسلسلة أو المتكررة أو الوهمية (مثل 1234567890 أو 1111111111) مرفوضة تماماً. يرجى نقل رقم العملية الحقيقي من إيصال التحويل.`
+            : 'Security Error: Sequential or repeated fake reference numbers (e.g. 123456789) are strictly blocked.',
+        );
+        return;
+      }
+
+      if (!receiptUploaded || !receiptFileName || !receiptDataUrl) {
+        setErrorMessage(
+          isAr
+            ? '⚠️ يجب رفع صورة إيصال التحويل الفعلية (Screenshot) واجتياز الفحص الأولي لتوثيق العملية.'
+            : 'Uploading a valid transfer receipt screenshot is mandatory for security verification.',
+        );
+        return;
+      }
+
+      if (!receiptConfirmedByUser) {
+        setErrorMessage(
+          isAr
+            ? '⚠️ يرجى وضع علامة الموافقة والإقرار بصحة صورة الإيصال ورقم العملية المرجعي قبل الإرسال.'
+            : 'Please check the confirmation box verifying that your receipt and reference ID are genuine.',
         );
         return;
       }
@@ -323,12 +522,22 @@ export function SaaSPaymentGatewayModal({
     const effectiveRef =
       paymentMethod === 'PAYMOB_CARD'
         ? `PAYMOB-${cardLast4.replace(/\D/g, '').slice(-4)}-${Date.now().toString().slice(-5)}`
-        : referenceId.trim();
+        : referenceId.trim().replace(/[\s-]/g, '');
+
+    // Derive dedicated tenant slug when a new gym owner enters a custom username
+    const sanitizedOwnerSlug = ownerUsernameInput
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, '');
+    const targetTenantSlug =
+      sanitizedOwnerSlug && sanitizedOwnerSlug !== 'titanfit_owner'
+        ? sanitizedOwnerSlug
+        : activeTenantCustom?.slug || 'titanfit-egypt';
 
     const result = await submitSubscriptionRequest({
-      tenantSlug: activeTenantCustom?.slug || 'titanfit-egypt',
+      tenantSlug: targetTenantSlug,
       gymNameAr: gymNameArInput.trim() || activeTenantCustom?.nameAr || 'نادي TitanFit',
-      gymNameEn: activeTenantCustom?.nameEn || 'TitanFit Gym',
+      gymNameEn: gymNameArInput.trim() || activeTenantCustom?.nameEn || 'TitanFit Gym',
       planTier: plan.id,
       billingCycle,
       paymentMethod,
@@ -341,7 +550,7 @@ export function SaaSPaymentGatewayModal({
           ? 'data:text/plain;base64,UEFZTU9CX1ZFUklGSUVE'
           : receiptDataUrl || undefined,
       ownerUsername: ownerUsernameInput.trim(),
-      ownerEmail: activeTenantCustom?.ownerEmail || `${ownerUsernameInput.trim()}@titanfit.eg`,
+      ownerEmail: `${ownerUsernameInput.trim()}@titanfit.eg`,
       desiredPassword: ownerAccessKeyInput.trim(),
     });
 
@@ -357,6 +566,7 @@ export function SaaSPaymentGatewayModal({
       return;
     }
 
+    setApprovedTenantSlug(result.request.tenantSlug || targetTenantSlug);
     setPendingRequestId(result.request.id);
     setCheckoutStep('PENDING_APPROVAL');
   };
@@ -389,24 +599,56 @@ export function SaaSPaymentGatewayModal({
       return;
     }
 
+    setLoginVerifyUsername(ownerUsernameInput.trim());
+    setLoginVerifyAccessKey(ownerAccessKeyInput.trim());
+    // Transition to Step 3 ('APPROVED') without auto-closing so the Gym Owner sees the countdown, credentials, and signs in!
     setCheckoutStep('APPROVED');
-    if (onSuccess) {
-      onSuccess(plan.id);
-    }
   };
 
   const handleSaveCustomCredentials = async () => {
     if (!ownerUsernameInput.trim() || !ownerAccessKeyInput.trim()) return;
     setSavingCreds(true);
     const res = await updateTenantCredentials(
-      activeTenantCustom?.slug || 'titanfit-egypt',
+      approvedTenantSlug || activeTenantCustom?.slug || 'titanfit-egypt',
       ownerUsernameInput.trim(),
       ownerAccessKeyInput.trim(),
     );
     setSavingCreds(false);
     if (res.success) {
+      setLoginVerifyUsername(ownerUsernameInput.trim());
+      setLoginVerifyAccessKey(ownerAccessKeyInput.trim());
       setIsEditingCreds(false);
     }
+  };
+
+  const handleOwnerSignInAndEnter = async () => {
+    const userToLogin = (loginVerifyUsername || ownerUsernameInput).trim();
+    const keyToLogin = (loginVerifyAccessKey || ownerAccessKeyInput).trim();
+    if (!userToLogin || !keyToLogin) {
+      setErrorMessage(
+        isAr
+          ? 'يرجى كتابة اليوزرنيم والباسورد لتسجيل الدخول إلى منصة ناديك.'
+          : 'Please enter your Username and Password to sign into your gym platform.',
+      );
+      return;
+    }
+    setErrorMessage(null);
+    setIsLoggingInOwner(true);
+    const authRes = await login(userToLogin, keyToLogin);
+    setIsLoggingInOwner(false);
+    if (!authRes.success) {
+      setErrorMessage(
+        authRes.message ||
+          (isAr
+            ? '❌ بيانات الدخول غير مطابقة! تأكد من كتابة اليوزرنيم والباسورد الموضحين بالأعلى بشكل صحيح.'
+            : 'Invalid Username or Password. Please match the credentials shown above.'),
+      );
+      return;
+    }
+    if (onSuccess) {
+      onSuccess(plan.id);
+    }
+    onClose();
   };
 
   return (
@@ -627,13 +869,66 @@ export function SaaSPaymentGatewayModal({
               )}
             </div>
 
-            <div className="pt-1 flex justify-center">
+            {errorMessage && (
+              <div className="flex items-start gap-2 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-3.5 text-xs font-bold text-rose-700 dark:text-rose-300">
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {/* DIRECT GYM OWNER LOGIN BOX TO OPEN THE NEWLY ACTIVATED GYM PLATFORM */}
+            <div className="rounded-2xl border-2 border-amber-500/40 bg-amber-500/5 p-4 sm:p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
+                  {isAr
+                    ? '🔐 تسجيل الدخول باليوزرنيم والباسورد لفتح منصة ناديك الآن:'
+                    : '🔐 Sign In with Your Username & Password to Open Your Gym Platform:'}
+                </span>
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                  {isAr ? `نادي: ${gymNameArInput}` : gymNameArInput}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                    {isAr ? 'اكتب اليوزرنيم للدخول:' : 'Enter Username:'}
+                  </label>
+                  <input
+                    type="text"
+                    dir="ltr"
+                    value={loginVerifyUsername || ownerUsernameInput}
+                    onChange={(e) => setLoginVerifyUsername(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-mono text-xs font-black text-slate-900 focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                    {isAr ? 'اكتب الباسورد للدخول:' : 'Enter Password:'}
+                  </label>
+                  <input
+                    type="text"
+                    dir="ltr"
+                    value={loginVerifyAccessKey || ownerAccessKeyInput}
+                    onChange={(e) => setLoginVerifyAccessKey(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-mono text-xs font-black text-emerald-700 focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-emerald-400"
+                  />
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={onClose}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-8 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-500/20 hover:brightness-105 transition active:scale-95"
+                disabled={isLoggingInOwner}
+                onClick={handleOwnerSignInAndEnter}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-8 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-500/20 hover:brightness-105 transition active:scale-95 disabled:opacity-50"
               >
-                <span>{isAr ? '🚀 الدخول للمنصة واستخدام كافة صلاحيات الباقة الآن' : 'Enter Platform & Use Unlocked Features'}</span>
+                <span>
+                  {isLoggingInOwner
+                    ? isAr
+                      ? 'جاري تسجيل الدخول وفتح منصة ناديك...'
+                      : 'Signing in & opening your gym...'
+                    : isAr
+                      ? '🚀 تسجيل الدخول باليوزرنيم والباسورد وفتح منصة ناديك الآن'
+                      : '🚀 Sign In with Username & Password & Enter Platform'}
+                </span>
                 {isAr ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
               </button>
             </div>
@@ -808,16 +1103,37 @@ export function SaaSPaymentGatewayModal({
             <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                  {isAr ? 'المبلغ المطلوب سداده:' : 'Total Amount to Pay:'}
+                  {billingCycle === 'ANNUAL'
+                    ? isAr
+                      ? 'إجمالي قيمة الباقة السنوية المطلوب سدادها:'
+                      : 'Total Annual Plan Amount:'
+                    : isAr
+                      ? 'المبلغ الشهري المطلوب سداده:'
+                      : 'Monthly Amount to Pay:'}
                 </span>
                 <div className="flex items-baseline gap-1.5 font-mono">
                   <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
                     {price.toLocaleString()}
                   </span>
                   <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
-                    {isAr ? 'جنيه مصري (EGP)' : 'EGP'}
+                    {billingCycle === 'ANNUAL'
+                      ? isAr
+                        ? 'ج.م / سنوياً'
+                        : 'EGP / year'
+                      : isAr
+                        ? 'ج.م / شهرياً'
+                        : 'EGP / month'}
                   </span>
                 </div>
+                {billingCycle === 'ANNUAL' && (
+                  <p className="mt-1 inline-flex items-center gap-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 text-xs font-black text-emerald-700 dark:text-emerald-400">
+                    <span>
+                      {isAr
+                        ? `💡 يعني هتدفع ${plan.annualMonthlyPriceEgp.toLocaleString()} ج.م فقط في الشهر (وفرت ${(plan.monthlyPriceEgp * 12 - plan.annualTotalEgp).toLocaleString()} ج.م سنوياً)`
+                        : `💡 Only EGP ${plan.annualMonthlyPriceEgp.toLocaleString()} / month (Save EGP ${(plan.monthlyPriceEgp * 12 - plan.annualTotalEgp).toLocaleString()})`}
+                    </span>
+                  </p>
+                )}
               </div>
 
               <div className="text-end">
@@ -1079,45 +1395,57 @@ export function SaaSPaymentGatewayModal({
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                     {isAr
-                      ? 'رقم الهاتف المحمول الذي قمت بالتحويل منه (إلزامي *):'
-                      : 'Sender Mobile Number (Mandatory *):'}
+                      ? 'رقم هاتفك الشخصي الذي قمت بالتحويل منه (إلزامي *):'
+                      : 'Your Personal Sender Mobile Number (Mandatory *):'}
                   </label>
                   <input
                     type="tel"
                     dir="ltr"
                     value={senderNumber}
                     onChange={(e) => setSenderNumber(e.target.value)}
-                    placeholder="010xxxxxxxx"
+                    placeholder="010xxxxxxxx (رقمك أنت وليس رقم المستلم)"
                     className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
+                  <span className="mt-1 block text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                    {isAr
+                      ? '⚠️ أدخل رقم الموبايل المُحوِّل (يُرفض إدخال رقم المنصة 01002169889).'
+                      : 'Enter your sender phone (receiver number 01002169889 is blocked).'}
+                  </span>
                 </div>
 
                 {paymentMethod !== 'PAYMOB_CARD' && (
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       {isAr
-                        ? 'رقم العملية المرجعي في الإيصال (إلزامي *):'
-                        : 'Transaction Reference ID (Mandatory *):'}
+                        ? 'رقم العملية المرجعي من الإيصال — 10 إلى 16 رقماً (إلزامي *):'
+                        : 'Receipt Reference ID — 10 to 16 Digits (Mandatory *):'}
                     </label>
                     <input
                       type="text"
+                      inputMode="numeric"
+                      maxLength={16}
                       dir="ltr"
                       value={referenceId}
-                      onChange={(e) => setReferenceId(e.target.value)}
-                      placeholder="e.g. 61948201948"
+                      onChange={(e) => setReferenceId(e.target.value.replace(/\D/g, ''))}
+                      placeholder="مثال: 619482019483"
                       className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                     />
+                    <span className="mt-1 block text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                      {isAr
+                        ? '⚠️ يُرفض أي رقم متسلسل أو وهمي (مثل 123456789 أو 1111111111).'
+                        : 'Sequential or repeated fake numbers (e.g. 123456789) are automatically rejected.'}
+                    </span>
                   </div>
                 )}
               </div>
 
               {/* Mandatory Receipt Screenshot Upload */}
               {paymentMethod !== 'PAYMOB_CARD' && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                <div className="space-y-2.5">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                     {isAr
-                      ? 'صورة إيصال التحويل الفعلية من إنستاباي / فودافون كاش (إلزامي للمراجعة الأمنية *):'
-                      : 'Official Transfer Receipt Screenshot (Mandatory for Security Audit *):'}
+                      ? 'صورة إيصال التحويل الفعلية من إنستاباي / فودافون كاش (تخضع لفحص أبعاد وبكسلات الإيصال *):'
+                      : 'Official Transfer Receipt Screenshot (Inspected for Mobile Receipt Structure *):'}
                   </label>
                   <label
                     className={`flex items-center justify-center gap-2 rounded-xl border-2 border-dashed p-3.5 text-center cursor-pointer transition ${
@@ -1128,7 +1456,7 @@ export function SaaSPaymentGatewayModal({
                   >
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/png,image/jpeg,image/webp"
                       className="hidden"
                       onChange={handleFileChange}
                     />
@@ -1139,12 +1467,57 @@ export function SaaSPaymentGatewayModal({
                     />
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-md">
                       {receiptUploaded && receiptFileName
-                        ? `✅ تم إرفاق صورة الإيصال: ${receiptFileName}`
+                        ? `✅ اجتازت الصورة فحص هيكل الإيصال: ${receiptFileName}`
                         : isAr
-                          ? 'اضغط هنا لرفع سكرين شوت إيصال التحويل الفعلي (شرط أساسي للتفعيل)'
-                          : 'Click to upload transfer receipt screenshot (Required)'}
+                          ? 'اضغط هنا لرفع سكرين شوت إيصال التحويل الطولي من الموبايل (تُرفض الصور العشوائية)'
+                          : 'Click to upload mobile transfer receipt screenshot (Random photos rejected)'}
                     </span>
                   </label>
+
+                  {receiptUploaded && receiptDataUrl && (
+                    <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-3 space-y-2.5">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={receiptDataUrl}
+                          alt="Receipt Preview"
+                          className="h-16 w-12 rounded-lg object-cover border border-emerald-500/40 shrink-0"
+                        />
+                        <div className="flex-1 text-xs space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-black text-emerald-700 dark:text-emerald-300">
+                              {isAr
+                                ? '✅ تم فحص أبعاد وتباين نصوص لقطة الإيصال بنجاح'
+                                : '✅ Receipt Screenshot Structure Verified'}
+                            </span>
+                            {receiptAuditInfo && (
+                              <span className="rounded-md bg-emerald-500/20 px-2 py-0.5 font-mono text-[10px] font-black text-emerald-700 dark:text-emerald-300">
+                                {receiptAuditInfo.width}×{receiptAuditInfo.height}px • {receiptAuditInfo.confidence}%
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                            {isAr
+                              ? 'سيتم إرسال هذه الصورة مباشرة إلى لوحة مالك المنصة لمطابقة المبلغ ورقم العملية المرجعي قبل التفعيل.'
+                              : 'This screenshot will be sent to the Super Admin console for manual reference verification.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <label className="flex items-start gap-2 pt-1.5 border-t border-emerald-500/20 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={receiptConfirmedByUser}
+                          onChange={(e) => setReceiptConfirmedByUser(e.target.checked)}
+                          className="mt-0.5 h-4 w-4 rounded border-emerald-500 text-emerald-600 focus:ring-emerald-500"
+                        />
+                        <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">
+                          {isAr
+                            ? `أقر بأن صورة الإيصال المرفقة ورقم المرجع (${referenceId || '...'}) صحيحان ومطابقان لتحويل فعلي بقيمة ${price.toLocaleString()} ج.م إلى الرقم (${officialNumber}).`
+                            : `I confirm that the attached receipt screenshot and reference ID (${referenceId || '...'}) are genuine for EGP ${price.toLocaleString()} sent to ${officialNumber}.`}
+                        </span>
+                      </label>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -1430,7 +1430,8 @@ export function TenantSettingsView() {
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-5">
           {saasPlans.map((plan) => {
             const isCurrent = plan.id === activePlanTier;
-            const price = settingsBillingCycle === 'ANNUAL' ? plan.annualMonthlyPriceEgp : plan.monthlyPriceEgp;
+            const topDisplayPrice =
+              settingsBillingCycle === 'ANNUAL' ? plan.annualTotalEgp : plan.monthlyPriceEgp;
 
             return (
               <div
@@ -1460,13 +1461,28 @@ export function TenantSettingsView() {
                   <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-slate-950/50">
                     <div className="flex items-baseline gap-1 font-mono">
                       <span className="text-2xl font-black text-slate-900 dark:text-white">
-                        {price.toLocaleString()}
+                        {topDisplayPrice.toLocaleString()}
                       </span>
                       <span className="text-[11px] font-bold text-slate-500">
-                        {isAr ? 'ج.م / شهرياً' : 'EGP/mo'}
+                        {settingsBillingCycle === 'ANNUAL'
+                          ? isAr
+                            ? 'ج.م / سنوياً'
+                            : 'EGP/yr'
+                          : isAr
+                            ? 'ج.م / شهرياً'
+                            : 'EGP/mo'}
                       </span>
                     </div>
-                    <div className="mt-1 flex items-center justify-between text-[10px] text-slate-500 font-bold">
+                    {settingsBillingCycle === 'ANNUAL' && (
+                      <p className="mt-1.5 inline-flex items-center gap-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-black text-emerald-600 dark:text-emerald-400">
+                        <span>
+                          {isAr
+                            ? `💡 يعني هتدفع ${plan.annualMonthlyPriceEgp.toLocaleString()} ج.م فقط في الشهر (وفرت ${(plan.monthlyPriceEgp * 12 - plan.annualTotalEgp).toLocaleString()} ج.م)`
+                            : `💡 Only ${plan.annualMonthlyPriceEgp.toLocaleString()} EGP/mo`}
+                        </span>
+                      </p>
+                    )}
+                    <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-500 font-bold">
                       <span>{plan.maxBranches === 'UNLIMITED' ? 'فروع غير محدودة' : `${plan.maxBranches} فرع`}</span>
                       <span>•</span>
                       <span>{plan.maxMembers === 'UNLIMITED' ? 'مشتركين غير محدودين' : `${plan.maxMembers} مشترك`}</span>

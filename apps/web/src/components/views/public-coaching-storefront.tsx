@@ -1022,7 +1022,7 @@ export function PublicCoachingStorefrontView({
         {/* 3 Tier Cards Comparison */}
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6">
           {saasPlans.map((plan) => {
-            const price = gymSaaSAnnual ? plan.annualMonthlyPriceEgp : plan.monthlyPriceEgp;
+            const topDisplayPrice = gymSaaSAnnual ? plan.annualTotalEgp : plan.monthlyPriceEgp;
             const isPro = plan.id === 'PRO';
             const isEnterprise = plan.id === 'ENTERPRISE';
 
@@ -1061,21 +1061,29 @@ export function PublicCoachingStorefrontView({
                   <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                     <div className="flex items-baseline gap-1.5 font-mono">
                       <span className="text-3xl font-black text-amber-400">
-                        {price.toLocaleString()}
+                        {topDisplayPrice.toLocaleString()}
                       </span>
                       <span className="text-xs font-bold text-slate-400">
-                        {isAr ? 'ج.م / شهرياً' : 'EGP / mo'}
+                        {gymSaaSAnnual
+                          ? isAr
+                            ? 'ج.م / سنوياً'
+                            : 'EGP / yr'
+                          : isAr
+                            ? 'ج.م / شهرياً'
+                            : 'EGP / mo'}
                       </span>
                     </div>
                     {gymSaaSAnnual ? (
-                      <p className="mt-1 text-[11px] font-bold text-emerald-400">
-                        {isAr
-                          ? `تدفع ${plan.annualTotalEgp.toLocaleString()} ج.م سنوياً (وفرت ${(plan.monthlyPriceEgp * 12 - plan.annualTotalEgp).toLocaleString()} ج.م)`
-                          : `Billed annually at ${plan.annualTotalEgp.toLocaleString()} EGP (Save ${(plan.monthlyPriceEgp * 12 - plan.annualTotalEgp).toLocaleString()} EGP)`}
-                      </p>
+                      <div className="mt-2 inline-flex items-center gap-1 rounded-xl border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-black text-emerald-400">
+                        <span>
+                          {isAr
+                            ? `💡 يعني هتدفع ${plan.annualMonthlyPriceEgp.toLocaleString()} ج.م فقط في الشهر (وفرت ${(plan.monthlyPriceEgp * 12 - plan.annualTotalEgp).toLocaleString()} ج.م)`
+                            : `💡 Only ${plan.annualMonthlyPriceEgp.toLocaleString()} EGP / month (Save ${(plan.monthlyPriceEgp * 12 - plan.annualTotalEgp).toLocaleString()} EGP)`}
+                        </span>
+                      </div>
                     ) : (
                       <p className="mt-1 text-[11px] text-slate-400">
-                        {isAr ? 'تجديد شهري مرن بالكامل' : 'Flexible monthly renewal'}
+                        {isAr ? 'تجديد شهري مرن بالكامل (30 يوم)' : 'Flexible monthly renewal (30 days)'}
                       </p>
                     )}
                   </div>
@@ -1129,7 +1137,7 @@ export function PublicCoachingStorefrontView({
 
                   <a
                     href={`https://wa.me/201002169889?text=${encodeURIComponent(
-                      `مرحباً، أود الاستفسار عن باقة [${plan.nameAr}] لمنصة TitanFit بسعر [${price} ج.م]`
+                      `مرحباً، أود الاستفسار عن باقة [${plan.nameAr}] لمنصة TitanFit بسعر [${topDisplayPrice.toLocaleString()} ج.م]`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"

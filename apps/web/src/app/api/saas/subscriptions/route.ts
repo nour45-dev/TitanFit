@@ -95,35 +95,87 @@ export async function POST(req: NextRequest) {
       const paymentMethod = body.paymentMethod || 'INSTAPAY';
 
       // Strict Egyptian phone format validation (010, 011, 012, 015 + 8 digits)
-      if (!/^(\+?20)?01[0125][0-9]{8}$/.test(senderPhone)) {
+      const normalizedSender = senderPhone.replace(/^\+?20/, '0');
+      if (!/^01[0125][0-9]{8}$/.test(normalizedSender)) {
         return NextResponse.json(
           {
             success: false,
             message:
-              'يرجى إدخال رقم هاتف مصري صحيح مكون من 11 رقماً (يبدأ بـ 010 أو 011 أو 012 أو 015) الذي قمت بالتحويل منه.',
+              '❌ رقم الهاتف غير صحيح! يرجى إدخال رقم موبايل مصري حقيقي مكون من 11 رقماً (يبدأ بـ 010 أو 011 أو 012 أو 015) الذي قمت بالتحويل منه.',
           },
           { status: 400 },
         );
       }
 
-      // Strict Transaction Reference Number check (at least 6 characters/digits)
-      if (!transactionRef || transactionRef.length < 6) {
+      // Block entering the platform receiver number (01002169889) as the sender phone
+      if (normalizedSender === '01002169889') {
         return NextResponse.json(
           {
             success: false,
             message:
-              'يرجى إدخال رقم العملية المرجعي (Reference Number) الصحيح الموجود في إيصال إنستاباي أو فودافون كاش (6 أرقام أو حروف على الأقل).',
+              '❌ لا يمكن إدخال رقم حساب المنصة المستلم (01002169889) كرقم للمحول! يرجى كتابة رقم هاتفك الشخصي الذي قمت بالتحويل منه.',
+          },
+          { status: 400 },
+        );
+      }
+
+      // Block fake repeated or sequential sender phone numbers (e.g. 01000000000, 01012345678)
+      if (/(.)\1{5,}/.test(normalizedSender) || /123456|234567|345678|456789|987654/.test(normalizedSender)) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              '❌ رقم الهاتف المدخل غير حقيقي (أرقام متكررة أو متسلسلة). يرجى إدخال رقم الهاتف الفعلي المسجل في إنستاباي أو المحفظة.',
+          },
+          { status: 400 },
+        );
+      }
+
+      // Strict Anti-Fraud Transaction Reference Number check
+      const cleanRef = transactionRef.replace(/[\s-]/g, '');
+      const hasSequentialDigits =
+        /01234|12345|23456|34567|45678|56789|67890|98765|87654|76543|65432|54321|abcdef/i.test(cleanRef);
+      const hasRepeatedChars = /(.)\1{4,}/.test(cleanRef);
+      const uniqueCharsCount = new Set(cleanRef.split('')).size;
+
+      if (paymentMethod !== 'PAYMOB_CARD') {
+        if (!/^\d{10,16}$/.test(cleanRef)) {
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                '❌ رقم العملية المرجعي (Reference Number) غير صحيح! رقم مرجع إنستاباي أو فودافون كاش يتكون من 10 إلى 16 رقماً فقط كما يظهر في الإيصال.',
+            },
+            { status: 400 },
+          );
+        }
+        if (hasSequentialDigits || hasRepeatedChars || uniqueCharsCount < 4) {
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                '❌ تم رفض الرقم المرجعي! لا يقبل النظام أرقاماً وهمية أو متسلسلة مثل (123456789) أو مكررة. يرجى نقل رقم المرجع الحقيقي من إيصال التحويل.',
+            },
+            { status: 400 },
+          );
+        }
+      } else if (!cleanRef || cleanRef.length < 8) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'يرجى إتمام بيانات البطاقة البنكية بشكل صحيح.',
           },
           { status: 400 },
         );
       }
 
       // Strict Receipt attachment check
-      if (!receiptFileName && !receiptDataUrl) {
+      if (!receiptDataUrl || (paymentMethod !== 'PAYMOB_CARD' && !receiptDataUrl.startsWith('data:image/'))) {
         return NextResponse.json(
           {
             success: false,
-            message: 'يرجى إرفاق صورة إيصال التحويل الفعلي (سكرين شوت التحويل إلى 01002169889) للمراجعة والتوثيق.',
+            message:
+              '❌ يجب إرفاق لقطة شاشة (Screenshot) حقيقية بصيغة صورة لإيصال التحويل المرسل إلى (01002169889).',
           },
           { status: 400 },
         );
@@ -147,15 +199,27 @@ export async function POST(req: NextRequest) {
       }
 
       const rawGymName = (body.gymNameAr || body.gymNameEn || 'نادي رياضي جديد').trim();
+      const rawOwnerUsername = (body.ownerUsername || '').trim();
+      const requestedSlug = (body.tenantSlug || '').toLowerCase().trim();
+      const derivedSlugFromUser = rawOwnerUsername
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+
       const cleanSlug =
-        (body.tenantSlug || '')
-          .toLowerCase()
-          .replace(/[^a-z0-9-]/g, '-')
-          .replace(/-+/g, '-')
-          .replace(/^-|-$/g, '') || `gym-${Date.now().toString().slice(-5)}`;
+        (!requestedSlug || requestedSlug === 'titanfit-egypt') &&
+        derivedSlugFromUser &&
+        derivedSlugFromUser !== 'titanfit-owner' &&
+        derivedSlugFromUser !== 'titanfit'
+          ? derivedSlugFromUser
+          : requestedSlug
+              .replace(/[^a-z0-9-]/g, '-')
+              .replace(/-+/g, '-')
+              .replace(/^-|-$/g, '') || `gym-${Date.now().toString().slice(-5)}`;
 
       const ownerUsername =
-        (body.ownerUsername || '').trim() ||
+        rawOwnerUsername ||
         cleanSlug.replace(/-/g, '_');
       const desiredVerifier =
         (body.desiredPassword || '').trim() ||

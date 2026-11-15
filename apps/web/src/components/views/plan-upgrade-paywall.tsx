@@ -262,7 +262,7 @@ export function PlanUpgradePaywallView({ section, onBack }: PlanUpgradePaywallPr
           {saasPlans.map((plan) => {
             const isCurrent = plan.id === activePlanTier;
             const isRequired = plan.id === requiredPlan.id;
-            const price = billingCycle === 'ANNUAL' ? plan.annualMonthlyPriceEgp : plan.monthlyPriceEgp;
+            const topDisplayPrice = billingCycle === 'ANNUAL' ? plan.annualTotalEgp : plan.monthlyPriceEgp;
 
             return (
               <div
@@ -303,21 +303,29 @@ export function PlanUpgradePaywallView({ section, onBack }: PlanUpgradePaywallPr
                   <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3.5 dark:border-slate-800 dark:bg-slate-900/60">
                     <div className="flex items-baseline gap-1.5">
                       <span className="font-mono text-3xl font-black text-slate-900 dark:text-white">
-                        {price.toLocaleString()}
+                        {topDisplayPrice.toLocaleString()}
                       </span>
                       <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                        {isAr ? 'ج.م / شهرياً' : 'EGP / mo'}
+                        {billingCycle === 'ANNUAL'
+                          ? isAr
+                            ? 'ج.م / سنوياً'
+                            : 'EGP / yr'
+                          : isAr
+                            ? 'ج.م / شهرياً'
+                            : 'EGP / mo'}
                       </span>
                     </div>
                     {billingCycle === 'ANNUAL' ? (
-                      <p className="mt-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                        {isAr
-                          ? `تدفع ${plan.annualTotalEgp.toLocaleString()} ج.م سنوياً (وفرت ${(plan.monthlyPriceEgp * 12 - plan.annualTotalEgp).toLocaleString()} ج.م)`
-                          : `Billed annually at ${plan.annualTotalEgp.toLocaleString()} EGP (Save ${(plan.monthlyPriceEgp * 12 - plan.annualTotalEgp).toLocaleString()} EGP)`}
-                      </p>
+                      <div className="mt-1.5 inline-flex items-center gap-1 rounded-xl border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-black text-emerald-600 dark:text-emerald-400">
+                        <span>
+                          {isAr
+                            ? `💡 يعني هتدفع ${plan.annualMonthlyPriceEgp.toLocaleString()} ج.م فقط في الشهر (وفرت ${(plan.monthlyPriceEgp * 12 - plan.annualTotalEgp).toLocaleString()} ج.م)`
+                            : `💡 Only ${plan.annualMonthlyPriceEgp.toLocaleString()} EGP / month (Save ${(plan.monthlyPriceEgp * 12 - plan.annualTotalEgp).toLocaleString()} EGP)`}
+                        </span>
+                      </div>
                     ) : (
                       <p className="mt-1 text-[11px] text-slate-400">
-                        {isAr ? 'تجديد شهري مرن بدون التزام طويل' : 'Flexible month-to-month billing'}
+                        {isAr ? 'تجديد شهري مرن بدون التزام طويل (30 يوم)' : 'Flexible month-to-month billing (30 days)'}
                       </p>
                     )}
                   </div>
