@@ -105,6 +105,8 @@ function TitanFitEnterpriseShell() {
     activePlanConfig,
     activePlanTier,
     saasPlans,
+    impersonatedTenant,
+    setImpersonatedTenant,
   } = usePlatformStore();
 
   const isAr = locale === 'ar';
@@ -894,11 +896,23 @@ function TitanFitEnterpriseShell() {
                 </button>
               </div>
 
-              {/* Branch Selector (For Gym Owners) */}
+              {/* Branch Selector (Per-Gym Custom Branches) */}
               <div className="mt-3">
-                <label htmlFor="admin-branch-select" className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                  {isAr ? 'الفرع النشط' : 'Active Branch'}
-                </label>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="admin-branch-select" className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                    {isAr ? 'فروع ناديك الخاصة' : 'Your Gym Branches'}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveSection('SETTINGS');
+                      setMobileSidebarOpen(false);
+                    }}
+                    className="text-[10px] font-black text-amber-600 hover:underline dark:text-amber-400"
+                  >
+                    {isAr ? '+ إدارة فروعك' : '+ Manage'}
+                  </button>
+                </div>
                 <select
                   id="admin-branch-select"
                   aria-label={isAr ? 'الفرع النشط' : 'Active Branch'}
@@ -907,7 +921,13 @@ function TitanFitEnterpriseShell() {
                   className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 >
                   <option value="ALL">
-                    {isAr ? 'جميع الفروع + التدريب الأونلاين' : 'All Branches + Online'}
+                    {branches.length === 0
+                      ? isAr
+                        ? 'المركز الرئيسي لناديك + الأونلاين'
+                        : 'Main Gym Center + Online'
+                      : isAr
+                        ? `جميع فروع ناديك (${branches.length}) + الأونلاين`
+                        : `All Your Branches (${branches.length}) + Online`}
                   </option>
                   {branches.map((b) => (
                     <option key={b.id} value={b.id}>
@@ -1022,6 +1042,71 @@ function TitanFitEnterpriseShell() {
 
         {/* Main Content Area */}
         <main className="flex-1 bg-transparent p-4 transition-colors sm:p-6 lg:p-8">
+          {/* Persistent Super Admin Support Access Bar when controlling a subscribed gym */}
+          {impersonatedTenant && (
+            <div
+              data-testid="super-admin-support-access-bar"
+              className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-amber-500 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 px-4 py-3 text-xs text-white shadow-xl"
+            >
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-2.5 py-1 text-[11px] font-black text-slate-950">
+                  🛠️ {isAr ? 'وضع تحكم مالك المنصة والدعم الفني' : 'Super Admin Support Mode'}
+                </span>
+                <span className="font-bold text-slate-200">
+                  {isAr ? 'أنت تتحكم الآن في جيم:' : 'Controlling Gym:'}{' '}
+                  <strong className="text-amber-400">
+                    {isAr ? activeTenantCustom?.nameAr : activeTenantCustom?.nameEn}
+                  </strong>
+                </span>
+                <select
+                  aria-label={isAr ? 'التبديل السريع بين الأندية المشتركة' : 'Switch Subscribed Gym'}
+                  value={impersonatedTenant}
+                  onChange={(e) => setImpersonatedTenant(e.target.value)}
+                  className="rounded-xl border border-amber-500/40 bg-slate-900 px-2.5 py-1 text-xs font-black text-amber-300 focus:outline-none"
+                >
+                  {tenants.map((t) => (
+                    <option key={t.id} value={t.slug}>
+                      {isAr ? t.nameAr : t.nameEn} ({t.planTier})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveSection('OVERVIEW')}
+                  className="rounded-xl border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-[11px] font-bold text-slate-200 hover:border-amber-400 hover:text-amber-300"
+                >
+                  📊 {isAr ? 'لوحة الجيم' : 'Dashboard'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveSection('MEMBERS')}
+                  className="rounded-xl border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-[11px] font-bold text-slate-200 hover:border-amber-400 hover:text-amber-300"
+                >
+                  👥 {isAr ? 'المشتركين' : 'Members'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveSection('SETTINGS')}
+                  className="rounded-xl border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-[11px] font-bold text-slate-200 hover:border-amber-400 hover:text-amber-300"
+                >
+                  🏢 {isAr ? 'الفروع والإعدادات' : 'Branches & Settings'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImpersonatedTenant(null);
+                    setActiveSection('SUPER_ADMIN');
+                  }}
+                  className="rounded-xl bg-emerald-600 px-3 py-1.5 text-[11px] font-black text-white shadow-xs transition hover:bg-emerald-500"
+                >
+                  🔙 {isAr ? 'العودة للوحة مالك المنصة (Super Admin)' : 'Back to Super Admin'}
+                </button>
+              </div>
+            </div>
+          )}
           {canGoBack && activeSection !== 'PUBLIC_STOREFRONT' && (
             <div className="mb-4 flex items-center justify-between">
               <button

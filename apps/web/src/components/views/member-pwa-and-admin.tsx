@@ -1345,11 +1345,24 @@ export function TenantSettingsView() {
     activePlanConfig,
     saasPlans,
     upgradeActiveTenantPlan,
+    addBranch,
+    updateBranch,
+    deleteBranch,
   } = usePlatformStore();
   const isAr = locale === 'ar';
   const [confirmCleanSlate, setConfirmCleanSlate] = useState(false);
   const [settingsBillingCycle, setSettingsBillingCycle] = useState<'MONTHLY' | 'ANNUAL'>('ANNUAL');
   const [checkoutPlan, setCheckoutPlan] = useState<any>(null);
+
+  // Per-Gym Custom Branch Creator / Editor states
+  const [showBranchForm, setShowBranchForm] = useState(false);
+  const [editingBranchId, setEditingBranchId] = useState<string | null>(null);
+  const [branchNameAr, setBranchNameAr] = useState('');
+  const [branchNameEn, setBranchNameEn] = useState('');
+  const [branchCityAr, setBranchCityAr] = useState('القاهرة');
+  const [branchAddressAr, setBranchAddressAr] = useState('');
+  const [branchPhone, setBranchPhone] = useState('');
+  const [branchHours, setBranchHours] = useState('06:00 AM - 12:00 AM');
 
   return (
     <div className="space-y-6">
@@ -1483,7 +1496,21 @@ export function TenantSettingsView() {
                       </p>
                     )}
                     <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-500 font-bold">
-                      <span>{plan.maxBranches === 'UNLIMITED' ? 'فروع غير محدودة' : `${plan.maxBranches} فرع`}</span>
+                      <span
+                        className={
+                          plan.aiEnabled
+                            ? 'text-emerald-600 dark:text-emerald-400 font-black'
+                            : 'text-rose-500 font-black'
+                        }
+                      >
+                        {plan.aiEnabled
+                          ? isAr
+                            ? '🤖 الذكاء الاصطناعي مفعل بالكامل'
+                            : '🤖 Full AI Enabled'
+                          : isAr
+                            ? '🔒 بدون ذكاء اصطناعي (No AI)'
+                            : '🔒 No AI Included'}
+                      </span>
                       <span>•</span>
                       <span>{plan.maxMembers === 'UNLIMITED' ? 'مشتركين غير محدودين' : `${plan.maxMembers} مشترك`}</span>
                     </div>
@@ -1608,25 +1635,231 @@ export function TenantSettingsView() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6">
-          <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
-            {isAr ? 'الفروع المسجلة ومواعيد العمل' : 'Configured Club Branches'}
-          </h3>
-          <div className="mt-4 space-y-3">
-            {branches.map((b) => (
-              <div
-                key={b.id}
-                className="flex items-center justify-between rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60 p-3 text-xs"
-              >
+        <div
+          id="gym-custom-branches-manager"
+          data-testid="gym-custom-branches-manager"
+          className="rounded-2xl border border-slate-200/90 bg-white dark:border-slate-800/80 dark:bg-[#121623] p-6"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                {isAr
+                  ? '🏢 إدارة فروع ناديك الخاصة ومواعيد العمل'
+                  : '🏢 Your Exclusive Gym Branches & Hours'}
+              </h3>
+              <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+                {isAr
+                  ? 'كل نادي مشترك ينشئ ويدير فروعه الخاصة به فقط بشكل مستقل تماماً.'
+                  : 'Each subscribed gym creates and manages its own isolated branches.'}
+              </p>
+            </div>
+            <button
+              type="button"
+              data-testid="open-add-branch-btn"
+              onClick={() => {
+                setEditingBranchId(null);
+                setBranchNameAr('');
+                setBranchNameEn('');
+                setBranchCityAr('القاهرة');
+                setBranchAddressAr('');
+                setBranchPhone('');
+                setBranchHours('06:00 AM - 12:00 AM');
+                setShowBranchForm((v) => !v);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-black text-slate-950 shadow-xs transition hover:bg-amber-400"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>{isAr ? '+ إضافة فرع لناديك' : '+ Add Your Branch'}</span>
+            </button>
+          </div>
+
+          {showBranchForm && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!branchNameAr.trim()) return;
+                if (editingBranchId) {
+                  updateBranch(editingBranchId, {
+                    nameAr: branchNameAr.trim(),
+                    nameEn: branchNameEn.trim() || branchNameAr.trim(),
+                    cityAr: branchCityAr.trim() || 'القاهرة',
+                    cityEn: branchCityAr.trim() || 'Cairo',
+                    addressAr: branchAddressAr.trim() || branchCityAr.trim(),
+                    addressEn: branchAddressAr.trim() || branchCityAr.trim(),
+                    phone: branchPhone.trim() || '+20 100 000 0000',
+                    workingHours: branchHours.trim() || '06:00 AM - 12:00 AM',
+                  });
+                } else {
+                  addBranch({
+                    nameAr: branchNameAr.trim(),
+                    nameEn: branchNameEn.trim() || branchNameAr.trim(),
+                    cityAr: branchCityAr.trim() || 'القاهرة',
+                    cityEn: branchCityAr.trim() || 'Cairo',
+                    addressAr: branchAddressAr.trim() || branchCityAr.trim(),
+                    addressEn: branchAddressAr.trim() || branchCityAr.trim(),
+                    phone: branchPhone.trim() || '+20 100 000 0000',
+                    workingHours: branchHours.trim() || '06:00 AM - 12:00 AM',
+                    capacity: 200,
+                    managerEn: 'Branch Manager',
+                    managerAr: 'مدير الفرع',
+                  });
+                }
+                setShowBranchForm(false);
+                setEditingBranchId(null);
+              }}
+              className="mt-4 space-y-3 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4"
+            >
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <p className="font-bold text-slate-900 dark:text-white">{isAr ? b.nameAr : b.nameEn}</p>
-                  <p className="text-slate-400">
-                    {isAr ? b.addressAr : b.addressEn} • {b.workingHours}
-                  </p>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'اسم الفرع (بالعربية) *' : 'Branch Name (Arabic) *'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={branchNameAr}
+                    onChange={(e) => setBranchNameAr(e.target.value)}
+                    placeholder={isAr ? 'مثال: فرع مدينة نصر / الفرع الرئيسي' : 'e.g. Nasr City Branch'}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
                 </div>
-                <span className="font-mono text-emerald-400">{b.phone}</span>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'المدينة / المنطقة' : 'City / Area'}
+                  </label>
+                  <input
+                    type="text"
+                    value={branchCityAr}
+                    onChange={(e) => setBranchCityAr(e.target.value)}
+                    placeholder={isAr ? 'مثال: القاهرة الجديدة / المهندسين' : 'e.g. New Cairo'}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'العنوان التفصيلي' : 'Detailed Address'}
+                  </label>
+                  <input
+                    type="text"
+                    value={branchAddressAr}
+                    onChange={(e) => setBranchAddressAr(e.target.value)}
+                    placeholder={isAr ? 'مثال: شارع التسعين الشمالي — مول...' : 'Street / Building'}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    {isAr ? 'تليفون الفرع ومواعيد العمل' : 'Phone & Hours'}
+                  </label>
+                  <div className="mt-1 flex gap-2">
+                    <input
+                      type="text"
+                      dir="ltr"
+                      value={branchPhone}
+                      onChange={(e) => setBranchPhone(e.target.value)}
+                      placeholder="0100XXXXXXX"
+                      className="w-1/2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 font-mono text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    />
+                    <input
+                      type="text"
+                      dir="ltr"
+                      value={branchHours}
+                      onChange={(e) => setBranchHours(e.target.value)}
+                      placeholder="06:00 AM - 12:00 AM"
+                      className="w-1/2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 font-mono text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
               </div>
-            ))}
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBranchForm(false);
+                    setEditingBranchId(null);
+                  }}
+                  className="rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"
+                >
+                  {isAr ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-emerald-600 px-4 py-1.5 text-xs font-black text-white hover:bg-emerald-500"
+                >
+                  {editingBranchId
+                    ? isAr
+                      ? '✅ حفظ تعديل الفرع'
+                      : '✅ Update Branch'
+                    : isAr
+                      ? '✅ حفظ وإضافة الفرع لناديك'
+                      : '✅ Save Branch'}
+                </button>
+              </div>
+            </form>
+          )}
+
+          <div className="mt-4 space-y-2.5">
+            {branches.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-4 text-center dark:border-slate-800 dark:bg-slate-900/40">
+                <p className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
+                  {isAr
+                    ? 'لم تقم بإضافة فروع فرعية لناديك بعد (تعمل حالياً بالمركز الرئيسي لناديك).'
+                    : 'No sub-branches added yet (operating under your main gym center).'}
+                </p>
+                <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                  {isAr
+                    ? 'اضغط على «+ إضافة فرع لناديك» بالأعلى لإضافة فرعك الأول أو فروعك الخاصة بك فقط!'
+                    : 'Click "+ Add Your Branch" above to create your own club branches.'}
+                </p>
+              </div>
+            ) : (
+              branches.map((b) => (
+                <div
+                  key={b.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60 p-3 text-xs"
+                >
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-white">
+                      {isAr ? b.nameAr : b.nameEn}{' '}
+                      <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                        ({isAr ? b.cityAr : b.cityEn})
+                      </span>
+                    </p>
+                    <p className="text-slate-400">
+                      {isAr ? b.addressAr : b.addressEn} • {b.workingHours}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-emerald-500">{b.phone}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingBranchId(b.id);
+                        setBranchNameAr(b.nameAr);
+                        setBranchNameEn(b.nameEn);
+                        setBranchCityAr(b.cityAr);
+                        setBranchAddressAr(b.addressAr);
+                        setBranchPhone(b.phone);
+                        setBranchHours(b.workingHours);
+                        setShowBranchForm(true);
+                      }}
+                      className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-bold text-slate-600 hover:bg-amber-500 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                      title={isAr ? 'تعديل الفرع' : 'Edit Branch'}
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteBranch(b.id)}
+                      className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-1.5 text-rose-500 hover:bg-rose-500/20"
+                      title={isAr ? 'حذف الفرع' : 'Delete Branch'}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -1851,6 +2084,7 @@ export function SuperAdminConsoleView() {
     auditLogs,
     impersonatedTenant,
     setImpersonatedTenant,
+    setActiveSection,
     addTenant,
     deleteTenant,
     login,
@@ -2255,6 +2489,24 @@ export function SuperAdminConsoleView() {
                     </button>
                   )}
 
+                  {req.status === 'APPROVED' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImpersonatedTenant(req.tenantSlug);
+                        setActiveSection('OVERVIEW');
+                        showToast(
+                          isAr
+                            ? `🛠️ تم دخولك كدعم فني كامل على جيم: ${req.gymNameAr}`
+                            : `🛠️ Entered support control mode for: ${req.gymNameEn}`,
+                        );
+                      }}
+                      className="rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-black text-slate-950 shadow-xs transition hover:bg-amber-400"
+                    >
+                      🛠️ {isAr ? 'دخول وتحكم في الجيم (دعم فني)' : 'Enter Gym (Support)'}
+                    </button>
+                  )}
+
                   {req.status === 'PENDING_APPROVAL' && (
                     <>
                       <button
@@ -2556,31 +2808,75 @@ export function SuperAdminConsoleView() {
                 </div>
               </div>
 
-              <div className="mt-5 flex gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
-                <button
-                  type="button"
-                  data-testid={idx === 0 ? 'impersonate-btn-titanfit-cairo' : undefined}
-                  onClick={() => setImpersonatedTenant(ten.slug)}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 py-2.5 text-xs font-black text-slate-950 shadow-xs hover:from-amber-400 hover:to-amber-500"
-                >
-                  {isAr ? 'دخول وإدارة هذا الجيم' : 'Manage This Gym'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => copyCredentials(ten)}
-                  title={isAr ? 'نسخ اليوزرنيم والباسورد' : 'Copy Credentials'}
-                  className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                >
-                  <Copy className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeletingTenantId(ten.id)}
-                  title={isAr ? 'حذف النادي / إلغاء العقد' : 'Delete Tenant'}
-                  className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-500/20"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+              <div className="mt-5 space-y-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    data-testid={idx === 0 ? 'impersonate-btn-titanfit-cairo' : undefined}
+                    onClick={() => {
+                      setImpersonatedTenant(ten.slug);
+                      setActiveSection('OVERVIEW');
+                      showToast(
+                        isAr
+                          ? `🛠️ تم فتح التحكم الكامل والدعم الفني لنادي: ${ten.nameAr}`
+                          : `🛠️ Opened Full Support Access for: ${ten.nameEn}`,
+                      );
+                    }}
+                    className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 py-2.5 text-xs font-black text-slate-950 shadow-xs hover:from-amber-400 hover:to-amber-500"
+                  >
+                    🛠️ {isAr ? 'دخول وتحكم كامل في الجيم (دعم فني)' : 'Full Gym Support Access'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => copyCredentials(ten)}
+                    title={isAr ? 'نسخ اليوزرنيم والباسورد' : 'Copy Credentials'}
+                    className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeletingTenantId(ten.id)}
+                    title={isAr ? 'حذف النادي / إلغاء العقد' : 'Delete Tenant'}
+                    className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-500/20"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Direct Support Shortcuts into this Gym's isolated workspace */}
+                <div className="grid grid-cols-3 gap-1.5 text-[10px]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImpersonatedTenant(ten.slug);
+                      setActiveSection('MEMBERS');
+                    }}
+                    className="rounded-lg border border-slate-200 bg-slate-50 py-1.5 font-bold text-slate-700 hover:border-amber-400 hover:bg-amber-50 dark:border-slate-800 dark:bg-slate-800/70 dark:text-slate-300"
+                  >
+                    👥 {isAr ? 'مشتركين الجيم' : 'Members'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImpersonatedTenant(ten.slug);
+                      setActiveSection('PAYMENTS');
+                    }}
+                    className="rounded-lg border border-slate-200 bg-slate-50 py-1.5 font-bold text-slate-700 hover:border-amber-400 hover:bg-amber-50 dark:border-slate-800 dark:bg-slate-800/70 dark:text-slate-300"
+                  >
+                    💳 {isAr ? 'فواتير الجيم' : 'Invoices'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImpersonatedTenant(ten.slug);
+                      setActiveSection('SETTINGS');
+                    }}
+                    className="rounded-lg border border-slate-200 bg-slate-50 py-1.5 font-bold text-slate-700 hover:border-amber-400 hover:bg-amber-50 dark:border-slate-800 dark:bg-slate-800/70 dark:text-slate-300"
+                  >
+                    🏢 {isAr ? 'فروع وإعدادات' : 'Branches'}
+                  </button>
+                </div>
               </div>
             </div>
           );

@@ -303,6 +303,7 @@ export interface SaaSSubscriptionPlanConfig {
   monthlyPriceEgp: number;
   annualMonthlyPriceEgp: number;
   annualTotalEgp: number;
+  aiEnabled: boolean;
   maxBranches: number | 'UNLIMITED';
   maxMembers: number | 'UNLIMITED';
   maxStaff: number | 'UNLIMITED';
@@ -317,15 +318,16 @@ export const SAAS_SUBSCRIPTION_PLANS: SaaSSubscriptionPlanConfig[] = [
     id: 'STARTER',
     nameAr: 'باقة البداية (Starter)',
     nameEn: 'Starter Gym Plan',
-    taglineAr: 'للصالات الفردية واستوديوهات التدريب الخاص في بداية انطلاقها',
-    taglineEn: 'For independent studios and boutique gyms getting started',
+    taglineAr: 'للصالات الفردية في بداية انطلاقها — إدارة المشتركين والفواتير الأساسية (بدون الذكاء الاصطناعي AI)',
+    taglineEn: 'For independent studios getting started — core CRM & billing (No AI Coach)',
     badgeAr: 'للمبتدئين',
     badgeEn: 'Starter',
     badgeColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700',
     monthlyPriceEgp: 950,
-    annualMonthlyPriceEgp: 800,
-    annualTotalEgp: 9600,
-    maxBranches: 1,
+    annualMonthlyPriceEgp: 760,
+    annualTotalEgp: 9120,
+    aiEnabled: false,
+    maxBranches: 'UNLIMITED',
     maxMembers: 150,
     maxStaff: 2,
     allowedSections: [
@@ -336,6 +338,7 @@ export const SAAS_SUBSCRIPTION_PLANS: SaaSSubscriptionPlanConfig[] = [
       'SUBSCRIPTIONS',
       'PAYMENTS',
       'MEMBER_PWA',
+      'SETTINGS',
     ],
     lockedSections: [
       'CLASSES',
@@ -344,38 +347,38 @@ export const SAAS_SUBSCRIPTION_PLANS: SaaSSubscriptionPlanConfig[] = [
       'POS_INVENTORY',
       'CONTENT_LIBRARY',
       'REPORTS',
-      'SETTINGS',
     ],
     highlightsAr: [
-      'إدارة حتى 150 مشترك نشط وفرع واحد',
-      'تسجيل بيانات المشتركين والملف الطبي الأساسي',
+      'إدارة حتى 150 مشترك نشط + إنشاء فروع ناديك الخاصة بك بحرية',
+      'تسجيل بيانات المشتركين والملف الطبي الأساسي واستخراج الـ QR',
       'باقات الاشتراكات ونظام الكوبونات والخصومات',
       'تحصيل الفواتير (فودافون كاش، إنستاباي، فوري، كاش)',
       'تطبيق المتدرب PWA لمتابعة العضوية والتمارين المجانية',
-      'دعم فني عبر البريد والواتساب',
+      '🔒 لا تشمل المساعد الذكي (AI الكوتش وأخصائي التغذية متاح بداية من باقة Pro)',
     ],
     highlightsEn: [
-      'Up to 150 active members & 1 branch',
-      'Member CRM & basic medical profile',
+      'Up to 150 active members + create & manage your own gym branches',
+      'Member CRM, basic medical profile & QR generation',
       'Membership packages & discount coupons',
       'Cashier & Egyptian billing gateways (InstaPay, Fawry, Cash)',
       'Trainee PWA app for membership tracking',
-      'Standard WhatsApp & email support',
+      '🔒 AI Gym Coach & Nutritionist disabled (Unlocked in Pro & Enterprise)',
     ],
   },
   {
     id: 'PRO',
-    nameAr: 'باقة النمو الاحترافي (Pro Growth)',
-    nameEn: 'Pro Growth Plan',
-    taglineAr: 'للجيمات المتوسطة والنوادي النشطة التي تحتاج حصصاً وبوابات ذكية وبار مكملات',
-    taglineEn: 'For established gyms needing turnstile gates, classes & supplement POS',
-    badgeAr: 'الأكثر طلباً ⭐',
-    badgeEn: 'Most Popular ⭐',
+    nameAr: 'باقة النمو الاحترافي (Pro + AI)',
+    nameEn: 'Pro Growth + AI Plan',
+    taglineAr: 'للجيمات النشطة: تشمل الذكاء الاصطناعي المتكامل (كوتش جيم + أخصائي تغذية + خبير المنصة)، الحصص، البوابات، وبار المكملات',
+    taglineEn: 'For active gyms: Full AI Coach & Nutritionist, smart QR gates, group classes & supplement POS',
+    badgeAr: 'الأكثر طلباً ⭐ + AI مفعل',
+    badgeEn: 'Most Popular ⭐ + AI Active',
     badgeColor: 'bg-amber-500/20 text-amber-900 border border-amber-500/40 dark:bg-amber-500/20 dark:text-amber-300',
     monthlyPriceEgp: 1950,
-    annualMonthlyPriceEgp: 1650,
-    annualTotalEgp: 19800,
-    maxBranches: 2,
+    annualMonthlyPriceEgp: 1560,
+    annualTotalEgp: 18720,
+    aiEnabled: true,
+    maxBranches: 'UNLIMITED',
     maxMembers: 600,
     maxStaff: 8,
     allowedSections: [
@@ -390,43 +393,44 @@ export const SAAS_SUBSCRIPTION_PLANS: SaaSSubscriptionPlanConfig[] = [
       'PAYMENTS',
       'POS_INVENTORY',
       'MEMBER_PWA',
+      'SETTINGS',
     ],
     lockedSections: [
       'CONTENT_LIBRARY',
       'REPORTS',
-      'SETTINGS',
     ],
     highlightsAr: [
-      'جميع مميزات باقة البداية بالكامل',
-      'إدارة فرعين وحتى 600 مشترك نشط و8 مدربين',
-      'بوابات الدخول والـ QR Code الذكي لمنع التلاعب',
-      'جدول الحصص الجماعية وقوائم الانتظار التلقائية',
-      'إدارة المدربين، نسب العمولات، وصرف الأرباح',
-      'كاشير بار المكملات (POS) وتنبيهات المخزون',
-      'شات المدرب والمتدرب الفوري Real-time في تطبيق PWA',
+      '🤖 تفعيل الذكاء الاصطناعي الكامل (AI Gym Coach & Clinical Nutritionist) للمدرب والمتدرب',
+      '🏋️‍♂️ كوتش ذكي يصمم جداول التمارين (PPL / Upper-Lower) وبدائل الإصابات ويحلل الأوزان',
+      '🥗 أخصائي تغذية ذكي يحسب السعرات والماكروز (BMR/TDEE) ويفصل وجبات مصرية وبدائلها',
+      '📊 مساعد ذكي للمدرب وصاحب الجيم فاهم كل تفصيلة في المنصة ويحلل المشتركين والفواتير لحظياً',
+      'إنشاء فروع ناديك الخاصة بك بحرية وحتى 600 مشترك نشط و8 مدربين',
+      'بوابات الدخول والـ QR Code الذكي + جدول الحصص الجماعية وقوائم الانتظار',
+      'إدارة المدربين والعمولات + كاشير بار المكملات (POS) + شات المدرب والمتدرب الفوري',
     ],
     highlightsEn: [
-      'All Starter features included',
-      'Up to 2 branches, 600 active members & 8 staff',
-      'Smart QR turnstile access control',
-      'Group class schedules & automated waiting lists',
-      'Trainer management & commission payouts',
-      'Supplement bar POS cashier & low-stock alerts',
-      'Real-time Coach-Member WhatsApp-style chat in PWA',
+      '🤖 Full AI Gym Coach & Clinical Sports Nutritionist unlocked for coaches & trainees',
+      '🏋️‍♂️ AI Workout Designer (PPL, Upper/Lower, injury modifications, tempo & progressive overload)',
+      '🥗 AI Nutritionist (Mifflin-St Jeor BMR/TDEE, macro splits, Egyptian meal plans & food swaps)',
+      '📊 Live Platform AI Assistant aware of every gym screen, member record, and billing metric',
+      'Create your own custom branches, up to 600 active members & 8 staff',
+      'Smart QR turnstile access control & group class waitlists',
+      'Trainer commissions, Supplement POS cashier & Real-time Coach-Member chat',
     ],
   },
   {
     id: 'ENTERPRISE',
-    nameAr: 'باقة النخبة والسلاسل (Elite Enterprise)',
-    nameEn: 'Elite Enterprise Plan',
-    taglineAr: 'للأندية الكبرى وسلاسل الفروع: استوديو فيديوهات محمي DRM، تقارير مالية، وهوية كاملة',
-    taglineEn: 'For chains & elite clubs: DRM Video Studio, BI reports & custom branding',
-    badgeAr: 'المنظومة الكاملة 👑',
-    badgeEn: 'Full Suite 👑',
+    nameAr: 'باقة النخبة والسلاسل (Elite Enterprise + AI)',
+    nameEn: 'Elite Enterprise + Full AI Suite',
+    taglineAr: 'للأندية الكبرى: الذكاء الاصطناعي المتقدم، استوديو فيديوهات محمي DRM، تقارير مالية موسعة، وهوية كاملة',
+    taglineEn: 'For chains & elite clubs: Full AI Suite, DRM Video Studio, BI reports & custom branding',
+    badgeAr: 'المنظومة الكاملة 👑 + AI',
+    badgeEn: 'Full Suite 👑 + AI',
     badgeColor: 'bg-emerald-500/20 text-emerald-900 border border-emerald-500/40 dark:bg-emerald-500/20 dark:text-emerald-300',
     monthlyPriceEgp: 3450,
     annualMonthlyPriceEgp: 2900,
     annualTotalEgp: 34800,
+    aiEnabled: true,
     maxBranches: 'UNLIMITED',
     maxMembers: 'UNLIMITED',
     maxStaff: 'UNLIMITED',
@@ -448,21 +452,21 @@ export const SAAS_SUBSCRIPTION_PLANS: SaaSSubscriptionPlanConfig[] = [
     ],
     lockedSections: [],
     highlightsAr: [
-      'فتح كافة صفحات ومميزات المنصة بنسبة 100%',
-      'فروع غير محدودة، مشتركون غير محدودين، وطاقم عمل كامل',
+      'فتح كافة صفحات ومميزات المنصة والذكاء الاصطناعي (AI) بنسبة 100%',
+      'مشتركون غير محدودين، طاقم مدربين غير محدود، وإنشاء فروع ناديك الخاصة بلا حدود',
+      '🤖 منظومة الذكاء الاصطناعي الكاملة (كوتش الجيم + أخصائي التغذية + المحلل المالي والتشغيلي)',
       'استوديو رفع فيديوهات التمارين والوصفات المحمي ضد التحميل (DRM)',
       'التقارير المالية الموسعة وتصدير شيتات إكسيل CSV للضرائب',
       'تخصيص الهوية البصرية وشعار النادي ودومين مخصص',
-      'المدرب الذكي وأخصائي التغذية بالذكاء الاصطناعي (AI)',
       'سيرفرات فائقة السرعة وأولوية دعم فني مخصص 24/7',
     ],
     highlightsEn: [
-      '100% full platform features & pages unlocked',
-      'Unlimited branches, members & trainer seats',
+      '100% full platform features, pages & AI Suite unlocked',
+      'Unlimited members, trainer seats & custom gym branches',
+      '🤖 Complete AI Coach, Clinical Nutritionist & Executive BI Analyst',
       'Anti-Rip DRM protected Video & Nutrition Studio',
       'Advanced financial BI reporting & CSV spreadsheet export',
       'White-label branding, custom domain & brand theme tokens',
-      'AI Coach & Nutritionist assistants for member engagement',
       'Dedicated SLA server infrastructure & 24/7 VIP support',
     ],
   },
@@ -479,53 +483,25 @@ export interface AuditEntry {
   tenantSlug: string;
 }
 
-const INITIAL_BRANCHES: BranchItem[] = [
+const DEMO_SHOWCASE_BRANCHES: BranchItem[] = [
   {
     id: 'br-new-cairo',
-    nameEn: 'TitanFit New Cairo Flagship',
-    nameAr: 'تيتان فيت التجمع الخامس (الرئيسي)',
-    cityEn: 'New Cairo — 5th Settlement',
-    cityAr: 'القاهرة الجديدة — التجمع الخامس',
-    addressEn: 'North 90th St, Beside Waterway 2',
-    addressAr: 'شارع التسعين الشمالي، بجوار ووتر واي ٢',
-    phone: '+20 100 450 9901',
+    nameEn: 'Main Club Branch',
+    nameAr: 'الفرع الرئيسي للنادي',
+    cityEn: 'Cairo',
+    cityAr: 'القاهرة',
+    addressEn: 'Main Street',
+    addressAr: 'الفرع الرئيسي',
+    phone: '+20 100 216 9889',
     capacity: 250,
     currentOccupancy: 0,
-    managerEn: 'Capt. Seif El-Din',
-    managerAr: 'كابتن سيف الدين',
-    workingHours: '05:30 AM – 12:00 AM',
-  },
-  {
-    id: 'br-zayed',
-    nameEn: 'TitanFit Sheikh Zayed Arena',
-    nameAr: 'تيتان فيت الشيخ زايد أرينا',
-    cityEn: 'Giza — Sheikh Zayed',
-    cityAr: 'الجيزة — الشيخ زايد',
-    addressEn: 'Arkan Plaza Extension, Gate 3',
-    addressAr: 'امتداد أركان بلازا، بوابة ٣',
-    phone: '+20 100 450 9902',
-    capacity: 200,
-    currentOccupancy: 0,
-    managerEn: 'Nourhan El-Shamy',
-    managerAr: 'نورهان الشامي',
-    workingHours: '06:00 AM – 11:30 PM',
-  },
-  {
-    id: 'br-maadi',
-    nameEn: 'TitanFit Maadi Sarayat Club',
-    nameAr: 'تيتان فيت المعادي السرايات',
-    cityEn: 'Cairo — Maadi',
-    cityAr: 'القاهرة — المعادي',
-    addressEn: 'Road 9, Degla Square',
-    addressAr: 'شارع ٩، ميدان دجلة',
-    phone: '+20 100 450 9903',
-    capacity: 150,
-    currentOccupancy: 0,
-    managerEn: 'Karim Abdelaziz',
-    managerAr: 'كريم عبد العزيز',
-    workingHours: '06:00 AM – 11:00 PM',
+    managerEn: 'Club Manager',
+    managerAr: 'مدير الفرع',
+    workingHours: '06:00 AM – 12:00 AM',
   },
 ];
+
+const INITIAL_BRANCHES: BranchItem[] = [];
 
 const INITIAL_PLANS: PlanItem[] = [
   {
@@ -1020,6 +996,9 @@ export interface PlatformStoreContextValue {
   ) => Promise<{ success: boolean; role?: UserRoleKey; message?: string }>;
   logout: () => void;
   // Actions
+  addBranch: (branch: Omit<BranchItem, 'id' | 'currentOccupancy'>) => BranchItem;
+  updateBranch: (branchId: string, updates: Partial<BranchItem>) => void;
+  deleteBranch: (branchId: string) => void;
   addMember: (data: {
     fullNameEn: string;
     fullNameAr: string;
@@ -1167,6 +1146,7 @@ export interface PlatformStoreContextValue {
   saasPlans: SaaSSubscriptionPlanConfig[];
   activePlanTier: GymPlanTierKey;
   activePlanConfig: SaaSSubscriptionPlanConfig;
+  isAiAllowed: boolean;
   isSectionAllowed: (section: WorkspaceSection) => boolean;
   getRequiredPlanForSection: (section: WorkspaceSection) => SaaSSubscriptionPlanConfig;
   upgradeActiveTenantPlan: (
@@ -1414,12 +1394,13 @@ export function PlatformProvider({
     primaryColor?: string;
   } | null>(null);
 
-  const activeTenantSlug = currentUser?.tenantSlug || impersonatedTenant || 'titanfit-egypt';
+  // Impersonated tenant takes priority so Super Admin can enter & manage any subscribed gym directly
+  const activeTenantSlug = impersonatedTenant || currentUser?.tenantSlug || 'titanfit-egypt';
 
   const activeTenantCustom =
     tenants.find((t) => t.slug === activeTenantSlug) ?? tenants[0] ?? null;
 
-  // Hydrate & persist Gym Owner Custom Content per isolated Tenant Slug in localStorage
+  // Hydrate & persist Gym Owner Custom Content & Isolated Gym Data (Branches, Members, Plans, Invoices) per Tenant Slug
   useEffect(() => {
     customContentHydrated.current = false;
     try {
@@ -1451,6 +1432,36 @@ export function PlatformProvider({
         setCustomRecipes(INITIAL_CUSTOM_RECIPES);
         setCustomFiles(INITIAL_CUSTOM_FILES);
       }
+
+      // Hydrate isolated per-gym branches, members, plans, invoices, classes, and staff
+      const gymDataKey = `titanfit.gymData.v1.${activeTenantSlug}`;
+      const rawGymData = window.localStorage.getItem(gymDataKey);
+      if (rawGymData) {
+        const parsedGym = JSON.parse(rawGymData);
+        setBranches(Array.isArray(parsedGym.branches) ? parsedGym.branches : []);
+        setMembers(Array.isArray(parsedGym.members) ? parsedGym.members : []);
+        setPlans(
+          Array.isArray(parsedGym.plans) && parsedGym.plans.length > 0
+            ? parsedGym.plans
+            : INITIAL_PLANS,
+        );
+        setInvoices(Array.isArray(parsedGym.invoices) ? parsedGym.invoices : []);
+        setClasses(Array.isArray(parsedGym.classes) ? parsedGym.classes : []);
+        setStaff(
+          Array.isArray(parsedGym.staff) && parsedGym.staff.length > 0
+            ? parsedGym.staff
+            : INITIAL_STAFF.slice(0, 1),
+        );
+      } else {
+        // Each newly subscribed gym starts with 0 pre-filled branches so the owner creates their own!
+        setBranches([]);
+        setMembers([]);
+        setPlans(INITIAL_PLANS);
+        setInvoices([]);
+        setClasses([]);
+        setStaff(INITIAL_STAFF.slice(0, 1));
+      }
+      setSelectedBranchId('ALL');
     } catch {
       /* ignore */
     }
@@ -1469,6 +1480,23 @@ export function PlatformProvider({
       /* ignore quota errors */
     }
   }, [customWorkouts, customRecipes, customFiles, activeTenantSlug]);
+
+  useEffect(() => {
+    if (!customContentHydrated.current) return;
+    try {
+      const gymPayload = JSON.stringify({
+        branches,
+        members,
+        plans,
+        invoices,
+        classes,
+        staff,
+      });
+      window.localStorage.setItem(`titanfit.gymData.v1.${activeTenantSlug}`, gymPayload);
+    } catch {
+      /* ignore quota errors */
+    }
+  }, [branches, members, plans, invoices, classes, staff, activeTenantSlug]);
 
   // Hydrate clean-slate gym state mode: enforce clean slate (0 members, 0 invoices, 1 head coach)
   useEffect(() => {
@@ -2013,6 +2041,64 @@ export function PlatformProvider({
     } else {
       appendAudit('SUPER_ADMIN_IMPERSONATION_END', 'Ended tenant impersonation');
     }
+  };
+
+  const addBranch: PlatformStoreContextValue['addBranch'] = (data) => {
+    const newBranch: BranchItem = {
+      id: `br-${Date.now()}`,
+      nameEn: data.nameEn || data.nameAr,
+      nameAr: data.nameAr || data.nameEn,
+      cityEn: data.cityEn || data.cityAr || 'Cairo',
+      cityAr: data.cityAr || data.cityEn || 'القاهرة',
+      addressEn: data.addressEn || data.addressAr || '',
+      addressAr: data.addressAr || data.addressEn || '',
+      phone: data.phone || '',
+      capacity: Number(data.capacity) || 150,
+      currentOccupancy: 0,
+      managerEn: data.managerEn || data.managerAr || 'Branch Manager',
+      managerAr: data.managerAr || data.managerEn || 'مدير الفرع',
+      workingHours: data.workingHours || '06:00 AM – 12:00 AM',
+    };
+    setBranches((prev) => {
+      const next = [...prev, newBranch];
+      setTenants((tPrev) =>
+        tPrev.map((t) => (t.slug === activeTenantSlug ? { ...t, branchesCount: next.length } : t)),
+      );
+      return next;
+    });
+    appendAudit('BRANCH_CREATED', `Created branch ${newBranch.nameAr} for gym ${activeTenantSlug}`);
+    showToast(
+      locale === 'ar'
+        ? `🏢 تمت إضافة فرع "${newBranch.nameAr}" لناديك بنجاح!`
+        : `🏢 Added branch "${newBranch.nameEn}" to your gym!`,
+    );
+    return newBranch;
+  };
+
+  const updateBranch: PlatformStoreContextValue['updateBranch'] = (branchId, updates) => {
+    setBranches((prev) => prev.map((b) => (b.id === branchId ? { ...b, ...updates } : b)));
+    appendAudit('BRANCH_UPDATED', `Updated branch ${branchId} in ${activeTenantSlug}`);
+    showToast(locale === 'ar' ? 'تم تحديث بيانات الفرع بنجاح' : 'Branch updated successfully');
+  };
+
+  const deleteBranch: PlatformStoreContextValue['deleteBranch'] = (branchId) => {
+    const target = branches.find((b) => b.id === branchId);
+    setBranches((prev) => {
+      const next = prev.filter((b) => b.id !== branchId);
+      setTenants((tPrev) =>
+        tPrev.map((t) => (t.slug === activeTenantSlug ? { ...t, branchesCount: next.length } : t)),
+      );
+      return next;
+    });
+    if (selectedBranchId === branchId) {
+      setSelectedBranchId('ALL');
+    }
+    appendAudit('BRANCH_DELETED', `Deleted branch ${target?.nameAr || branchId}`);
+    showToast(
+      locale === 'ar'
+        ? `تم حذف الفرع "${target?.nameAr || ''}" بنجاح`
+        : `Deleted branch "${target?.nameEn || ''}"`,
+    );
   };
 
   const addMember: PlatformStoreContextValue['addMember'] = (data) => {
@@ -3133,6 +3219,8 @@ export function PlatformProvider({
   const activePlanTier: GymPlanTierKey = activeTenantCustom?.planTier || 'PRO';
   const activePlanConfig =
     SAAS_SUBSCRIPTION_PLANS.find((p) => p.id === activePlanTier) || SAAS_SUBSCRIPTION_PLANS[1]!;
+  // AI is active for PRO and ENTERPRISE plans (or Super Admin), and disabled on STARTER
+  const isAiAllowed = activeRole === 'SUPER_ADMIN' || activePlanConfig.aiEnabled;
 
   const isSectionAllowed = useCallback(
     (section: WorkspaceSection) => {
@@ -3613,6 +3701,9 @@ export function PlatformProvider({
         requestMemberOtp,
         verifyMemberOtp,
         logout,
+        addBranch,
+        updateBranch,
+        deleteBranch,
         addMember,
         updateMember,
         deleteMember,
@@ -3660,6 +3751,7 @@ export function PlatformProvider({
         saasPlans: SAAS_SUBSCRIPTION_PLANS,
         activePlanTier,
         activePlanConfig,
+        isAiAllowed,
         isSectionAllowed,
         getRequiredPlanForSection,
         upgradeActiveTenantPlan,

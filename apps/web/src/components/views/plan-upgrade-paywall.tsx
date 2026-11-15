@@ -332,11 +332,29 @@ export function PlanUpgradePaywallView({ section, onBack }: PlanUpgradePaywallPr
 
                   {/* Operational Limits */}
                   <div className="grid grid-cols-3 gap-1.5 text-center text-xs">
-                    <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-2 dark:border-slate-800 dark:bg-slate-900/40">
-                      <p className="font-mono font-black text-slate-900 dark:text-white">
-                        {plan.maxBranches === 'UNLIMITED' ? '∞' : plan.maxBranches}
+                    <div
+                      className={`rounded-xl border p-2 ${
+                        plan.aiEnabled
+                          ? 'border-emerald-500/40 bg-emerald-500/10'
+                          : 'border-rose-500/30 bg-rose-500/5'
+                      }`}
+                    >
+                      <p
+                        className={`font-black text-[11px] ${
+                          plan.aiEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'
+                        }`}
+                      >
+                        {plan.aiEnabled
+                          ? isAr
+                            ? '✅ مفعل بالكامل'
+                            : '✅ Full AI'
+                          : isAr
+                            ? '🔒 غير مفعل'
+                            : '🔒 No AI'}
                       </p>
-                      <p className="text-[10px] text-slate-500">{isAr ? 'فروع' : 'Branches'}</p>
+                      <p className="text-[10px] text-slate-500">
+                        {isAr ? '🤖 الذكاء الاصطناعي' : '🤖 AI Coach'}
+                      </p>
                     </div>
                     <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-2 dark:border-slate-800 dark:bg-slate-900/40">
                       <p className="font-mono font-black text-slate-900 dark:text-white">

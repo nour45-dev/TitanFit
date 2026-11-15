@@ -1089,11 +1089,29 @@ export function PublicCoachingStorefrontView({
                   </div>
 
                   <div className="grid grid-cols-3 gap-1.5 text-center text-xs">
-                    <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-2">
-                      <p className="font-mono font-black text-amber-300">
-                        {plan.maxBranches === 'UNLIMITED' ? '∞' : plan.maxBranches}
+                    <div
+                      className={`rounded-xl border p-2 ${
+                        plan.aiEnabled
+                          ? 'border-emerald-500/40 bg-emerald-500/10'
+                          : 'border-rose-500/30 bg-rose-500/5'
+                      }`}
+                    >
+                      <p
+                        className={`font-black text-[11px] ${
+                          plan.aiEnabled ? 'text-emerald-400' : 'text-rose-400'
+                        }`}
+                      >
+                        {plan.aiEnabled
+                          ? isAr
+                            ? '✅ مفعل بالكامل'
+                            : '✅ Full AI'
+                          : isAr
+                            ? '🔒 غير مفعل'
+                            : '🔒 No AI'}
                       </p>
-                      <p className="text-[10px] text-slate-400">{isAr ? 'فروع' : 'Branches'}</p>
+                      <p className="text-[10px] text-slate-400">
+                        {isAr ? '🤖 الذكاء الاصطناعي' : '🤖 AI Coach'}
+                      </p>
                     </div>
                     <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-2">
                       <p className="font-mono font-black text-amber-300">
