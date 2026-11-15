@@ -404,4 +404,155 @@ export async function downloadInvoicePdf(
   downloadBlob(blob, `Invoice_${inv.invoiceNumber}.pdf`);
 }
 
+/* ------------------------------------------------------------------ */
+/* SaaS Gym Packages & Commercial Proposal Document                     */
+/* ------------------------------------------------------------------ */
+
+export function saasPricingPdfBlocks(isAr: boolean): PdfBlock[] {
+  return [
+    {
+      t: 'title',
+      text: isAr
+        ? 'كراسة باقات وعروض أسعار منصة TitanFit SaaS لأصحاب الجيمات'
+        : 'TitanFit Gym Operating System — SaaS Subscription & Commercial Proposal',
+      sub: isAr
+        ? 'العرض التجاري الرسمي والمواصفات الفنية المعتمدة للأندية الرياضية والصالات (2026)'
+        : 'Official Commercial Proposal & Technical Specifications for Fitness Clubs (2026)',
+    },
+    {
+      t: 'stats',
+      items: isAr
+        ? [
+            { label: 'باقة البداية (Starter)', value: '950 ج.م/شهر' },
+            { label: 'باقة برو (Pro Growth) ⭐', value: '1,950 ج.م/شهر' },
+            { label: 'باقة النخبة (Enterprise) 👑', value: '3,450 ج.م/شهر' },
+          ]
+        : [
+            { label: 'Starter Plan', value: '950 EGP/mo' },
+            { label: 'Pro Growth Plan ⭐', value: '1,950 EGP/mo' },
+            { label: 'Elite Enterprise 👑', value: '3,450 EGP/mo' },
+          ],
+    },
+    { t: 'gap', h: 8 },
+    {
+      t: 'h1',
+      text: isAr
+        ? '١. ملخص مقارنة الباقات التشغيلية والأسعار بالجنيه المصري'
+        : '1. Executive Comparison Matrix & Pricing (EGP)',
+    },
+    {
+      t: 'table',
+      head: isAr
+        ? ['الباقة', 'الاشتراك الشهري', 'الاشتراك السنوي (شهرياً)', 'الفروع', 'المشتركون', 'المدربون']
+        : ['Tier', 'Monthly', 'Annual (Per Mo)', 'Branches', 'Members', 'Staff'],
+      rows: isAr
+        ? [
+            ['باقة البداية (Starter)', '950 ج.م', '800 ج.م (وفرت 1,800)', 'فرع واحد', 'حتى 150', 'حتى 2'],
+            ['باقة برو (Pro) ⭐', '1,950 ج.م', '1,650 ج.م (وفرت 3,600)', 'حتى فرعين', 'حتى 600', 'حتى 8'],
+            ['باقة النخبة (Enterprise) 👑', '3,450 ج.م', '2,900 ج.م (وفرت 6,600)', 'غير محدود', 'غير محدود', 'غير محدود'],
+          ]
+        : [
+            ['Starter Plan', '950 EGP', '800 EGP (Save 1,800)', '1 Branch', 'Up to 150', 'Up to 2'],
+            ['Pro Plan ⭐', '1,950 EGP', '1,650 EGP (Save 3,600)', '2 Branches', 'Up to 600', 'Up to 8'],
+            ['Enterprise 👑', '3,450 EGP', '2,900 EGP (Save 6,600)', 'Unlimited', 'Unlimited', 'Unlimited'],
+          ],
+      widths: [28, 16, 22, 11, 12, 11],
+    },
+    { t: 'gap', h: 10 },
+    {
+      t: 'h1',
+      text: isAr ? '٢. تفاصيل ومواصفات كل باقة والصفحات المفتوحة' : '2. Plan Breakdown & Module Specifications',
+    },
+    {
+      t: 'h2',
+      text: isAr
+        ? '🥉 باقة البداية — "جيم ستارت" (Starter Plan) — 950 ج.م/شهرياً'
+        : 'Starter Plan — 950 EGP/month',
+    },
+    {
+      t: 'p',
+      text: isAr
+        ? 'مخصصة للصالات الفردية واستوديوهات التدريب الخاص. تشمل لوحة القيادة التنفيذية، إدارة المشتركين، الملف الطبي، باقات اشتراكات النادي، الكاشير وتحصيل الفواتير الإلكترونية، وتطبيق المتدرب PWA الأساسي.'
+        : 'For boutique studios and standalone gyms. Includes executive dashboard, member CRM, medical profiles, memberships, cashier billing, and member PWA app.',
+    },
+    {
+      t: 'h2',
+      text: isAr
+        ? '🥈 باقة النمو الاحترافي — "جيم برو" (Pro Growth) — 1,950 ج.م/شهرياً ⭐ الأكثر طلباً ومبيعاً'
+        : 'Pro Growth Plan — 1,950 EGP/month ⭐ Most Popular',
+    },
+    {
+      t: 'p',
+      text: isAr
+        ? 'تفتح جميع مميزات باقة Starter بالإضافة إلى: بوابات الدخول الإلكترونية والـ QR Code الذكي لمنع التلاعب وتمرير الكروت، جدول الحصص الجماعية وقوائم الانتظار التلقائية، كاشير بار المكملات (POS) وتنبيهات النواقص، إدارة المدربين وتوزيع المشتركين ونسب العمولات والـ PT، والشات الفوري المباشر بين المتدرب ومدربه على مدار الساعة.'
+        : 'Unlocks all Starter features plus smart rolling QR turnstiles, group class scheduling with automated waitlists, supplement bar POS cashier, coach commission tracking, and real-time WhatsApp-style coach-member chat.',
+    },
+    {
+      t: 'h2',
+      text: isAr
+        ? '🥇 باقة النخبة والسلاسل — "جيم إيليت" (Elite Enterprise) — 3,450 ج.م/شهرياً 👑 المنظومة الكاملة'
+        : 'Elite Enterprise Plan — 3,450 EGP/month 👑 Full Enterprise Suite',
+    },
+    {
+      t: 'p',
+      text: isAr
+        ? 'تفتح كافة صفحات ومميزات المنصة بنسبة 100%: استوديو رفع فيديوهات التمارين والوصفات المحمي ضد التحميل والقرصنة (Anti-Rip DRM)، التقارير المالية والتحليلات الموسعة وحساب الأرباح والخسائر وتصدير شيتات إكسيل CSV، تخصيص الهوية البصرية المستقلة والشعار المخصص (White-Label)، فروع وأعضاء غير محدودين، وأولوية دعم فني 24/7.'
+        : 'Unlocks 100% of the platform: Anti-Rip DRM protected Exercise Video Studio, full financial BI reporting with CSV Excel exports, white-label branding and custom domain, unlimited branches & members, and dedicated 24/7 SLA support.',
+    },
+    { t: 'gap', h: 10 },
+    {
+      t: 'h1',
+      text: isAr ? '٣. طرق السداد المعتمدة والضمان الفني' : '3. Payment Methods & SLAs',
+    },
+    {
+      t: 'li',
+      text: isAr
+        ? 'وسائل الدفع المصرية: إنستاباي (InstaPay)، فودافون كاش ومحافظ المحمول، فوري (Fawry Pay)، وبطاقات ميزة وفيزا وماستركارد البنكية، والتحويل البنكي المباشر.'
+        : 'Supported payment channels: InstaPay, Vodafone Cash & mobile wallets, Fawry, Meeza/Visa/Mastercard, and bank transfer.',
+    },
+    {
+      t: 'li',
+      text: isAr
+        ? 'ضمان حماية واستقرار البيانات: عزل تام لبيانات كل نادٍ (Multi-Tenant Isolation) وسيرفرات سحابية عالية التوفر مع نسخ احتياطي يومي.'
+        : 'Enterprise isolation: Complete tenant data isolation with daily cloud backups and 99.9% uptime SLA.',
+    },
+    {
+      t: 'li',
+      text: isAr
+        ? 'فترة تجريبية مجانية لمدة 14 يوماً بدون أي التزام مالي لاختبار كافة المميزات في صالتك الرياضية.'
+        : '14-day risk-free full-feature trial with no upfront payment required.',
+    },
+    { t: 'gap', h: 8 },
+    {
+      t: 'note',
+      text: isAr
+        ? 'للاشتراك الفوري وتفعيل منصة ناديك الرياضي في أقل من 5 دقائق، تواصل مباشرة مع الإدارة عبر واتساب: +20 155 994 9271 أو عبر منصة TitanFit الإلكترونية.'
+        : 'To subscribe and provision your gym platform in under 5 minutes, contact management on WhatsApp: +20 155 994 9271 or visit TitanFit online.',
+    },
+  ];
+}
+
+export async function downloadSaaSPricingPdf(isAr: boolean = true): Promise<void> {
+  const fileName = isAr ? 'TitanFit_Gym_SaaS_Pricing_Proposal_AR.pdf' : 'TitanFit_Gym_SaaS_Pricing_Proposal_EN.pdf';
+  try {
+    const res = await fetch('/titanfit-saas-pricing-proposal.pdf');
+    if (res.ok) {
+      const blob = await res.blob();
+      if (blob.size > 1000) {
+        downloadBlob(blob, fileName);
+        return;
+      }
+    }
+  } catch {
+    // fallback to client-side canvas vector builder
+  }
+  const blob = await buildPdfBlob(saasPricingPdfBlocks(isAr), {
+    dir: isAr ? 'rtl' : 'ltr',
+    brand: isAr ? 'TitanFit — كراسة باقات الجيمات' : 'TitanFit — Gym SaaS Proposal',
+    footer: 'TitanFit Gym Operating System • Official Commercial Proposal',
+    title: isAr ? 'كراسة باقات وعروض أسعار منصة TitanFit SaaS' : 'TitanFit Gym SaaS Proposal',
+  });
+  downloadBlob(blob, fileName);
+}
+
 export { MEAL_ORDER, macrosOf };

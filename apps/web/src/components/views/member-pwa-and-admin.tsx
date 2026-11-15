@@ -49,6 +49,7 @@ import {
   type WorkoutLogEntry,
   usePlatformStore,
 } from '../../lib/platform-store';
+import { downloadSaaSPricingPdf } from '../../lib/pdf-docs';
 
 const PWA_EXERCISE_MOTION_MAP: Record<string, ExerciseMotionItem> = {
   'Barbell Bench Press': {
@@ -1378,29 +1379,41 @@ export function TenantSettingsView() {
             </p>
           </div>
 
-          <div className="inline-flex items-center rounded-2xl border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-800 shrink-0 shadow-xs">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
-              onClick={() => setSettingsBillingCycle('MONTHLY')}
-              className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
-                settingsBillingCycle === 'MONTHLY'
-                  ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400'
-              }`}
+              onClick={() => downloadSaaSPricingPdf(isAr)}
+              className="inline-flex items-center gap-1.5 rounded-2xl border border-amber-500/50 bg-amber-500/10 px-3.5 py-1.5 text-xs font-black text-amber-800 dark:text-amber-300 hover:bg-amber-500/20 transition shadow-xs"
+              title={isAr ? 'تحميل كراسة وعرض باقات TitanFit كملف PDF' : 'Download SaaS Proposal PDF'}
             >
-              {isAr ? 'شهري' : 'Monthly'}
+              <Download className="h-3.5 w-3.5" />
+              <span>{isAr ? 'كراسة الباقات (PDF)' : 'Proposal (PDF)'}</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setSettingsBillingCycle('ANNUAL')}
-              className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
-                settingsBillingCycle === 'ANNUAL'
-                  ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              <span>{isAr ? 'سنوي (خصم 20%)' : 'Annual (-20%)'}</span>
-            </button>
+
+            <div className="inline-flex items-center rounded-2xl border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-800 shrink-0 shadow-xs">
+              <button
+                type="button"
+                onClick={() => setSettingsBillingCycle('MONTHLY')}
+                className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+                  settingsBillingCycle === 'MONTHLY'
+                    ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                {isAr ? 'شهري' : 'Monthly'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSettingsBillingCycle('ANNUAL')}
+                className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+                  settingsBillingCycle === 'ANNUAL'
+                    ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                <span>{isAr ? 'سنوي (خصم 20%)' : 'Annual (-20%)'}</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1899,14 +1912,25 @@ export function SuperAdminConsoleView() {
               : 'Onboard gym/coach tenants, assign custom logos & passwords, and manage SaaS tiers'}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowAddTenant(true)}
-          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 px-5 py-3 text-xs font-black text-slate-950 shadow-md transition hover:scale-[1.02]"
-        >
-          <Plus className="h-4 w-4" />
-          {isAr ? '+ إضافة نادي / مستأجر جديد (White-Label)' : '+ Onboard New Gym Tenant'}
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => downloadSaaSPricingPdf(isAr)}
+            className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-xs font-black text-amber-800 dark:text-amber-300 hover:bg-amber-500/20 transition shadow-xs"
+            title={isAr ? 'تحميل كراسة وعرض باقات TitanFit كملف PDF' : 'Download Proposal PDF'}
+          >
+            <Download className="h-4 w-4" />
+            <span>{isAr ? '📄 كراسة العرض التجاري (PDF)' : '📄 Commercial Proposal (PDF)'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowAddTenant(true)}
+            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 px-5 py-3 text-xs font-black text-slate-950 shadow-md transition hover:scale-[1.02]"
+          >
+            <Plus className="h-4 w-4" />
+            <span>{isAr ? '+ إضافة نادي جديد (White-Label)' : '+ Onboard New Gym'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Tenants Grid */}

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>كراسة الباقات الرسمية والاشتراكات الشهرية - TitanFit SaaS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 12mm 10mm 15mm 10mm;
+      @bottom-center {
+        content: "منظومة TitanFit لإدارة الأندية والصالات الرياضية — العرض التجاري 2026";
+        font-size: 8pt;
+        color: #94a3b8;
+        font-family: 'Cairo', sans-serif;
+      }
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Cairo', 'Tajawal', sans-serif;
+      background-color: #0b0f19;
+      color: #f1f5f9;
+      line-height: 1.5;
+      direction: rtl;
+      text-align: right;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .page {
+      page-break-after: always;
+      padding: 10px;
+      position: relative;
+    }
+    .page:last-child {
+      page-break-after: avoid;
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #222d45;
+      margin-bottom: 20px;
+    }
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-badge {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #d4af37, #f59e0b);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      color: #0b0f19;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+    }
+    .brand-title {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+    }
+    .brand-subtitle {
+      font-size: 11px;
+      font-weight: 700;
+      color: #d4af37;
+    }
+    .doc-meta {
+      text-align: left;
+      direction: ltr;
+      font-size: 10px;
+      color: #94a3b8;
+    }
+    .doc-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      color: #facc15;
+      font-weight: 800;
+      font-size: 10px;
+      margin-bottom: 4px;
+      direction: rtl;
+    }
+
+    /* HERO BANNER */
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.12), rgba(15, 23, 42, 0.8)), #111827;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      border-radius: 16px;
+      padding: 18px 22px;
+      margin-bottom: 22px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    .hero-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+    .hero-title span {
+      color: #d4af37;
+    }
+    .hero-desc {
+      font-size: 11px;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    /* PLANS GRID */
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .plan-card {
+      background: #111827;
+      border: 1px solid #1f293d;
+      border-radius: 16px;
+      padding: 16px 14px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .plan-card.featured {
+      background: linear-gradient(180deg, #161e31, #0f172a);
+      border: 2px solid #d4af37;
+      box-shadow: 0 8px 28px rgba(212, 175, 55, 0.2);
+    }
+    .featured-badge {
+      position: absolute;
+      top: -11px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #d4af37, #f59e0b);
+      color: #0b0f19;
+      font-size: 9.5px;
+      font-weight: 900;
+      padding: 3px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+    }
+    .plan-icon {
+      font-size: 26px;
+      margin-bottom: 8px;
+    }
+    .plan-name {
+      font-size: 16px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 2px;
+    }
+    .plan-target {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-bottom: 12px;
+      height: 28px;
+    }
+    .plan-price-box {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 12px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .plan-price-monthly {
+      font-size: 22px;
+      font-weight: 900;
+      color: #d4af37;
+      font-family: 'Tajawal', sans-serif;
+    }
+    .plan-price-unit {
+      font-size: 11px;
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+    .plan-price-annual {
+      font-size: 10px;
+      color: #10b981;
+      font-weight: 700;
+      margin-top: 3px;
+    }
+    .plan-specs {
+      list-style: none;
+      font-size: 10.5px;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+      flex-grow: 1;
+    }
+    .plan-specs li {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .plan-specs li::before {
+      content: "✓";
+      color: #10b981;
+      font-weight: 900;
+      font-size: 11px;
+    }
+
+    /* COMPARISON TABLE */
+    .table-container {
+      margin-top: 10px;
+      background: #111827;
+      border: 1px solid #1f293d;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+    .table-header-title {
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 900;
+      color: #ffffff;
+      background: #162032;
+      border-bottom: 1px solid #1f293d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+    }
+    th {
+      background: #131c2e;
+      color: #cbd5e1;
+      font-weight: 800;
+      padding: 9px 12px;
+      text-align: right;
+      border-bottom: 1px solid #1f293d;
+    }
+    th:not(:first-child) {
+      text-align: center;
+      width: 22%;
+    }
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #1a2233;
+      color: #e2e8f0;
+    }
+    td:not(:first-child) {
+      text-align: center;
+      font-weight: 700;
+    }
+    tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.015);
+    }
+    .check-yes {
+      color: #10b981;
+      font-weight: 900;
+      font-size: 12px;
+    }
+    .check-no {
+      color: #64748b;
+      font-weight: 700;
+    }
+    .badge-highlight {
+      background: rgba(212, 175, 55, 0.15);
+      color: #facc15;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 9px;
+    }
+
+    /* VALUE PROP / ROI BOX */
+    .roi-section {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(15, 23, 42, 0.8));
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+    }
+    .roi-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: #34d399;
+      margin-bottom: 4px;
+    }
+    .roi-desc {
+      font-size: 10.5px;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    /* FOOTER & CONTACT */
+    .commercial-footer {
+      border-top: 1px solid #1f293d;
+      padding-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: #94a3b8;
+    }
+    .contact-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+    .cta-button {
+      background: linear-gradient(135deg, #d4af37, #f59e0b);
+      color: #0b0f19;
+      font-weight: 900;
+      font-size: 11px;
+      padding: 8px 18px;
+      border-radius: 10px;
+      display: inline-block;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1: EXECUTIVE OVERVIEW & PACKAGES -->
+  <div class="page">
+    <div class="header">
+      <div class="logo-container">
+        <div class="logo-badge">👑</div>
+        <div>
+          <div class="brand-title">TitanFit <span style="color:#d4af37;">SaaS</span></div>
+          <div class="brand-subtitle">نظام التشغيل السحابي المتكامل لإدارة الأندية والصالات الرياضية</div>
+        </div>
+      </div>
+      <div class="doc-meta">
+        <div class="doc-badge">وثيقة العرض التجاري 2026</div>
+        <div>تاريخ الإصدار: نوفمبر 2026</div>
+        <div>العملة: الجنيه المصري (EGP)</div>
+        <div>الرابط الرسمي: titanfit.up.railway.app</div>
+      </div>
+    </div>
+
+    <div class="hero-banner">
+      <div class="hero-title">باقات اشتراك شهرية مدروسة تناسب <span>حجم وطموح ناديك الرياضي</span></div>
+      <div class="hero-desc">
+        صُممت باقات <strong>TitanFit SaaS</strong> لتمنح صاحب الجيم أعلى قيمة تشغيلية وعائداً استثمارياً فورياً من الشهر الأول. تشمل كل باقة بنية سحابية مستقلة فائقة السرعة، نسخاً احتياطياً يومياً، وتطبيق متدرب PWA ذكياً بالـ OTP يقلل الهدر ويزيد تجديد الاشتراكات بنسبة تفوق 35%.
+      </div>
+    </div>
+
+    <!-- 3 TIER CARDS -->
+    <div class="plans-grid">
+      <!-- STARTER -->
+      <div class="plan-card">
+        <div class="plan-icon">🥉</div>
+        <div class="plan-name">باقة البداية (Starter)</div>
+        <div class="plan-target">للصالات الفردية والناشئة ومراكز الفيتنس الخاصة</div>
+        <div class="plan-price-box">
+          <div class="plan-price-monthly">950 <span class="plan-price-unit">ج.م / شهرياً</span></div>
+          <div class="plan-price-annual">أو 800 ج.م/شهر عند الدفع السنوي (وفّر 1,800 ج)</div>
+        </div>
+        <ul class="plan-specs">
+          <li><strong>فرع واحد</strong> مستقل</li>
+          <li>حتى <strong>150 مشترك نشط</strong></li>
+          <li><strong>2 مدربين</strong> وكباتن</li>
+          <li>لوحة التحكم السريعة والتحصيلات</li>
+          <li>إدارة الأعضاء والاشتراكات والمصروفات</li>
+          <li>تطبيق المتدرب PWA والدخول بالـ OTP</li>
+          <li>دعم فني وتحديثات مستمرة</li>
+        </ul>
+      </div>
+
+      <!-- PRO (FEATURED) -->
+      <div class="plan-card featured">
+        <div class="featured-badge">⭐ الأكثر طلباً ومبيعاً</div>
+        <div class="plan-icon">🥈</div>
+        <div class="plan-name">باقة النمو الاحترافي (Pro)</div>
+        <div class="plan-target">للجيمات المتوسطة والنشطة التي تبحث عن أتمتة كاملة</div>
+        <div class="plan-price-box">
+          <div class="plan-price-monthly">1,950 <span class="plan-price-unit">ج.م / شهرياً</span></div>
+          <div class="plan-price-annual">أو 1,650 ج.م/شهر عند الدفع السنوي (وفّر 3,600 ج)</div>
+        </div>
+        <ul class="plan-specs">
+          <li><strong>حتى فرعين</strong></li>
+          <li>حتى <strong>600 مشترك نشط</strong></li>
+          <li><strong>8 مدربين</strong> وتتبع الحصص</li>
+          <li><strong>كل مميزات باقة البداية بالكامل</strong></li>
+          <li>بوابات الدخول والـ Turnstiles وQR</li>
+          <li>شات المدرب والمتدرب Realtime (بديل واتساب)</li>
+          <li>جدول الحصص والتمارين الجماعية (Classes)</li>
+          <li>كافيه وبار المكملات ونقاط البيع (POS)</li>
+          <li>إدارة عمولات المدربين وحصص الـ PT</li>
+        </ul>
+      </div>
+
+      <!-- ELITE -->
+      <div class="plan-card">
+        <div class="plan-icon">🥇</div>
+        <div class="plan-name">باقة النخبة والسلاسل (Elite)</div>
+        <div class="plan-target">لسلاسل الجيمات والأندية الكبرى والـ Mega Gyms</div>
+        <div class="plan-price-box">
+          <div class="plan-price-monthly">3,450 <span class="plan-price-unit">ج.م / شهرياً</span></div>
+          <div class="plan-price-annual">أو 2,900 ج.م/شهر عند الدفع السنوي (وفّر 6,600 ج)</div>
+        </div>
+        <ul class="plan-specs">
+          <li><strong>فروع ومقرات غير محدودة</strong></li>
+          <li><strong>مشتركون غير محدودين</strong></li>
+          <li><strong>مدربون وطاقم غير محدود</strong></li>
+          <li><strong>كل مميزات باقة النمو الاحترافي</strong></li>
+          <li>استوديو رفع فيديوهات وتمارين محمي Anti-Rip</li>
+          <li>تقارير الـ BI المالية والتحليلات وتصدير CSV</li>
+          <li>هوية بصرية كاملة (White-Label) ورابط مخصص</li>
+          <li>مدير حساب تقني مخصص وخادم معزول</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ROI HIGHLIGHT -->
+    <div class="roi-section">
+      <div class="roi-title">💡 دراسة الجدوى والعائد الاستثماري المباشر (ROI):</div>
+      <div class="roi-desc">
+        متوسط اشتراك العضو الشهري في الصالات المصرية يتراوح بين <strong>350 إلى 700 ج.م</strong>. هذا يعني أن اشتراك باقة <strong>TitanFit Pro</strong> (1,950 ج.م) تتم تغطيته بالكامل عبر اشتراك <strong>3 إلى 5 أعضاء جدد فقط</strong>! المنصة تحمي ناديك من تسريب الاشتراكات غير المدفوعة وتزيد متوسط مبيعات بار المكملات والـ PT بأكثر من <strong>25%</strong>.
+      </div>
+    </div>
+
+    <div class="commercial-footer">
+      <div>TitanFit Software Engineering & Cloud Solutions — وثيقة معتمدة</div>
+      <div class="contact-item">📞 المبيعات والدعم: 01001234567 | support@titanfit.com</div>
+    </div>
+  </div>
+
+  <!-- PAGE 2: DETAILED FEATURE MATRIX & SLA -->
+  <div class="page">
+    <div class="header">
+      <div class="logo-container">
+        <div class="logo-badge">👑</div>
+        <div>
+          <div class="brand-title">TitanFit <span style="color:#d4af37;">SaaS</span></div>
+          <div class="brand-subtitle">جدول المقارنة التفصيلي للميزات والخدمات الفنية</div>
+        </div>
+      </div>
+      <div class="doc-meta">
+        <div>مصفوفة الصلاحيات والميزات (Feature Matrix)</div>
+        <div>إصدار المنصة: 3.2.0 Enterprise</div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header-title">
+        <span>المقارنة الشاملة بين باقات TitanFit</span>
+        <span class="badge-highlight">ضمان استرداد كامل خلال 14 يوماً</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>الميزة / الخاصية التشغيلية</th>
+            <th>باقة البداية (Starter)<br><span style="color:#d4af37;">950 ج.م/ش</span></th>
+            <th>باقة النمو (Pro)<br><span style="color:#d4af37;">1,950 ج.م/ش</span></th>
+            <th>باقة النخبة (Elite)<br><span style="color:#d4af37;">3,450 ج.م/ش</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>عدد الفروع والمقرات المغطاة</td>
+            <td>فرع 1</td>
+            <td>حتى فرعين (2)</td>
+            <td>غير محدود ∞</td>
+          </tr>
+          <tr>
+            <td>الحد الأقصى للأعضاء والمشتركين النشطين</td>
+            <td>150 مشترك</td>
+            <td>600 مشترك</td>
+            <td>غير محدود ∞</td>
+          </tr>
+          <tr>
+            <td>حسابات المدربين والكباتن</td>
+            <td>2 مدربين</td>
+            <td>8 مدربين</td>
+            <td>غير محدود ∞</td>
+          </tr>
+          <tr>
+            <td>لوحة إدارة الأعضاء والاشتراكات والمدفوعات</td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+          </tr>
+          <tr>
+            <td>تطبيق المتدرب الذكي PWA والدخول بدون كلمة سر (OTP)</td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+          </tr>
+          <tr>
+            <td>بوابات الدخول الإلكترونية والـ Turnstiles وQR Access</td>
+            <td><span class="check-no">✕ غير مشمول</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+          </tr>
+          <tr>
+            <td>جدول الحصص التدريبية والتمارين الجماعية (Classes)</td>
+            <td><span class="check-no">✕ غير مشمول</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+          </tr>
+          <tr>
+            <td>شات المحادثة المباشرة Realtime بين المدرب والمتدرب</td>
+            <td><span class="check-no">✕ غير مشمول</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+          </tr>
+          <tr>
+            <td>إدارة مبيعات كافيه وبار المكملات ونقاط البيع (POS)</td>
+            <td><span class="check-no">✕ غير مشمول</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+          </tr>
+          <tr>
+            <td>إدارة فريق المدربين وتوزيع المتدربين وعمولات الـ PT</td>
+            <td><span class="check-no">✕ غير مشمول</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+            <td><span class="check-yes">✓ متوفر</span></td>
+          </tr>
+          <tr>
+            <td>استوديو رفع فيديوهات التمارين والوصفات المحمي (Anti-Rip DRM)</td>
+            <td><span class="check-no">✕ غير مشمول</span></td>
+            <td><span class="check-no">✕ غير مشمول</span></td>
+            <td><span class="check-yes">✓ متوفر بتقنية حصرية</span></td>
+          </tr>
+          <tr>
+            <td>التقارير المالية الموسعة، تحليلات الـ BI، وتصدير CSV / Excel</td>
+            <td><span class="check-no">✕ غير مشمول</span></td>
+            <td><span class="check-no">✕ غير مشمول</span></td>
+            <td><span class="check-yes">✓ متوفر بصيغ متعددة</span></td>
+          </tr>
+          <tr>
+            <td>تخصيص الهوية البصرية الكاملة (White-Label) والرابط الخاص</td>
+            <td><span class="check-no">✕ شعار TitanFit</span></td>
+            <td><span class="check-no">✕ شعار TitanFit</span></td>
+            <td><span class="check-yes">✓ هويتك الخاصة 100%</span></td>
+          </tr>
+          <tr>
+            <td>النسخ الاحتياطي السحابي اليومي والتشفير البنكي AES-256</td>
+            <td><span class="check-yes">✓ يومي</span></td>
+            <td><span class="check-yes">✓ فوري ومستمر</span></td>
+            <td><span class="check-yes">✓ سيرفر معزول مخصص</span></td>
+          </tr>
+          <tr>
+            <td>مستوى الدعم الفني وتدريب الطاقم (SLA)</td>
+            <td>تذاكر وبريد إلكتروني</td>
+            <td>واتساب مباشر وأولوية</td>
+            <td>مدير حساب تقني مخصص 24/7</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ONBOARDING & SETUP -->
+    <div style="background:#111827; border:1px solid #1f293d; border-radius:14px; padding:14px 18px; margin-bottom:18px;">
+      <div style="font-size:13px; font-weight:900; color:#ffffff; margin-bottom:6px;">🚀 خطوات التفعيل والانضمام (جاهزية خلال 24 ساعة):</div>
+      <ol style="font-size:10.5px; color:#cbd5e1; padding-right:18px; line-height:1.7;">
+        <li><strong>اختيار الباقة المناسبة:</strong> تحديد الباقة الشهرية أو السنوية المناسبة لحجم صالتك.</li>
+        <li><strong>تجهيز الحساب السحابي:</strong> رفع شعارك، بيانات فروعك، وإعداد رسوم الاشتراكات في أقل من ساعة.</li>
+        <li><strong>استيراد بيانات المشتركين:</strong> فريق الدعم ينقل بيانات أعضائك الحاليين من الدفاتر أو ملفات Excel مجاناً.</li>
+        <li><strong>تدريب الريسبشن والمدربين:</strong> جلسة تدريبية أونلاين لشرح كافة وظائف المنصة وتطبيق المتدرب.</li>
+      </ol>
+    </div>
+
+    <div class="commercial-footer">
+      <div>منظومة TitanFit الرياضية — حقوق النشر 2026 محفوظة بالكامل</div>
+      <div style="color:#d4af37; font-weight:800;">جاهز لبدء تجربتك المجانية؟ تواصل معنا اليوم!</div>
+    </div>
+  </div>
+
+</body>
+</html>

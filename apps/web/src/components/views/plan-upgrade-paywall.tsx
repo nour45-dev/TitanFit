@@ -17,8 +17,10 @@ import {
   ShoppingBag,
   UserCheck,
   Crown,
+  FileText,
 } from 'lucide-react';
 import { usePlatformStore, WorkspaceSection, GymPlanTierKey } from '../../lib/platform-store';
+import { downloadSaaSPricingPdf } from '../../lib/pdf-docs';
 
 interface PlanUpgradePaywallProps {
   section: WorkspaceSection;
@@ -188,16 +190,26 @@ export function PlanUpgradePaywallView({ section, onBack }: PlanUpgradePaywallPr
                     : `Upgrade to "${requiredPlan.nameEn}" & Unlock`}
               </span>
             </button>
-            {onBack && (
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={onBack}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-xs font-bold text-slate-300 hover:bg-slate-700 transition"
+                onClick={() => downloadSaaSPricingPdf(isAr)}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl border border-amber-500/50 bg-amber-500/10 px-3.5 py-2.5 text-xs font-black text-amber-300 hover:bg-amber-500/20 transition"
               >
-                {isAr ? <ArrowRight className="h-4 w-4" /> : <ArrowLeft className="h-4 w-4" />}
-                <span>{isAr ? 'الرجوع للصفحة السابقة' : 'Back to previous page'}</span>
+                <FileText className="h-3.5 w-3.5 text-amber-400" />
+                <span>{isAr ? 'كراسة الباقات (PDF)' : 'Pricing Proposal PDF'}</span>
               </button>
-            )}
+              {onBack && (
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-xs font-bold text-slate-300 hover:bg-slate-700 transition"
+                >
+                  {isAr ? <ArrowRight className="h-4 w-4" /> : <ArrowLeft className="h-4 w-4" />}
+                  <span>{isAr ? 'الرجوع' : 'Back'}</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

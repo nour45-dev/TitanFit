@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { PLATFORM_CONFIG } from '@gymos/config';
 import { usePlatformStore } from '../../lib/platform-store';
-import { downloadEbookPdf } from '../../lib/pdf-docs';
+import { downloadEbookPdf, downloadSaaSPricingPdf } from '../../lib/pdf-docs';
 import { CalorieAndMealPlanner } from './calorie-and-meal-planner';
 import { SportsHeroBackdrop, SportsTicker } from '../ui/modern-ambient-background';
 
@@ -976,32 +976,44 @@ export function PublicCoachingStorefrontView({
             </p>
           </div>
 
-          <div className="inline-flex items-center rounded-2xl border border-slate-700 bg-slate-800/90 p-1 shrink-0 shadow-lg">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={() => setGymSaaSAnnual(false)}
-              className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
-                !gymSaaSAnnual
-                  ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
-                  : 'text-slate-300 hover:text-white'
-              }`}
+              onClick={() => downloadSaaSPricingPdf(isAr)}
+              className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/50 bg-amber-500/15 px-4 py-2.5 text-xs font-black text-amber-300 hover:bg-amber-500/25 transition shadow-sm"
+              title={isAr ? 'تحميل كراسة وعرض باقات TitanFit كملف PDF' : 'Download SaaS Proposal PDF'}
             >
-              {isAr ? 'اشتراك شهري' : 'Monthly'}
+              <Download className="h-4 w-4" />
+              <span>{isAr ? '📄 كراسة الباقات الرسمية (PDF)' : '📄 Official Proposal (PDF)'}</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setGymSaaSAnnual(true)}
-              className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
-                gymSaaSAnnual
-                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black shadow-xs'
-                  : 'text-slate-300 hover:text-white'
-              }`}
-            >
-              <span>{isAr ? 'اشتراك سنوي' : 'Annual'}</span>
-              <span className="ms-2 rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] text-white">
-                {isAr ? 'وفر 20%' : 'Save 20%'}
-              </span>
-            </button>
+
+            <div className="inline-flex items-center rounded-2xl border border-slate-700 bg-slate-800/90 p-1 shrink-0 shadow-lg">
+              <button
+                type="button"
+                onClick={() => setGymSaaSAnnual(false)}
+                className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                  !gymSaaSAnnual
+                    ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                {isAr ? 'اشتراك شهري' : 'Monthly'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setGymSaaSAnnual(true)}
+                className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                  gymSaaSAnnual
+                    ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black shadow-xs'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                <span>{isAr ? 'اشتراك سنوي' : 'Annual'}</span>
+                <span className="ms-2 rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] text-white">
+                  {isAr ? 'وفر 20%' : 'Save 20%'}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
