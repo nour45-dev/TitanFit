@@ -466,7 +466,7 @@ function TitanFitEnterpriseShell() {
       dir={dir}
       data-theme={theme}
       data-testid="gymos-root-shell"
-      className={`relative isolate min-h-screen transition-colors duration-300 ${
+      className={`relative isolate min-h-screen overflow-x-hidden transition-colors duration-300 ${
         theme === 'dark' ? 'bg-[#090D16] text-slate-100' : 'bg-[#FAFAFA] text-slate-900'
       }`}
     >
@@ -479,19 +479,19 @@ function TitanFitEnterpriseShell() {
             initial={{ opacity: 0, y: 24, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 end-6 z-50 flex max-w-md items-center gap-3 rounded-2xl border-2 border-amber-500 bg-white px-5 py-3.5 text-xs font-extrabold text-slate-900 shadow-2xl dark:border-amber-400 dark:bg-slate-900 dark:text-white"
+            className="fixed bottom-20 start-3 end-3 z-50 flex max-w-md items-center gap-3 rounded-2xl border-2 border-amber-500 bg-white px-4 py-3 text-xs font-extrabold text-slate-900 shadow-2xl dark:border-amber-400 dark:bg-slate-900 dark:text-white sm:bottom-6 sm:end-6 sm:start-auto sm:px-5 sm:py-3.5"
           >
             <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-500" />
-            <span>{toastMessage}</span>
+            <span className="leading-snug">{toastMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* TOP HEADER: Dynamic Clean Storefront for Visitors vs Sleek Management Bar for Logged-In Admins */}
-      <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 px-3 py-2.5 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 sm:px-6 sm:py-3">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 sm:gap-4">
+      <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 px-2.5 py-2 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 sm:px-6 sm:py-3">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-2 sm:gap-4">
           {/* Brand Logo & Name */}
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-3 md:flex-initial">
             {isAuthenticated && activeRole !== 'MEMBER' && (
               <button
                 type="button"
@@ -499,7 +499,7 @@ function TitanFitEnterpriseShell() {
                 className="shrink-0 rounded-xl border border-slate-200 bg-slate-50 p-2 text-slate-800 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 lg:hidden"
                 title={isAr ? 'القائمة الجانبية الكاملة' : 'Full Sidebar Menu'}
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             )}
 
@@ -510,23 +510,23 @@ function TitanFitEnterpriseShell() {
                 data-testid="header-universal-back-btn"
                 onClick={goBack}
                 title={isAr ? 'الرجوع للصفحة السابقة' : 'Go Back to Previous Page'}
-                className="inline-flex min-h-[36px] sm:min-h-[38px] items-center gap-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 px-2.5 sm:px-3 py-1.5 text-xs font-black text-amber-700 hover:bg-amber-500/20 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-300 transition shrink-0 shadow-xs"
+                className="inline-flex min-h-[34px] sm:min-h-[38px] items-center gap-1 rounded-xl border border-amber-500/40 bg-amber-500/10 px-2 sm:px-3 py-1.5 text-xs font-black text-amber-700 hover:bg-amber-500/20 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-300 transition shrink-0 shadow-xs"
               >
                 {isAr ? (
                   <ArrowRight className="h-4 w-4" />
                 ) : (
                   <ArrowLeft className="h-4 w-4" />
                 )}
-                <span>{isAr ? 'رجوع' : 'Back'}</span>
+                <span className="hidden sm:inline">{isAr ? 'رجوع' : 'Back'}</span>
               </button>
             )}
 
             <button
               type="button"
               onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
-              className="flex items-center gap-2 text-start sm:gap-2.5"
+              className="flex min-w-0 items-center gap-2 text-start sm:gap-2.5"
             >
-              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-amber-400/40 bg-slate-950 shadow-2xs sm:h-10 sm:w-10">
+              <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-amber-400/40 bg-slate-950 shadow-2xs sm:h-10 sm:w-10">
                 <img
                   src={brandDisplayLogo}
                   alt={brandDisplayName}
@@ -534,12 +534,12 @@ function TitanFitEnterpriseShell() {
                   className="h-full w-full object-contain p-0.5"
                 />
               </div>
-              <div>
-                <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1 sm:gap-2">
                   <span
                     data-testid="brand-app-name"
                     title={brandDisplayName}
-                    className="block truncate max-w-[150px] sm:max-w-[200px] xl:max-w-[260px] text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white"
+                    className="block truncate max-w-[105px] sm:max-w-[185px] xl:max-w-[260px] text-xs sm:text-base font-black tracking-tight text-slate-900 dark:text-white"
                   >
                     {activeTenantCustom ? brandDisplayName : PLATFORM_CONFIG.appName}
                   </span>
@@ -746,9 +746,9 @@ function TitanFitEnterpriseShell() {
         </div>
       </header>
 
-      {/* Mobile/Tablet Admin Quick Navigation Bar */}
-      {isAuthenticated && (activeRole === 'SUPER_ADMIN' || activeRole === 'GYM_OWNER') && (
-        <div className="sticky top-[65px] z-20 flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white/95 px-3 py-2 no-scrollbar backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 lg:hidden">
+      {/* Mobile Quick Navigation Bar (Shown below md breakpoint for ALL roles so mobile matches tablet/desktop navigation) */}
+      {isAuthenticated && (activeRole === 'SUPER_ADMIN' || activeRole === 'GYM_OWNER') ? (
+        <div className="sticky top-[53px] z-20 flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white/95 px-3 py-2 no-scrollbar backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 md:hidden">
           {activeRole === 'SUPER_ADMIN' && (
             <button
               type="button"
@@ -840,9 +840,90 @@ function TitanFitEnterpriseShell() {
             🎁 {isAr ? 'جرب مجاناً' : 'Free Trial'}
           </button>
         </div>
+      ) : isAuthenticated && activeRole === 'MEMBER' ? (
+        <div className="sticky top-[53px] z-20 flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white/95 px-3 py-2 no-scrollbar backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 md:hidden">
+          <button
+            type="button"
+            onClick={() => setActiveSection('MEMBER_PWA')}
+            className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+              activeSection === 'MEMBER_PWA'
+                ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            📱 {isAr ? 'تطبيقي الرياضي' : 'My App'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection('FREE_TRIAL_HUB')}
+            className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+              activeSection === 'FREE_TRIAL_HUB'
+                ? 'bg-emerald-600 text-white shadow-xs font-black'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            🎁 {isAr ? 'تمارين مجانية' : 'Free Workouts'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
+            className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+              activeSection === 'PUBLIC_STOREFRONT'
+                ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            🌐 {isAr ? 'موقع النادي' : 'Storefront'}
+          </button>
+        </div>
+      ) : (
+        <div className="sticky top-[53px] z-20 flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white/95 px-3 py-2 no-scrollbar backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 md:hidden">
+          <button
+            type="button"
+            onClick={() => setActiveSection('PUBLIC_STOREFRONT')}
+            className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+              activeSection === 'PUBLIC_STOREFRONT'
+                ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            ✨ {isAr ? 'الرئيسية' : 'Home'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection('FREE_TRIAL_HUB')}
+            className={`shrink-0 rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+              activeSection === 'FREE_TRIAL_HUB'
+                ? 'bg-emerald-600 text-white shadow-xs font-black'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            🎁 {isAr ? 'جرب مجاناً' : 'Free Trial'}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveSection('PUBLIC_STOREFRONT');
+              setTimeout(() => document.getElementById('free-calorie-calculator')?.scrollIntoView({ behavior: 'smooth' }), 100);
+            }}
+            className="shrink-0 rounded-xl bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700 transition dark:bg-slate-800 dark:text-slate-300"
+          >
+            🥗 {isAr ? 'حاسبة السعرات' : 'Calculator'}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveSection('PUBLIC_STOREFRONT');
+              setTimeout(() => document.getElementById('saas-pricing-section')?.scrollIntoView({ behavior: 'smooth' }), 100);
+            }}
+            className="shrink-0 rounded-xl bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700 transition dark:bg-slate-800 dark:text-slate-300"
+          >
+            💎 {isAr ? 'الباقات' : 'Plans'}
+          </button>
+        </div>
       )}
 
-      <div className="flex min-h-[calc(100vh-65px)]">
+      <div className="flex min-h-[calc(100vh-65px)] w-full">
         {/* Mobile Sidebar Backdrop Overlay */}
         <AnimatePresence>
           {mobileSidebarOpen && (
@@ -859,7 +940,7 @@ function TitanFitEnterpriseShell() {
         {/* MODERN UPGRADED SIDEBAR — Shown inside ERP & Admin Views for Authenticated Admins and Gym Owners Only */}
         {isAuthenticated && !isPublicWebsiteView && activeRole !== 'MEMBER' && (
           <aside
-            className={`fixed inset-y-0 start-0 z-40 flex w-72 flex-col border-e border-slate-200 bg-white text-slate-800 shadow-xl transition-transform dark:border-slate-800 dark:bg-[#0B0F19] dark:text-slate-200 lg:static lg:translate-x-0 ${
+            className={`fixed inset-y-0 start-0 z-40 flex w-72 max-w-[85vw] flex-col border-e border-slate-200 bg-white text-slate-800 shadow-xl transition-transform dark:border-slate-800 dark:bg-[#0B0F19] dark:text-slate-200 lg:static lg:translate-x-0 ${
               mobileSidebarOpen
                 ? 'translate-x-0'
                 : dir === 'rtl'
@@ -1041,7 +1122,7 @@ function TitanFitEnterpriseShell() {
         )}
 
         {/* Main Content Area */}
-        <main className="flex-1 bg-transparent p-4 transition-colors sm:p-6 lg:p-8">
+        <main className="min-w-0 flex-1 overflow-x-hidden bg-transparent p-3 transition-colors sm:p-5 lg:p-8">
           {/* Persistent Super Admin Support Access Bar when controlling a subscribed gym */}
           {impersonatedTenant && (
             <div

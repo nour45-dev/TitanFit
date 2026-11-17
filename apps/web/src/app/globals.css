@@ -11,7 +11,17 @@
 html,
 body {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100%;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 html[dir="rtl"] body {

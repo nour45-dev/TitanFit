@@ -338,6 +338,235 @@ const OWNER_QUICK_TOPICS: Array<{
 ];
 
 /**
+ * Quick topic chips strictly for Public / Free Visitors (Specific limited tasks)
+ */
+const FREE_VISITOR_TOPICS: Array<{
+  id: string;
+  labelAr: string;
+  labelEn: string;
+  queryAr: string;
+}> = [
+  {
+    id: 'visitor-plans',
+    labelAr: '💎 مقارنة الباقات والفرق بين Starter و Pro + AI',
+    labelEn: '💎 Compare Starter vs Pro + AI Plans',
+    queryAr: 'إيه الفرق بين باقة Starter وباقة Pro + AI وباقة Enterprise والأسعار؟',
+  },
+  {
+    id: 'visitor-quick-kcal',
+    labelAr: '🥗 تقدير سريع لسعراتي اليومية',
+    labelEn: '🥗 Quick Calorie Estimate',
+    queryAr: 'عايز تقدير سريع لسعراتي اليومية',
+  },
+  {
+    id: 'visitor-free-trial',
+    labelAr: '🎁 افتح خطة الـ ٧ أيام المجانية',
+    labelEn: '🎁 Explore Free 7-Day Trial Hub',
+    queryAr: 'إزاي أجرب التمارين والدايت المجاني الـ 7 أيام في المنصة؟',
+  },
+  {
+    id: 'visitor-subscribe',
+    labelAr: '💳 طريقة الاشتراك والدفع (إنستاباي / فودافون كاش)',
+    labelEn: '💳 How to Subscribe via InstaPay / Vodafone Cash',
+    queryAr: 'إزاي أشترك في المنصة وأدفع عبر إنستاباي أو فودافون كاش؟',
+  },
+];
+
+/**
+ * Scoped Free Visitor AI Engine (Specific public tasks only — Pro Coaching,
+ * Clinical Nutritionist Meal Plans, Injury Rehab & Live CRM remain exclusive to Pro/Enterprise)
+ */
+function buildPublicFreeVisitorReply(
+  query: string,
+  history: AssistantReply[],
+): Omit<AssistantReply, 'id' | 'sender'> {
+  const q = normalizeArabicText(query);
+  const mem = extractConversationMemory(history, query);
+
+  // Greeting for Free Visitor AI
+  const isPureGreeting =
+    /^(السلام عليكم|سلام عليكم|وعليكم السلام|اهلا|مرحبا|صباح الخير|مساء الخير|ازيك|عامل ايه|اخبارك|هاي|هلا|hello|hi|hey)/.test(
+      q,
+    ) && q.split(/\s+/).length <= 7;
+
+  if (isPureGreeting) {
+    return {
+      textAr:
+        'أهلاً بك في **المساعد المجاني للزوار (TitanFit Free AI)** 👋✨!\nأنا هنا لمساعدتك في **مهام محددة للزوار**: شرح باقات المنصة، إعطاؤك تقدير مبدئي سريع للسعرات، وتوجيهك للتجربة المجانية الـ ٧ أيام. (أما **كوتش الجيم المحترف + أخصائي التغذية بالجرامات + بدائل الإصابات** فهي متاحة حصرياً للمشتركين في باقة **Pro + AI** والأحدث!).',
+      textEn:
+        'Welcome to **TitanFit Free Visitor AI** 👋✨! I handle specific visitor tasks: explaining plans & pricing, quick calorie estimates, and guiding you to our Free 7-Day Trial. (Full Pro Gym Coach, gram-measured meal plans & injury rehab are unlocked in **Pro + AI**!).',
+      highlightsAr: [
+        '💎 **مقارنة الباقات:** اسألني عن الفرق بين باقة Starter (950 ج.م بدون AI) وباقة Pro + AI (1,950 ج.م شاملة الذكاء الاصطناعي الكامل).',
+        '🥗 **تقدير سريع للسعرات:** قولي وزنك فقط وهقولك تقدير سعراتك اليومية التقريبي.',
+        '🎁 **التجربة المجانية:** تقدر تستكشف قسم «جرب مجاناً» (٧ أيام تمارين وأنظمة مجانية).',
+      ],
+      highlightsEn: [
+        '💎 Compare Plans: Starter (950 EGP, no AI) vs Pro + AI (1,950 EGP, full AI Coach & Nutritionist).',
+        '🥗 Quick Calorie Estimate: Share your weight for a quick daily estimate.',
+        '🎁 Free 7-Day Trial: Explore our free starter workout & diet hub.',
+      ],
+      disclaimerAr: AI_DISCLAIMER_AR,
+      disclaimerEn: AI_DISCLAIMER_EN,
+    };
+  }
+
+  // Task 1: Plans, Pricing, AI differences & Subscription
+  if (
+    q.includes('باقه') ||
+    q.includes('باقات') ||
+    q.includes('سعر') && (q.includes('اشتراك') || q.includes('باقه') || q.includes('starter') || q.includes('pro')) ||
+    q.includes('starter') ||
+    q.includes('pro') ||
+    q.includes('enterprise') ||
+    q.includes('انستاباي') ||
+    q.includes('فودافون') ||
+    q.includes('اشترك') ||
+    q.includes('دفع')
+  ) {
+    return {
+      textAr:
+        '💎 **مقارنة باقات منصة TitanFit وطريقة الاشتراك:**\nنقدم ٣ باقات شهرية وسنوية مرنة للأندية والمدربين (الدفع عبر إنستاباي أو فودافون كاش على الرقم `01002169889` مع مراجعة الإيصال وتفعيل الحساب فوراً):',
+      textEn:
+        '💎 **TitanFit SaaS Plans & Subscription Guide:**\nWe offer 3 tiers (payable via InstaPay or Vodafone Cash to `01002169889`):',
+      highlightsAr: [
+        '1️⃣ **باقة البداية (Starter — 950 ج.م/شهر):** مثالية للجيم الصغير (حتى 200 مشترك و 5 موظفين) — إدارة الأعضاء بالـ QR والباقات والفواتير **بدون الذكاء الاصطناعي (No AI)**.',
+        '2️⃣ **باقة النمو الاحترافي (Pro + AI — 1,950 ج.م/شهر — الأكثر طلباً):** حتى 1,000 مشترك + **تفعيل كامل للذكاء الاصطناعي (كوتش جيم محترف + أخصائي تغذية بالجرامات + خبير المنصة والـ CRM)** + الحصص وبوابات الدخول والعمولات.',
+        '3️⃣ **باقة النخبة (Enterprise — 3,450 ج.م/شهر):** مشتركين ومدربين غير محدودين + **باقة AI الكاملة + VIP** + تطبيق المتدرب White-Label + تقارير BI واستوديو الفيديو.',
+        '🏢 **ملاحظة الفروع:** كل جيم مشترك يضيف ويدير فروعه الخاصة به فقط من الإعدادات.',
+      ],
+      highlightsEn: [
+        '1️⃣ Starter (950 EGP/mo): Up to 200 members, core CRM & billing, No AI.',
+        '2️⃣ Pro + AI (1,950 EGP/mo): Up to 1,000 members + Full Pro AI Coach, Sports Nutritionist & Live CRM AI.',
+        '3️⃣ Enterprise (3,450 EGP/mo): Unlimited scale + Full VIP AI Suite + White-Label PWA.',
+      ],
+      actionSection: 'PUBLIC_STOREFRONT',
+      actionScrollId: 'saas-pricing-section',
+      actionLabelAr: '💎 انتقل لجدول الباقات واختر باقتك الآن',
+      actionLabelEn: '💎 View Pricing Plans & Subscribe Now',
+      disclaimerAr: AI_DISCLAIMER_AR,
+      disclaimerEn: AI_DISCLAIMER_EN,
+    };
+  }
+
+  // Task 2: Free 7-Day Trial Hub guide
+  if (
+    q.includes('مجاني') ||
+    q.includes('7 ايام') ||
+    q.includes('٧ ايام') ||
+    q.includes('تجربه') ||
+    q.includes('free trial')
+  ) {
+    return {
+      textAr:
+        '🎁 **التجربة المجانية (خطة الـ ٧ أيام):**\nيمكنك الآن تجربة ٧ أيام كاملة من الفيديوهات التدريبية والأنظمة الغذائية العامة مجاناً داخل قسم **«تمارين فيديو وأنظمة مجانية»** قبل الاشتراك!',
+      textEn:
+        '🎁 **Free 7-Day Trial Hub:**\nYou can explore 7 days of starter workout videos and general nutrition templates right away!',
+      highlightsAr: [
+        '🎬 فيديوهات تمارين مشروحة بالحركة التشريحية.',
+        '🧮 حاسبة السعرات المجانية في الصفحة الرئيسية.',
+        '🔒 للحصول على خطط مخصصة بالجرامات ومتابعة كوتش AI شخصي 24/7، اشترك في باقة **Pro + AI**.',
+      ],
+      actionSection: 'FREE_TRIAL_HUB',
+      actionLabelAr: '🎁 افتح قسم التجربة المجانية (٧ أيام) الآن',
+      actionLabelEn: '🎁 Open Free 7-Day Trial Hub Now',
+      disclaimerAr: AI_DISCLAIMER_AR,
+      disclaimerEn: AI_DISCLAIMER_EN,
+    };
+  }
+
+  // Task 3: Quick basic calorie estimate (WITHOUT Pro meal plans / swaps / macros breakdown)
+  if (
+    mem.weightKg ||
+    q.includes('سعر') ||
+    q.includes('كالوري') ||
+    q.includes('وزني') ||
+    q.includes('اخس') ||
+    q.includes('تخسيس')
+  ) {
+    const w = mem.weightKg || 80;
+    const estCut = Math.round(w * 23);
+    const estMaint = Math.round(w * 30);
+    return {
+      textAr: `🥗 **تقدير مبدئي سريع للزوار (لوزن ~${w} كجم):**\n• سعرات الثبات التقريبية: **~${estMaint} سعرة/يوم**\n• سعرات النزول التقريبية: **~${estCut} سعرة/يوم**`,
+      textEn: `🥗 **Quick Visitor Estimate (~${w}kg):** Maintenance ~${estMaint} kcal/day | Fat-loss ~${estCut} kcal/day.`,
+      highlightsAr: [
+        '💡 يمكنك استخدام **حاسبة السعرات المجانية** أسفل الصفحة لحساب وزنك وطولك بالتفصيل.',
+        '🔒 **مميزات باقة Pro + AI فقط:** حساب Mifflin-St Jeor الدقيق، جدول ٤-٥ وجبات مصرية بالجرامات، بدائل الأكل الاقتصادية، وجدول تمرين Push/Pull/Legs كامل مع بدائل إصابات المفاصل!',
+      ],
+      highlightsEn: [
+        '💡 Use our free on-page Calorie Calculator for your exact stats.',
+        '🔒 Pro + AI Exclusive: Gram-accurate 4-5 meal Egyptian diet plans, budget food swaps, and full Pro Gym Coach splits.',
+      ],
+      actionSection: 'PUBLIC_STOREFRONT',
+      actionScrollId: 'saas-pricing-section',
+      actionLabelAr: '👑 اشترك في باقة Pro + AI لتفعيل أخصائي التغذية الكامل',
+      actionLabelEn: '👑 Upgrade to Pro + AI for Full Nutritionist',
+      disclaimerAr: AI_DISCLAIMER_AR,
+      disclaimerEn: AI_DISCLAIMER_EN,
+    };
+  }
+
+  // Pro-Only Gate for advanced coaching, diet tables, injuries, supplements, or live CRM
+  const asksProOnly =
+    q.includes('خطه') ||
+    q.includes('جدول') ||
+    q.includes('تمرين') ||
+    q.includes('تمارين') ||
+    q.includes('دايت') ||
+    q.includes('وجب') ||
+    q.includes('بديل') ||
+    q.includes('اصاب') ||
+    q.includes('ركب') ||
+    q.includes('قطنيه') ||
+    q.includes('مكمل') ||
+    q.includes('كرياتين') ||
+    q.includes('تقرير') ||
+    q.includes('مشترك') ||
+    q.includes('workout') ||
+    q.includes('diet') ||
+    q.includes('plan');
+
+  if (asksProOnly) {
+    return {
+      textAr:
+        '🔒 **هذه الميزة متقدمة وحصرية لنسخة الذكاء الاصطناعي الاحترافية (Pro + AI) والأحدث!**\nأنت تستخدم الآن **المساعد المجاني للزوار** والمخصص فقط لـ:\n1) شرح باقات المنصة وطريقة الاشتراك\n2) تقدير مبدئي سريع للسعرات\n3) توجيهك للتجربة المجانية الـ ٧ أيام.',
+      textEn:
+        '🔒 **This advanced capability is exclusive to the Pro + AI and Enterprise editions!**\nThe Free Visitor AI is scoped to platform pricing tour, quick calorie estimates, and Free 7-Day Trial guidance.',
+      highlightsAr: [
+        '🏋️‍♂️ **متاح في Pro + AI:** تصميم جداول التمارين الكاملة (PPL / Upper-Lower) + بدائل إصابات الركبة والظهر والكتف.',
+        '🥗 **متاح في Pro + AI:** جداول ٤-٥ وجبات مصرية بالجرامات + بدائل الأكل الاقتصادية + بروتوكول المكملات.',
+        '📊 **متاح في Pro + AI:** تحليل بيانات الجيم لحظياً والبحث عن المشتركين والتوجيه الذكي لكل أقسام المنصة.',
+      ],
+      actionSection: 'PUBLIC_STOREFRONT',
+      actionScrollId: 'saas-pricing-section',
+      actionLabelAr: '⚡ فعّل النسخة الاحترافية الآن مع باقة Pro + AI',
+      actionLabelEn: '⚡ Unlock Pro + AI Now',
+      disclaimerAr: AI_DISCLAIMER_AR,
+      disclaimerEn: AI_DISCLAIMER_EN,
+    };
+  }
+
+  return {
+    textAr:
+      '👋 أهلاً بك في **المساعد المجاني للزوار (TitanFit Free AI)**!\nمهامي هنا محددة لمساعدتك في التعرف على المنصة قبل الاشتراك:',
+    textEn:
+      '👋 Welcome to **TitanFit Free Visitor AI**! Here are the specific visitor tasks I can help you with:',
+    highlightsAr: [
+      '💎 اسألني عن **الفرق بين باقة Starter و Pro + AI و Enterprise** والأسعار.',
+      '🥗 اكتبلي **وزنك** عشان أديلك تقدير مبدئي سريع للسعرات.',
+      '💳 اسألني عن **طريقة الاشتراك والدفع عبر إنستاباي وفودافون كاش**.',
+      '👑 ملاحظة: الكوتش الذكي المتكامل وأخصائي التغذية بالجرامات متاحان حصرياً في باقة **Pro + AI** والأحدث.',
+    ],
+    actionSection: 'PUBLIC_STOREFRONT',
+    actionScrollId: 'saas-pricing-section',
+    actionLabelAr: '💎 استعرض باقات Pro + AI الآن',
+    actionLabelEn: '💎 View Pro + AI Plans',
+    disclaimerAr: AI_DISCLAIMER_AR,
+    disclaimerEn: AI_DISCLAIMER_EN,
+  };
+}
+
+/**
  * Context-Aware Multi-Turn Conversational AI Engine (Pro Gym Coach + Clinical Nutritionist + Live Platform Intelligence)
  */
 function buildSmartReply(
@@ -1120,9 +1349,13 @@ export function SmartAiAssistantWidget() {
     isAuthenticated &&
     (activeRole === 'GYM_OWNER' || activeRole === 'SUPER_ADMIN' || activeRole === 'BRANCH_MANAGER');
 
-  // AI is active when plan has AI enabled (PRO or ENTERPRISE), or for Super Admin, or on public storefront preview
-  const canUseAi =
-    !isAuthenticated || activeRole === 'SUPER_ADMIN' || isAiAllowed;
+  // 3 distinct AI tiers:
+  // 1) isFreeVisitorMode (!isAuthenticated): Scoped Free Visitor AI (Pricing, Quick Estimate, Free 7-Day Trial only)
+  // 2) Starter Locked (isAuthenticated && !isAiAllowed && activeRole !== 'SUPER_ADMIN'): Upgrade Paywall Gate
+  // 3) Full Pro AI (isAuthenticated && (isAiAllowed || activeRole === 'SUPER_ADMIN')): Full Coach + Nutritionist + Live CRM
+  const isFreeVisitorMode = !isAuthenticated;
+  const isProAiEnabled = isAuthenticated && (activeRole === 'SUPER_ADMIN' || isAiAllowed);
+  const canUseAi = isFreeVisitorMode || isProAiEnabled;
 
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -1131,20 +1364,34 @@ export function SmartAiAssistantWidget() {
     {
       id: 'welcome-ai',
       sender: 'AI',
-      textAr:
-        'أهلاً بك يا بطل! أنا **كوتش الجيم المحترف (Pro Gym Coach)** و**أخصائي التغذية الرياضية والعلاجية (Sports Nutritionist)** و**خبير المنصة الذكي** 🤖💪🥗.\nاحكيلي عن وزنك وطولك وهدفك، أو اسألني عن أي تمرين، بديل إصابة، جدول دايت بالجرامات، أو أي أداة داخل المنصة!',
-      textEn:
-        'Welcome champion! I am your **Pro AI Gym Coach**, **Clinical & Sports Nutritionist**, and **Platform Expert** 🤖💪🥗. Share your weight, height, and goal or ask about workouts, injury swaps, macro meal plans, or any platform feature!',
-      highlightsAr: [
-        '🏋️‍♂️ **كوتش جيم كامل:** جداول Push/Pull/Legs و Upper/Lower وبدائل إصابات الركبة والظهر والكتف.',
-        '🥗 **أخصائي تغذية دقيق:** حساب BMR/TDEE بمعادلة Mifflin-St Jeor وجداول وجبات مصرية بالجرامات.',
-        '📊 **فاهم المنصة بالكامل:** مربوط ببيانات ناديك ويشرح ويوجهك لكل قسم بضغطة زر.',
-      ],
-      highlightsEn: [
-        '🏋️‍♂️ Full Pro Gym Coach: Splits, tempo, RPE, and joint-safe injury substitutions.',
-        '🥗 Clinical Sports Nutritionist: Mifflin-St Jeor BMR/TDEE & gram-accurate Egyptian meal plans.',
-        '📊 Full Platform Intelligence: Connected to live gym CRM data and all platform sections.',
-      ],
+      textAr: isFreeVisitorMode
+        ? 'أهلاً بك في **المساعد المجاني للزوار (TitanFit Free AI)** 👋✨!\nأنا هنا لمساعدتك في **مهام محددة للزوار**: شرح باقات المنصة، إعطاؤك تقدير مبدئي سريع للسعرات، وتوجيهك للتجربة المجانية الـ ٧ أيام. (أما **كوتش الجيم المحترف + أخصائي التغذية بالجرامات + بدائل الإصابات** فهي متاحة حصرياً في باقة **Pro + AI** والأحدث!).'
+        : 'أهلاً بك يا بطل! أنا **كوتش الجيم المحترف (Pro Gym Coach)** و**أخصائي التغذية الرياضية والعلاجية (Sports Nutritionist)** و**خبير المنصة الذكي** 🤖💪🥗.\nاحكيلي عن وزنك وطولك وهدفك، أو اسألني عن أي تمرين، بديل إصابة، جدول دايت بالجرامات، أو أي أداة داخل المنصة!',
+      textEn: isFreeVisitorMode
+        ? 'Welcome to **TitanFit Free Visitor AI** 👋✨! I handle specific visitor tasks: explaining plans & pricing, quick calorie estimates, and guiding you to the Free 7-Day Trial. (Full Pro Gym Coach & Clinical Nutritionist are exclusive to **Pro + AI**!).'
+        : 'Welcome champion! I am your **Pro AI Gym Coach**, **Clinical & Sports Nutritionist**, and **Platform Expert** 🤖💪🥗. Share your weight, height, and goal or ask about workouts, injury swaps, macro meal plans, or any platform feature!',
+      highlightsAr: isFreeVisitorMode
+        ? [
+            '💎 **مقارنة الباقات:** الفرق بين Starter (بدون AI) و Pro + AI و Enterprise.',
+            '🥗 **تقدير سريع للسعرات:** قولي وزنك فقط لحساب السعرات التقريبية.',
+            '🎁 **التجربة المجانية:** جرب خطة الـ ٧ أيام المجانية قبل الاشتراك.',
+          ]
+        : [
+            '🏋️‍♂️ **كوتش جيم كامل:** جداول Push/Pull/Legs و Upper/Lower وبدائل إصابات الركبة والظهر والكتف.',
+            '🥗 **أخصائي تغذية دقيق:** حساب BMR/TDEE بمعادلة Mifflin-St Jeor وجداول وجبات مصرية بالجرامات.',
+            '📊 **فاهم المنصة بالكامل:** مربوط ببيانات ناديك ويشرح ويوجهك لكل قسم بضغطة زر.',
+          ],
+      highlightsEn: isFreeVisitorMode
+        ? [
+            '💎 Compare Plans: Starter (No AI) vs Pro + AI vs Enterprise.',
+            '🥗 Quick Calorie Estimate: Share your weight for a quick daily estimate.',
+            '🎁 Free 7-Day Trial: Explore free starter workouts & diets.',
+          ]
+        : [
+            '🏋️‍♂️ Full Pro Gym Coach: Splits, tempo, RPE, and joint-safe injury substitutions.',
+            '🥗 Clinical Sports Nutritionist: Mifflin-St Jeor BMR/TDEE & gram-accurate Egyptian meal plans.',
+            '📊 Full Platform Intelligence: Connected to live gym CRM data and all platform sections.',
+          ],
       disclaimerAr: AI_DISCLAIMER_AR,
       disclaimerEn: AI_DISCLAIMER_EN,
     },
@@ -1185,7 +1432,9 @@ export function SmartAiAssistantWidget() {
       textEn: text,
     };
 
-    const replyData = buildSmartReply(text, messages, isGymOwnerAccount, liveCtx);
+    const replyData = isFreeVisitorMode
+      ? buildPublicFreeVisitorReply(text, messages)
+      : buildSmartReply(text, messages, isGymOwnerAccount, liveCtx);
     const aiMsg: AssistantReply = {
       id: `ai-${Date.now() + 1}`,
       sender: 'AI',
@@ -1197,7 +1446,7 @@ export function SmartAiAssistantWidget() {
   };
 
   const handleExecuteNavigation = (msg: AssistantReply) => {
-    if (!isGymOwnerAccount) return;
+    if (!isGymOwnerAccount && !isFreeVisitorMode) return;
     if (msg.actionSection) {
       setActiveSection(msg.actionSection);
       if (msg.actionScrollId) {
@@ -1218,22 +1467,22 @@ export function SmartAiAssistantWidget() {
 
   return (
     <>
-      {/* Floating Launcher Pill in Bottom Corner */}
-      <div className="fixed bottom-5 end-5 z-50 flex flex-col items-end gap-2">
+      {/* Floating Launcher Pill in Bottom Corner (Compact on Mobile, Rich on Tablet/Desktop) */}
+      <div className="fixed bottom-4 end-3 z-50 flex flex-col items-end gap-2 sm:bottom-5 sm:end-5">
         <motion.button
           type="button"
           data-testid="smart-ai-assistant-launcher"
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.96 }}
           onClick={() => setIsOpen((o) => !o)}
-          className={`flex items-center gap-2.5 rounded-full border px-4 py-3 text-xs font-black shadow-2xl transition ${
+          className={`flex items-center gap-2 rounded-full border px-3 py-2.5 text-xs font-black shadow-2xl transition sm:gap-2.5 sm:px-4 sm:py-3 ${
             canUseAi
               ? 'border-amber-400/60 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white ring-2 ring-amber-500/30 hover:ring-amber-400 dark:from-amber-500 dark:via-[#D4AF37] dark:to-amber-500 dark:text-slate-950'
               : 'border-slate-700 bg-slate-900/95 text-slate-200 ring-2 ring-slate-700/50 hover:border-amber-500/50'
           }`}
         >
           <span
-            className={`flex h-7 w-7 items-center justify-center rounded-full ${
+            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
               canUseAi
                 ? 'bg-amber-500 text-slate-950 dark:bg-slate-950 dark:text-amber-400'
                 : 'bg-slate-800 text-amber-400'
@@ -1243,31 +1492,46 @@ export function SmartAiAssistantWidget() {
           </span>
           <div className="text-start">
             <div className="flex items-center gap-1.5">
-              <p className="text-xs font-black leading-none">
-                {isAr ? 'كوتش الجيم وأخصائي التغذية (AI Pro)' : 'AI Gym Coach & Nutritionist'}
+              <p className="text-[11px] font-black leading-none sm:text-xs">
+                {isFreeVisitorMode
+                  ? isAr
+                    ? 'مساعد الزوار (AI مجاني)'
+                    : 'Free Visitor AI'
+                  : isAr
+                    ? 'كوتش الجيم وأخصائي التغذية (AI Pro)'
+                    : 'AI Gym Coach & Nutritionist'}
               </p>
               {!canUseAi && (
                 <span className="rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-black text-amber-400 border border-amber-500/40">
                   PRO
                 </span>
               )}
+              {isFreeVisitorMode && (
+                <span className="rounded-md bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-black text-emerald-300 border border-emerald-500/40">
+                  FREE
+                </span>
+              )}
             </div>
-            <p className="mt-0.5 text-[10px] font-bold text-amber-300 dark:text-slate-800">
+            <p className="mt-0.5 hidden text-[10px] font-bold text-amber-300 dark:text-slate-800 sm:block">
               {!canUseAi
                 ? isAr
                   ? '🔒 متاح في باقة Pro و Enterprise — اضغط للترقية'
                   : '🔒 Available in Pro & Enterprise — Click to Upgrade'
-                : isAr
-                  ? isGymOwnerAccount
-                    ? 'كوتش جيم + أخصائي تغذية + خبير المنصة ✨'
-                    : 'كوتش جيم + أخصائي تغذية ذكي فوري ✨'
-                  : 'Pro Coach + Nutritionist + Platform AI ✨'}
+                : isFreeVisitorMode
+                  ? isAr
+                    ? 'مهام الزوار: الباقات + السعرات السريعة ✨'
+                    : 'Visitor Tasks: Plans + Quick Estimates ✨'
+                  : isAr
+                    ? isGymOwnerAccount
+                      ? 'كوتش جيم + أخصائي تغذية + خبير المنصة ✨'
+                      : 'كوتش جيم + أخصائي تغذية ذكي فوري ✨'
+                    : 'Pro Coach + Nutritionist + Platform AI ✨'}
             </p>
           </div>
         </motion.button>
       </div>
 
-      {/* Interactive Drawer / Modal */}
+      {/* Interactive Drawer / Modal (Responsive across Mobile, Tablet & Desktop) */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -1276,22 +1540,30 @@ export function SmartAiAssistantWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.96 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-20 end-4 z-50 flex h-[640px] max-h-[86vh] w-[94vw] max-w-md flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-[#0B0F19] sm:end-6"
+            className="fixed bottom-18 start-2.5 end-2.5 z-50 flex h-[78dvh] max-h-[85dvh] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-[#0B0F19] sm:start-auto sm:bottom-20 sm:end-6 sm:h-[640px] sm:w-[430px]"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 px-5 py-3.5 text-white dark:border-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 px-4 py-3 text-white dark:border-slate-800 sm:px-5 sm:py-3.5">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500 text-slate-950 shadow-md">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-slate-950 shadow-md sm:h-10 sm:w-10">
                   {canUseAi ? <Bot className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
                 </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="text-sm font-black text-white">
-                      {isAr
-                        ? 'كوتش الجيم وأخصائي التغذية (AI Pro)'
-                        : 'TitanFit AI Coach & Nutritionist'}
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <h3 className="text-xs font-black text-white sm:text-sm">
+                      {isFreeVisitorMode
+                        ? isAr
+                          ? 'المساعد المجاني للزوار (AI)'
+                          : 'TitanFit Free Visitor AI'
+                        : isAr
+                          ? 'كوتش الجيم وأخصائي التغذية (AI Pro)'
+                          : 'TitanFit AI Coach & Nutritionist'}
                     </h3>
-                    {canUseAi ? (
+                    {isFreeVisitorMode ? (
+                      <span className="rounded-md bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-black text-emerald-300 border border-emerald-500/40">
+                        {isAr ? 'مهام محددة' : 'Visitor Edition'}
+                      </span>
+                    ) : canUseAi ? (
                       <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
                     ) : (
                       <span className="rounded-md bg-rose-500/20 px-1.5 py-0.5 text-[9px] font-black text-rose-300 border border-rose-500/40">
@@ -1305,9 +1577,13 @@ export function SmartAiAssistantWidget() {
                         ? isAr
                           ? 'حصرياً في باقة Pro و Enterprise'
                           : 'Exclusive to Pro & Enterprise Plans'
-                        : isAr
-                          ? 'مدرب جيم + أخصائي تغذية + خبير المنصة'
-                          : 'Gym Coach + Nutritionist + Platform Guide'}
+                        : isFreeVisitorMode
+                          ? isAr
+                            ? 'النسخة الاحترافية الكاملة متاحة في باقة Pro + AI'
+                            : 'Full Pro AI Coach unlocked in Pro + AI'
+                          : isAr
+                            ? 'مدرب جيم + أخصائي تغذية + خبير المنصة'
+                            : 'Gym Coach + Nutritionist + Platform Guide'}
                     </span>
                     {canUseAi && activeMemory.weightKg && (
                       <span className="rounded-md bg-emerald-500/20 px-1.5 py-0.5 font-mono text-[10px] font-black text-emerald-300 border border-emerald-500/30">
@@ -1432,38 +1708,48 @@ export function SmartAiAssistantWidget() {
             ) : (
               <>
                 {/* Role / Mode Quick Switcher Bar */}
-                <div className="flex items-center justify-between gap-1.5 border-b border-slate-200 bg-slate-100/90 px-3.5 py-2 dark:border-slate-800 dark:bg-slate-900/90">
-                  <button
-                    type="button"
-                    onClick={() => setActiveQuickTab('COACH_NUTRITION')}
-                    className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-black transition ${
-                      activeQuickTab === 'COACH_NUTRITION'
-                        ? 'bg-amber-500 text-slate-950 shadow-2xs'
-                        : 'text-slate-600 hover:bg-slate-200/70 dark:text-slate-300 dark:hover:bg-slate-800'
-                    }`}
-                  >
-                    <HeartPulse className="h-3.5 w-3.5" />
+                {isFreeVisitorMode ? (
+                  <div className="flex items-center justify-between border-b border-emerald-500/20 bg-emerald-500/10 px-3.5 py-2 text-[11px] font-black text-emerald-800 dark:text-emerald-300">
                     <span>
-                      {isAr ? '🏋️‍♂️ كوتش الجيم وأخصائي التغذية' : '🏋️‍♂️ Coach & Nutritionist'}
+                      {isAr
+                        ? '✨ نسخة الزوار المجانية: الباقات + السعرات السريعة + التجربة المجانية'
+                        : '✨ Free Visitor Edition: Plans + Quick Calories + Free Trial'}
                     </span>
-                  </button>
-                  {isGymOwnerAccount && (
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-1.5 border-b border-slate-200 bg-slate-100/90 px-3.5 py-2 dark:border-slate-800 dark:bg-slate-900/90">
                     <button
                       type="button"
-                      onClick={() => setActiveQuickTab('PLATFORM')}
+                      onClick={() => setActiveQuickTab('COACH_NUTRITION')}
                       className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-black transition ${
-                        activeQuickTab === 'PLATFORM'
-                          ? 'bg-emerald-600 text-white shadow-2xs'
+                        activeQuickTab === 'COACH_NUTRITION'
+                          ? 'bg-amber-500 text-slate-950 shadow-2xs'
                           : 'text-slate-600 hover:bg-slate-200/70 dark:text-slate-300 dark:hover:bg-slate-800'
                       }`}
                     >
-                      <Compass className="h-3.5 w-3.5" />
+                      <HeartPulse className="h-3.5 w-3.5" />
                       <span>
-                        {isAr ? '📊 خبير المنصة وبيانات الجيم' : '📊 Platform & Live CRM'}
+                        {isAr ? '🏋️‍♂️ كوتش الجيم وأخصائي التغذية' : '🏋️‍♂️ Coach & Nutritionist'}
                       </span>
                     </button>
-                  )}
-                </div>
+                    {isGymOwnerAccount && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveQuickTab('PLATFORM')}
+                        className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-black transition ${
+                          activeQuickTab === 'PLATFORM'
+                            ? 'bg-emerald-600 text-white shadow-2xs'
+                            : 'text-slate-600 hover:bg-slate-200/70 dark:text-slate-300 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        <Compass className="h-3.5 w-3.5" />
+                        <span>
+                          {isAr ? '📊 خبير المنصة وبيانات الجيم' : '📊 Platform & Live CRM'}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {/* Messages Stream */}
                 <div
@@ -1508,7 +1794,7 @@ export function SmartAiAssistantWidget() {
                           </p>
                         )}
 
-                        {isGymOwnerAccount && msg.actionSection && (
+                        {(isGymOwnerAccount || isFreeVisitorMode) && msg.actionSection && (
                           <button
                             type="button"
                             data-testid={`ai-navigate-btn-${msg.actionSection}`}
@@ -1538,29 +1824,53 @@ export function SmartAiAssistantWidget() {
                     </div>
                   ))}
 
-                  {/* Quick Topic Chips based on activeQuickTab */}
-                  {activeQuickTab === 'COACH_NUTRITION' && (
-                    <div data-testid="ai-coach-nutrition-topics" className="pt-1">
+                  {/* Quick Topic Chips based on Tier & activeQuickTab */}
+                  {isFreeVisitorMode ? (
+                    <div data-testid="ai-free-visitor-topics" className="pt-1">
                       <p className="mb-2 text-[11px] font-black text-slate-500 dark:text-slate-400">
-                        🏋️‍♂️🥗{' '}
+                        ✨{' '}
                         {isAr
-                          ? 'استشارات فورية للمتدرب والمدرب (كوتش جيم + أخصائي تغذية):'
-                          : 'Instant Coach & Sports Nutritionist Prompts:'}
+                          ? 'مهام مساعد الزوار المجاني (النسخة الاحترافية متاحة في Pro + AI):'
+                          : 'Free Visitor AI Tasks (Full AI Coach unlocked in Pro + AI):'}
                       </p>
                       <div className="flex flex-wrap gap-1.5">
-                        {TRAINEE_COACH_TOPICS.map((topic) => (
+                        {FREE_VISITOR_TOPICS.map((topic) => (
                           <button
                             key={topic.id}
                             type="button"
-                            data-testid={`ai-coach-topic-${topic.id}`}
+                            data-testid={`ai-visitor-topic-${topic.id}`}
                             onClick={() => handleSendQuery(topic.queryAr)}
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-slate-700 shadow-2xs transition hover:border-amber-400 hover:bg-amber-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-amber-500/50"
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-slate-700 shadow-2xs transition hover:border-emerald-500 hover:bg-emerald-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-emerald-500/50"
                           >
                             <span>{isAr ? topic.labelAr : topic.labelEn}</span>
                           </button>
                         ))}
                       </div>
                     </div>
+                  ) : (
+                    activeQuickTab === 'COACH_NUTRITION' && (
+                      <div data-testid="ai-coach-nutrition-topics" className="pt-1">
+                        <p className="mb-2 text-[11px] font-black text-slate-500 dark:text-slate-400">
+                          🏋️‍♂️🥗{' '}
+                          {isAr
+                            ? 'استشارات فورية للمتدرب والمدرب (كوتش جيم + أخصائي تغذية):'
+                            : 'Instant Coach & Sports Nutritionist Prompts:'}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {TRAINEE_COACH_TOPICS.map((topic) => (
+                            <button
+                              key={topic.id}
+                              type="button"
+                              data-testid={`ai-coach-topic-${topic.id}`}
+                              onClick={() => handleSendQuery(topic.queryAr)}
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-slate-700 shadow-2xs transition hover:border-amber-400 hover:bg-amber-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-amber-500/50"
+                            >
+                              <span>{isAr ? topic.labelAr : topic.labelEn}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )
                   )}
 
                   {isGymOwnerAccount && activeQuickTab === 'PLATFORM' && (
