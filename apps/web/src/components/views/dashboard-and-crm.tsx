@@ -2246,7 +2246,8 @@ export function PaymentsBillingView() {
   const isAr = locale === 'ar';
 
   const [selectedMemberId, setSelectedMemberId] = useState(members[0]?.id ?? '');
-  const [selectedPlanId, setSelectedPlanId] = useState(members[0]?.planId ?? plans[0]?.id ?? 'plan-annual-vip');
+  const [selectedPlanId, setSelectedPlanId] = useState(members[0]?.planId ?? plans[0]?.id ?? '');
+  const [customInvoiceAmount, setCustomInvoiceAmount] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<InvoiceItem['method']>('CASH');
   const [couponCode, setCouponCode] = useState('');
   const [referenceCode, setReferenceCode] = useState('');
@@ -2259,13 +2260,7 @@ export function PaymentsBillingView() {
   const [viewingReceiptUrl, setViewingReceiptUrl] = useState<string | null>(null);
   const [viewingReceiptInvoiceNum, setViewingReceiptInvoiceNum] = useState<string | undefined>(undefined);
 
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? plans[0] ?? {
-    id: 'plan-custom',
-    nameAr: 'باقة تدريب عامة',
-    nameEn: 'General Plan',
-    priceEgp: 1500,
-    durationDays: 30,
-  };
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? plans[0] ?? null;
 
   const discountRate =
     couponCode.trim().toUpperCase() === 'RAMADAN20'
@@ -2275,7 +2270,7 @@ export function PaymentsBillingView() {
         : couponCode.trim().toUpperCase() === 'CORPORATE25'
           ? 0.25
           : 0;
-  const subtotal = selectedPlan.priceEgp;
+  const subtotal = selectedPlan ? selectedPlan.priceEgp : Math.max(0, Number(customInvoiceAmount) || 0);
   const discount = Math.round(subtotal * discountRate);
   const net = subtotal - discount;
   const vat = Math.round(net * 0.14);
@@ -2298,14 +2293,23 @@ export function PaymentsBillingView() {
       );
       return;
     }
+    if (subtotal <= 0) {
+      showToast(
+        isAr
+          ? '⚠️ يُرجى اختيار باقة اشتراك أو إدخال مبلغ الفاتورة الصحيح أولاً!'
+          : 'Please select a plan or enter a valid invoice amount first!',
+      );
+      return;
+    }
     const inv = createInvoicePayment({
       memberId: selectedMemberId,
-      planId: selectedPlanId,
+      planId: selectedPlan?.id || '',
       method: paymentMethod,
       couponCode,
       referenceCode,
       receiptUrl: cashierReceiptUrl || undefined,
       receiptFileName: cashierReceiptFileName || undefined,
+      customAmountEgp: selectedPlan ? undefined : subtotal,
     });
     setLastIssuedInvoice(inv);
     setCashierReceiptUrl(null);
@@ -2368,21 +2372,47 @@ export function PaymentsBillingView() {
 
                 <div>
                   <label htmlFor="checkout-plan-select" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                    {isAr ? 'باقة الاشتراك المحددة' : 'Subscription Plan'}
+                    {plans.length > 0
+                      ? isAr
+                        ? 'باقة الاشتراك المحددة'
+                        : 'Subscription Plan'
+                      : isAr
+                        ? 'مبلغ الفاتورة (ج.م) — أو أضف باقة من قسم الباقات'
+                        : 'Invoice Amount (EGP) — or create a plan first'}
                   </label>
-                  <select
-                    id="checkout-plan-select"
-                    aria-label={isAr ? 'باقة الاشتراك المحددة' : 'Subscription Plan'}
-                    value={selectedPlanId}
-                    onChange={(e) => setSelectedPlanId(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-amber-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-                  >
-                    {plans.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {isAr ? p.nameAr : p.nameEn} — {p.priceEgp.toLocaleString()} EGP
-                      </option>
-                    ))}
-                  </select>
+                  {plans.length > 0 ? (
+                    <select
+                      id="checkout-plan-select"
+                      aria-label={isAr ? 'باقة الاشتراك المحددة' : 'Subscription Plan'}
+                      value={selectedPlanId}
+                      onChange={(e) => setSelectedPlanId(e.target.value)}
+                      className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-amber-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    >
+                      {plans.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {isAr ? p.nameAr : p.nameEn} — {p.priceEgp.toLocaleString()} EGP
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="mt-1 flex gap-2">
+                      <input
+                        type="number"
+                        min={0}
+                        value={customInvoiceAmount}
+                        onChange={(e) => setCustomInvoiceAmount(e.target.value)}
+                        placeholder={isAr ? 'أدخل المبلغ الفعلي (مثال: 1200)' : 'Enter amount (EGP)'}
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-sm text-slate-900 focus:bg-white focus:border-amber-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setActiveSection('SUBSCRIPTIONS')}
+                        className="shrink-0 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-black text-amber-700 hover:bg-amber-500/20 dark:text-amber-300"
+                      >
+                        {isAr ? '+ باقة' : '+ Plan'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </>
             )}

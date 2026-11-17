@@ -904,6 +904,9 @@ export interface PlatformStoreContextValue {
     referenceCode?: string;
     receiptUrl?: string;
     receiptFileName?: string;
+    customAmountEgp?: number;
+    customPlanNameAr?: string;
+    customPlanNameEn?: string;
   }) => InvoiceItem;
   attachReceiptToInvoice: (invoiceId: string, receiptUrl: string, receiptFileName?: string) => void;
   refundInvoice: (invoiceId: string) => void;
@@ -1997,7 +2000,7 @@ export function PlatformProvider({
   };
 
   const addMember: PlatformStoreContextValue['addMember'] = (data) => {
-    const plan = plans.find((p) => p.id === data.planId) ?? plans[0]!;
+    const plan = plans.find((p) => p.id === data.planId) ?? plans[0] ?? null;
     const code = `TF-2026-${1006 + members.length}`;
     const initials = data.fullNameEn
       .split(' ')
@@ -2007,6 +2010,7 @@ export function PlatformProvider({
       .toUpperCase();
     const tempPassword = `TF@${Math.floor(1000 + Math.random() * 9000)}`;
     const selectedCoach = staff.find((s) => s.id === data.assignedTrainerId) ?? staff[0];
+    const durationDays = plan?.durationDays ?? 30;
     const newMember: MemberItem = {
       id: `mem-${Date.now()}`,
       code,
@@ -2016,24 +2020,24 @@ export function PlatformProvider({
       phone: data.phone,
       email: data.email,
       gender: data.gender,
-      branchId: data.branchId === 'ALL' ? 'br-new-cairo' : data.branchId,
+      branchId: data.branchId === 'ALL' ? (branches[0]?.id || 'MAIN') : data.branchId,
       status: 'ACTIVE',
-      planNameEn: plan.nameEn,
-      planNameAr: plan.nameAr,
-      planId: plan.id,
+      planNameEn: plan?.nameEn || 'General Membership (30 Days)',
+      planNameAr: plan?.nameAr || 'عضوية عامة (٣٠ يوماً)',
+      planId: plan?.id || 'plan-general',
       startDate: new Date().toISOString().slice(0, 10),
-      endDate: new Date(Date.now() + plan.durationDays * 86400000).toISOString().slice(0, 10),
-      remainingSessions: plan.sessionsCount,
-      freezeDaysRemaining: plan.maxFreezeDays,
+      endDate: new Date(Date.now() + durationDays * 86400000).toISOString().slice(0, 10),
+      remainingSessions: plan?.sessionsCount ?? null,
+      freezeDaysRemaining: plan?.maxFreezeDays ?? 7,
       tags: ['New Member', 'AES-256 Vault'],
       emergencyContactName: data.emergencyContactName || 'On File',
       emergencyContactPhone: data.emergencyContactPhone || '+201000000000',
       bloodType: data.bloodType || 'O+',
       medicalConditions: data.medicalConditions || 'None',
       injuries: 'None',
-      assignedTrainerId: selectedCoach?.id || 'stf-1',
-      assignedTrainerEn: selectedCoach?.nameEn || 'Coach Omar Hassan',
-      assignedTrainerAr: selectedCoach?.nameAr || 'كابتن عمر حسن',
+      assignedTrainerId: selectedCoach?.id || undefined,
+      assignedTrainerEn: selectedCoach?.nameEn || 'Unassigned',
+      assignedTrainerAr: selectedCoach?.nameAr || 'غير معين',
       checkInsCount: 1,
       lastCheckIn: 'Just now',
       avatarInitials: initials || 'TF',
@@ -2118,7 +2122,7 @@ export function PlatformProvider({
 
   const createInvoicePayment: PlatformStoreContextValue['createInvoicePayment'] = (data) => {
     const member = members.find((m) => m.id === data.memberId) ?? members[0] ?? FALLBACK_DEFAULT_MEMBER;
-    const plan = plans.find((p) => p.id === data.planId) ?? plans[0]!;
+    const plan = plans.find((p) => p.id === data.planId) ?? plans[0] ?? null;
     const couponUpper = (data.couponCode ?? '').trim().toUpperCase();
     const discountRate =
       couponUpper === 'RAMADAN20'
@@ -2128,7 +2132,7 @@ export function PlatformProvider({
           : couponUpper === 'CORPORATE25'
             ? 0.25
             : 0;
-    const subtotalEgp = plan.priceEgp;
+    const subtotalEgp = plan ? plan.priceEgp : Math.max(0, Number(data.customAmountEgp) || 0);
     const discountEgp = Math.round(subtotalEgp * discountRate);
     const netEgp = subtotalEgp - discountEgp;
     const vatEgp = Math.round(netEgp * 0.14);
@@ -2141,8 +2145,8 @@ export function PlatformProvider({
       memberId: member.id,
       memberNameEn: member.fullNameEn,
       memberNameAr: member.fullNameAr,
-      planNameEn: plan.nameEn,
-      planNameAr: plan.nameAr,
+      planNameEn: plan?.nameEn || data.customPlanNameEn || 'Custom Gym Invoice',
+      planNameAr: plan?.nameAr || data.customPlanNameAr || 'فاتورة اشتراك مخصصة',
       subtotalEgp,
       discountEgp,
       vatEgp,
@@ -2165,10 +2169,10 @@ export function PlatformProvider({
           ? {
               ...m,
               status: 'ACTIVE',
-              planId: plan.id,
-              planNameEn: plan.nameEn,
-              planNameAr: plan.nameAr,
-              endDate: new Date(Date.now() + plan.durationDays * 86400000).toISOString().slice(0, 10),
+              planId: plan?.id || m.planId,
+              planNameEn: plan?.nameEn || m.planNameEn,
+              planNameAr: plan?.nameAr || m.planNameAr,
+              endDate: new Date(Date.now() + (plan?.durationDays ?? 30) * 86400000).toISOString().slice(0, 10),
             }
           : m,
       ),

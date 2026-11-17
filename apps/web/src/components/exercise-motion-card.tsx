@@ -1027,47 +1027,47 @@ export function CartoonAthleteVisualCanvas({
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-between overflow-hidden rounded-xl">
-      {/* 3D Studio Spotlight & Biomechanical Grid Backdrop */}
+    <div className="relative flex h-full w-full flex-col items-center justify-between overflow-hidden rounded-2xl bg-gradient-to-b from-slate-950 via-[#0D1424] to-slate-950 p-2.5 text-white shadow-inner">
+      {/* Pro 3D Studio Spotlight & Biomechanical Grid Backdrop */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-40"
+        className="pointer-events-none absolute inset-0 opacity-55"
         style={{
           backgroundImage:
-            'radial-gradient(circle at 50% 20%, rgba(212,175,55,0.22), transparent 65%), linear-gradient(to right, rgba(148,163,184,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(148,163,184,0.08) 1px, transparent 1px)',
-          backgroundSize: '100% 100%, 18px 18px, 18px 18px',
+            'radial-gradient(circle at 50% 25%, rgba(212,175,55,0.22), transparent 60%), radial-gradient(circle at 50% 85%, rgba(16,185,129,0.12), transparent 55%), linear-gradient(to right, rgba(148,163,184,0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(148,163,184,0.07) 1px, transparent 1px)',
+          backgroundSize: '100% 100%, 100% 100%, 20px 20px, 20px 20px',
         }}
       />
 
-      {/* Top Biomechanical Joint ROM & 3D Vector Badge */}
-      <div className="relative z-10 flex w-full items-center justify-between px-2.5 pt-1.5 text-[10px] font-black">
-        <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/85 px-2 py-0.5 text-amber-300 border border-amber-500/30 shadow-sm">
-          <Sparkles className="h-2.5 w-2.5 text-amber-400" />
-          {isAr ? 'محاكاة تشريحية 3D واقعية' : '3D Anatomical Biomechanics'}
+      {/* Top Biomechanical Joint ROM & 3D Studio HUD */}
+      <div className="relative z-10 flex w-full items-center justify-between gap-1.5 text-[9.5px] font-black">
+        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-amber-500/40 bg-slate-900/90 px-2 py-0.5 text-amber-300 shadow-sm">
+          <Sparkles className="h-2.5 w-2.5 shrink-0 text-amber-400" />
+          <span>{isAr ? 'استوديو 3D تشريحي' : '3D Biomechanics'}</span>
         </span>
-        <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/85 px-2 py-0.5 text-emerald-300 border border-emerald-500/30 font-mono">
+        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-emerald-500/40 bg-slate-900/90 px-2 py-0.5 font-mono text-emerald-300">
           ∠ ROM 95° • {impact.primaryTarget.activationPct}% EMG
         </span>
       </div>
 
       {/* Main 3D-Shaded Exercise SVG Stage */}
-      <div className="relative z-10 flex-1 w-full min-h-0 flex items-center justify-center">
+      <div className="relative z-10 my-1 flex min-h-0 w-full flex-1 items-center justify-center px-1">
         {renderExerciseSvg()}
       </div>
 
       {/* Bottom Live EMG Muscle Fiber Activation Bar */}
-      <div className="relative z-10 w-full px-2.5 pb-1.5">
-        <div className="flex items-center justify-between rounded-lg bg-slate-900/90 px-2.5 py-1 border border-slate-700/80 text-[10px] text-white backdrop-blur-sm">
-          <div className="flex items-center gap-1.5 truncate">
+      <div className="relative z-10 w-full pt-1">
+        <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-700/80 bg-slate-900/95 px-2.5 py-1.5 text-[10px] text-white backdrop-blur-sm">
+          <div className="flex min-w-0 items-center gap-1.5">
             <span
-              className="h-2 w-2 rounded-full shrink-0 animate-pulse"
+              className="h-2 w-2 shrink-0 rounded-full animate-pulse"
               style={{ backgroundColor: impact.primaryTarget.color }}
             />
-            <span className="font-bold text-slate-200 truncate">
+            <span className="truncate font-bold text-slate-100">
               {isAr ? impact.primaryTarget.nameAr : impact.primaryTarget.nameEn}
             </span>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="w-16 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+          <div className="flex shrink-0 items-center gap-1.5">
+            <div className="h-1.5 w-12 overflow-hidden rounded-full bg-slate-800 sm:w-14">
               <motion.div
                 className="h-full rounded-full"
                 style={{ backgroundColor: impact.primaryTarget.color }}
@@ -1079,7 +1079,7 @@ export function CartoonAthleteVisualCanvas({
                 transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
               />
             </div>
-            <span className="font-mono font-black text-amber-400">
+            <span className="font-mono text-[10px] font-black text-amber-400">
               {impact.primaryTarget.activationPct}%
             </span>
           </div>
@@ -1341,7 +1341,7 @@ export function ExerciseMotionCard({
             }`}
           >
             <Dumbbell className="h-3.5 w-3.5" />
-            <span>{isAr ? 'حركة كرتونية تفاعلية' : 'Cartoon Motion'}</span>
+            <span>{isAr ? 'محاكاة التمرين 3D' : '3D Motion Studio'}</span>
           </button>
           <button
             type="button"
@@ -1396,10 +1396,10 @@ export function ExerciseMotionCard({
               exit={{ opacity: 0, y: -8 }}
               className="grid grid-cols-1 md:grid-cols-12 gap-5"
             >
-              {/* Visual Cartoon Character Column */}
-              <div className="relative flex flex-col items-center justify-between overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 via-white to-slate-100 p-4 dark:border-slate-800 dark:from-slate-900/90 dark:via-slate-950 dark:to-slate-900 md:col-span-5">
-                {/* Visual SVG Cartoon Character Canvas */}
-                <div className="my-1 h-44 w-full max-w-[260px] flex items-center justify-center">
+              {/* Visual 3D Biomechanical Studio Column */}
+              <div className="relative flex flex-col items-center justify-between overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 p-2.5 dark:border-slate-800 md:col-span-6">
+                {/* High-Definition 3D Exercise Stage */}
+                <div className="h-56 w-full flex items-center justify-center sm:h-60">
                   <CartoonAthleteVisualCanvas
                     motionType={exercise.motionType}
                     isPlaying={isPlaying}
@@ -1409,13 +1409,13 @@ export function ExerciseMotionCard({
                 </div>
 
                 {/* Biomechanical Cadence Tempo Indicator (3s Down -> 1s Hold -> 1s Up) */}
-                <div className="mt-2 flex w-full flex-col gap-1.5 rounded-xl border border-slate-200 bg-white/80 p-2.5 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/60">
-                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <Timer className="h-3.5 w-3.5 text-[#D4AF37]" />
-                      <span>{isAr ? 'إيقاع الحركة الذكي (Tempo)' : 'Cadence Tempo'}</span>
+                <div className="mt-2 flex w-full flex-col gap-1.5 rounded-xl border border-slate-800 bg-slate-900/90 p-2.5 text-white">
+                  <div className="flex items-center justify-between gap-2 text-[10px] font-bold text-slate-300">
+                    <span className="flex items-center gap-1 whitespace-nowrap">
+                      <Timer className="h-3.5 w-3.5 shrink-0 text-[#D4AF37]" />
+                      <span>{isAr ? 'إيقاع الحركة (Tempo)' : 'Cadence Tempo'}</span>
                     </span>
-                    <span className="font-mono text-[10px] text-slate-500">
+                    <span className="whitespace-nowrap font-mono text-[10px] text-emerald-400">
                       {activePhase === 'ECCENTRIC'
                         ? isAr ? 'نزول هادئ' : 'Lowering'
                         : activePhase === 'HOLD'
@@ -1424,40 +1424,40 @@ export function ExerciseMotionCard({
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-1 text-center font-mono text-[10px] font-extrabold">
+                  <div className="grid grid-cols-3 gap-1 text-center font-mono text-[9.5px] font-extrabold">
                     <span
-                      className={`rounded-lg py-1 transition ${
+                      className={`whitespace-nowrap rounded-lg px-1 py-1 transition ${
                         activePhase === 'ECCENTRIC'
-                          ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 font-black'
+                          ? 'bg-sky-500/20 text-sky-300 font-black'
                           : 'text-slate-400'
                       }`}
                     >
-                      {isAr ? '١. نزول 3ث' : '1. Eccentric 3s'}
+                      {isAr ? '١. نزول ٣ث' : '1. Down 3s'}
                     </span>
                     <span
-                      className={`rounded-lg py-1 transition ${
+                      className={`whitespace-nowrap rounded-lg px-1 py-1 transition ${
                         activePhase === 'HOLD'
-                          ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 font-black'
+                          ? 'bg-amber-500/20 text-amber-300 font-black'
                           : 'text-slate-400'
                       }`}
                     >
-                      {isAr ? '٢. ثبات 1ث' : '2. Hold 1s'}
+                      {isAr ? '٢. ثبات ١ث' : '2. Hold 1s'}
                     </span>
                     <span
-                      className={`rounded-lg py-1 transition ${
+                      className={`whitespace-nowrap rounded-lg px-1 py-1 transition ${
                         activePhase === 'CONCENTRIC'
-                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black'
+                          ? 'bg-emerald-500/20 text-emerald-300 font-black'
                           : 'text-slate-400'
                       }`}
                     >
-                      {isAr ? '٣. صعود 1ث' : '3. Drive 1s'}
+                      {isAr ? '٣. صعود ١ث' : '3. Drive 1s'}
                     </span>
                   </div>
                 </div>
               </div>
 
               {/* Exercise Description, Target Badges & Execution Controls */}
-              <div className="flex flex-col justify-between space-y-3 md:col-span-7">
+              <div className="flex flex-col justify-between space-y-3 md:col-span-6">
                 <div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h3 className="text-base font-black text-slate-900 dark:text-white">
