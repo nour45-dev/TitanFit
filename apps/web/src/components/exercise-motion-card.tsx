@@ -307,21 +307,20 @@ export function CartoonAthleteVisualCanvas({
   const renderExerciseSvg = () => {
     const sharedDefs = (
       <defs>
-        {/* 3D Sculpted Anatomical Mannequin Shading (MuscleWiki / 3D Studio Style) */}
-        <linearGradient id="proBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#64748B" />
-          <stop offset="45%" stopColor="#334155" />
-          <stop offset="100%" stopColor="#0F172A" />
+        {/* Pro Stylized Coach Character Shading */}
+        <linearGradient id="coachSkin" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#F6CFB2" />
+          <stop offset="55%" stopColor="#DFA57D" />
+          <stop offset="100%" stopColor="#B87A54" />
         </linearGradient>
-        <linearGradient id="proLimbGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#94A3B8" />
-          <stop offset="50%" stopColor="#475569" />
-          <stop offset="100%" stopColor="#1E293B" />
+        <linearGradient id="coachShirt" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#1E293B" />
+          <stop offset="50%" stopColor="#0F172A" />
+          <stop offset="100%" stopColor="#020617" />
         </linearGradient>
-        <linearGradient id="proHeadGrad" x1="25%" y1="0%" x2="85%" y2="100%">
-          <stop offset="0%" stopColor="#CBD5E1" />
-          <stop offset="55%" stopColor="#64748B" />
-          <stop offset="100%" stopColor="#1E293B" />
+        <linearGradient id="coachShorts" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#1E293B" />
+          <stop offset="100%" stopColor="#090D16" />
         </linearGradient>
         <linearGradient id="proChromeBar" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#F8FAFC" />
@@ -368,80 +367,83 @@ export function CartoonAthleteVisualCanvas({
           <svg viewBox="0 0 280 200" className="h-full w-full select-none overflow-visible">
             {sharedDefs}
 
-            {/* 3D Studio Floor & Contact Shadow */}
+            {/* Floor & Shadow */}
             <ellipse cx="135" cy="182" rx="102" ry="9" fill="#000000" opacity="0.45" />
             <line x1="20" y1="182" x2="260" y2="182" stroke="#334155" strokeWidth="1.5" strokeLinecap="round" />
 
-            {/* Heavy-Duty Steel Bench */}
+            {/* Heavy-Duty Gym Bench */}
             <g transform={isIncline ? 'rotate(-16 78 126)' : ''}>
               <rect x="48" y="128" width="142" height="12" rx="4" fill="#1E293B" stroke="#475569" strokeWidth="1.5" />
-              <rect x="52" y="125" width="134" height="4" rx="2" fill="#D4AF37" opacity="0.8" />
+              <rect x="52" y="125" width="134" height="4" rx="2" fill="#D4AF37" opacity="0.85" />
               <path d="M 68 140 L 58 180 M 170 140 L 180 180" stroke="#475569" strokeWidth="6" strokeLinecap="round" />
             </g>
 
-            {/* Planted Lower Leg & Training Shoe */}
-            <path d="M 168 128 Q 196 132 204 156 L 207 177 L 195 177 L 190 156 Q 182 140 162 136 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.8" />
+            {/* Planted Lower Leg & Sneaker */}
+            <path d="M 166 128 Q 196 132 204 156 L 207 177 L 195 177 L 190 156 Q 182 140 160 136 Z" fill="url(#coachSkin)" />
+            <path d="M 155 122 L 180 128 L 178 140 L 152 135 Z" fill="url(#coachShorts)" />
             <path d="M 193 176 L 218 176 Q 222 181 215 182 L 192 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
 
-            {/* Sculpted Anatomical Torso & Neck */}
+            {/* Coach Lying Torso & Head */}
             <g transform={isIncline ? 'rotate(-16 78 126)' : ''}>
               <path
-                d="M 80 112 Q 112 103 145 113 L 168 118 L 166 131 L 80 128 Z"
-                fill="url(#proBodyGrad)"
-                stroke="#94A3B8"
-                strokeWidth="0.8"
+                d="M 80 112 Q 112 103 145 113 L 166 118 L 164 131 L 80 128 Z"
+                fill="url(#coachShirt)"
+                stroke="#D4AF37"
+                strokeWidth="1"
               />
-              {/* Sculpted Head & Jawline Silhouette (No Cartoon Face) */}
-              <path d="M 68 110 C 60 105, 58 93, 68 90 C 78 88, 84 96, 82 106 L 78 113 Z" fill="url(#proHeadGrad)" stroke="#94A3B8" strokeWidth="0.7" />
-              <path d="M 76 111 L 86 114 L 84 123 L 75 120 Z" fill="url(#proLimbGrad)" />
+              {/* Pro Coach Side Profile Head + Hair + Beard */}
+              <circle cx="71" cy="102" r="12" fill="url(#coachSkin)" />
+              <path d="M 59 102 Q 61 88 75 90 Q 81 93 78 97 Q 68 95 62 103 Z" fill="#0F172A" />
+              <path d="M 75 108 Q 78 113 71 114 Q 65 114 63 108" stroke="#0F172A" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+              <rect x="75" y="111" width="9" height="8" rx="3" fill="url(#coachSkin)" />
 
-              {/* Activated Pectoral Muscle Fibers */}
+              {/* Target Chest Muscle Glow */}
               <motion.ellipse
-                cx="116"
-                cy="111"
-                rx="19"
-                ry="12"
+                cx="114"
+                cy="110"
+                rx="18"
+                ry="11"
                 fill="url(#proMuscleGlowRed)"
                 filter="url(#proGlowFilter)"
-                animate={isPlaying ? { scale: [1, 1.32, 1], opacity: [0.45, 0.95, 0.45] } : {}}
+                animate={isPlaying ? { scale: [1, 1.3, 1], opacity: [0.45, 0.95, 0.45] } : {}}
                 transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
               />
-              <path d="M 103 108 Q 116 116 129 109 M 106 113 Q 117 119 127 114" stroke="#FCA5A5" strokeWidth="1.4" fill="none" strokeLinecap="round" />
             </g>
 
-            {/* Trajectory Guide Dashed Line */}
-            <line x1="118" y1="36" x2="118" y2="92" stroke="#38BDF8" strokeWidth="1" strokeDasharray="3 3" opacity="0.45" />
-
-            {/* Biomechanical Arms & Olympic Barbell */}
-            <motion.g
-              animate={
-                isPlaying
-                  ? { y: [0, -38, 0], x: isIncline ? [0, -6, 0] : [0, 0, 0] }
-                  : {}
-              }
-              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              {/* Sculpted Tapered Upper Arm & Forearm */}
-              <path
-                d="M 102 112 Q 95 94 108 82 L 116 64 L 123 66 L 116 86 Q 108 98 112 114 Z"
-                fill="url(#proLimbGrad)"
-                stroke="#CBD5E1"
-                strokeWidth="0.8"
-              />
-              <circle cx="110" cy="85" r="3" fill="#0F172A" stroke="#38BDF8" strokeWidth="1" />
-              {/* Wrist Wrap & Hand Grip */}
-              <rect x="113" y="61" width="11" height="6" rx="2" fill="#D4AF37" />
-
-              {/* Chrome Barbell & 3D Beveled Plates */}
-              <rect x="46" y="61" width="166" height="5" rx="2.5" fill="url(#proChromeBar)" />
-              <rect x="64" y="54" width="5" height="19" rx="1.5" fill="#94A3B8" />
-              <rect x="190" y="54" width="5" height="19" rx="1.5" fill="#94A3B8" />
-              <rect x="52" y="38" width="11" height="50" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
-              <rect x="196" y="38" width="11" height="50" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
-            </motion.g>
+            {/* Locked Shoulder Pivot (108, 114): Arm stays 100% attached to shoulder! */}
+            <g transform="translate(108, 114)">
+              {/* Shoulder Socket Cap */}
+              <circle cx="0" cy="0" r="6.5" fill="url(#coachSkin)" />
+              {/* Articulated Upper Arm rotating from (0,0) */}
+              <motion.g
+                animate={isPlaying ? { rotate: [24, -18, 24] } : {}}
+                transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <path d="M -5 0 L -5 -26 Q 0 -30 5 -26 L 5 0 Z" fill="url(#coachSkin)" />
+                {/* Elbow Joint at (0, -26) -> Forearm stays vertical under bar */}
+                <g transform="translate(0, -26)">
+                  <circle cx="0" cy="0" r="4.8" fill="url(#coachSkin)" />
+                  <motion.g
+                    animate={isPlaying ? { rotate: [-24, 18, -24] } : {}}
+                    transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    <path d="M -4 0 L -3.5 -28 L 3.5 -28 L 4 0 Z" fill="url(#coachSkin)" />
+                    <rect x="-5" y="-29" width="10" height="5" rx="1.5" fill="#D4AF37" />
+                    {/* Barbell locked directly in Coach's hands */}
+                    <g transform="translate(0, -31)">
+                      <rect x="-64" y="-2.5" width="142" height="5" rx="2.5" fill="url(#proChromeBar)" />
+                      <rect x="-54" y="-9" width="5" height="18" rx="1.5" fill="#94A3B8" />
+                      <rect x="64" y="-9" width="5" height="18" rx="1.5" fill="#94A3B8" />
+                      <rect x="-66" y="-23" width="11" height="46" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
+                      <rect x="70" y="-23" width="11" height="46" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
+                    </g>
+                  </motion.g>
+                </g>
+              </motion.g>
+            </g>
 
             {/* Target Muscle Callout Pin */}
-            <g transform="translate(118, 108)">
+            <g transform="translate(116, 108)">
               <motion.circle r="6" fill="none" stroke="#EF4444" strokeWidth="1.5" animate={isPlaying ? { scale: [1, 2.1], opacity: [1, 0] } : {}} transition={{ duration: 1.6, repeat: Infinity }} />
               <circle r="3" fill="#EF4444" stroke="#FFFFFF" strokeWidth="1.2" />
               <path d="M 0 0 L 24 -22 L 96 -22" stroke="#EF4444" strokeWidth="1.2" strokeDasharray="3 2" fill="none" />
@@ -467,44 +469,48 @@ export function CartoonAthleteVisualCanvas({
             <line x1="68" y1="24" x2="68" y2="182" stroke="#334155" strokeWidth="4" />
             <line x1="212" y1="24" x2="212" y2="182" stroke="#334155" strokeWidth="4" />
 
-            {/* Planted Squat Shoes */}
+            {/* Planted Squat Shoes (Anchored 100% to floor!) */}
             <path d="M 98 176 L 122 176 L 124 182 L 96 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
             <path d="M 158 176 L 182 176 L 184 182 L 156 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
 
+            {/* Fixed Lower Calves (Stay connected to ankles while knees bend outward slightly) */}
+            <path d="M 106 176 L 101 138 L 113 138 L 116 176 Z" fill="url(#coachSkin)" />
+            <path d="M 164 176 L 167 138 L 179 138 L 174 176 Z" fill="url(#coachSkin)" />
+
+            {/* Upper Body & Thighs Squatting Smoothly */}
             <motion.g
-              animate={isPlaying ? { y: [0, 32, 0] } : {}}
+              animate={isPlaying ? { y: [0, 26, 0] } : {}}
               transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
             >
-              {/* Sculpted Calves & Tapered Quads */}
-              <path d="M 106 176 L 100 138 L 112 138 L 116 176 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
-              <path d="M 164 176 L 168 138 L 180 138 L 174 176 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
-              <path d="M 100 138 Q 108 112 122 96 L 136 98 L 114 138 Z" fill="url(#proLimbGrad)" stroke="#94A3B8" strokeWidth="0.8" />
-              <path d="M 180 138 Q 172 112 158 96 L 144 98 L 166 138 Z" fill="url(#proLimbGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+              {/* Thighs bridging hips to knees */}
+              <path d="M 101 116 Q 110 100 124 94 L 136 98 L 113 120 Z" fill="url(#coachSkin)" />
+              <path d="M 179 116 Q 170 100 156 94 L 144 98 L 167 120 Z" fill="url(#coachSkin)" />
 
-              {/* Quad Activation Glow & Fibers */}
+              {/* Quad Activation Glow */}
               <motion.ellipse
                 cx="140"
-                cy="118"
-                rx="30"
-                ry="16"
+                cy="112"
+                rx="28"
+                ry="14"
                 fill="url(#proMuscleGlowEmerald)"
                 filter="url(#proGlowFilter)"
-                animate={isPlaying ? { scale: [1, 1.32, 1], opacity: [0.4, 0.95, 0.4] } : {}}
+                animate={isPlaying ? { scale: [1, 1.3, 1], opacity: [0.4, 0.95, 0.4] } : {}}
                 transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
               />
 
-              {/* Athletic Shorts & V-Tapered Torso */}
-              <path d="M 118 94 L 162 94 L 168 118 L 140 115 L 112 118 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.2" />
-              <path d="M 122 94 L 116 54 Q 140 48 164 54 L 158 94 Z" fill="url(#proBodyGrad)" stroke="#94A3B8" strokeWidth="0.8" />
-              <path d="M 130 62 Q 140 66 150 62 M 133 74 L 147 74 M 134 83 L 146 83" stroke="#1E293B" strokeWidth="1.4" fill="none" />
+              {/* Shorts & Coach Compression Shirt */}
+              <path d="M 118 92 L 162 92 L 168 115 L 140 112 L 112 115 Z" fill="url(#coachShorts)" stroke="#D4AF37" strokeWidth="1.2" />
+              <path d="M 121 92 L 116 54 Q 140 48 164 54 L 159 92 Z" fill="url(#coachShirt)" stroke="#D4AF37" strokeWidth="1" />
 
-              {/* Sculpted Head & Neck */}
-              <rect x="135" y="45" width="10" height="9" rx="3" fill="url(#proLimbGrad)" />
-              <ellipse cx="140" cy="34" rx="10" ry="12.5" fill="url(#proHeadGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+              {/* Pro Coach Head (Front View, Clean Athletic Hair & Beard) */}
+              <rect x="135" y="45" width="10" height="9" rx="3" fill="url(#coachSkin)" />
+              <circle cx="140" cy="34" r="11.5" fill="url(#coachSkin)" />
+              <path d="M 129 31 Q 140 20 151 31 Q 146 26 140 26 Q 134 26 129 31 Z" fill="#0F172A" />
+              <path d="M 131 38 Q 140 46 149 38" stroke="#0F172A" strokeWidth="2.5" fill="none" strokeLinecap="round" />
 
-              {/* Arms Gripping Barbell */}
-              <path d="M 116 55 L 98 48 L 108 42" stroke="url(#proLimbGrad)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              <path d="M 164 55 L 182 48 L 172 42" stroke="url(#proLimbGrad)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              {/* Arms Gripping Barbell on Traps */}
+              <path d="M 116 55 L 98 48 L 108 42" stroke="url(#coachSkin)" strokeWidth="6.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              <path d="M 164 55 L 182 48 L 172 42" stroke="url(#coachSkin)" strokeWidth="6.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
 
               {/* Olympic Barbell & Plates */}
               <rect x="44" y="42" width="192" height="5" rx="2.5" fill="url(#proChromeBar)" />
@@ -537,7 +543,8 @@ export function CartoonAthleteVisualCanvas({
 
             {/* Fixed Lower Leg & Shoe */}
             <path d="M 118 176 L 138 176 L 142 182 L 116 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
-            <path d="M 120 176 L 115 130 L 128 130 L 132 176 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
+            <path d="M 120 176 L 115 130 L 128 130 L 132 176 Z" fill="url(#coachSkin)" />
+            <path d="M 115 130 Q 108 115 106 102 L 122 102 L 128 130 Z" fill="url(#coachSkin)" />
 
             {/* Hamstring Glow */}
             <motion.ellipse
@@ -551,23 +558,37 @@ export function CartoonAthleteVisualCanvas({
               transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
             />
 
-            {/* Hinging Athlete Body */}
-            <motion.g
-              animate={isPlaying ? { rotate: [0, 48, 0] } : {}}
-              style={{ transformOrigin: '112px 102px' }}
-              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              <path d="M 115 130 Q 106 115 104 100 L 120 100 L 128 130 Z" fill="url(#proLimbGrad)" stroke="#94A3B8" strokeWidth="0.7" />
-              <path d="M 103 102 L 101 76 L 125 84 L 122 104 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.2" />
-              <path d="M 101 78 L 104 38 L 124 41 L 124 84 Z" fill="url(#proBodyGrad)" stroke="#94A3B8" strokeWidth="0.8" />
-              {/* Sculpted Profile Head */}
-              <path d="M 107 37 C 102 32, 102 20, 111 19 C 120 18, 124 27, 120 36 Z" fill="url(#proHeadGrad)" stroke="#94A3B8" strokeWidth="0.7" />
-              {/* Arm & Barbell */}
-              <path d="M 114 48 L 132 90" stroke="url(#proLimbGrad)" strokeWidth="8.5" strokeLinecap="round" />
-              <rect x="86" y="88" width="94" height="5" rx="2.5" fill="url(#proChromeBar)" />
-              <rect x="82" y="70" width="10" height="40" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
-              <rect x="172" y="70" width="10" height="40" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
-            </motion.g>
+            {/* Hip Pivot (114, 102): Torso hinges forward cleanly around hip! */}
+            <g transform="translate(114, 102)">
+              <circle cx="0" cy="0" r="8" fill="url(#coachShorts)" />
+              <motion.g
+                animate={isPlaying ? { rotate: [0, 44, 0] } : {}}
+                transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <path d="M -11 2 L -12 -24 L 10 -18 L 8 4 Z" fill="url(#coachShorts)" stroke="#D4AF37" strokeWidth="1" />
+                <path d="M -12 -22 L -9 -62 L 11 -59 L 10 -18 Z" fill="url(#coachShirt)" stroke="#D4AF37" strokeWidth="1" />
+                {/* Coach Head */}
+                <rect x="-5" y="-69" width="8" height="8" rx="2.5" fill="url(#coachSkin)" />
+                <circle cx="0" cy="-76" r="10.5" fill="url(#coachSkin)" />
+                <path d="M -10 -78 Q 0 -89 10 -78 Q 5 -83 0 -82 Z" fill="#0F172A" />
+
+                {/* Shoulder Pivot (4, -54): Arm hangs vertically holding bar! */}
+                <g transform="translate(4, -54)">
+                  <circle cx="0" cy="0" r="5" fill="url(#coachSkin)" />
+                  <motion.g
+                    animate={isPlaying ? { rotate: [0, -44, 0] } : {}}
+                    transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    <path d="M -4 0 L -3.5 44 L 3.5 44 L 4 0 Z" fill="url(#coachSkin)" />
+                    <g transform="translate(0, 44)">
+                      <rect x="-42" y="-2.5" width="90" height="5" rx="2.5" fill="url(#proChromeBar)" />
+                      <rect x="-46" y="-20" width="10" height="40" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
+                      <rect x="42" y="-20" width="10" height="40" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
+                    </g>
+                  </motion.g>
+                </g>
+              </motion.g>
+            </g>
 
             <g transform="translate(112, 112)">
               <motion.circle r="6" fill="none" stroke="#EF4444" strokeWidth="1.5" animate={isPlaying ? { scale: [1, 2.1], opacity: [1, 0] } : {}} transition={{ duration: 1.6, repeat: Infinity }} />
@@ -595,12 +616,12 @@ export function CartoonAthleteVisualCanvas({
             <rect x="98" y="132" width="84" height="10" rx="3" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.2" />
             <line x1="140" y1="142" x2="140" y2="182" stroke="#475569" strokeWidth="7" strokeLinecap="round" />
 
-            {/* Athlete Seated Back View (Anatomical V-Taper) */}
-            <path d="M 122 142 L 114 180 L 124 180 L 132 142 Z" fill="url(#proLimbGrad)" />
-            <path d="M 158 142 L 166 180 L 156 180 L 148 142 Z" fill="url(#proLimbGrad)" />
-            <path d="M 106 84 Q 140 76 174 84 L 156 132 L 124 132 Z" fill="url(#proBodyGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+            {/* Seated Coach Legs */}
+            <path d="M 122 142 L 114 180 L 124 180 L 132 142 Z" fill="url(#coachShorts)" />
+            <path d="M 158 142 L 166 180 L 156 180 L 148 142 Z" fill="url(#coachShorts)" />
+            <path d="M 106 84 Q 140 76 174 84 L 156 132 L 124 132 Z" fill="url(#coachShirt)" stroke="#D4AF37" strokeWidth="1" />
 
-            {/* Latissimus Dorsi Glow & Muscle Fibers */}
+            {/* Latissimus Dorsi Glow */}
             <motion.ellipse
               cx="140"
               cy="102"
@@ -611,23 +632,41 @@ export function CartoonAthleteVisualCanvas({
               animate={isPlaying ? { scale: [1, 1.32, 1], opacity: [0.4, 0.95, 0.4] } : {}}
               transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
             />
-            <path d="M 120 94 Q 140 103 160 94 M 124 106 Q 140 114 156 106" stroke="#7DD3FC" strokeWidth="1.4" fill="none" strokeLinecap="round" />
 
-            {/* Sculpted Head Back & Traps */}
-            <path d="M 125 82 Q 140 72 155 82 Z" fill="url(#proLimbGrad)" />
-            <ellipse cx="140" cy="64" rx="10" ry="12" fill="url(#proHeadGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+            {/* Coach Head Back */}
+            <rect x="135" y="73" width="10" height="9" rx="3" fill="url(#coachSkin)" />
+            <circle cx="140" cy="63" r="11" fill="url(#coachSkin)" />
+            <path d="M 129 63 Q 132 50 140 50 Q 148 50 151 63 Q 145 69 135 69 Z" fill="#0F172A" />
 
-            {/* Dynamic Pulldown Bar & Tapered Arms */}
+            {/* Left Shoulder Pivot (110, 86) & Right Shoulder Pivot (170, 86) */}
+            <g transform="translate(110, 86)">
+              <circle cx="0" cy="0" r="6" fill="url(#coachSkin)" />
+              <motion.g
+                animate={isPlaying ? { rotate: [0, -40, 0] } : {}}
+                transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <path d="M -4.5 0 L -22 -28 L -14 -32 L 4 0 Z" fill="url(#coachSkin)" />
+              </motion.g>
+            </g>
+            <g transform="translate(170, 86)">
+              <circle cx="0" cy="0" r="6" fill="url(#coachSkin)" />
+              <motion.g
+                animate={isPlaying ? { rotate: [0, 40, 0] } : {}}
+                transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <path d="M -4 0 L 14 -32 L 22 -28 L 4.5 0 Z" fill="url(#coachSkin)" />
+              </motion.g>
+            </g>
+
+            {/* Dynamic Pulldown Bar */}
             <motion.g
-              animate={isPlaying ? { y: [0, 32, 0] } : {}}
+              animate={isPlaying ? { y: [0, 22, 0] } : {}}
               transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <line x1="140" y1="20" x2="140" y2="48" stroke="#CBD5E1" strokeWidth="2" strokeDasharray="3 2" />
-              <path d="M 74 56 Q 140 42 206 56" stroke="url(#proChromeBar)" strokeWidth="5" fill="none" strokeLinecap="round" />
-              <path d="M 108 86 L 90 58" stroke="url(#proLimbGrad)" strokeWidth="8.5" strokeLinecap="round" />
-              <path d="M 172 86 L 190 58" stroke="url(#proLimbGrad)" strokeWidth="8.5" strokeLinecap="round" />
-              <circle cx="90" cy="58" r="4" fill="#D4AF37" />
-              <circle cx="190" cy="58" r="4" fill="#D4AF37" />
+              <line x1="140" y1="18" x2="140" y2="48" stroke="#CBD5E1" strokeWidth="2" strokeDasharray="3 2" />
+              <path d="M 76 58 Q 140 44 204 58" stroke="url(#proChromeBar)" strokeWidth="5" fill="none" strokeLinecap="round" />
+              <circle cx="92" cy="56" r="4" fill="#D4AF37" />
+              <circle cx="188" cy="56" r="4" fill="#D4AF37" />
             </motion.g>
 
             <g transform="translate(140, 102)">
@@ -649,79 +688,85 @@ export function CartoonAthleteVisualCanvas({
         return (
           <svg viewBox="0 0 280 200" className="h-full w-full select-none overflow-visible">
             {sharedDefs}
-            {/* Studio Floor & Contact Shadow */}
+            {/* Studio Floor & Shadow */}
             <ellipse cx="140" cy="182" rx="75" ry="7" fill="#000000" opacity="0.45" />
             <line x1="25" y1="182" x2="255" y2="182" stroke="#334155" strokeWidth="1.5" strokeLinecap="round" />
 
-            {/* Anatomically Tapered Standing Legs & Shoes */}
-            <path d="M 122 126 Q 118 148 122 177 L 130 177 L 135 126 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
-            <path d="M 158 126 Q 162 148 158 177 L 150 177 L 145 126 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
+            {/* Standing Coach Legs & Sneakers */}
+            <path d="M 122 126 Q 118 148 122 177 L 130 177 L 135 126 Z" fill="url(#coachSkin)" />
+            <path d="M 158 126 Q 162 148 158 177 L 150 177 L 145 126 Z" fill="url(#coachSkin)" />
             <path d="M 116 177 L 132 177 L 133 182 L 114 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
             <path d="M 148 177 L 164 177 L 166 182 L 147 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
 
             {/* Athletic Compression Shorts */}
-            <path d="M 120 100 L 160 100 L 162 130 L 142 126 L 138 126 L 118 130 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.2" />
+            <path d="M 120 100 L 160 100 L 162 130 L 142 126 L 138 126 L 118 130 Z" fill="url(#coachShorts)" stroke="#D4AF37" strokeWidth="1.2" />
 
-            {/* Sculpted V-Taper Anatomical Torso (Traps, Chest, Abs) */}
-            <path d="M 116 62 Q 140 54 164 62 L 157 101 L 123 101 Z" fill="url(#proBodyGrad)" stroke="#94A3B8" strokeWidth="0.8" />
-            <path d="M 124 68 Q 132 74 139 69 M 141 69 Q 148 74 156 68" stroke="#1E293B" strokeWidth="1.5" fill="none" />
-            <path d="M 134 79 L 146 79 M 135 87 L 145 87 M 140 76 L 140 94" stroke="#1E293B" strokeWidth="1.2" opacity="0.8" />
+            {/* Fitted Coach Shirt / V-Taper Torso */}
+            <path d="M 116 62 Q 140 55 164 62 L 157 101 L 123 101 Z" fill="url(#coachShirt)" stroke="#D4AF37" strokeWidth="1" />
+            <path d="M 134 62 Q 140 66 146 62" stroke="#D4AF37" strokeWidth="1.2" fill="none" />
 
-            {/* Sculpted Neck, Traps & Head Silhouette (No Cartoon Eyes/Headband) */}
-            <path d="M 126 59 Q 140 51 154 59 L 146 53 L 134 53 Z" fill="url(#proLimbGrad)" />
-            <rect x="135.5" y="45" width="9" height="9" rx="3" fill="url(#proLimbGrad)" />
-            <ellipse cx="140" cy="34" rx="9.5" ry="12" fill="url(#proHeadGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+            {/* Pro Coach Head (Warm Skin, Athletic Hair & Trimmed Beard) */}
+            <rect x="135.5" y="45" width="9" height="9" rx="3" fill="url(#coachSkin)" />
+            <circle cx="140" cy="34" r="11" fill="url(#coachSkin)" />
+            <path d="M 129 31 Q 140 19 151 31 Q 146 25 140 25 Q 134 25 129 31 Z" fill="#0F172A" />
+            <path d="M 131 38 Q 140 46 149 38" stroke="#0F172A" strokeWidth="2.5" fill="none" strokeLinecap="round" />
 
             {/* Motion Arc Trajectory Guides */}
-            <path d="M 92 115 A 55 55 0 0 1 70 68" stroke="#F59E0B" strokeWidth="1" strokeDasharray="3 3" fill="none" opacity="0.5" />
-            <path d="M 188 115 A 55 55 0 0 0 210 68" stroke="#F59E0B" strokeWidth="1" strokeDasharray="3 3" fill="none" opacity="0.5" />
+            <path d="M 105 112 A 50 50 0 0 1 68 68" stroke="#F59E0B" strokeWidth="1" strokeDasharray="3 3" fill="none" opacity="0.5" />
+            <path d="M 175 112 A 50 50 0 0 0 212 68" stroke="#F59E0B" strokeWidth="1" strokeDasharray="3 3" fill="none" opacity="0.5" />
 
-            {/* Dual Lateral Deltoid Muscle Fibers & Glow */}
+            {/* Dual Lateral Deltoid Glow */}
             <motion.ellipse
-              cx="114"
+              cx="116"
               cy="65"
-              rx="13"
-              ry="14"
+              rx="12"
+              ry="12"
               fill="url(#proMuscleGlowGold)"
               filter="url(#proGlowFilter)"
-              animate={isPlaying ? { scale: [1, 1.35, 1], opacity: [0.4, 0.95, 0.4] } : {}}
+              animate={isPlaying ? { scale: [1, 1.32, 1], opacity: [0.4, 0.95, 0.4] } : {}}
               transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
             />
             <motion.ellipse
-              cx="166"
+              cx="164"
               cy="65"
-              rx="13"
-              ry="14"
+              rx="12"
+              ry="12"
               fill="url(#proMuscleGlowGold)"
               filter="url(#proGlowFilter)"
-              animate={isPlaying ? { scale: [1, 1.35, 1], opacity: [0.4, 0.95, 0.4] } : {}}
+              animate={isPlaying ? { scale: [1, 1.32, 1], opacity: [0.4, 0.95, 0.4] } : {}}
               transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
             />
 
-            {/* Left Tapered Arm & 3D Hex Dumbbell */}
-            <motion.g
-              animate={isPlaying ? { rotate: [0, -74, 0] } : {}}
-              style={{ transformOrigin: '117px 64px' }}
-              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              <path d="M 114 61 Q 104 82 95 113 L 101 115 Q 112 88 121 67 Z" fill="url(#proLimbGrad)" stroke="#CBD5E1" strokeWidth="0.7" />
-              <rect x="86" y="110" width="18" height="12" rx="3" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.2" />
-              <rect x="92" y="112" width="6" height="8" rx="1" fill="#94A3B8" />
-            </motion.g>
+            {/* LEFT ARM: Locked to Shoulder Socket (116, 65) -> Clockwise (+80deg) lifts OUTWARD LEFT! */}
+            <g transform="translate(116, 65)">
+              <circle cx="0" cy="0" r="6" fill="url(#coachSkin)" />
+              <motion.g
+                animate={isPlaying ? { rotate: [6, 80, 6] } : { rotate: 6 }}
+                transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <path d="M -4.5 0 Q -5 25 -3.5 48 L 3.5 48 Q 5 25 4.5 0 Z" fill="url(#coachSkin)" />
+                <circle cx="0" cy="49" r="4" fill="url(#coachSkin)" />
+                <rect x="-9" y="45" width="18" height="10" rx="2.5" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.2" />
+                <rect x="-3" y="47" width="6" height="6" rx="1" fill="#94A3B8" />
+              </motion.g>
+            </g>
 
-            {/* Right Tapered Arm & 3D Hex Dumbbell */}
-            <motion.g
-              animate={isPlaying ? { rotate: [0, 74, 0] } : {}}
-              style={{ transformOrigin: '163px 64px' }}
-              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              <path d="M 166 61 Q 176 82 185 113 L 179 115 Q 168 88 159 67 Z" fill="url(#proLimbGrad)" stroke="#CBD5E1" strokeWidth="0.7" />
-              <rect x="176" y="110" width="18" height="12" rx="3" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.2" />
-              <rect x="182" y="112" width="6" height="8" rx="1" fill="#94A3B8" />
-            </motion.g>
+            {/* RIGHT ARM: Locked to Shoulder Socket (164, 65) -> Counter-Clockwise (-80deg) lifts OUTWARD RIGHT! */}
+            <g transform="translate(164, 65)">
+              <circle cx="0" cy="0" r="6" fill="url(#coachSkin)" />
+              <motion.g
+                animate={isPlaying ? { rotate: [-6, -80, -6] } : { rotate: -6 }}
+                transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <path d="M -4.5 0 Q -5 25 -3.5 48 L 3.5 48 Q 5 25 4.5 0 Z" fill="url(#coachSkin)" />
+                <circle cx="0" cy="49" r="4" fill="url(#coachSkin)" />
+                <rect x="-9" y="45" width="18" height="10" rx="2.5" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.2" />
+                <rect x="-3" y="47" width="6" height="6" rx="1" fill="#94A3B8" />
+              </motion.g>
+            </g>
 
             {/* Callout Pin */}
-            <g transform="translate(166, 64)">
+            <g transform="translate(164, 64)">
               <motion.circle r="6" fill="none" stroke="#F59E0B" strokeWidth="1.5" animate={isPlaying ? { scale: [1, 2.1], opacity: [1, 0] } : {}} transition={{ duration: 1.6, repeat: Infinity }} />
               <circle r="3" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="1.2" />
               <path d="M 0 0 L 22 -22 L 88 -22" stroke="#F59E0B" strokeWidth="1.2" strokeDasharray="3 2" fill="none" />
@@ -751,29 +796,34 @@ export function CartoonAthleteVisualCanvas({
             {/* Cable Pulley Column for Pushdown */}
             {!isBiceps && (
               <>
-                <line x1="178" y1="18" x2="178" y2="182" stroke="#334155" strokeWidth="4.5" strokeLinecap="round" />
-                <line x1="154" y1="18" x2="178" y2="18" stroke="#475569" strokeWidth="4" strokeLinecap="round" />
-                <circle cx="154" cy="20" r="5" fill="#64748B" stroke="#94A3B8" strokeWidth="1" />
-                <line x1="154" y1="24" x2="154" y2="112" stroke="#CBD5E1" strokeWidth="1.8" strokeDasharray="3 2" opacity="0.7" />
+                <line x1="184" y1="18" x2="184" y2="182" stroke="#334155" strokeWidth="4.5" strokeLinecap="round" />
+                <line x1="158" y1="18" x2="184" y2="18" stroke="#475569" strokeWidth="4" strokeLinecap="round" />
+                <circle cx="158" cy="20" r="5" fill="#64748B" stroke="#94A3B8" strokeWidth="1" />
+                <line x1="158" y1="24" x2="158" y2="106" stroke="#CBD5E1" strokeWidth="1.8" strokeDasharray="3 2" opacity="0.65" />
               </>
             )}
 
-            {/* Anatomically Tapered Standing Profile Legs & Shoes */}
-            <path d="M 114 126 Q 112 150 116 177 L 125 177 L 127 126 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
-            <path d="M 131 126 Q 134 150 137 177 L 146 177 L 143 126 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
+            {/* Standing Profile Legs & Sneakers */}
+            <path d="M 114 126 Q 112 150 116 177 L 125 177 L 127 126 Z" fill="url(#coachSkin)" />
+            <path d="M 131 126 Q 134 150 137 177 L 146 177 L 143 126 Z" fill="url(#coachSkin)" />
             <path d="M 114 177 L 130 177 L 132 182 L 112 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
             <path d="M 134 177 L 152 177 L 154 182 L 133 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
 
-            {/* Athletic Shorts & Profile V-Torso */}
-            <path d="M 112 96 L 144 96 L 146 128 L 112 128 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.2" />
-            <path d="M 114 58 Q 130 54 143 60 L 143 97 L 113 97 Z" fill="url(#proBodyGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+            {/* Shorts & Fitted Coach Shirt */}
+            <path d="M 112 96 L 144 96 L 146 128 L 112 128 Z" fill="url(#coachShorts)" stroke="#D4AF37" strokeWidth="1.2" />
+            <path d="M 114 58 Q 130 54 143 60 L 143 97 L 113 97 Z" fill="url(#coachShirt)" stroke="#D4AF37" strokeWidth="1" />
 
-            {/* Sculpted Profile Head & Neck (No Cartoon Face) */}
-            <rect x="123" y="47" width="8.5" height="9" rx="2.5" fill="url(#proLimbGrad)" />
-            <path d="M 122 48 C 117 42, 118 25, 128 24 C 138 23, 141 34, 138 44 L 131 49 Z" fill="url(#proHeadGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+            {/* Pro Coach Side Profile Head */}
+            <rect x="123" y="47" width="8.5" height="9" rx="2.5" fill="url(#coachSkin)" />
+            <circle cx="128" cy="36" r="11" fill="url(#coachSkin)" />
+            <path d="M 117 34 Q 120 22 133 24 Q 139 27 137 31 Q 128 29 120 36 Z" fill="#0F172A" />
+            <path d="M 133 41 Q 136 46 129 47" stroke="#0F172A" strokeWidth="2.4" fill="none" strokeLinecap="round" />
 
-            {/* Pinned Upper Arm + Activated Biceps/Triceps Glow */}
-            <path d="M 131 61 Q 142 75 142 96 L 132 97 Q 130 78 126 64 Z" fill="url(#proLimbGrad)" stroke="#CBD5E1" strokeWidth="0.7" />
+            {/* Pinned Upper Arm (Anchored at shoulder 134, 64 down to elbow 138, 96) */}
+            <path d="M 129 63 L 139 63 L 143 96 L 133 96 Z" fill="url(#coachSkin)" />
+            <circle cx="134" cy="64" r="6" fill="url(#coachSkin)" />
+
+            {/* Activated Biceps/Triceps Glow */}
             <motion.ellipse
               cx="136"
               cy="80"
@@ -785,31 +835,34 @@ export function CartoonAthleteVisualCanvas({
               transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
             />
 
-            {/* Joint Pivot Ring at Elbow */}
-            <circle cx="137" cy="96" r="3" fill="#0F172A" stroke="#38BDF8" strokeWidth="1" />
-
-            {/* Articulated Forearm + Cable Rope or Barbell */}
-            <motion.g
-              animate={isPlaying ? { rotate: isBiceps ? [0, -86, 0] : [0, 68, 0] } : {}}
-              style={{ transformOrigin: '137px 96px' }}
-              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              <path d="M 134 95 Q 146 112 156 132 L 150 135 Q 139 117 131 99 Z" fill="url(#proLimbGrad)" stroke="#CBD5E1" strokeWidth="0.7" />
-              <circle cx="153" cy="133" r="4" fill="#D4AF37" />
-              {isBiceps ? (
-                <g transform="translate(153, 133)">
-                  <rect x="-15" y="-2" width="30" height="4" rx="2" fill="url(#proChromeBar)" />
-                  <circle cx="-15" cy="0" r="7" fill="url(#proGoldPlate)" />
-                  <circle cx="15" cy="0" r="7" fill="url(#proGoldPlate)" />
-                </g>
-              ) : (
-                <g transform="translate(153, 133)">
-                  <path d="M 0 0 L -7 16 M 0 0 L 7 16" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" />
-                  <circle cx="-7" cy="16" r="3.5" fill="#0F172A" stroke="#94A3B8" strokeWidth="0.8" />
-                  <circle cx="7" cy="16" r="3.5" fill="#0F172A" stroke="#94A3B8" strokeWidth="0.8" />
-                </g>
-              )}
-            </motion.g>
+            {/* ELBOW PIVOT LOCKED AT (138, 96): Forearm rotates around (0,0) — NEVER detaches! */}
+            <g transform="translate(138, 96)">
+              <circle cx="0" cy="0" r="5" fill="url(#coachSkin)" />
+              <motion.g
+                animate={
+                  isPlaying
+                    ? { rotate: isBiceps ? [10, -90, 10] : [-65, 10, -65] }
+                    : { rotate: isBiceps ? 10 : -65 }
+                }
+                transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <path d="M -4 0 L -3 38 L 3 38 L 4 0 Z" fill="url(#coachSkin)" />
+                <circle cx="0" cy="39" r="4" fill="#D4AF37" />
+                {isBiceps ? (
+                  <g transform="translate(0, 39)">
+                    <rect x="-15" y="-2" width="30" height="4" rx="2" fill="url(#proChromeBar)" />
+                    <circle cx="-15" cy="0" r="7" fill="url(#proGoldPlate)" />
+                    <circle cx="15" cy="0" r="7" fill="url(#proGoldPlate)" />
+                  </g>
+                ) : (
+                  <g transform="translate(0, 39)">
+                    <path d="M 0 0 L -7 14 M 0 0 L 7 14" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" />
+                    <circle cx="-7" cy="14" r="3.5" fill="#0F172A" stroke="#94A3B8" strokeWidth="0.8" />
+                    <circle cx="7" cy="14" r="3.5" fill="#0F172A" stroke="#94A3B8" strokeWidth="0.8" />
+                  </g>
+                )}
+              </motion.g>
+            </g>
 
             {/* Target Pin */}
             <g transform="translate(136, 80)">
