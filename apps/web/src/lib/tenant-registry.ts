@@ -74,7 +74,7 @@ interface GlobalTenantRegistry {
   subscriptionRequests: Map<string, SaaSSubscriptionRequestRecord>;
 }
 
-const REGISTRY_FILE_PATH = path.join(os.tmpdir(), 'titanfit-saas-registry-v3.json');
+const REGISTRY_FILE_PATH = path.join(os.tmpdir(), 'titanfit-saas-registry-v4.json');
 
 const globalForRegistry = globalThis as unknown as {
   __titanfitRegistry?: GlobalTenantRegistry;
@@ -123,67 +123,6 @@ export function getServerTenantRegistry(): GlobalTenantRegistry {
     }
 
     const tenants = new Map<string, RegisteredTenantRecord>();
-    const defaultJoinA = ['TF', 'JOIN'].join('-');
-    const defaultJoinB = ['PK', 'JOIN'].join('-');
-    const now = new Date();
-    const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    const oneYearLater = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
-
-    const defaultOwnerAuth = ['Titan', '2026!'].join('');
-    const peakOwnerAuth = ['Peak', '2026!'].join('');
-
-    tenants.set('titanfit-egypt', {
-      id: 'ten-1',
-      slug: 'titanfit-egypt',
-      nameEn: 'TitanFit Egypt (Flagship Group)',
-      nameAr: 'مجموعة أندية تيتان فيت مصر',
-      ownerUsername: 'titanfit_admin',
-      ownerEmail: 'owner@titanfit.eg',
-      ownerPhone: '01001234567',
-      authVerifier: defaultOwnerAuth,
-      gymSecretCode: defaultJoinA,
-      logoUrl: '/brand/logo.png',
-      primaryColor: '#D97706',
-      planTier: 'STARTER',
-      billingCycle: 'MONTHLY',
-      subscriptionDurationDays: 30,
-      subscriptionStartedAt: now.toISOString(),
-      subscriptionExpiresAt: thirtyDaysLater.toISOString(),
-      status: 'ACTIVE',
-      branchesCount: 1,
-      activeMembersCount: 120,
-      trainersCount: 2,
-      mrrEgp: 950,
-      cityEn: 'Cairo & Giza, Egypt',
-      cityAr: 'القاهرة والجيزة، مصر',
-    });
-
-    tenants.set('peak-fitness', {
-      id: 'ten-2',
-      slug: 'peak-fitness',
-      nameEn: 'Peak Fitness Cairo',
-      nameAr: 'بيك فيتنس القاهرة',
-      ownerUsername: 'peak_owner',
-      ownerEmail: 'coach.ahmed@peakfit.eg',
-      ownerPhone: '01123456789',
-      authVerifier: peakOwnerAuth,
-      gymSecretCode: defaultJoinB,
-      logoUrl:
-        'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=200&q=80',
-      primaryColor: '#059669',
-      planTier: 'PRO',
-      billingCycle: 'ANNUAL',
-      subscriptionDurationDays: 365,
-      subscriptionStartedAt: now.toISOString(),
-      subscriptionExpiresAt: oneYearLater.toISOString(),
-      status: 'ACTIVE',
-      branchesCount: 2,
-      activeMembersCount: 410,
-      trainersCount: 6,
-      mrrEgp: 1950,
-      cityEn: 'New Cairo, Egypt',
-      cityAr: 'التجمع الخامس، القاهرة',
-    });
 
     globalForRegistry.__titanfitRegistry = {
       tenants,

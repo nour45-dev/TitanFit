@@ -2134,8 +2134,8 @@ export function SuperAdminConsoleView() {
   const totalGyms = tenants.length;
   const activeGyms = tenants.filter((t) => t.status === 'ACTIVE').length;
   const totalPlatformMembers = tenants.reduce((sum, t) => sum + (t.activeMembersCount || 0), 0);
-  const totalPlatformBranches = tenants.reduce((sum, t) => sum + (t.branchesCount || 1), 0);
-  const totalPlatformTrainers = tenants.reduce((sum, t) => sum + (t.trainersCount || 3), 0);
+  const totalPlatformBranches = tenants.reduce((sum, t) => sum + (t.branchesCount || 0), 0);
+  const totalPlatformTrainers = tenants.reduce((sum, t) => sum + (t.trainersCount || 0), 0);
   const totalPlatformMrr = tenants.reduce((sum, t) => sum + (t.mrrEgp || 0), 0);
   const pendingRequests = subscriptionRequests.filter((r) => r.status === 'PENDING_APPROVAL');
 
@@ -2590,6 +2590,19 @@ export function SuperAdminConsoleView() {
       {/* ============================================================================
        * 3. SUBSCRIBED GYMS DIRECTORY (WITH LIVE COUNTDOWN & OWNER USERNAME/PASSWORD)
        * ============================================================================ */}
+      {tenants.length === 0 ? (
+        <div className="rounded-3xl border-2 border-dashed border-slate-300 bg-white/80 p-10 text-center dark:border-slate-800 dark:bg-slate-900/60">
+          <Building2 className="mx-auto h-10 w-10 text-amber-500" />
+          <h3 className="mt-3 text-base font-black text-slate-900 dark:text-white">
+            {isAr ? 'لا توجد أندية مشتركة بعد' : 'No Subscribed Gyms Yet'}
+          </h3>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            {isAr
+              ? 'المنصة نظيفة تماماً بدون أي بيانات افتراضية — أي جيم يشترك من صفحة الباقات أو تضيفه من الزر بالأعلى سيظهر هنا فوراً.'
+              : 'Clean production state — any gym subscribing or added above will appear here immediately.'}
+          </p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         {tenants.map((ten, idx) => {
           const isEditingThis = editingCredsTenantId === ten.id;
@@ -2882,6 +2895,7 @@ export function SuperAdminConsoleView() {
           );
         })}
       </div>
+      )}
 
       {/* Immutable Audit Logs Table */}
       <div className="theme-card overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">

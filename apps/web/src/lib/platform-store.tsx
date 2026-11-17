@@ -503,35 +503,7 @@ const DEMO_SHOWCASE_BRANCHES: BranchItem[] = [
 
 const INITIAL_BRANCHES: BranchItem[] = [];
 
-const INITIAL_PLANS: PlanItem[] = [
-  {
-    id: 'plan-annual-vip',
-    code: 'TITAN-VIP-12M',
-    nameEn: 'Titan Elite Annual Pass (All Branches)',
-    nameAr: 'باقة تيتان إيليت السنوية (جميع الفروع)',
-    type: 'DURATION',
-    durationDays: 365,
-    priceEgp: 14500,
-    sessionsCount: null,
-    maxFreezeDays: 60,
-    gracePeriodDays: 7,
-    activeSubscribers: 0,
-    popular: true,
-  },
-  {
-    id: 'plan-monthly',
-    code: 'TITAN-FLEX-1M',
-    nameEn: 'Monthly Flex Access',
-    nameAr: 'الاشتراك الشهري المرن',
-    type: 'DURATION',
-    durationDays: 30,
-    priceEgp: 1950,
-    sessionsCount: null,
-    maxFreezeDays: 7,
-    gracePeriodDays: 3,
-    activeSubscribers: 0,
-  },
-];
+const INITIAL_PLANS: PlanItem[] = [];
 
 const INITIAL_MEMBERS: MemberItem[] = [];
 
@@ -541,52 +513,9 @@ const INITIAL_CLASSES: ClassSessionItem[] = [];
 
 const INITIAL_ACCESS_LOGS: AccessLogItem[] = [];
 
-const INITIAL_POS_PRODUCTS: PosProductItem[] = [
-  {
-    id: 'pos-1',
-    sku: 'SUP-ISO-2KG',
-    nameEn: 'Optimum Gold Standard Whey Isolate (2.27 kg)',
-    nameAr: 'واي بروتين أيزوليت جولد ستاندرد (٢.٢٧ كجم)',
-    category: 'PROTEIN',
-    priceEgp: 4250,
-    stock: 24,
-  },
-  {
-    id: 'pos-3',
-    sku: 'DRK-SHK-PRO',
-    nameEn: 'Fresh Post-Workout Double Protein Shake (45g Protein)',
-    nameAr: 'مشروب بروتين شيك طازج بعد التمرين (٤٥ جم بروتين)',
-    category: 'DRINKS',
-    priceEgp: 165,
-    stock: 95,
-  },
-];
+const INITIAL_POS_PRODUCTS: PosProductItem[] = [];
 
-const INITIAL_STAFF: StaffMemberItem[] = [
-  {
-    id: 'stf-1',
-    nameEn: 'Coach Omar Hassan (Head Coach)',
-    nameAr: 'كابتن عمر حسن (كبير المدربين)',
-    role: 'TRAINER',
-    specialtyEn: 'Head Strength & Conditioning Lead (CSCS)',
-    specialtyAr: 'كبير مدربي القوة والتكييف البدني وبناء الأجسام (CSCS)',
-    branchId: 'br-new-cairo',
-    phone: '+201005551122',
-    whatsappNumber: '201005551122',
-    activeClients: 0,
-    commissionRatePercent: 25,
-    monthlyRevenueEgp: 0,
-    baseSalaryEgp: 15000,
-    ptSessionRateEgp: 500,
-    totalPayoutsEgp: 0,
-    rating: 5.0,
-    shiftEn: '08:00 AM – 04:00 PM',
-    shiftAr: '٠٨:٠٠ ص – ٠٤:٠٠ م',
-    bioAr: 'المدرب العام والمسؤول الفني لنادي تيتان فيت، معتمد دولياً في اللياقة والتحول البدني والمتابعة الشخصية.',
-    bioEn: 'Head trainer responsible for fitness programming, hypertrophy and athlete progression.',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-  },
-];
+const INITIAL_STAFF: StaffMemberItem[] = [];
 
 const INITIAL_TRAINER_PAYOUTS: TrainerPayoutTransaction[] = [];
 
@@ -594,56 +523,7 @@ const INITIAL_WORKOUT_LOGS: WorkoutLogEntry[] = [];
 
 const INITIAL_CHAT: ChatMessageItem[] = [];
 
-const INITIAL_TENANTS: TenantSaaSItem[] = [
-  {
-    id: 'ten-1',
-    slug: 'titanfit-egypt',
-    nameEn: 'TitanFit Egypt (Flagship Group)',
-    nameAr: 'مجموعة أندية تيتان فيت مصر',
-    ownerUsername: 'titanfit_admin',
-    ownerEmail: 'owner@titanfit.eg',
-    ownerPhone: '01001234567',
-    authVerifier: ['Titan', '2026!'].join(''),
-    logoUrl: '/brand/logo.png',
-    primaryColor: '#D97706',
-    planTier: 'STARTER',
-    billingCycle: 'MONTHLY',
-    subscriptionDurationDays: 30,
-    subscriptionStartedAt: '2026-11-15T00:00:00.000Z',
-    subscriptionExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'ACTIVE',
-    branchesCount: 1,
-    activeMembersCount: 120,
-    trainersCount: 2,
-    mrrEgp: 950,
-    cityEn: 'Cairo & Giza, Egypt',
-    cityAr: 'القاهرة والجيزة، مصر',
-  },
-  {
-    id: 'ten-2',
-    slug: 'peak-fitness',
-    nameEn: 'Peak Fitness Cairo',
-    nameAr: 'بيك فيتنس القاهرة',
-    ownerUsername: 'peak_owner',
-    ownerEmail: 'coach.ahmed@peakfit.eg',
-    ownerPhone: '01123456789',
-    authVerifier: ['Peak', '2026!'].join(''),
-    logoUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=200&q=80',
-    primaryColor: '#059669',
-    planTier: 'PRO',
-    billingCycle: 'ANNUAL',
-    subscriptionDurationDays: 365,
-    subscriptionStartedAt: '2026-11-15T00:00:00.000Z',
-    subscriptionExpiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'ACTIVE',
-    branchesCount: 2,
-    activeMembersCount: 410,
-    trainersCount: 6,
-    mrrEgp: 1950,
-    cityEn: 'New Cairo, Egypt',
-    cityAr: 'التجمع الخامس، القاهرة',
-  },
-];
+const INITIAL_TENANTS: TenantSaaSItem[] = [];
 
 export interface CustomWorkoutVideoItem {
   id: string;
@@ -1538,7 +1418,7 @@ export function PlatformProvider({
       window.localStorage.removeItem('titanfit.tenants.v1');
       window.localStorage.removeItem('titanfit.auth.token');
       window.localStorage.removeItem('titanfit.auth.user');
-      const savedTenantsRaw = window.localStorage.getItem('titanfit.customTenants.v2');
+      const savedTenantsRaw = window.localStorage.getItem('titanfit.customTenants.v3');
       if (savedTenantsRaw) {
         const parsed = JSON.parse(savedTenantsRaw);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -1589,7 +1469,7 @@ export function PlatformProvider({
   useEffect(() => {
     if (!tenantsHydrated.current) return;
     try {
-      window.localStorage.setItem('titanfit.customTenants.v2', JSON.stringify(tenants));
+      window.localStorage.setItem('titanfit.customTenants.v3', JSON.stringify(tenants));
     } catch {
       /* ignore */
     }
@@ -3381,7 +3261,7 @@ export function PlatformProvider({
           return t;
         });
         try {
-          window.localStorage.setItem('titanfit.customTenants.v2', JSON.stringify(next));
+          window.localStorage.setItem('titanfit.customTenants.v3', JSON.stringify(next));
         } catch {
           /* ignore */
         }
@@ -3510,7 +3390,7 @@ export function PlatformProvider({
               )
             : [json.tenant, ...prev];
           try {
-            window.localStorage.setItem('titanfit.customTenants.v2', JSON.stringify(next));
+            window.localStorage.setItem('titanfit.customTenants.v3', JSON.stringify(next));
           } catch {
             /* ignore */
           }
@@ -3601,7 +3481,7 @@ export function PlatformProvider({
               : t,
           );
           try {
-            window.localStorage.setItem('titanfit.customTenants.v2', JSON.stringify(next));
+            window.localStorage.setItem('titanfit.customTenants.v3', JSON.stringify(next));
           } catch {
             /* ignore */
           }
@@ -3650,7 +3530,7 @@ export function PlatformProvider({
               : t,
           );
           try {
-            window.localStorage.setItem('titanfit.customTenants.v2', JSON.stringify(next));
+            window.localStorage.setItem('titanfit.customTenants.v3', JSON.stringify(next));
           } catch {
             /* ignore */
           }
