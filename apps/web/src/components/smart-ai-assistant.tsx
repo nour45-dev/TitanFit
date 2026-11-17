@@ -1348,11 +1348,13 @@ export function SmartAiAssistantWidget() {
   const isGymOwnerAccount =
     isAuthenticated &&
     (activeRole === 'GYM_OWNER' || activeRole === 'SUPER_ADMIN' || activeRole === 'BRANCH_MANAGER');
+  const isMemberAccount = isAuthenticated && activeRole === 'MEMBER';
 
-  // 3 distinct AI tiers:
-  // 1) isFreeVisitorMode (!isAuthenticated): Scoped Free Visitor AI (Pricing, Quick Estimate, Free 7-Day Trial only)
-  // 2) Starter Locked (isAuthenticated && !isAiAllowed && activeRole !== 'SUPER_ADMIN'): Upgrade Paywall Gate
-  // 3) Full Pro AI (isAuthenticated && (isAiAllowed || activeRole === 'SUPER_ADMIN')): Full Coach + Nutritionist + Live CRM
+  // 4 distinct AI contexts:
+  // 1) isFreeVisitorMode (!isAuthenticated): Scoped Free Visitor AI
+  // 2) isMemberAccount && isAiAllowed: Pure Personal Member AI (Coach & Nutritionist ONLY — NO Pro/Elite/SaaS options)
+  // 3) Starter Locked: Owner sees SaaS Pro upgrade gate; Member sees clean "Contact your club" notice (no SaaS pricing!)
+  // 4) Full Owner/Admin Pro AI: Coach + Nutritionist + Live Platform & CRM
   const isFreeVisitorMode = !isAuthenticated;
   const isProAiEnabled = isAuthenticated && (activeRole === 'SUPER_ADMIN' || isAiAllowed);
   const canUseAi = isFreeVisitorMode || isProAiEnabled;
@@ -1366,32 +1368,46 @@ export function SmartAiAssistantWidget() {
       sender: 'AI',
       textAr: isFreeVisitorMode
         ? 'أهلاً بك في **المساعد المجاني للزوار (TitanFit Free AI)** 👋✨!\nأنا هنا لمساعدتك في **مهام محددة للزوار**: شرح باقات المنصة، إعطاؤك تقدير مبدئي سريع للسعرات، وتوجيهك للتجربة المجانية الـ ٧ أيام. (أما **كوتش الجيم المحترف + أخصائي التغذية بالجرامات + بدائل الإصابات** فهي متاحة حصرياً في باقة **Pro + AI** والأحدث!).'
-        : 'أهلاً بك يا بطل! أنا **كوتش الجيم المحترف (Pro Gym Coach)** و**أخصائي التغذية الرياضية والعلاجية (Sports Nutritionist)** و**خبير المنصة الذكي** 🤖💪🥗.\nاحكيلي عن وزنك وطولك وهدفك، أو اسألني عن أي تمرين، بديل إصابة، جدول دايت بالجرامات، أو أي أداة داخل المنصة!',
+        : isMemberAccount
+          ? 'أهلاً بك يا بطل! أنا **كوتش التمرين وأخصائي التغذية الخاص بك** 🤖💪🥗.\nاحكيلي عن وزنك وطولك وهدفك، وهفصل لك جدول تمارين ووجبات بالجرامات وبدائل آمنة لأي إصابة خطوة بخطوة!'
+          : 'أهلاً بك يا بطل! أنا **كوتش الجيم المحترف (Pro Gym Coach)** و**أخصائي التغذية الرياضية والعلاجية (Sports Nutritionist)** و**خبير المنصة الذكي** 🤖💪🥗.\nاحكيلي عن وزنك وطولك وهدفك، أو اسألني عن أي تمرين، بديل إصابة، جدول دايت بالجرامات، أو أي أداة داخل المنصة!',
       textEn: isFreeVisitorMode
-        ? 'Welcome to **TitanFit Free Visitor AI** 👋✨! I handle specific visitor tasks: explaining plans & pricing, quick calorie estimates, and guiding you to the Free 7-Day Trial. (Full Pro Gym Coach & Clinical Nutritionist are exclusive to **Pro + AI**!).'
-        : 'Welcome champion! I am your **Pro AI Gym Coach**, **Clinical & Sports Nutritionist**, and **Platform Expert** 🤖💪🥗. Share your weight, height, and goal or ask about workouts, injury swaps, macro meal plans, or any platform feature!',
+        ? 'Welcome to **TitanFit Free Visitor AI** 👋✨! I handle specific visitor tasks: explaining plans & pricing, quick calorie estimates, and guiding you to the Free 7-Day Trial.'
+        : isMemberAccount
+          ? 'Welcome champion! I am your **Personal AI Gym Coach & Sports Nutritionist** 🤖💪🥗. Share your weight, height, and goal for custom workouts, gram-accurate meal plans, and joint-safe exercises!'
+          : 'Welcome champion! I am your **Pro AI Gym Coach**, **Clinical & Sports Nutritionist**, and **Platform Expert** 🤖💪🥗. Share your weight, height, and goal or ask about workouts, injury swaps, macro meal plans, or any platform feature!',
       highlightsAr: isFreeVisitorMode
         ? [
             '💎 **مقارنة الباقات:** الفرق بين Starter (بدون AI) و Pro + AI و Enterprise.',
             '🥗 **تقدير سريع للسعرات:** قولي وزنك فقط لحساب السعرات التقريبية.',
             '🎁 **التجربة المجانية:** جرب خطة الـ ٧ أيام المجانية قبل الاشتراك.',
           ]
-        : [
-            '🏋️‍♂️ **كوتش جيم كامل:** جداول Push/Pull/Legs و Upper/Lower وبدائل إصابات الركبة والظهر والكتف.',
-            '🥗 **أخصائي تغذية دقيق:** حساب BMR/TDEE بمعادلة Mifflin-St Jeor وجداول وجبات مصرية بالجرامات.',
-            '📊 **فاهم المنصة بالكامل:** مربوط ببيانات ناديك ويشرح ويوجهك لكل قسم بضغطة زر.',
-          ],
+        : isMemberAccount
+          ? [
+              '🏋️‍♂️ **كوتشك الشخصي:** جداول Push/Pull/Legs و Upper/Lower وبدائل إصابات الركبة والظهر والكتف.',
+              '🥗 **أخصائي تغذيتك:** حساب BMR/TDEE وجداول وجبات مصرية بالجرامات وبدائلها الاقتصادية.',
+            ]
+          : [
+              '🏋️‍♂️ **كوتش جيم كامل:** جداول Push/Pull/Legs و Upper/Lower وبدائل إصابات الركبة والظهر والكتف.',
+              '🥗 **أخصائي تغذية دقيق:** حساب BMR/TDEE بمعادلة Mifflin-St Jeor وجداول وجبات مصرية بالجرامات.',
+              '📊 **فاهم المنصة بالكامل:** مربوط ببيانات ناديك ويشرح ويوجهك لكل قسم بضغطة زر.',
+            ],
       highlightsEn: isFreeVisitorMode
         ? [
             '💎 Compare Plans: Starter (No AI) vs Pro + AI vs Enterprise.',
             '🥗 Quick Calorie Estimate: Share your weight for a quick daily estimate.',
             '🎁 Free 7-Day Trial: Explore free starter workouts & diets.',
           ]
-        : [
-            '🏋️‍♂️ Full Pro Gym Coach: Splits, tempo, RPE, and joint-safe injury substitutions.',
-            '🥗 Clinical Sports Nutritionist: Mifflin-St Jeor BMR/TDEE & gram-accurate Egyptian meal plans.',
-            '📊 Full Platform Intelligence: Connected to live gym CRM data and all platform sections.',
-          ],
+        : isMemberAccount
+          ? [
+              '🏋️‍♂️ Personal Gym Coach: Splits, tempo, RPE, and joint-safe injury substitutions.',
+              '🥗 Personal Nutritionist: Mifflin-St Jeor BMR/TDEE & gram-accurate meal plans.',
+            ]
+          : [
+              '🏋️‍♂️ Full Pro Gym Coach: Splits, tempo, RPE, and joint-safe injury substitutions.',
+              '🥗 Clinical Sports Nutritionist: Mifflin-St Jeor BMR/TDEE & gram-accurate Egyptian meal plans.',
+              '📊 Full Platform Intelligence: Connected to live gym CRM data and all platform sections.',
+            ],
       disclaimerAr: AI_DISCLAIMER_AR,
       disclaimerEn: AI_DISCLAIMER_EN,
     },
@@ -1497,11 +1513,15 @@ export function SmartAiAssistantWidget() {
                   ? isAr
                     ? 'مساعد الزوار (AI مجاني)'
                     : 'Free Visitor AI'
-                  : isAr
-                    ? 'كوتش الجيم وأخصائي التغذية (AI Pro)'
-                    : 'AI Gym Coach & Nutritionist'}
+                  : isMemberAccount
+                    ? isAr
+                      ? 'كوتش التمرين والتغذية (AI)'
+                      : 'Personal Coach & Diet AI'
+                    : isAr
+                      ? 'كوتش الجيم وأخصائي التغذية (AI Pro)'
+                      : 'AI Gym Coach & Nutritionist'}
               </p>
-              {!canUseAi && (
+              {!canUseAi && !isMemberAccount && (
                 <span className="rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-black text-amber-400 border border-amber-500/40">
                   PRO
                 </span>
@@ -1514,18 +1534,26 @@ export function SmartAiAssistantWidget() {
             </div>
             <p className="mt-0.5 hidden text-[10px] font-bold text-amber-300 dark:text-slate-800 sm:block">
               {!canUseAi
-                ? isAr
-                  ? '🔒 متاح في باقة Pro و Enterprise — اضغط للترقية'
-                  : '🔒 Available in Pro & Enterprise — Click to Upgrade'
+                ? isMemberAccount
+                  ? isAr
+                    ? '🔒 غير مفعل حالياً في ناديك'
+                    : '🔒 Not enabled by your club'
+                  : isAr
+                    ? '🔒 متاح في باقة Pro و Enterprise — اضغط للترقية'
+                    : '🔒 Available in Pro & Enterprise — Click to Upgrade'
                 : isFreeVisitorMode
                   ? isAr
                     ? 'مهام الزوار: الباقات + السعرات السريعة ✨'
                     : 'Visitor Tasks: Plans + Quick Estimates ✨'
-                  : isAr
-                    ? isGymOwnerAccount
-                      ? 'كوتش جيم + أخصائي تغذية + خبير المنصة ✨'
-                      : 'كوتش جيم + أخصائي تغذية ذكي فوري ✨'
-                    : 'Pro Coach + Nutritionist + Platform AI ✨'}
+                  : isMemberAccount
+                    ? isAr
+                      ? 'مدربك الشخصي وأخصائي التغذية الخاص بك ✨'
+                      : 'Your Personal Coach & Sports Nutritionist ✨'
+                    : isAr
+                      ? isGymOwnerAccount
+                        ? 'كوتش جيم + أخصائي تغذية + خبير المنصة ✨'
+                        : 'كوتش جيم + أخصائي تغذية ذكي فوري ✨'
+                      : 'Pro Coach + Nutritionist + Platform AI ✨'}
             </p>
           </div>
         </motion.button>
@@ -1555,9 +1583,13 @@ export function SmartAiAssistantWidget() {
                         ? isAr
                           ? 'المساعد المجاني للزوار (AI)'
                           : 'TitanFit Free Visitor AI'
-                        : isAr
-                          ? 'كوتش الجيم وأخصائي التغذية (AI Pro)'
-                          : 'TitanFit AI Coach & Nutritionist'}
+                        : isMemberAccount
+                          ? isAr
+                            ? 'كوتش التمرين والتغذية الشخصي (AI)'
+                            : 'Personal Coach & Nutrition AI'
+                          : isAr
+                            ? 'كوتش الجيم وأخصائي التغذية (AI Pro)'
+                            : 'TitanFit AI Coach & Nutritionist'}
                     </h3>
                     {isFreeVisitorMode ? (
                       <span className="rounded-md bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-black text-emerald-300 border border-emerald-500/40">
@@ -1565,25 +1597,33 @@ export function SmartAiAssistantWidget() {
                       </span>
                     ) : canUseAi ? (
                       <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-                    ) : (
+                    ) : !isMemberAccount ? (
                       <span className="rounded-md bg-rose-500/20 px-1.5 py-0.5 text-[9px] font-black text-rose-300 border border-rose-500/40">
                         {isAr ? 'مغلق في Starter' : 'Locked in Starter'}
                       </span>
-                    )}
+                    ) : null}
                   </div>
                   <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-300">
                     <span>
                       {!canUseAi
-                        ? isAr
-                          ? 'حصرياً في باقة Pro و Enterprise'
-                          : 'Exclusive to Pro & Enterprise Plans'
+                        ? isMemberAccount
+                          ? isAr
+                            ? 'تواصل مع إدارة ناديك لتفعيل المساعد الذكي'
+                            : 'Contact your gym management to enable AI'
+                          : isAr
+                            ? 'حصرياً في باقة Pro و Enterprise'
+                            : 'Exclusive to Pro & Enterprise Plans'
                         : isFreeVisitorMode
                           ? isAr
                             ? 'النسخة الاحترافية الكاملة متاحة في باقة Pro + AI'
                             : 'Full Pro AI Coach unlocked in Pro + AI'
-                          : isAr
-                            ? 'مدرب جيم + أخصائي تغذية + خبير المنصة'
-                            : 'Gym Coach + Nutritionist + Platform Guide'}
+                          : isMemberAccount
+                            ? isAr
+                              ? 'مدربك الشخصي وأخصائي التغذية الخاص بك في الجيم'
+                              : 'Your personal gym coach & sports nutritionist'
+                            : isAr
+                              ? 'مدرب جيم + أخصائي تغذية + خبير المنصة'
+                              : 'Gym Coach + Nutritionist + Platform Guide'}
                     </span>
                     {canUseAi && activeMemory.weightKg && (
                       <span className="rounded-md bg-emerald-500/20 px-1.5 py-0.5 font-mono text-[10px] font-black text-emerald-300 border border-emerald-500/30">
@@ -1608,8 +1648,28 @@ export function SmartAiAssistantWidget() {
               </button>
             </div>
 
-            {/* IF STARTER PLAN -> SHOW PRO AI UPGRADE PAYWALL GATE */}
+            {/* IF NOT ALLOWED -> MEMBER SEES CLEAN CLUB NOTICE; OWNER SEES PRO UPGRADE GATE */}
             {!canUseAi ? (
+              isMemberAccount ? (
+                <div
+                  data-testid="ai-member-disabled-notice"
+                  className="flex flex-1 flex-col items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 text-center text-white"
+                >
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-400">
+                    <Lock className="h-7 w-7" />
+                  </div>
+                  <h4 className="mt-4 text-base font-black text-white">
+                    {isAr
+                      ? 'المساعد الذكي الشخصي غير مفعل في ناديك حالياً'
+                      : 'Personal AI Coach is currently disabled by your gym'}
+                  </h4>
+                  <p className="mt-2 max-w-xs text-xs leading-relaxed text-slate-300">
+                    {isAr
+                      ? 'يرجى التواصل مع إدارة ناديك أو مدربك الشخصي لمتابعة جدول التمرين والنظام الغذائي الخاص بك.'
+                      : 'Please contact your gym management or personal trainer for your training and nutrition plan.'}
+                  </p>
+                </div>
+              ) : (
               <div
                 data-testid="ai-starter-paywall-gate"
                 className="flex flex-1 flex-col justify-between overflow-y-auto bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 text-white"
@@ -1705,6 +1765,7 @@ export function SmartAiAssistantWidget() {
                   </button>
                 </div>
               </div>
+              )
             ) : (
               <>
                 {/* Role / Mode Quick Switcher Bar */}
