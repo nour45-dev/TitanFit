@@ -3,7 +3,7 @@
 # ============================================================================
 
 FROM node:22-alpine AS base
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 RUN corepack enable && corepack prepare pnpm@10.6.5 --activate
 WORKDIR /app
 
@@ -12,6 +12,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* turbo.json ./
 COPY packages/tsconfig/package.json ./packages/tsconfig/
 COPY packages/config/package.json ./packages/config/
 COPY packages/contracts/package.json ./packages/contracts/
+COPY packages/database/package.json ./packages/database/
 COPY packages/ui/package.json ./packages/ui/
 COPY apps/web/package.json ./apps/web/
 RUN pnpm install --frozen-lockfile=false
@@ -21,9 +22,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_STANDALONE=true
 COPY packages ./packages
 COPY apps/web ./apps/web
+RUN pnpm --filter @gymos/database db:generate
 RUN pnpm --filter @gymos/web... build
 
-FROM node:22-alpine AS runner
+FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -34,6 +36,7 @@ RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
+COPY --from=builder --chown=nextjs:nodejs /app/packages/database ./packages/database
 
 USER nextjs
 EXPOSE 3000

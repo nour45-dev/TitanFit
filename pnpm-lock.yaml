@@ -108,6 +108,9 @@ importers:
       '@gymos/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@gymos/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@gymos/ui':
         specifier: workspace:*
         version: link:../../packages/ui

@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   output: process.env.NEXT_STANDALONE === 'true' ? 'standalone' : undefined,
   reactStrictMode: true,
   transpilePackages: ['@gymos/config', '@gymos/contracts', '@gymos/ui'],
+  serverExternalPackages: ['@prisma/client', 'prisma', '@gymos/database'],
   poweredByHeader: false,
   async headers() {
     return [

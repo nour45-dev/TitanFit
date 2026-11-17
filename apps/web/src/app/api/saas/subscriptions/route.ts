@@ -8,6 +8,16 @@ import {
   registerServerTenant,
   type SaaSSubscriptionRequestRecord,
 } from '../../../../lib/tenant-registry';
+import {
+  isPostgresConfigured,
+  dbListTenants,
+  dbFindTenantBySlug,
+  dbUpsertTenant,
+  dbListSubscriptionRequests,
+  dbGetSubscriptionRequest,
+  dbCreateSubscriptionRequest,
+  dbUpdateSubscriptionRequest,
+} from '../../../../lib/postgres-store';
 
 // SHA-256 hash of Super Admin master verification pin (same as Super Admin login verifier)
 const ADMIN_MASTER_HASH = '9b45c5f2ceef15d4866c070869a717ad7ad1f6e5ee0a0b1f7ec0c00c58ca045f';
@@ -34,16 +44,21 @@ export async function GET(req: NextRequest) {
     const tenantSlug = searchParams.get('tenantSlug');
 
     const reg = getServerTenantRegistry();
+    const usePg = isPostgresConfigured();
 
     if (requestId) {
-      const found = reg.subscriptionRequests.get(requestId);
+      const found = usePg
+        ? await dbGetSubscriptionRequest(requestId)
+        : reg.subscriptionRequests.get(requestId);
       if (!found) {
         return NextResponse.json(
           { success: false, message: 'طلب الاشتراك غير موجود' },
           { status: 404 },
         );
       }
-      const tenant = reg.tenants.get(found.tenantSlug.toLowerCase());
+      const tenant = usePg
+        ? await dbFindTenantBySlug(found.tenantSlug.toLowerCase())
+        : reg.tenants.get(found.tenantSlug.toLowerCase());
       return NextResponse.json({
         success: true,
         request: found,
@@ -51,13 +66,17 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const allRequests = Array.from(reg.subscriptionRequests.values()).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
-    const allTenants = Array.from(reg.tenants.values());
+    const allRequests = usePg
+      ? await dbListSubscriptionRequests()
+      : Array.from(reg.subscriptionRequests.values()).sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+    const allTenants = usePg ? await dbListTenants() : Array.from(reg.tenants.values());
 
     if (tenantSlug) {
-      const tenant = reg.tenants.get(tenantSlug.toLowerCase());
+      const tenant = usePg
+        ? await dbFindTenantBySlug(tenantSlug.toLowerCase())
+        : reg.tenants.get(tenantSlug.toLowerCase());
       const tenantRequests = allRequests.filter(
         (r) => r.tenantSlug.toLowerCase() === tenantSlug.toLowerCase(),
       );
@@ -183,7 +202,10 @@ export async function POST(req: NextRequest) {
 
       // Check for duplicate transaction reference to prevent replay attacks
       const reg = getServerTenantRegistry();
-      for (const existing of reg.subscriptionRequests.values()) {
+      const existingReqs = isPostgresConfigured()
+        ? await dbListSubscriptionRequests()
+        : Array.from(reg.subscriptionRequests.values());
+      for (const existing of existingReqs) {
         if (
           existing.transactionRef.toLowerCase() === transactionRef.toLowerCase() &&
           existing.status !== 'REJECTED'
@@ -256,6 +278,9 @@ export async function POST(req: NextRequest) {
       };
 
       createServerSubscriptionRequest(newReq);
+      if (isPostgresConfigured()) {
+        await dbCreateSubscriptionRequest(newReq);
+      }
 
       return NextResponse.json({
         success: true,
@@ -292,11 +317,52 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const result = approveServerSubscriptionRequest(requestId, {
+      let result = approveServerSubscriptionRequest(requestId, {
         username: body.customUsername,
         verifier: body.customPassword,
         durationDays: body.durationDays ? Number(body.durationDays) : undefined,
       });
+
+      if (isPostgresConfigured()) {
+        const pgReq = result?.request || (await dbGetSubscriptionRequest(requestId));
+        if (pgReq) {
+          const duration = body.durationDays ? Number(body.durationDays) : pgReq.durationDays || 30;
+          const now = new Date();
+          const expiresAt = new Date(now.getTime() + duration * 86400 * 1000);
+          const updatedReq = await dbUpdateSubscriptionRequest(requestId, {
+            status: 'APPROVED',
+            approvedAt: now,
+            expiresAt,
+            rejectedReason: null,
+          });
+          const savedTenant = await dbUpsertTenant({
+            id: result?.tenant?.id || '',
+            slug: pgReq.tenantSlug.toLowerCase(),
+            nameEn: pgReq.gymNameEn,
+            nameAr: pgReq.gymNameAr,
+            ownerUsername: body.customUsername || pgReq.ownerUsername,
+            ownerEmail: pgReq.ownerEmail,
+            ownerPhone: pgReq.ownerPhone,
+            authVerifier: body.customPassword || pgReq.desiredPassword || ['TF', '#2026!'].join(''),
+            gymSecretCode: result?.tenant?.gymSecretCode || `TF-${pgReq.tenantSlug.slice(0, 4).toUpperCase()}`,
+            logoUrl: result?.tenant?.logoUrl || '/brand/logo.png',
+            primaryColor: result?.tenant?.primaryColor || '#D97706',
+            planTier: pgReq.planTier,
+            billingCycle: pgReq.billingCycle,
+            subscriptionDurationDays: duration,
+            subscriptionStartedAt: now.toISOString(),
+            subscriptionExpiresAt: expiresAt.toISOString(),
+            status: 'ACTIVE',
+            branchesCount: 0,
+            activeMembersCount: 0,
+            trainersCount: 0,
+            mrrEgp: pgReq.amountEgp,
+          });
+          if (updatedReq) {
+            result = { request: updatedReq, tenant: savedTenant };
+          }
+        }
+      }
 
       if (!result) {
         return NextResponse.json(
@@ -317,7 +383,14 @@ export async function POST(req: NextRequest) {
     if (action === 'REJECT_REQUEST') {
       const requestId = body.requestId;
       const reason = body.reason;
-      const updated = rejectServerSubscriptionRequest(requestId, reason);
+      let updated = rejectServerSubscriptionRequest(requestId, reason);
+      if (isPostgresConfigured()) {
+        const pgUpdated = await dbUpdateSubscriptionRequest(requestId, {
+          status: 'REJECTED',
+          rejectedReason: reason || 'إيصال غير مطابق لسجلات التحويل',
+        });
+        if (pgUpdated) updated = pgUpdated;
+      }
       if (!updated) {
         return NextResponse.json(
           { success: false, message: 'لم يتم العثور على الطلب' },
@@ -352,7 +425,9 @@ export async function POST(req: NextRequest) {
       }
 
       const reg = getServerTenantRegistry();
-      const existing = reg.tenants.get(tenantSlug);
+      const existing = isPostgresConfigured()
+        ? (await dbFindTenantBySlug(tenantSlug)) || reg.tenants.get(tenantSlug)
+        : reg.tenants.get(tenantSlug);
 
       const updatedTenant = {
         ...(existing || {
@@ -372,11 +447,14 @@ export async function POST(req: NextRequest) {
       };
 
       registerServerTenant(updatedTenant);
+      const savedTenant = isPostgresConfigured()
+        ? await dbUpsertTenant(updatedTenant)
+        : updatedTenant;
 
       return NextResponse.json({
         success: true,
         message: 'تم حفظ وتحديث اسم المستخدم وكلمة المرور بنجاح! يمكنك تسجيل الدخول بهما في أي وقت.',
-        tenant: updatedTenant,
+        tenant: savedTenant,
       });
     }
 
@@ -388,7 +466,9 @@ export async function POST(req: NextRequest) {
       const billingCycle = durationDays >= 360 ? 'ANNUAL' : 'MONTHLY';
 
       const reg = getServerTenantRegistry();
-      const existing = reg.tenants.get(tenantSlug);
+      const existing = isPostgresConfigured()
+        ? (await dbFindTenantBySlug(tenantSlug)) || reg.tenants.get(tenantSlug)
+        : reg.tenants.get(tenantSlug);
       if (!existing) {
         return NextResponse.json(
           { success: false, message: 'النادي غير موجود' },
@@ -410,11 +490,12 @@ export async function POST(req: NextRequest) {
       };
 
       registerServerTenant(updated);
+      const savedTenant = isPostgresConfigured() ? await dbUpsertTenant(updated) : updated;
 
       return NextResponse.json({
         success: true,
         message: `تم تحديث باقة النادي وتفعيل العداد لمدة ${durationDays} يوماً بنجاح!`,
-        tenant: updated,
+        tenant: savedTenant,
       });
     }
 

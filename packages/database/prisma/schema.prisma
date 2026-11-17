@@ -38,26 +38,42 @@ enum BookingStatus {
 }
 
 model Tenant {
-  id              String       @id @default(uuid()) @db.Uuid
-  slug            String       @unique @db.VarChar(80)
-  nameEn          String       @map("name_en") @db.VarChar(160)
-  nameAr          String       @map("name_ar") @db.VarChar(160)
-  status          TenantStatus @default(TRIAL)
-  saasPlanCode    String       @default("PRO_MULTI_BRANCH") @map("saas_plan_code") @db.VarChar(40)
-  defaultCurrency String       @default("EGP") @map("default_currency") @db.VarChar(3)
-  defaultLocale   String       @default("en") @map("default_locale") @db.VarChar(10)
-  timezone        String       @default("Africa/Cairo") @db.VarChar(64)
-  primaryColorHex String       @default("#D4AF37") @map("primary_color_hex") @db.VarChar(7)
-  accentColorHex  String       @default("#10B981") @map("accent_color_hex") @db.VarChar(7)
-  logoUrl         String?      @map("logo_url") @db.Text
-  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt       DateTime?    @map("deleted_at") @db.Timestamptz(6)
+  id                       String       @id @default(uuid()) @db.Uuid
+  slug                     String       @unique @db.VarChar(80)
+  nameEn                   String       @map("name_en") @db.VarChar(160)
+  nameAr                   String       @map("name_ar") @db.VarChar(160)
+  status                   TenantStatus @default(TRIAL)
+  saasPlanCode             String       @default("PRO_MULTI_BRANCH") @map("saas_plan_code") @db.VarChar(40)
+  ownerUsername            String?      @map("owner_username") @db.VarChar(80)
+  ownerEmail               String?      @map("owner_email") @db.VarChar(160)
+  ownerPhone               String?      @map("owner_phone") @db.VarChar(32)
+  authVerifier             String?      @map("auth_verifier") @db.VarChar(160)
+  gymSecretCode            String       @default("TF-JOIN") @map("gym_secret_code") @db.VarChar(40)
+  billingCycle             String       @default("MONTHLY") @map("billing_cycle") @db.VarChar(16)
+  subscriptionDurationDays Int          @default(30) @map("subscription_duration_days")
+  subscriptionStartedAt    DateTime?    @map("subscription_started_at") @db.Timestamptz(6)
+  subscriptionExpiresAt    DateTime?    @map("subscription_expires_at") @db.Timestamptz(6)
+  cityEn                   String?      @default("Cairo, Egypt") @map("city_en") @db.VarChar(120)
+  cityAr                   String?      @default("القاهرة، مصر") @map("city_ar") @db.VarChar(120)
+  branchesCount            Int          @default(0) @map("branches_count")
+  activeMembersCount       Int          @default(0) @map("active_members_count")
+  trainersCount            Int          @default(0) @map("trainers_count")
+  mrrEgp                   Int          @default(0) @map("mrr_egp")
+  defaultCurrency          String       @default("EGP") @map("default_currency") @db.VarChar(3)
+  defaultLocale            String       @default("en") @map("default_locale") @db.VarChar(10)
+  timezone                 String       @default("Africa/Cairo") @db.VarChar(64)
+  primaryColorHex          String       @default("#D4AF37") @map("primary_color_hex") @db.VarChar(7)
+  accentColorHex           String       @default("#10B981") @map("accent_color_hex") @db.VarChar(7)
+  logoUrl                  String?      @map("logo_url") @db.Text
+  createdAt                DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt                DateTime?    @map("deleted_at") @db.Timestamptz(6)
 
-  branches Branch[]
-  users    User[]
-  roles    Role[]
-  sessions Session[]
+  branches     Branch[]
+  users        User[]
+  roles        Role[]
+  sessions     Session[]
+  tenantState  GymTenantState?
 
   @@index([status])
   @@map("tenants")
@@ -306,4 +322,78 @@ model Session {
   @@index([userId, revokedAt])
   @@index([tenantId, expiresAt])
   @@map("sessions")
+}
+
+model SaasSubscriptionRequest {
+  id              String    @id @db.VarChar(64)
+  requestNumber   String    @map("request_number") @db.VarChar(40)
+  tenantSlug      String    @map("tenant_slug") @db.VarChar(80)
+  gymNameAr       String    @map("gym_name_ar") @db.VarChar(160)
+  gymNameEn       String    @map("gym_name_en") @db.VarChar(160)
+  ownerName       String    @map("owner_name") @db.VarChar(160)
+  ownerUsername   String    @map("owner_username") @db.VarChar(80)
+  ownerEmail      String    @map("owner_email") @db.VarChar(160)
+  ownerPhone      String    @map("owner_phone") @db.VarChar(32)
+  desiredPassword String?   @map("desired_password") @db.VarChar(160)
+  planTier        String    @map("plan_tier") @db.VarChar(24)
+  planNameAr      String    @map("plan_name_ar") @db.VarChar(160)
+  planNameEn      String    @map("plan_name_en") @db.VarChar(160)
+  billingCycle    String    @map("billing_cycle") @db.VarChar(16)
+  durationDays    Int       @map("duration_days")
+  amountEgp       Int       @map("amount_egp")
+  paymentMethod   String    @map("payment_method") @db.VarChar(32)
+  senderPhone     String    @map("sender_phone") @db.VarChar(32)
+  transactionRef  String    @map("transaction_ref") @db.VarChar(64)
+  receiptDataUrl  String?   @map("receipt_data_url") @db.Text
+  receiptFileName String?   @map("receipt_file_name") @db.VarChar(200)
+  status          String    @default("PENDING_APPROVAL") @db.VarChar(24)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  approvedAt      DateTime? @map("approved_at") @db.Timestamptz(6)
+  expiresAt       DateTime? @map("expires_at") @db.Timestamptz(6)
+  rejectedReason  String?   @map("rejected_reason") @db.Text
+
+  @@index([tenantSlug, status])
+  @@index([createdAt])
+  @@map("saas_subscription_requests")
+}
+
+model GymTenantState {
+  id                 String   @id @default(uuid()) @db.Uuid
+  tenantId           String   @unique @map("tenant_id") @db.Uuid
+  tenantSlug         String   @unique @map("tenant_slug") @db.VarChar(80)
+  version            Int      @default(1)
+  branchesJson       String   @default("[]") @map("branches_json") @db.Text
+  membersJson        String   @default("[]") @map("members_json") @db.Text
+  plansJson          String   @default("[]") @map("plans_json") @db.Text
+  invoicesJson       String   @default("[]") @map("invoices_json") @db.Text
+  classesJson        String   @default("[]") @map("classes_json") @db.Text
+  staffJson          String   @default("[]") @map("staff_json") @db.Text
+  attendanceJson     String   @default("[]") @map("attendance_json") @db.Text
+  salesJson          String   @default("[]") @map("sales_json") @db.Text
+  customBrandingJson String   @default("{}") @map("custom_branding_json") @db.Text
+  customWorkoutsJson String   @default("[]") @map("custom_workouts_json") @db.Text
+  customRecipesJson  String   @default("[]") @map("custom_recipes_json") @db.Text
+  customFilesJson    String   @default("[]") @map("custom_files_json") @db.Text
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("gym_tenant_states")
+}
+
+model RegisteredMember {
+  id           String   @id @db.VarChar(64)
+  tenantSlug   String   @map("tenant_slug") @db.VarChar(80)
+  code         String   @db.VarChar(40)
+  email        String   @db.VarChar(160)
+  phone        String   @db.VarChar(32)
+  fullNameEn   String   @map("full_name_en") @db.VarChar(160)
+  fullNameAr   String   @map("full_name_ar") @db.VarChar(160)
+  tempPassword String?  @map("temp_password") @db.VarChar(120)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([tenantSlug, code])
+  @@index([email])
+  @@index([phone])
+  @@map("registered_members")
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerTenantRegistry } from '../../../../lib/tenant-registry';
+import { isPostgresConfigured, dbListTenants } from '../../../../lib/postgres-store';
 
 const API_BASE_URL =
   process.env.API_BASE_URL ||
@@ -86,7 +87,10 @@ export async function POST(req: NextRequest) {
     // 2A. First, check if logging in as a registered Tenant Gym Owner whose credentials match
     let foundTenant = matchedTenant || null;
     if (!foundTenant && lowerId && !gymSecretCode) {
-      for (const t of registry.tenants.values()) {
+      const tenantList = isPostgresConfigured()
+        ? await dbListTenants()
+        : Array.from(registry.tenants.values());
+      for (const t of tenantList) {
         if (
           (t.ownerUsername && t.ownerUsername.toLowerCase() === lowerId) ||
           t.ownerEmail.toLowerCase() === lowerId ||

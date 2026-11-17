@@ -186,7 +186,11 @@ export interface SyncActionPayload {
     | 'ADD_CUSTOM_FILE'
     | 'DELETE_CUSTOM_FILE'
     | 'REGISTER_TENANT'
-    | 'DELETE_TENANT';
+    | 'DELETE_TENANT'
+    | 'ADD_BRANCH'
+    | 'UPDATE_BRANCH'
+    | 'DELETE_BRANCH'
+    | 'SYNC_GYM_SNAPSHOT';
   payload: any;
 }
 

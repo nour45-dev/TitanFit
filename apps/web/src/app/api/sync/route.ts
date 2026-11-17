@@ -5,12 +5,25 @@ import {
   registerServerTenant,
   removeServerTenant,
 } from '../../../lib/tenant-registry';
+import {
+  isPostgresConfigured,
+  dbGetTenantState,
+  dbSaveTenantState,
+  dbListTenants,
+  dbUpsertTenant,
+  dbDeleteTenantBySlug,
+  dbUpsertRegisteredMember,
+} from '../../../lib/postgres-store';
 
 interface SyncStoreState {
   version: number;
   lastUpdated: string;
   members: any[];
   plans: any[];
+  branches: any[];
+  invoices: any[];
+  classes: any[];
+  staff: any[];
   attendance: any[];
   sales: any[];
   customBranding: Record<string, any>;
@@ -19,7 +32,7 @@ interface SyncStoreState {
   customFiles: any[];
 }
 
-// Global in-memory cache for multi-device sync per tenant (persists across requests during server runtime)
+// Global in-memory cache for multi-device sync per tenant (used as fast cache & test fallback)
 const tenantSyncCache = new Map<string, SyncStoreState>();
 
 function getOrCreateTenantState(tenantSlug: string): SyncStoreState {
@@ -30,6 +43,10 @@ function getOrCreateTenantState(tenantSlug: string): SyncStoreState {
       lastUpdated: new Date().toISOString(),
       members: [],
       plans: [],
+      branches: [],
+      invoices: [],
+      classes: [],
+      staff: [],
       attendance: [],
       sales: [],
       customBranding: {},
@@ -48,8 +65,18 @@ export async function GET(req: NextRequest) {
     const tenantSlug = searchParams.get('tenantSlug') || 'titanfit-cairo';
     const clientVersion = parseInt(searchParams.get('version') || '0', 10);
 
-    const state = getOrCreateTenantState(tenantSlug);
+    let state = getOrCreateTenantState(tenantSlug);
     const registry = getServerTenantRegistry();
+    let registeredTenants = Array.from(registry.tenants.values());
+
+    if (isPostgresConfigured()) {
+      const pgState = await dbGetTenantState(tenantSlug);
+      if (pgState) {
+        state = pgState;
+        tenantSyncCache.set(tenantSlug, pgState);
+      }
+      registeredTenants = await dbListTenants();
+    }
 
     return NextResponse.json({
       success: true,
@@ -57,7 +84,7 @@ export async function GET(req: NextRequest) {
       hasUpdates: state.version > clientVersion,
       data: {
         ...state,
-        registeredTenants: Array.from(registry.tenants.values()),
+        registeredTenants,
       },
     });
   } catch (err) {
@@ -75,7 +102,13 @@ export async function POST(req: NextRequest) {
     const action = body.action as string;
     const payload = body.payload;
 
-    const state = getOrCreateTenantState(tenantSlug);
+    let state = getOrCreateTenantState(tenantSlug);
+    if (isPostgresConfigured()) {
+      const pgState = await dbGetTenantState(tenantSlug);
+      if (pgState) {
+        state = pgState;
+      }
+    }
 
     switch (action) {
       case 'INIT_STATE':
@@ -108,7 +141,7 @@ export async function POST(req: NextRequest) {
           if (!exists) {
             state.members.unshift(payload);
           }
-          registerServerMember({
+          const memberEntry = {
             id: payload.id,
             code: payload.code || '',
             email: payload.email || '',
@@ -117,7 +150,45 @@ export async function POST(req: NextRequest) {
             fullNameAr: payload.fullNameAr || '',
             tempPassword: payload.tempPassword,
             tenantSlug,
-          });
+          };
+          registerServerMember(memberEntry);
+          if (isPostgresConfigured()) {
+            await dbUpsertRegisteredMember(memberEntry);
+          }
+        }
+        break;
+
+      case 'ADD_BRANCH':
+        if (payload?.id) {
+          const exists = state.branches.some((b) => b.id === payload.id);
+          if (!exists) {
+            state.branches.push(payload);
+          }
+        }
+        break;
+
+      case 'UPDATE_BRANCH':
+        if (payload?.branchId) {
+          state.branches = state.branches.map((b) =>
+            b.id === payload.branchId ? { ...b, ...payload.updates } : b,
+          );
+        }
+        break;
+
+      case 'DELETE_BRANCH':
+        if (payload?.branchId) {
+          state.branches = state.branches.filter((b) => b.id !== payload.branchId);
+        }
+        break;
+
+      case 'SYNC_GYM_SNAPSHOT':
+        if (payload) {
+          if (Array.isArray(payload.branches)) state.branches = payload.branches;
+          if (Array.isArray(payload.members)) state.members = payload.members;
+          if (Array.isArray(payload.plans)) state.plans = payload.plans;
+          if (Array.isArray(payload.invoices)) state.invoices = payload.invoices;
+          if (Array.isArray(payload.classes)) state.classes = payload.classes;
+          if (Array.isArray(payload.staff)) state.staff = payload.staff;
         }
         break;
 
@@ -242,7 +313,7 @@ export async function POST(req: NextRequest) {
 
       case 'REGISTER_TENANT':
         if (payload?.slug) {
-          registerServerTenant({
+          const tenantPayload = {
             id: payload.id || `ten-${Date.now()}`,
             slug: payload.slug,
             nameEn: payload.nameEn || payload.slug,
@@ -268,13 +339,21 @@ export async function POST(req: NextRequest) {
             mrrEgp: payload.mrrEgp,
             cityEn: payload.cityEn,
             cityAr: payload.cityAr,
-          });
+          };
+          registerServerTenant(tenantPayload);
+          if (isPostgresConfigured()) {
+            await dbUpsertTenant(tenantPayload);
+          }
         }
         break;
 
       case 'DELETE_TENANT':
         if (payload?.tenantId || payload?.slug) {
-          removeServerTenant(payload.slug || payload.tenantId);
+          const targetSlug = payload.slug || payload.tenantId;
+          removeServerTenant(targetSlug);
+          if (isPostgresConfigured() && payload.slug) {
+            await dbDeleteTenantBySlug(payload.slug);
+          }
         }
         break;
 
@@ -284,6 +363,11 @@ export async function POST(req: NextRequest) {
 
     state.version += 1;
     state.lastUpdated = new Date().toISOString();
+    tenantSyncCache.set(tenantSlug, state);
+
+    if (isPostgresConfigured() && action !== 'DELETE_TENANT') {
+      await dbSaveTenantState(tenantSlug, state);
+    }
 
     return NextResponse.json({
       success: true,

@@ -2067,6 +2067,11 @@ export function PlatformProvider({
       return next;
     });
     appendAudit('BRANCH_CREATED', `Created branch ${newBranch.nameAr} for gym ${activeTenantSlug}`);
+    apiPushSyncAction({
+      tenantSlug: activeTenantSlug,
+      action: 'ADD_BRANCH',
+      payload: newBranch,
+    }).catch(() => {});
     showToast(
       locale === 'ar'
         ? `🏢 تمت إضافة فرع "${newBranch.nameAr}" لناديك بنجاح!`
@@ -2078,6 +2083,11 @@ export function PlatformProvider({
   const updateBranch: PlatformStoreContextValue['updateBranch'] = (branchId, updates) => {
     setBranches((prev) => prev.map((b) => (b.id === branchId ? { ...b, ...updates } : b)));
     appendAudit('BRANCH_UPDATED', `Updated branch ${branchId} in ${activeTenantSlug}`);
+    apiPushSyncAction({
+      tenantSlug: activeTenantSlug,
+      action: 'UPDATE_BRANCH',
+      payload: { branchId, updates },
+    }).catch(() => {});
     showToast(locale === 'ar' ? 'تم تحديث بيانات الفرع بنجاح' : 'Branch updated successfully');
   };
 
@@ -2094,6 +2104,11 @@ export function PlatformProvider({
       setSelectedBranchId('ALL');
     }
     appendAudit('BRANCH_DELETED', `Deleted branch ${target?.nameAr || branchId}`);
+    apiPushSyncAction({
+      tenantSlug: activeTenantSlug,
+      action: 'DELETE_BRANCH',
+      payload: { branchId },
+    }).catch(() => {});
     showToast(
       locale === 'ar'
         ? `تم حذف الفرع "${target?.nameAr || ''}" بنجاح`
