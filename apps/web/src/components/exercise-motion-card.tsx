@@ -305,724 +305,529 @@ export function CartoonAthleteVisualCanvas({
   const impact = EXERCISE_BODY_IMPACT_MAP[motionType] ?? EXERCISE_BODY_IMPACT_MAP.BENCH_PRESS;
 
   const renderExerciseSvg = () => {
+    const sharedDefs = (
+      <defs>
+        {/* 3D Sculpted Anatomical Mannequin Shading (MuscleWiki / 3D Studio Style) */}
+        <linearGradient id="proBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#64748B" />
+          <stop offset="45%" stopColor="#334155" />
+          <stop offset="100%" stopColor="#0F172A" />
+        </linearGradient>
+        <linearGradient id="proLimbGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#94A3B8" />
+          <stop offset="50%" stopColor="#475569" />
+          <stop offset="100%" stopColor="#1E293B" />
+        </linearGradient>
+        <linearGradient id="proHeadGrad" x1="25%" y1="0%" x2="85%" y2="100%">
+          <stop offset="0%" stopColor="#CBD5E1" />
+          <stop offset="55%" stopColor="#64748B" />
+          <stop offset="100%" stopColor="#1E293B" />
+        </linearGradient>
+        <linearGradient id="proChromeBar" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#F8FAFC" />
+          <stop offset="45%" stopColor="#94A3B8" />
+          <stop offset="100%" stopColor="#475569" />
+        </linearGradient>
+        <linearGradient id="proGoldPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FEF08A" />
+          <stop offset="45%" stopColor="#D97706" />
+          <stop offset="100%" stopColor="#78350F" />
+        </linearGradient>
+        <radialGradient id="proMuscleGlowRed" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#EF4444" stopOpacity="0.95" />
+          <stop offset="60%" stopColor="#DC2626" stopOpacity="0.45" />
+          <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="proMuscleGlowGold" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.95" />
+          <stop offset="60%" stopColor="#D97706" stopOpacity="0.45" />
+          <stop offset="100%" stopColor="#F59E0B" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="proMuscleGlowEmerald" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#10B981" stopOpacity="0.95" />
+          <stop offset="60%" stopColor="#059669" stopOpacity="0.45" />
+          <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="proMuscleGlowCyan" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.95" />
+          <stop offset="60%" stopColor="#0284C7" stopOpacity="0.45" />
+          <stop offset="100%" stopColor="#38BDF8" stopOpacity="0" />
+        </radialGradient>
+        <filter id="proGlowFilter" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="3.2" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
+    );
+
     switch (motionType) {
       case 'BENCH_PRESS':
       case 'INCLINE_PRESS': {
         const isIncline = motionType === 'INCLINE_PRESS';
         return (
-          <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
-            <defs>
-              <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FED7AA" />
-                <stop offset="45%" stopColor="#FDBA74" />
-                <stop offset="100%" stopColor="#EA580C" />
-              </linearGradient>
-              <linearGradient id="tankGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#0F172A" />
-                <stop offset="50%" stopColor="#1E293B" />
-                <stop offset="100%" stopColor="#020617" />
-              </linearGradient>
-              <linearGradient id="goldPlate" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FEF08A" />
-                <stop offset="45%" stopColor="#F59E0B" />
-                <stop offset="100%" stopColor="#92400E" />
-              </linearGradient>
-              <radialGradient id="targetGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#EF4444" stopOpacity="0.98" />
-                <stop offset="55%" stopColor="#F59E0B" stopOpacity="0.65" />
-                <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
-              </radialGradient>
-              <filter id="glowFilter" x="-30%" y="-30%" width="160%" height="160%">
-                <feGaussianBlur stdDeviation="3.5" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-            </defs>
+          <svg viewBox="0 0 280 200" className="h-full w-full select-none overflow-visible">
+            {sharedDefs}
 
-            {/* 3D Studio Perspective Floor Grid & Shadow */}
-            <path d="M 20 182 L 260 182 M 45 172 L 235 172" stroke="#334155" strokeWidth="0.7" opacity="0.35" strokeDasharray="4 4" />
-            <ellipse cx="140" cy="180" rx="95" ry="11" fill="#000000" opacity="0.26" />
+            {/* 3D Studio Floor & Contact Shadow */}
+            <ellipse cx="135" cy="182" rx="102" ry="9" fill="#000000" opacity="0.45" />
+            <line x1="20" y1="182" x2="260" y2="182" stroke="#334155" strokeWidth="1.5" strokeLinecap="round" />
 
-            {/* Heavy Duty Gym Bench with 3D Metallic Frame */}
-            <g transform={isIncline ? 'rotate(-16 70 120)' : ''}>
-              <rect x="50" y="125" width="145" height="14" rx="5" fill="#1E293B" stroke="#475569" strokeWidth="2" />
-              <rect x="52" y="122" width="141" height="5" rx="2" fill="#D4AF37" opacity="0.75" />
-              {/* Bench Steel Legs */}
-              <path d="M 65 139 L 55 178" stroke="#64748B" strokeWidth="8" strokeLinecap="round" />
-              <path d="M 175 139 L 185 178" stroke="#64748B" strokeWidth="8" strokeLinecap="round" />
+            {/* Heavy-Duty Steel Bench */}
+            <g transform={isIncline ? 'rotate(-16 78 126)' : ''}>
+              <rect x="48" y="128" width="142" height="12" rx="4" fill="#1E293B" stroke="#475569" strokeWidth="1.5" />
+              <rect x="52" y="125" width="134" height="4" rx="2" fill="#D4AF37" opacity="0.8" />
+              <path d="M 68 140 L 58 180 M 170 140 L 180 180" stroke="#475569" strokeWidth="6" strokeLinecap="round" />
             </g>
 
-            {/* Realistic Muscular Athlete - Lying Down */}
-            <path d="M 175 128 Q 195 135 205 160 L 205 178" stroke="#0F172A" strokeWidth="14" strokeLinecap="round" fill="none" />
-            <ellipse cx="205" cy="178" rx="11" ry="5.5" fill="#F59E0B" stroke="#FEF08A" strokeWidth="1" />
+            {/* Planted Lower Leg & Training Shoe */}
+            <path d="M 168 128 Q 196 132 204 156 L 207 177 L 195 177 L 190 156 Q 182 140 162 136 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.8" />
+            <path d="M 193 176 L 218 176 Q 222 181 215 182 L 192 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
 
-            {/* Athlete Torso with 3D Compression Singlet */}
-            <path
-              d={isIncline ? 'M 75 110 Q 115 100 150 115 L 145 135 L 75 125 Z' : 'M 75 115 Q 115 110 155 115 L 150 135 L 75 135 Z'}
-              fill="url(#tankGrad)"
-              stroke="#D4AF37"
-              strokeWidth="1.5"
-            />
+            {/* Sculpted Anatomical Torso & Neck */}
+            <g transform={isIncline ? 'rotate(-16 78 126)' : ''}>
+              <path
+                d="M 80 112 Q 112 103 145 113 L 168 118 L 166 131 L 80 128 Z"
+                fill="url(#proBodyGrad)"
+                stroke="#94A3B8"
+                strokeWidth="0.8"
+              />
+              {/* Sculpted Head & Jawline Silhouette (No Cartoon Face) */}
+              <path d="M 68 110 C 60 105, 58 93, 68 90 C 78 88, 84 96, 82 106 L 78 113 Z" fill="url(#proHeadGrad)" stroke="#94A3B8" strokeWidth="0.7" />
+              <path d="M 76 111 L 86 114 L 84 123 L 75 120 Z" fill="url(#proLimbGrad)" />
 
-            {/* Realistic Sculpted Head & Hair with Gold Headband */}
-            <circle cx="70" cy="108" r="16" fill="url(#skinGrad)" />
-            <path d="M 58 102 Q 68 85 82 98 Q 78 106 72 104 Z" fill="#0F172A" />
-            <path d="M 60 104 Q 72 98 84 104" stroke="#D4AF37" strokeWidth="4" strokeLinecap="round" />
-            <circle cx="74" cy="107" r="2" fill="#0F172A" />
-            <path d="M 71 103 L 77 104" stroke="#0F172A" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M 68 116 Q 76 118 82 112" stroke="#C2410C" strokeWidth="1.4" fill="none" />
+              {/* Activated Pectoral Muscle Fibers */}
+              <motion.ellipse
+                cx="116"
+                cy="111"
+                rx="19"
+                ry="12"
+                fill="url(#proMuscleGlowRed)"
+                filter="url(#proGlowFilter)"
+                animate={isPlaying ? { scale: [1, 1.32, 1], opacity: [0.45, 0.95, 0.45] } : {}}
+                transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <path d="M 103 108 Q 116 116 129 109 M 106 113 Q 117 119 127 114" stroke="#FCA5A5" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+            </g>
 
-            {/* Target Activated Pectorals Heatmap Zone (Glowing 3D Striated Chest) */}
-            <motion.ellipse
-              cx="118"
-              cy="110"
-              rx="19"
-              ry="13"
-              fill="url(#targetGlow)"
-              filter="url(#glowFilter)"
-              animate={
-                isPlaying
-                  ? {
-                      scale: [1, 1.38, 1],
-                      opacity: [0.5, 0.98, 0.5],
-                    }
-                  : {}
-              }
-              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-            />
+            {/* Trajectory Guide Dashed Line */}
+            <line x1="118" y1="36" x2="118" y2="92" stroke="#38BDF8" strokeWidth="1" strokeDasharray="3 3" opacity="0.45" />
 
-            {/* Anatomical Muscle Striation Fibers */}
-            <path d="M 106 112 Q 118 119 130 112" stroke="#EF4444" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-            <path d="M 109 108 Q 118 114 127 108" stroke="#FCA5A5" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.85" />
-
-            {/* Biomechanical Moving Barbell & Sculpted 3D Arms */}
+            {/* Biomechanical Arms & Olympic Barbell */}
             <motion.g
               animate={
                 isPlaying
-                  ? {
-                      y: [0, -38, 0],
-                      x: isIncline ? [0, -6, 0] : [0, 0, 0],
-                    }
+                  ? { y: [0, -38, 0], x: isIncline ? [0, -6, 0] : [0, 0, 0] }
                   : {}
               }
               transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
             >
-              {/* Muscular Biceps / Triceps & Forearms with Vascular Definition */}
+              {/* Sculpted Tapered Upper Arm & Forearm */}
               <path
-                d="M 100 114 Q 106 90 118 68"
-                stroke="url(#skinGrad)"
-                strokeWidth="12"
-                strokeLinecap="round"
-                fill="none"
+                d="M 102 112 Q 95 94 108 82 L 116 64 L 123 66 L 116 86 Q 108 98 112 114 Z"
+                fill="url(#proLimbGrad)"
+                stroke="#CBD5E1"
+                strokeWidth="0.8"
               />
-              <path
-                d="M 102 110 Q 108 92 117 72"
-                stroke="#FED7AA"
-                strokeWidth="2"
-                strokeLinecap="round"
-                fill="none"
-                opacity="0.6"
-              />
-              {/* Titan Wrist Wraps */}
-              <rect x="113" y="62" width="10" height="7" rx="2" fill="#D4AF37" />
-              {/* Hands Gripping Bar */}
-              <circle cx="118" cy="65" r="5" fill="#FDBA74" />
+              <circle cx="110" cy="85" r="3" fill="#0F172A" stroke="#38BDF8" strokeWidth="1" />
+              {/* Wrist Wrap & Hand Grip */}
+              <rect x="113" y="61" width="11" height="6" rx="2" fill="#D4AF37" />
 
-            {/* Olympic Steel Barbell with Textured Knurling */}
-            <line x1="45" y1="65" x2="215" y2="65" stroke="#CBD5E1" strokeWidth="6" strokeLinecap="round" />
-            <line x1="45" y1="63" x2="215" y2="63" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
-            {/* Chrome Barbell Collars */}
-            <rect x="62" y="57" width="6" height="16" rx="2" fill="#94A3B8" />
-            <rect x="192" y="57" width="6" height="16" rx="2" fill="#94A3B8" />
+              {/* Chrome Barbell & 3D Beveled Plates */}
+              <rect x="46" y="61" width="166" height="5" rx="2.5" fill="url(#proChromeBar)" />
+              <rect x="64" y="54" width="5" height="19" rx="1.5" fill="#94A3B8" />
+              <rect x="190" y="54" width="5" height="19" rx="1.5" fill="#94A3B8" />
+              <rect x="52" y="38" width="11" height="50" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
+              <rect x="196" y="38" width="11" height="50" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
+            </motion.g>
 
-            {/* Embossed 20 KG Golden Bumper Plates */}
-            <rect x="52" y="38" width="11" height="54" rx="4" fill="url(#goldPlate)" stroke="#78350F" strokeWidth="1.5" />
-            <rect x="197" y="38" width="11" height="54" rx="4" fill="url(#goldPlate)" stroke="#78350F" strokeWidth="1.5" />
-            <text x="57" y="68" fontSize="7" fontWeight="bold" fill="#78350F" textAnchor="middle" transform="rotate(-90 57 68)">
-              20 KG
-            </text>
-            <text x="202" y="68" fontSize="7" fontWeight="bold" fill="#78350F" textAnchor="middle" transform="rotate(90 202 68)">
-              20 KG
-            </text>
-          </motion.g>
-
-          {/* Visual Target Activation Radar Callout Pin (علامة العضلة المستهدفة) */}
-          <g transform="translate(118, 110)">
-            <motion.circle
-              r="7"
-              fill="none"
-              stroke="#EF4444"
-              strokeWidth="2"
-              animate={isPlaying ? { scale: [1, 2.2], opacity: [1, 0] } : {}}
-              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
-            />
-            <circle r="3.5" fill="#EF4444" stroke="#FFFFFF" strokeWidth="1.5" />
-            {/* Connector Line to Callout Pill */}
-            <path d="M 0 0 L 25 -28 L 85 -28" stroke="#EF4444" strokeWidth="1.5" strokeDasharray="3 2" fill="none" />
-            <g transform="translate(25, -39)">
-              <rect width="80" height="20" rx="6" fill="#0F172A" stroke="#EF4444" strokeWidth="1.2" />
-              <text x="40" y="13" fill="#FEE2E2" fontSize="9" fontWeight="900" textAnchor="middle">
-                {isAr ? '🔥 الصدر: +96% تنشيط' : '🔥 Chest: +96% Act.'}
-              </text>
+            {/* Target Muscle Callout Pin */}
+            <g transform="translate(118, 108)">
+              <motion.circle r="6" fill="none" stroke="#EF4444" strokeWidth="1.5" animate={isPlaying ? { scale: [1, 2.1], opacity: [1, 0] } : {}} transition={{ duration: 1.6, repeat: Infinity }} />
+              <circle r="3" fill="#EF4444" stroke="#FFFFFF" strokeWidth="1.2" />
+              <path d="M 0 0 L 24 -22 L 96 -22" stroke="#EF4444" strokeWidth="1.2" strokeDasharray="3 2" fill="none" />
+              <g transform="translate(24, -33)">
+                <rect width="84" height="19" rx="5" fill="#0F172A" stroke="#EF4444" strokeWidth="1" />
+                <text x="42" y="12.5" fill="#FEE2E2" fontSize="8.5" fontWeight="900" textAnchor="middle">
+                  {isAr ? 'الصدر: 96% EMG' : 'Chest: 96% EMG'}
+                </text>
+              </g>
             </g>
-          </g>
-        </svg>
-      );
-    }
+          </svg>
+        );
+      }
 
-    case 'BARBELL_SQUAT': {
-      return (
-        <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
-          <defs>
-            <linearGradient id="squatGold" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FCD34D" />
-              <stop offset="100%" stopColor="#B45309" />
-            </linearGradient>
-            <radialGradient id="quadGlowRadar" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#10B981" stopOpacity="0.95" />
-              <stop offset="60%" stopColor="#059669" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
-            </radialGradient>
-          </defs>
+      case 'BARBELL_SQUAT': {
+        return (
+          <svg viewBox="0 0 280 200" className="h-full w-full select-none overflow-visible">
+            {sharedDefs}
+            <ellipse cx="140" cy="182" rx="82" ry="8" fill="#000000" opacity="0.45" />
+            <line x1="25" y1="182" x2="255" y2="182" stroke="#334155" strokeWidth="1.5" strokeLinecap="round" />
 
-          {/* Floor & Platform */}
-          <rect x="30" y="180" width="220" height="8" rx="4" fill="#334155" />
-          <ellipse cx="140" cy="180" rx="80" ry="8" fill="#000000" opacity="0.2" />
+            {/* Squat Rack Uprights */}
+            <line x1="68" y1="24" x2="68" y2="182" stroke="#334155" strokeWidth="4" />
+            <line x1="212" y1="24" x2="212" y2="182" stroke="#334155" strokeWidth="4" />
 
-          {/* Athletic Training Shoes on Platform */}
-          <ellipse cx="112" cy="178" rx="14" ry="6" fill="#D4AF37" stroke="#0F172A" strokeWidth="1.5" />
-          <ellipse cx="168" cy="178" rx="14" ry="6" fill="#D4AF37" stroke="#0F172A" strokeWidth="1.5" />
+            {/* Planted Squat Shoes */}
+            <path d="M 98 176 L 122 176 L 124 182 L 96 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
+            <path d="M 158 176 L 182 176 L 184 182 L 156 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
 
-          {/* Dynamic Lifter Body: Olympic Squatting Down & Driving Up */}
-          <motion.g
-            animate={
-              isPlaying
-                ? {
-                    y: [0, 32, 0],
-                  }
-                : {}
-            }
-            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            {/* Muscular Calves & Shins */}
-            <path d="M 112 175 L 105 135" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
-            <path d="M 168 175 L 175 135" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
+            <motion.g
+              animate={isPlaying ? { y: [0, 32, 0] } : {}}
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              {/* Sculpted Calves & Tapered Quads */}
+              <path d="M 106 176 L 100 138 L 112 138 L 116 176 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
+              <path d="M 164 176 L 168 138 L 180 138 L 174 176 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
+              <path d="M 100 138 Q 108 112 122 96 L 136 98 L 114 138 Z" fill="url(#proLimbGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+              <path d="M 180 138 Q 172 112 158 96 L 144 98 L 166 138 Z" fill="url(#proLimbGrad)" stroke="#94A3B8" strokeWidth="0.8" />
 
-            {/* Powerful Quadriceps & Glutes */}
-            <path d="M 105 135 L 126 95" stroke="#FDBA74" strokeWidth="14" strokeLinecap="round" />
-            <path d="M 175 135 L 154 95" stroke="#FDBA74" strokeWidth="14" strokeLinecap="round" />
+              {/* Quad Activation Glow & Fibers */}
+              <motion.ellipse
+                cx="140"
+                cy="118"
+                rx="30"
+                ry="16"
+                fill="url(#proMuscleGlowEmerald)"
+                filter="url(#proGlowFilter)"
+                animate={isPlaying ? { scale: [1, 1.32, 1], opacity: [0.4, 0.95, 0.4] } : {}}
+                transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+              />
 
-            {/* Targeted Quadriceps Heatmap Glow (الفخذ الأمامي) */}
+              {/* Athletic Shorts & V-Tapered Torso */}
+              <path d="M 118 94 L 162 94 L 168 118 L 140 115 L 112 118 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.2" />
+              <path d="M 122 94 L 116 54 Q 140 48 164 54 L 158 94 Z" fill="url(#proBodyGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+              <path d="M 130 62 Q 140 66 150 62 M 133 74 L 147 74 M 134 83 L 146 83" stroke="#1E293B" strokeWidth="1.4" fill="none" />
+
+              {/* Sculpted Head & Neck */}
+              <rect x="135" y="45" width="10" height="9" rx="3" fill="url(#proLimbGrad)" />
+              <ellipse cx="140" cy="34" rx="10" ry="12.5" fill="url(#proHeadGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+
+              {/* Arms Gripping Barbell */}
+              <path d="M 116 55 L 98 48 L 108 42" stroke="url(#proLimbGrad)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              <path d="M 164 55 L 182 48 L 172 42" stroke="url(#proLimbGrad)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+
+              {/* Olympic Barbell & Plates */}
+              <rect x="44" y="42" width="192" height="5" rx="2.5" fill="url(#proChromeBar)" />
+              <rect x="52" y="21" width="11" height="47" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
+              <rect x="217" y="21" width="11" height="47" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
+            </motion.g>
+
+            {/* Target Pin */}
+            <g transform="translate(115, 118)">
+              <motion.circle r="6" fill="none" stroke="#10B981" strokeWidth="1.5" animate={isPlaying ? { scale: [1, 2.1], opacity: [1, 0] } : {}} transition={{ duration: 1.6, repeat: Infinity }} />
+              <circle r="3" fill="#10B981" stroke="#FFFFFF" strokeWidth="1.2" />
+              <path d="M 0 0 L -24 -24 L -85 -24" stroke="#10B981" strokeWidth="1.2" strokeDasharray="3 2" fill="none" />
+              <g transform="translate(-96, -35)">
+                <rect width="78" height="19" rx="5" fill="#0F172A" stroke="#10B981" strokeWidth="1" />
+                <text x="39" y="12.5" fill="#D1FAE5" fontSize="8.5" fontWeight="900" textAnchor="middle">
+                  {isAr ? 'الفخذ: 98% EMG' : 'Quads: 98% EMG'}
+                </text>
+              </g>
+            </g>
+          </svg>
+        );
+      }
+
+      case 'ROMANIAN_DEADLIFT': {
+        return (
+          <svg viewBox="0 0 280 200" className="h-full w-full select-none overflow-visible">
+            {sharedDefs}
+            <ellipse cx="140" cy="182" rx="82" ry="8" fill="#000000" opacity="0.45" />
+            <line x1="25" y1="182" x2="255" y2="182" stroke="#334155" strokeWidth="1.5" strokeLinecap="round" />
+
+            {/* Fixed Lower Leg & Shoe */}
+            <path d="M 118 176 L 138 176 L 142 182 L 116 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
+            <path d="M 120 176 L 115 130 L 128 130 L 132 176 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
+
+            {/* Hamstring Glow */}
             <motion.ellipse
-              cx="140"
-              cy="115"
-              rx="28"
-              ry="18"
-              fill="url(#quadGlowRadar)"
-              animate={
-                isPlaying
-                  ? {
-                      scale: [1, 1.4, 1],
-                      opacity: [0.4, 0.95, 0.4],
-                    }
-                  : {}
-              }
+              cx="113"
+              cy="114"
+              rx="16"
+              ry="22"
+              fill="url(#proMuscleGlowRed)"
+              filter="url(#proGlowFilter)"
+              animate={isPlaying ? { scale: [1, 1.32, 1], opacity: [0.4, 0.95, 0.4] } : {}}
               transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
             />
 
-            {/* Gym Shorts with Gold Side Stripe */}
-            <path d="M 120 95 L 160 95 L 168 122 L 140 120 L 112 122 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.5" />
-            <line x1="122" y1="95" x2="114" y2="122" stroke="#D4AF37" strokeWidth="2.5" />
-            <line x1="158" y1="95" x2="166" y2="122" stroke="#D4AF37" strokeWidth="2.5" />
+            {/* Hinging Athlete Body */}
+            <motion.g
+              animate={isPlaying ? { rotate: [0, 48, 0] } : {}}
+              style={{ transformOrigin: '112px 102px' }}
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <path d="M 115 130 Q 106 115 104 100 L 120 100 L 128 130 Z" fill="url(#proLimbGrad)" stroke="#94A3B8" strokeWidth="0.7" />
+              <path d="M 103 102 L 101 76 L 125 84 L 122 104 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.2" />
+              <path d="M 101 78 L 104 38 L 124 41 L 124 84 Z" fill="url(#proBodyGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+              {/* Sculpted Profile Head */}
+              <path d="M 107 37 C 102 32, 102 20, 111 19 C 120 18, 124 27, 120 36 Z" fill="url(#proHeadGrad)" stroke="#94A3B8" strokeWidth="0.7" />
+              {/* Arm & Barbell */}
+              <path d="M 114 48 L 132 90" stroke="url(#proLimbGrad)" strokeWidth="8.5" strokeLinecap="round" />
+              <rect x="86" y="88" width="94" height="5" rx="2.5" fill="url(#proChromeBar)" />
+              <rect x="82" y="70" width="10" height="40" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
+              <rect x="172" y="70" width="10" height="40" rx="3" fill="url(#proGoldPlate)" stroke="#FEF08A" strokeWidth="0.8" />
+            </motion.g>
 
-            {/* Muscular Core & Chest (TitanFit Tank Top) */}
-            <path d="M 125 95 L 155 95 L 158 55 L 122 55 Z" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.5" />
-            {/* Abs Contour */}
-            <line x1="140" y1="68" x2="140" y2="90" stroke="#0F172A" strokeWidth="2" strokeLinecap="round" />
-
-            {/* Cartoon Champion Head with Focused Expression */}
-            <circle cx="140" cy="40" r="14" fill="#FDBA74" />
-            {/* Modern Hair & Headband */}
-            <path d="M 128 34 Q 140 20 152 34 Q 146 42 140 40 Z" fill="#1E1B4B" />
-            <path d="M 128 36 Q 140 33 152 36" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round" />
-            {/* Eyes & Fierce Focus */}
-            <circle cx="136" cy="40" r="1.8" fill="#0F172A" />
-            <circle cx="144" cy="40" r="1.8" fill="#0F172A" />
-            <path d="M 137 46 Q 140 48 143 46" stroke="#0F172A" strokeWidth="1.2" fill="none" />
-
-            {/* Arms Gripping Barbell on Traps */}
-            <path d="M 122 58 L 105 48 L 114 46" stroke="#FDBA74" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M 158 58 L 175 48 L 166 46" stroke="#FDBA74" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
-
-            {/* Olympic Barbell Rested Across Trapezius */}
-            <line x1="40" y1="46" x2="240" y2="46" stroke="#CBD5E1" strokeWidth="6" strokeLinecap="round" />
-            <line x1="40" y1="44" x2="240" y2="44" stroke="#FFFFFF" strokeWidth="1.5" />
-            {/* Heavy Gold Plates */}
-            <rect x="52" y="22" width="12" height="48" rx="4" fill="url(#squatGold)" stroke="#78350F" strokeWidth="1.5" />
-            <rect x="216" y="22" width="12" height="48" rx="4" fill="url(#squatGold)" stroke="#78350F" strokeWidth="1.5" />
-          </motion.g>
-
-          {/* Visual Target Radar Callout Pin (علامة الفخذ الأمامي) */}
-          <g transform="translate(140, 115)">
-            <motion.circle
-              r="8"
-              fill="none"
-              stroke="#10B981"
-              strokeWidth="2"
-              animate={isPlaying ? { scale: [1, 2.3], opacity: [1, 0] } : {}}
-              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
-            />
-            <circle r="4" fill="#10B981" stroke="#FFFFFF" strokeWidth="1.5" />
-            <path d="M 0 0 L 35 -35 L 90 -35" stroke="#10B981" strokeWidth="1.5" strokeDasharray="3 2" fill="none" />
-            <g transform="translate(35, -46)">
-              <rect width="84" height="20" rx="6" fill="#0F172A" stroke="#10B981" strokeWidth="1.2" />
-              <text x="42" y="13" fill="#D1FAE5" fontSize="9" fontWeight="900" textAnchor="middle">
-                {isAr ? '⚡ الفخذ: +98% بناء' : '⚡ Quads: +98% Act.'}
-              </text>
-            </g>
-          </g>
-        </svg>
-      );
-    }
-
-    case 'ROMANIAN_DEADLIFT': {
-      return (
-        <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
-          <defs>
-            <radialGradient id="hamGlowRadar" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#EF4444" stopOpacity="0.95" />
-              <stop offset="70%" stopColor="#DC2626" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-
-          {/* Floor & Platform */}
-          <rect x="30" y="180" width="220" height="8" rx="4" fill="#334155" />
-          <ellipse cx="140" cy="180" rx="80" ry="8" fill="#000000" opacity="0.2" />
-
-          {/* Athletic Shoes */}
-          <ellipse cx="125" cy="178" rx="14" ry="6" fill="#D4AF37" stroke="#0F172A" strokeWidth="1.5" />
-
-          {/* Fixed Lower Leg & Soft Knees */}
-          <path d="M 125 175 L 120 128" stroke="#FDBA74" strokeWidth="13" strokeLinecap="round" />
-
-          {/* Hamstring Muscle Activation Heatmap Glow */}
-          <motion.ellipse
-            cx="112"
-            cy="110"
-            rx="18"
-            ry="24"
-            fill="url(#hamGlowRadar)"
-            animate={
-              isPlaying
-                ? {
-                    scale: [1, 1.45, 1],
-                    opacity: [0.35, 0.95, 0.35],
-                  }
-                : {}
-            }
-            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-          />
-
-          {/* Hinging Upper Body: Hips Push Backwards, Torso Tilts Forward */}
-          <motion.g
-            animate={
-              isPlaying
-                ? {
-                    rotate: [0, 48, 0],
-                  }
-                : {}
-            }
-            style={{ transformOrigin: '110px 100px' }}
-            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            {/* Muscular Hamstrings & Glutes */}
-            <path d="M 120 128 L 108 100" stroke="#FDBA74" strokeWidth="14" strokeLinecap="round" />
-            {/* Gym Shorts */}
-            <path d="M 108 100 L 102 75 L 128 85 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.5" />
-
-            {/* Straight Neutral Spine Torso */}
-            <path d="M 102 75 L 102 38 L 122 42 L 120 80 Z" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.5" />
-
-            {/* Cartoon Athlete Head with Eyeline Forward */}
-            <circle cx="106" cy="24" r="13" fill="#FDBA74" />
-            <path d="M 96 18 Q 106 8 116 18 Q 112 26 106 24 Z" fill="#1E1B4B" />
-            <path d="M 96 20 Q 106 18 116 20" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round" />
-            <circle cx="102" cy="24" r="1.8" fill="#0F172A" />
-
-            {/* Arms Hanging Straight Down Holding Olympic Bar */}
-            <path d="M 112 48 L 132 88" stroke="#FDBA74" strokeWidth="9" strokeLinecap="round" />
-            <circle cx="132" cy="88" r="5" fill="#D4AF37" />
-
-            {/* Barbell Sliding Close to Shins */}
-            <line x1="90" y1="88" x2="174" y2="88" stroke="#CBD5E1" strokeWidth="5.5" strokeLinecap="round" />
-            <rect x="82" y="70" width="10" height="36" rx="3" fill="#F59E0B" stroke="#78350F" strokeWidth="1.5" />
-            <rect x="172" y="70" width="10" height="36" rx="3" fill="#F59E0B" stroke="#78350F" strokeWidth="1.5" />
-          </motion.g>
-
-          {/* Visual Target Radar Callout Pin (علامة الفخذ الخلفي) */}
-          <g transform="translate(112, 110)">
-            <motion.circle
-              r="8"
-              fill="none"
-              stroke="#EF4444"
-              strokeWidth="2"
-              animate={isPlaying ? { scale: [1, 2.3], opacity: [1, 0] } : {}}
-              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
-            />
-            <circle r="4" fill="#EF4444" stroke="#FFFFFF" strokeWidth="1.5" />
-            <path d="M 0 0 L -35 -30 L -90 -30" stroke="#EF4444" strokeWidth="1.5" strokeDasharray="3 2" fill="none" />
-            <g transform="translate(-105, -41)">
-              <rect width="90" height="20" rx="6" fill="#0F172A" stroke="#EF4444" strokeWidth="1.2" />
-              <text x="45" y="13" fill="#FEE2E2" fontSize="9" fontWeight="900" textAnchor="middle">
-                {isAr ? '🔥 فخذ خلفي: +95%' : '🔥 Hamstrings: 95%'}
-              </text>
-            </g>
-          </g>
-        </svg>
-      );
-    }
-
-    case 'LAT_PULLDOWN':
-    case 'BARBELL_ROW': {
-      return (
-        <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
-          <defs>
-            <radialGradient id="latGlowRadar" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.95" />
-              <stop offset="60%" stopColor="#0284C7" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="#38BDF8" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-
-          {/* Cable Pulldown Tower Frame */}
-          <path d="M 60 180 L 60 22 L 220 22 L 220 180" stroke="#334155" strokeWidth="5" fill="none" strokeLinecap="round" />
-          <circle cx="140" cy="22" r="8" fill="#64748B" stroke="#0F172A" strokeWidth="2" />
-
-          {/* Seated Bench Pad */}
-          <rect x="100" y="130" width="80" height="12" rx="4" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.5" />
-          <line x1="140" y1="142" x2="140" y2="180" stroke="#475569" strokeWidth="8" strokeLinecap="round" />
-
-          {/* Athlete Seated Back View - Iconic V-Taper Figure */}
-          <path d="M 125 142 L 115 180" stroke="#0F172A" strokeWidth="12" strokeLinecap="round" />
-          <path d="M 155 142 L 165 180" stroke="#0F172A" strokeWidth="12" strokeLinecap="round" />
-
-          {/* Broad Shoulders & V-Taper Torso Back */}
-          <path d="M 110 88 L 170 88 L 155 132 L 125 132 Z" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.5" />
-
-          {/* Latissimus Dorsi Wing Expansion Heatmap Glow (المجنص) */}
-          <motion.ellipse
-            cx="140"
-            cy="104"
-            rx="32"
-            ry="18"
-            fill="url(#latGlowRadar)"
-            animate={
-              isPlaying
-                ? {
-                    scale: [1, 1.45, 1],
-                    opacity: [0.35, 0.95, 0.35],
-                  }
-                : {}
-            }
-            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-          />
-
-          {/* Back Muscular Striations (Rhomboids & Traps) */}
-          <path d="M 125 96 Q 140 102 155 96" stroke="#38BDF8" strokeWidth="2" fill="none" />
-          <path d="M 128 108 Q 140 114 152 108" stroke="#38BDF8" strokeWidth="2" fill="none" />
-
-          {/* Athlete Head Back Profile with Headband */}
-          <circle cx="140" cy="65" r="14" fill="#FDBA74" />
-          <path d="M 126 62 Q 140 50 154 62 Q 146 72 134 72 Z" fill="#1E1B4B" />
-          <path d="M 127 65 Q 140 60 153 65" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round" />
-
-          {/* Dynamic Pulldown Bar & Gripping Arms */}
-          <motion.g
-            animate={
-              isPlaying
-                ? {
-                    y: [0, 32, 0],
-                  }
-                : {}
-            }
-            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            {/* Cable Line */}
-            <line x1="140" y1="22" x2="140" y2="48" stroke="#CBD5E1" strokeWidth="2.5" strokeDasharray="3 3" />
-            {/* Ergonomic Curved Wide Grip Lat Bar */}
-            <path d="M 75 56 Q 140 44 205 56" stroke="#D4AF37" strokeWidth="6" fill="none" strokeLinecap="round" />
-            <circle cx="75" cy="56" r="4" fill="#94A3B8" />
-            <circle cx="205" cy="56" r="4" fill="#94A3B8" />
-
-            {/* Muscular Arms Gripping Wide Handles */}
-            <path d="M 114 88 L 92 60" stroke="#FDBA74" strokeWidth="10" strokeLinecap="round" />
-            <path d="M 166 88 L 188 60" stroke="#FDBA74" strokeWidth="10" strokeLinecap="round" />
-            <circle cx="92" cy="60" r="5" fill="#D4AF37" />
-            <circle cx="188" cy="60" r="5" fill="#D4AF37" />
-          </motion.g>
-
-          {/* Visual Target Radar Callout Pin (علامة المجنص) */}
-          <g transform="translate(140, 104)">
-            <motion.circle
-              r="8"
-              fill="none"
-              stroke="#38BDF8"
-              strokeWidth="2"
-              animate={isPlaying ? { scale: [1, 2.3], opacity: [1, 0] } : {}}
-              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
-            />
-            <circle r="4" fill="#38BDF8" stroke="#FFFFFF" strokeWidth="1.5" />
-            <path d="M 0 0 L 35 -30 L 90 -30" stroke="#38BDF8" strokeWidth="1.5" strokeDasharray="3 2" fill="none" />
-            <g transform="translate(35, -41)">
-              <rect width="84" height="20" rx="6" fill="#0F172A" stroke="#38BDF8" strokeWidth="1.2" />
-              <text x="42" y="13" fill="#E0F2FE" fontSize="9" fontWeight="900" textAnchor="middle">
-                {isAr ? '⚡ المجنص: +95% عرض' : '⚡ Lats: +95% Width'}
-              </text>
-            </g>
-          </g>
-        </svg>
-      );
-    }
-
-    case 'LATERAL_RAISE': {
-      return (
-        <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
-          <defs>
-            <radialGradient id="deltGlowRadar" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.95" />
-              <stop offset="70%" stopColor="#D97706" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#F59E0B" strokeWidth="0" />
-            </radialGradient>
-          </defs>
-
-          {/* Floor */}
-          <rect x="30" y="180" width="220" height="8" rx="4" fill="#334155" />
-          <ellipse cx="140" cy="180" rx="70" ry="7" fill="#000000" opacity="0.2" />
-
-          {/* Standing Legs & Athletic Shorts */}
-          <line x1="128" y1="125" x2="124" y2="178" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
-          <line x1="152" y1="125" x2="156" y2="178" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
-          <path d="M 118 95 L 162 95 L 158 128 L 122 128 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.5" />
-
-          {/* Athletic Torso with TitanFit Singlet */}
-          <path d="M 122 62 L 158 62 L 160 95 L 120 95 Z" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.5" />
-
-          {/* Head & Gold Headband */}
-          <circle cx="140" cy="46" r="14" fill="#FDBA74" />
-          <path d="M 128 40 Q 140 28 152 40 Q 146 50 134 48 Z" fill="#1E1B4B" />
-          <path d="M 128 42 Q 140 38 152 42" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round" />
-          <circle cx="136" cy="46" r="1.8" fill="#0F172A" />
-          <circle cx="144" cy="46" r="1.8" fill="#0F172A" />
-
-          {/* Dual Lateral Deltoids Heatmap Glow (الأكتاف الجانبية) */}
-          <motion.circle
-            cx="115"
-            cy="65"
-            r="16"
-            fill="url(#deltGlowRadar)"
-            animate={
-              isPlaying
-                ? {
-                    scale: [1, 1.45, 1],
-                    opacity: [0.35, 0.95, 0.35],
-                  }
-                : {}
-            }
-            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.circle
-            cx="165"
-            cy="65"
-            r="16"
-            fill="url(#deltGlowRadar)"
-            animate={
-              isPlaying
-                ? {
-                    scale: [1, 1.45, 1],
-                    opacity: [0.35, 0.95, 0.35],
-                  }
-                : {}
-            }
-            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-          />
-
-          {/* Left Arm Raising Outward with Dumbbell */}
-          <motion.g
-            animate={
-              isPlaying
-                ? {
-                    rotate: [0, -72, 0],
-                  }
-                : {}
-            }
-            style={{ transformOrigin: '120px 65px' }}
-            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <path d="M 120 65 L 95 115" stroke="#FDBA74" strokeWidth="10" strokeLinecap="round" />
-            <circle cx="95" cy="115" r="4.5" fill="#D4AF37" />
-            {/* Hex Dumbbell */}
-            <rect x="86" y="108" width="18" height="14" rx="3" fill="#334155" stroke="#D4AF37" strokeWidth="1.2" />
-          </motion.g>
-
-          {/* Right Arm Raising Outward with Dumbbell */}
-          <motion.g
-            animate={
-              isPlaying
-                ? {
-                    rotate: [0, 72, 0],
-                  }
-                : {}
-            }
-            style={{ transformOrigin: '160px 65px' }}
-            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <path d="M 160 65 L 185 115" stroke="#FDBA74" strokeWidth="10" strokeLinecap="round" />
-            <circle cx="185" cy="115" r="4.5" fill="#D4AF37" />
-            {/* Hex Dumbbell */}
-            <rect x="176" y="108" width="18" height="14" rx="3" fill="#334155" stroke="#D4AF37" strokeWidth="1.2" />
-          </motion.g>
-
-          {/* Target Callout Radar Pin */}
-          <g transform="translate(165, 65)">
-            <motion.circle
-              r="7"
-              fill="none"
-              stroke="#F59E0B"
-              strokeWidth="2"
-              animate={isPlaying ? { scale: [1, 2.2], opacity: [1, 0] } : {}}
-              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
-            />
-            <circle r="3.5" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="1.5" />
-            <path d="M 0 0 L 25 -25 L 75 -25" stroke="#F59E0B" strokeWidth="1.5" strokeDasharray="3 2" fill="none" />
-            <g transform="translate(25, -36)">
-              <rect width="80" height="20" rx="6" fill="#0F172A" stroke="#F59E0B" strokeWidth="1.2" />
-              <text x="40" y="13" fill="#FEF3C7" fontSize="9" fontWeight="900" textAnchor="middle">
-                {isAr ? '⚡ الكتف: +96% عرض' : '⚡ Delts: +96% Width'}
-              </text>
-            </g>
-          </g>
-        </svg>
-      );
-    }
-
-    case 'TRICEPS_PUSHDOWN':
-    case 'BICEPS_CURL':
-    default: {
-      const isBiceps = motionType === 'BICEPS_CURL';
-      return (
-        <svg viewBox="0 0 280 200" className="w-full h-full select-none overflow-visible">
-          <defs>
-            <radialGradient id="armGlowRadar" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor={isBiceps ? '#EF4444' : '#10B981'} stopOpacity="0.95" />
-              <stop offset="70%" stopColor={isBiceps ? '#DC2626' : '#059669'} stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-
-          {/* Floor */}
-          <rect x="30" y="180" width="220" height="8" rx="4" fill="#334155" />
-          <ellipse cx="140" cy="180" rx="70" ry="7" fill="#000000" opacity="0.2" />
-
-          {/* Standing Legs Profile */}
-          <line x1="125" y1="125" x2="120" y2="178" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
-          <line x1="140" y1="125" x2="145" y2="178" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
-          <path d="M 115 95 L 145 95 L 142 128 L 118 128 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.5" />
-
-          {/* Athletic Torso Profile */}
-          <path d="M 118 60 L 144 60 L 142 95 L 115 95 Z" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.5" />
-
-          {/* Head & Headband */}
-          <circle cx="130" cy="45" r="14" fill="#FDBA74" />
-          <path d="M 118 40 Q 130 28 142 40 Q 138 48 126 48 Z" fill="#1E1B4B" />
-          <path d="M 118 42 Q 130 38 142 42" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round" />
-          <circle cx="135" cy="45" r="1.8" fill="#0F172A" />
-
-          {/* Pinned Upper Arm */}
-          <path d="M 136 65 L 144 95" stroke="#FDBA74" strokeWidth="12" strokeLinecap="round" />
-
-          {/* Muscle Peak Heatmap Glow */}
-          <motion.circle
-            cx="140"
-            cy="84"
-            r="16"
-            fill="url(#armGlowRadar)"
-            animate={
-              isPlaying
-                ? {
-                    scale: [1, 1.45, 1],
-                    opacity: [0.35, 0.95, 0.35],
-                  }
-                : {}
-            }
-            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-          />
-
-          {/* Forearm Curling Up or Pushing Down */}
-          <motion.g
-            animate={
-              isPlaying
-                ? {
-                    rotate: isBiceps ? [0, -85, 0] : [0, 68, 0],
-                  }
-                : {}
-            }
-            style={{ transformOrigin: '144px 95px' }}
-            transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <path d="M 144 95 L 158 135" stroke="#FDBA74" strokeWidth="10" strokeLinecap="round" />
-            <circle cx="158" cy="135" r="5" fill="#D4AF37" />
-
-            {/* Gear: Cable Rope or Olympic Curl Barbell */}
-            {isBiceps ? (
-              <g transform="translate(158, 135)">
-                <line x1="-15" y1="0" x2="15" y2="0" stroke="#CBD5E1" strokeWidth="5" strokeLinecap="round" />
-                <circle cx="-15" cy="0" r="8" fill="#F59E0B" />
-                <circle cx="15" cy="0" r="8" fill="#F59E0B" />
+            <g transform="translate(112, 112)">
+              <motion.circle r="6" fill="none" stroke="#EF4444" strokeWidth="1.5" animate={isPlaying ? { scale: [1, 2.1], opacity: [1, 0] } : {}} transition={{ duration: 1.6, repeat: Infinity }} />
+              <circle r="3" fill="#EF4444" stroke="#FFFFFF" strokeWidth="1.2" />
+              <path d="M 0 0 L -26 -24 L -88 -24" stroke="#EF4444" strokeWidth="1.2" strokeDasharray="3 2" fill="none" />
+              <g transform="translate(-96, -35)">
+                <rect width="82" height="19" rx="5" fill="#0F172A" stroke="#EF4444" strokeWidth="1" />
+                <text x="41" y="12.5" fill="#FEE2E2" fontSize="8.5" fontWeight="900" textAnchor="middle">
+                  {isAr ? 'خلفيات: 95% EMG' : 'Hams: 95% EMG'}
+                </text>
               </g>
-            ) : (
-              <g transform="translate(158, 135)">
-                <path d="M 0 0 L -8 18 M 0 0 L 8 18" stroke="#D4AF37" strokeWidth="4" strokeLinecap="round" />
-                <circle cx="-8" cy="18" r="3.5" fill="#0F172A" />
-                <circle cx="8" cy="18" r="3.5" fill="#0F172A" />
+            </g>
+          </svg>
+        );
+      }
+
+      case 'LAT_PULLDOWN':
+      case 'BARBELL_ROW': {
+        return (
+          <svg viewBox="0 0 280 200" className="h-full w-full select-none overflow-visible">
+            {sharedDefs}
+            {/* Cable Pulldown Frame */}
+            <path d="M 60 182 L 60 20 L 220 20 L 220 182" stroke="#334155" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+            <circle cx="140" cy="20" r="7" fill="#475569" stroke="#94A3B8" strokeWidth="1.5" />
+            <rect x="98" y="132" width="84" height="10" rx="3" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.2" />
+            <line x1="140" y1="142" x2="140" y2="182" stroke="#475569" strokeWidth="7" strokeLinecap="round" />
+
+            {/* Athlete Seated Back View (Anatomical V-Taper) */}
+            <path d="M 122 142 L 114 180 L 124 180 L 132 142 Z" fill="url(#proLimbGrad)" />
+            <path d="M 158 142 L 166 180 L 156 180 L 148 142 Z" fill="url(#proLimbGrad)" />
+            <path d="M 106 84 Q 140 76 174 84 L 156 132 L 124 132 Z" fill="url(#proBodyGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+
+            {/* Latissimus Dorsi Glow & Muscle Fibers */}
+            <motion.ellipse
+              cx="140"
+              cy="102"
+              rx="30"
+              ry="16"
+              fill="url(#proMuscleGlowCyan)"
+              filter="url(#proGlowFilter)"
+              animate={isPlaying ? { scale: [1, 1.32, 1], opacity: [0.4, 0.95, 0.4] } : {}}
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <path d="M 120 94 Q 140 103 160 94 M 124 106 Q 140 114 156 106" stroke="#7DD3FC" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+
+            {/* Sculpted Head Back & Traps */}
+            <path d="M 125 82 Q 140 72 155 82 Z" fill="url(#proLimbGrad)" />
+            <ellipse cx="140" cy="64" rx="10" ry="12" fill="url(#proHeadGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+
+            {/* Dynamic Pulldown Bar & Tapered Arms */}
+            <motion.g
+              animate={isPlaying ? { y: [0, 32, 0] } : {}}
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <line x1="140" y1="20" x2="140" y2="48" stroke="#CBD5E1" strokeWidth="2" strokeDasharray="3 2" />
+              <path d="M 74 56 Q 140 42 206 56" stroke="url(#proChromeBar)" strokeWidth="5" fill="none" strokeLinecap="round" />
+              <path d="M 108 86 L 90 58" stroke="url(#proLimbGrad)" strokeWidth="8.5" strokeLinecap="round" />
+              <path d="M 172 86 L 190 58" stroke="url(#proLimbGrad)" strokeWidth="8.5" strokeLinecap="round" />
+              <circle cx="90" cy="58" r="4" fill="#D4AF37" />
+              <circle cx="190" cy="58" r="4" fill="#D4AF37" />
+            </motion.g>
+
+            <g transform="translate(140, 102)">
+              <motion.circle r="6" fill="none" stroke="#38BDF8" strokeWidth="1.5" animate={isPlaying ? { scale: [1, 2.1], opacity: [1, 0] } : {}} transition={{ duration: 1.6, repeat: Infinity }} />
+              <circle r="3" fill="#38BDF8" stroke="#FFFFFF" strokeWidth="1.2" />
+              <path d="M 0 0 L 28 -26 L 94 -26" stroke="#38BDF8" strokeWidth="1.2" strokeDasharray="3 2" fill="none" />
+              <g transform="translate(28, -37)">
+                <rect width="84" height="19" rx="5" fill="#0F172A" stroke="#38BDF8" strokeWidth="1" />
+                <text x="42" y="12.5" fill="#E0F2FE" fontSize="8.5" fontWeight="900" textAnchor="middle">
+                  {isAr ? 'المجنص: 95% EMG' : 'Lats: 95% EMG'}
+                </text>
               </g>
+            </g>
+          </svg>
+        );
+      }
+
+      case 'LATERAL_RAISE': {
+        return (
+          <svg viewBox="0 0 280 200" className="h-full w-full select-none overflow-visible">
+            {sharedDefs}
+            {/* Studio Floor & Contact Shadow */}
+            <ellipse cx="140" cy="182" rx="75" ry="7" fill="#000000" opacity="0.45" />
+            <line x1="25" y1="182" x2="255" y2="182" stroke="#334155" strokeWidth="1.5" strokeLinecap="round" />
+
+            {/* Anatomically Tapered Standing Legs & Shoes */}
+            <path d="M 122 126 Q 118 148 122 177 L 130 177 L 135 126 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
+            <path d="M 158 126 Q 162 148 158 177 L 150 177 L 145 126 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
+            <path d="M 116 177 L 132 177 L 133 182 L 114 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
+            <path d="M 148 177 L 164 177 L 166 182 L 147 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
+
+            {/* Athletic Compression Shorts */}
+            <path d="M 120 100 L 160 100 L 162 130 L 142 126 L 138 126 L 118 130 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.2" />
+
+            {/* Sculpted V-Taper Anatomical Torso (Traps, Chest, Abs) */}
+            <path d="M 116 62 Q 140 54 164 62 L 157 101 L 123 101 Z" fill="url(#proBodyGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+            <path d="M 124 68 Q 132 74 139 69 M 141 69 Q 148 74 156 68" stroke="#1E293B" strokeWidth="1.5" fill="none" />
+            <path d="M 134 79 L 146 79 M 135 87 L 145 87 M 140 76 L 140 94" stroke="#1E293B" strokeWidth="1.2" opacity="0.8" />
+
+            {/* Sculpted Neck, Traps & Head Silhouette (No Cartoon Eyes/Headband) */}
+            <path d="M 126 59 Q 140 51 154 59 L 146 53 L 134 53 Z" fill="url(#proLimbGrad)" />
+            <rect x="135.5" y="45" width="9" height="9" rx="3" fill="url(#proLimbGrad)" />
+            <ellipse cx="140" cy="34" rx="9.5" ry="12" fill="url(#proHeadGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+
+            {/* Motion Arc Trajectory Guides */}
+            <path d="M 92 115 A 55 55 0 0 1 70 68" stroke="#F59E0B" strokeWidth="1" strokeDasharray="3 3" fill="none" opacity="0.5" />
+            <path d="M 188 115 A 55 55 0 0 0 210 68" stroke="#F59E0B" strokeWidth="1" strokeDasharray="3 3" fill="none" opacity="0.5" />
+
+            {/* Dual Lateral Deltoid Muscle Fibers & Glow */}
+            <motion.ellipse
+              cx="114"
+              cy="65"
+              rx="13"
+              ry="14"
+              fill="url(#proMuscleGlowGold)"
+              filter="url(#proGlowFilter)"
+              animate={isPlaying ? { scale: [1, 1.35, 1], opacity: [0.4, 0.95, 0.4] } : {}}
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.ellipse
+              cx="166"
+              cy="65"
+              rx="13"
+              ry="14"
+              fill="url(#proMuscleGlowGold)"
+              filter="url(#proGlowFilter)"
+              animate={isPlaying ? { scale: [1, 1.35, 1], opacity: [0.4, 0.95, 0.4] } : {}}
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+            />
+
+            {/* Left Tapered Arm & 3D Hex Dumbbell */}
+            <motion.g
+              animate={isPlaying ? { rotate: [0, -74, 0] } : {}}
+              style={{ transformOrigin: '117px 64px' }}
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <path d="M 114 61 Q 104 82 95 113 L 101 115 Q 112 88 121 67 Z" fill="url(#proLimbGrad)" stroke="#CBD5E1" strokeWidth="0.7" />
+              <rect x="86" y="110" width="18" height="12" rx="3" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.2" />
+              <rect x="92" y="112" width="6" height="8" rx="1" fill="#94A3B8" />
+            </motion.g>
+
+            {/* Right Tapered Arm & 3D Hex Dumbbell */}
+            <motion.g
+              animate={isPlaying ? { rotate: [0, 74, 0] } : {}}
+              style={{ transformOrigin: '163px 64px' }}
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <path d="M 166 61 Q 176 82 185 113 L 179 115 Q 168 88 159 67 Z" fill="url(#proLimbGrad)" stroke="#CBD5E1" strokeWidth="0.7" />
+              <rect x="176" y="110" width="18" height="12" rx="3" fill="#1E293B" stroke="#D4AF37" strokeWidth="1.2" />
+              <rect x="182" y="112" width="6" height="8" rx="1" fill="#94A3B8" />
+            </motion.g>
+
+            {/* Callout Pin */}
+            <g transform="translate(166, 64)">
+              <motion.circle r="6" fill="none" stroke="#F59E0B" strokeWidth="1.5" animate={isPlaying ? { scale: [1, 2.1], opacity: [1, 0] } : {}} transition={{ duration: 1.6, repeat: Infinity }} />
+              <circle r="3" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="1.2" />
+              <path d="M 0 0 L 22 -22 L 88 -22" stroke="#F59E0B" strokeWidth="1.2" strokeDasharray="3 2" fill="none" />
+              <g transform="translate(22, -33)">
+                <rect width="80" height="19" rx="5" fill="#0F172A" stroke="#F59E0B" strokeWidth="1" />
+                <text x="40" y="12.5" fill="#FEF3C7" fontSize="8.5" fontWeight="900" textAnchor="middle">
+                  {isAr ? 'الكتف: 96% EMG' : 'Delts: 96% EMG'}
+                </text>
+              </g>
+            </g>
+          </svg>
+        );
+      }
+
+      case 'TRICEPS_PUSHDOWN':
+      case 'BICEPS_CURL':
+      default: {
+        const isBiceps = motionType === 'BICEPS_CURL';
+        const pinColor = isBiceps ? '#EF4444' : '#10B981';
+        return (
+          <svg viewBox="0 0 280 200" className="h-full w-full select-none overflow-visible">
+            {sharedDefs}
+            {/* Floor & Shadow */}
+            <ellipse cx="135" cy="182" rx="74" ry="7" fill="#000000" opacity="0.45" />
+            <line x1="25" y1="182" x2="255" y2="182" stroke="#334155" strokeWidth="1.5" strokeLinecap="round" />
+
+            {/* Cable Pulley Column for Pushdown */}
+            {!isBiceps && (
+              <>
+                <line x1="178" y1="18" x2="178" y2="182" stroke="#334155" strokeWidth="4.5" strokeLinecap="round" />
+                <line x1="154" y1="18" x2="178" y2="18" stroke="#475569" strokeWidth="4" strokeLinecap="round" />
+                <circle cx="154" cy="20" r="5" fill="#64748B" stroke="#94A3B8" strokeWidth="1" />
+                <line x1="154" y1="24" x2="154" y2="112" stroke="#CBD5E1" strokeWidth="1.8" strokeDasharray="3 2" opacity="0.7" />
+              </>
             )}
-          </motion.g>
 
-          {/* Cable Top Wire for Pushdown */}
-          {!isBiceps && (
-            <line x1="155" y1="20" x2="155" y2="70" stroke="#CBD5E1" strokeWidth="2.5" strokeDasharray="3 3" />
-          )}
+            {/* Anatomically Tapered Standing Profile Legs & Shoes */}
+            <path d="M 114 126 Q 112 150 116 177 L 125 177 L 127 126 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
+            <path d="M 131 126 Q 134 150 137 177 L 146 177 L 143 126 Z" fill="url(#proLimbGrad)" stroke="#64748B" strokeWidth="0.7" />
+            <path d="M 114 177 L 130 177 L 132 182 L 112 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
+            <path d="M 134 177 L 152 177 L 154 182 L 133 182 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
 
-          {/* Callout Radar Pin */}
-          <g transform="translate(140, 84)">
-            <motion.circle
-              r="7"
-              fill="none"
-              stroke={isBiceps ? '#EF4444' : '#10B981'}
-              strokeWidth="2"
-              animate={isPlaying ? { scale: [1, 2.2], opacity: [1, 0] } : {}}
-              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
+            {/* Athletic Shorts & Profile V-Torso */}
+            <path d="M 112 96 L 144 96 L 146 128 L 112 128 Z" fill="#0F172A" stroke="#D4AF37" strokeWidth="1.2" />
+            <path d="M 114 58 Q 130 54 143 60 L 143 97 L 113 97 Z" fill="url(#proBodyGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+
+            {/* Sculpted Profile Head & Neck (No Cartoon Face) */}
+            <rect x="123" y="47" width="8.5" height="9" rx="2.5" fill="url(#proLimbGrad)" />
+            <path d="M 122 48 C 117 42, 118 25, 128 24 C 138 23, 141 34, 138 44 L 131 49 Z" fill="url(#proHeadGrad)" stroke="#94A3B8" strokeWidth="0.8" />
+
+            {/* Pinned Upper Arm + Activated Biceps/Triceps Glow */}
+            <path d="M 131 61 Q 142 75 142 96 L 132 97 Q 130 78 126 64 Z" fill="url(#proLimbGrad)" stroke="#CBD5E1" strokeWidth="0.7" />
+            <motion.ellipse
+              cx="136"
+              cy="80"
+              rx="12"
+              ry="16"
+              fill={isBiceps ? 'url(#proMuscleGlowRed)' : 'url(#proMuscleGlowEmerald)'}
+              filter="url(#proGlowFilter)"
+              animate={isPlaying ? { scale: [1, 1.32, 1], opacity: [0.4, 0.95, 0.4] } : {}}
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
             />
-            <circle r="3.5" fill={isBiceps ? '#EF4444' : '#10B981'} stroke="#FFFFFF" strokeWidth="1.5" />
-            <path
-              d="M 0 0 L 30 -25 L 80 -25"
-              stroke={isBiceps ? '#EF4444' : '#10B981'}
-              strokeWidth="1.5"
-              strokeDasharray="3 2"
-              fill="none"
-            />
-            <g transform="translate(30, -36)">
-              <rect width="84" height="20" rx="6" fill="#0F172A" stroke={isBiceps ? '#EF4444' : '#10B981'} strokeWidth="1.2" />
-              <text x="42" y="13" fill="#FFFFFF" fontSize="9" fontWeight="900" textAnchor="middle">
-                {isBiceps
-                  ? isAr ? '🔥 بايسبس: +96% ضخامة' : '🔥 Biceps: +96% Peak'
-                  : isAr ? '⚡ ترايسبس: +95% شد' : '⚡ Triceps: +95% Lock'}
-              </text>
+
+            {/* Joint Pivot Ring at Elbow */}
+            <circle cx="137" cy="96" r="3" fill="#0F172A" stroke="#38BDF8" strokeWidth="1" />
+
+            {/* Articulated Forearm + Cable Rope or Barbell */}
+            <motion.g
+              animate={isPlaying ? { rotate: isBiceps ? [0, -86, 0] : [0, 68, 0] } : {}}
+              style={{ transformOrigin: '137px 96px' }}
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <path d="M 134 95 Q 146 112 156 132 L 150 135 Q 139 117 131 99 Z" fill="url(#proLimbGrad)" stroke="#CBD5E1" strokeWidth="0.7" />
+              <circle cx="153" cy="133" r="4" fill="#D4AF37" />
+              {isBiceps ? (
+                <g transform="translate(153, 133)">
+                  <rect x="-15" y="-2" width="30" height="4" rx="2" fill="url(#proChromeBar)" />
+                  <circle cx="-15" cy="0" r="7" fill="url(#proGoldPlate)" />
+                  <circle cx="15" cy="0" r="7" fill="url(#proGoldPlate)" />
+                </g>
+              ) : (
+                <g transform="translate(153, 133)">
+                  <path d="M 0 0 L -7 16 M 0 0 L 7 16" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" />
+                  <circle cx="-7" cy="16" r="3.5" fill="#0F172A" stroke="#94A3B8" strokeWidth="0.8" />
+                  <circle cx="7" cy="16" r="3.5" fill="#0F172A" stroke="#94A3B8" strokeWidth="0.8" />
+                </g>
+              )}
+            </motion.g>
+
+            {/* Target Pin */}
+            <g transform="translate(136, 80)">
+              <motion.circle r="6" fill="none" stroke={pinColor} strokeWidth="1.5" animate={isPlaying ? { scale: [1, 2.1], opacity: [1, 0] } : {}} transition={{ duration: 1.6, repeat: Infinity }} />
+              <circle r="3" fill={pinColor} stroke="#FFFFFF" strokeWidth="1.2" />
+              <path d="M 0 0 L -26 -24 L -94 -24" stroke={pinColor} strokeWidth="1.2" strokeDasharray="3 2" fill="none" />
+              <g transform="translate(-105, -35)">
+                <rect width="84" height="19" rx="5" fill="#0F172A" stroke={pinColor} strokeWidth="1" />
+                <text x="42" y="12.5" fill="#FFFFFF" fontSize="8.5" fontWeight="900" textAnchor="middle">
+                  {isBiceps
+                    ? isAr ? 'بايسبس: 96% EMG' : 'Biceps: 96% EMG'
+                    : isAr ? 'ترايسبس: 95% EMG' : 'Triceps: 95% EMG'}
+                </text>
+              </g>
             </g>
-          </g>
-        </svg>
-      );
-    }
+          </svg>
+        );
+      }
     }
   };
 
