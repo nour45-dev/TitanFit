@@ -1097,7 +1097,7 @@ export function MemberPwaPortalView() {
             </div>
 
             <p className="font-mono text-xs font-bold text-amber-800 dark:text-amber-200">
-              TITANFIT:v1:titanfit-egypt:{currentMember.code}:{qrWindowHash}
+              TITANFIT:v1:{currentUser?.tenantSlug || 'titanfit-egypt'}:{currentMember.code}:{qrWindowHash}
             </p>
             <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
               <div

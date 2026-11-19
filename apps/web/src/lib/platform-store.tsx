@@ -2809,6 +2809,7 @@ export function PlatformProvider({
       nameEn,
       nameAr: nameAr || nameEn,
       ownerEmail,
+      ownerUsername: ownerEmail.includes('@') ? ownerEmail.split('@')[0] : ownerEmail,
       authVerifier: password?.trim() || undefined,
       gymSecretCode: secretCode,
       logoUrl: logoUrl || '/brand/logo.png',
@@ -2816,8 +2817,8 @@ export function PlatformProvider({
       planTier,
       status: 'ACTIVE',
       branchesCount: 1,
-      activeMembersCount: 25,
-      mrrEgp: planTier === 'ENTERPRISE' ? 950000 : planTier === 'PRO' ? 420000 : 150000,
+      activeMembersCount: 0,
+      mrrEgp: planTier === 'ENTERPRISE' ? 3450 : planTier === 'PRO' ? 1950 : 950,
       cityEn: cityEn || 'Cairo, Egypt',
       cityAr: cityEn || 'القاهرة، مصر',
     };

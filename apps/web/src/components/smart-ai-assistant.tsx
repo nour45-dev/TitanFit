@@ -990,7 +990,11 @@ function buildSmartReply(
   if (
     q.includes('اصاب') ||
     q.includes('وجع') ||
-    q.includes('الم') ||
+    /(^|\s)(الم|الام|يالم|تالم)(\s|$)/.test(q) ||
+    q.includes('الم في') ||
+    q.includes('الم بال') ||
+    q.includes('عندي الم') ||
+    q.includes('اشعر بالم') ||
     q.includes('ركب') ||
     q.includes('قطنيه') ||
     q.includes('ضهر') ||
@@ -1347,6 +1351,57 @@ function renderFormattedAiText(text: string): React.ReactNode {
   });
 }
 
+function buildWelcomeReply(isFreeVisitorMode: boolean, isMemberAccount: boolean): AssistantReply {
+  return {
+    id: 'welcome-ai',
+    sender: 'AI',
+    textAr: isFreeVisitorMode
+      ? 'أهلاً بك في **المساعد المجاني للزوار (TitanFit Free AI)** 👋✨!\nأنا هنا لمساعدتك في **مهام محددة للزوار**: شرح باقات المنصة، إعطاؤك تقدير مبدئي سريع للسعرات، وتوجيهك للتجربة المجانية الـ ٧ أيام. (أما **كوتش الجيم المحترف + أخصائي التغذية بالجرامات + بدائل الإصابات** فهي متاحة حصرياً في باقة **Pro + AI** والأحدث!).'
+      : isMemberAccount
+        ? 'أهلاً بك يا بطل! أنا **كوتش التمرين وأخصائي التغذية الخاص بك** 🤖💪🥗.\nاحكيلي عن وزنك وطولك وهدفك، وهفصل لك جدول تمارين ووجبات بالجرامات وبدائل آمنة لأي إصابة خطوة بخطوة!'
+        : 'أهلاً بك يا بطل! أنا **كوتش الجيم المحترف (Pro Gym Coach)** و**أخصائي التغذية الرياضية والعلاجية (Sports Nutritionist)** و**خبير المنصة الذكي** 🤖💪🥗.\nاحكيلي عن وزنك وطولك وهدفك، أو اسألني عن أي تمرين، بديل إصابة، جدول دايت بالجرامات، أو أي أداة داخل المنصة!',
+    textEn: isFreeVisitorMode
+      ? 'Welcome to **TitanFit Free Visitor AI** 👋✨! I handle specific visitor tasks: explaining plans & pricing, quick calorie estimates, and guiding you to the Free 7-Day Trial.'
+      : isMemberAccount
+        ? 'Welcome champion! I am your **Personal AI Gym Coach & Sports Nutritionist** 🤖💪🥗. Share your weight, height, and goal for custom workouts, gram-accurate meal plans, and joint-safe exercises!'
+        : 'Welcome champion! I am your **Pro AI Gym Coach**, **Clinical & Sports Nutritionist**, and **Platform Expert** 🤖💪🥗. Share your weight, height, and goal or ask about workouts, injury swaps, macro meal plans, or any platform feature!',
+    highlightsAr: isFreeVisitorMode
+      ? [
+          '💎 **مقارنة الباقات:** الفرق بين Starter (بدون AI) و Pro + AI و Enterprise.',
+          '🥗 **تقدير سريع للسعرات:** قولي وزنك فقط لحساب السعرات التقريبية.',
+          '🎁 **التجربة المجانية:** جرب خطة الـ ٧ أيام المجانية قبل الاشتراك.',
+        ]
+      : isMemberAccount
+        ? [
+            '🏋️‍♂️ **كوتشك الشخصي:** جداول Push/Pull/Legs و Upper/Lower وبدائل إصابات الركبة والظهر والكتف.',
+            '🥗 **أخصائي تغذيتك:** حساب BMR/TDEE وجداول وجبات مصرية بالجرامات وبدائلها الاقتصادية.',
+          ]
+        : [
+            '🏋️‍♂️ **كوتش جيم كامل:** جداول Push/Pull/Legs و Upper/Lower وبدائل إصابات الركبة والظهر والكتف.',
+            '🥗 **أخصائي تغذية دقيق:** حساب BMR/TDEE بمعادلة Mifflin-St Jeor وجداول وجبات مصرية بالجرامات.',
+            '📊 **فاهم المنصة بالكامل:** مربوط ببيانات ناديك ويشرح ويوجهك لكل قسم بضغطة زر.',
+          ],
+    highlightsEn: isFreeVisitorMode
+      ? [
+          '💎 Compare Plans: Starter (No AI) vs Pro + AI vs Enterprise.',
+          '🥗 Quick Calorie Estimate: Share your weight for a quick daily estimate.',
+          '🎁 Free 7-Day Trial: Explore free starter workouts & diets.',
+        ]
+      : isMemberAccount
+        ? [
+            '🏋️‍♂️ Personal Gym Coach: Splits, tempo, RPE, and joint-safe injury substitutions.',
+            '🥗 Personal Nutritionist: Mifflin-St Jeor BMR/TDEE & gram-accurate meal plans.',
+          ]
+        : [
+            '🏋️‍♂️ Full Pro Gym Coach: Splits, tempo, RPE, and joint-safe injury substitutions.',
+            '🥗 Clinical Sports Nutritionist: Mifflin-St Jeor BMR/TDEE & gram-accurate Egyptian meal plans.',
+            '📊 Full Platform Intelligence: Connected to live gym CRM data and all platform sections.',
+          ],
+    disclaimerAr: AI_DISCLAIMER_AR,
+    disclaimerEn: AI_DISCLAIMER_EN,
+  };
+}
+
 export function SmartAiAssistantWidget() {
   const {
     locale,
@@ -1387,56 +1442,15 @@ export function SmartAiAssistantWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
   const [activeQuickTab, setActiveQuickTab] = useState<'COACH_NUTRITION' | 'PLATFORM'>('COACH_NUTRITION');
-  const [messages, setMessages] = useState<AssistantReply[]>([
-    {
-      id: 'welcome-ai',
-      sender: 'AI',
-      textAr: isFreeVisitorMode
-        ? 'أهلاً بك في **المساعد المجاني للزوار (TitanFit Free AI)** 👋✨!\nأنا هنا لمساعدتك في **مهام محددة للزوار**: شرح باقات المنصة، إعطاؤك تقدير مبدئي سريع للسعرات، وتوجيهك للتجربة المجانية الـ ٧ أيام. (أما **كوتش الجيم المحترف + أخصائي التغذية بالجرامات + بدائل الإصابات** فهي متاحة حصرياً في باقة **Pro + AI** والأحدث!).'
-        : isMemberAccount
-          ? 'أهلاً بك يا بطل! أنا **كوتش التمرين وأخصائي التغذية الخاص بك** 🤖💪🥗.\nاحكيلي عن وزنك وطولك وهدفك، وهفصل لك جدول تمارين ووجبات بالجرامات وبدائل آمنة لأي إصابة خطوة بخطوة!'
-          : 'أهلاً بك يا بطل! أنا **كوتش الجيم المحترف (Pro Gym Coach)** و**أخصائي التغذية الرياضية والعلاجية (Sports Nutritionist)** و**خبير المنصة الذكي** 🤖💪🥗.\nاحكيلي عن وزنك وطولك وهدفك، أو اسألني عن أي تمرين، بديل إصابة، جدول دايت بالجرامات، أو أي أداة داخل المنصة!',
-      textEn: isFreeVisitorMode
-        ? 'Welcome to **TitanFit Free Visitor AI** 👋✨! I handle specific visitor tasks: explaining plans & pricing, quick calorie estimates, and guiding you to the Free 7-Day Trial.'
-        : isMemberAccount
-          ? 'Welcome champion! I am your **Personal AI Gym Coach & Sports Nutritionist** 🤖💪🥗. Share your weight, height, and goal for custom workouts, gram-accurate meal plans, and joint-safe exercises!'
-          : 'Welcome champion! I am your **Pro AI Gym Coach**, **Clinical & Sports Nutritionist**, and **Platform Expert** 🤖💪🥗. Share your weight, height, and goal or ask about workouts, injury swaps, macro meal plans, or any platform feature!',
-      highlightsAr: isFreeVisitorMode
-        ? [
-            '💎 **مقارنة الباقات:** الفرق بين Starter (بدون AI) و Pro + AI و Enterprise.',
-            '🥗 **تقدير سريع للسعرات:** قولي وزنك فقط لحساب السعرات التقريبية.',
-            '🎁 **التجربة المجانية:** جرب خطة الـ ٧ أيام المجانية قبل الاشتراك.',
-          ]
-        : isMemberAccount
-          ? [
-              '🏋️‍♂️ **كوتشك الشخصي:** جداول Push/Pull/Legs و Upper/Lower وبدائل إصابات الركبة والظهر والكتف.',
-              '🥗 **أخصائي تغذيتك:** حساب BMR/TDEE وجداول وجبات مصرية بالجرامات وبدائلها الاقتصادية.',
-            ]
-          : [
-              '🏋️‍♂️ **كوتش جيم كامل:** جداول Push/Pull/Legs و Upper/Lower وبدائل إصابات الركبة والظهر والكتف.',
-              '🥗 **أخصائي تغذية دقيق:** حساب BMR/TDEE بمعادلة Mifflin-St Jeor وجداول وجبات مصرية بالجرامات.',
-              '📊 **فاهم المنصة بالكامل:** مربوط ببيانات ناديك ويشرح ويوجهك لكل قسم بضغطة زر.',
-            ],
-      highlightsEn: isFreeVisitorMode
-        ? [
-            '💎 Compare Plans: Starter (No AI) vs Pro + AI vs Enterprise.',
-            '🥗 Quick Calorie Estimate: Share your weight for a quick daily estimate.',
-            '🎁 Free 7-Day Trial: Explore free starter workouts & diets.',
-          ]
-        : isMemberAccount
-          ? [
-              '🏋️‍♂️ Personal Gym Coach: Splits, tempo, RPE, and joint-safe injury substitutions.',
-              '🥗 Personal Nutritionist: Mifflin-St Jeor BMR/TDEE & gram-accurate meal plans.',
-            ]
-          : [
-              '🏋️‍♂️ Full Pro Gym Coach: Splits, tempo, RPE, and joint-safe injury substitutions.',
-              '🥗 Clinical Sports Nutritionist: Mifflin-St Jeor BMR/TDEE & gram-accurate Egyptian meal plans.',
-              '📊 Full Platform Intelligence: Connected to live gym CRM data and all platform sections.',
-            ],
-      disclaimerAr: AI_DISCLAIMER_AR,
-      disclaimerEn: AI_DISCLAIMER_EN,
-    },
+  const [messages, setMessages] = useState<AssistantReply[]>(() => [
+    buildWelcomeReply(isFreeVisitorMode, isMemberAccount),
   ]);
+
+  useEffect(() => {
+    setMessages([buildWelcomeReply(isFreeVisitorMode, isMemberAccount)]);
+    setInputText('');
+    setActiveQuickTab('COACH_NUTRITION');
+  }, [isAuthenticated, activeRole, isFreeVisitorMode, isMemberAccount, activeTenantCustom?.slug]);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 

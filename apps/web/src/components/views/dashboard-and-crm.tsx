@@ -75,7 +75,7 @@ export function OverviewView() {
   const isAr = locale === 'ar';
   const isCleanSlate = gymStateMode === 'CLEAN_SLATE' || (members.length === 0 && invoices.length === 0);
   const isolatedTenantSlug =
-    currentUser?.tenantSlug || impersonatedTenant || activeTenantCustom?.slug || 'titanfit-egypt';
+    impersonatedTenant || activeTenantCustom?.slug || currentUser?.tenantSlug || 'titanfit-egypt';
   const isolatedClubNameAr = activeTenantCustom?.nameAr || 'مجموعة أندية تيتان فيت مصر';
   const isolatedClubNameEn = activeTenantCustom?.nameEn || 'TitanFit Egypt Athletic Clubs';
   const [chartPeriod, setChartPeriod] = useState<'7D' | '30D' | '90D' | '12M'>('30D');
