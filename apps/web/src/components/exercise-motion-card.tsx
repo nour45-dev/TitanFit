@@ -781,6 +781,94 @@ export function CartoonAthleteVisualCanvas({
         );
       }
 
+      case 'CABLE_FLY': {
+        return (
+          <svg viewBox="0 0 240 165" className="w-full h-full max-h-[175px]">
+            {sharedDefs}
+            {/* Cable Crossover Towers */}
+            <rect x="20" y="12" width="10" height="145" rx="3" fill="#334155" />
+            <rect x="210" y="12" width="10" height="145" rx="3" fill="#334155" />
+            <rect x="20" y="12" width="200" height="7" rx="3" fill="#475569" />
+            <circle cx="30" cy="68" r="5" fill="#94A3B8" stroke="#D4AF37" strokeWidth="1.5" />
+            <circle cx="210" cy="68" r="5" fill="#94A3B8" stroke="#D4AF37" strokeWidth="1.5" />
+            <rect x="14" y="152" width="212" height="5" rx="2.5" fill="#1E293B" />
+
+            {/* Standing Coach Silhouette (Front View) */}
+            <path d="M 103 102 L 137 102 L 139 124 L 122 124 L 120 112 L 118 124 L 101 124 Z" fill="url(#coachShorts)" />
+            <rect x="103" y="124" width="12" height="29" rx="4" fill="url(#coachSkin)" />
+            <rect x="125" y="124" width="12" height="29" rx="4" fill="url(#coachSkin)" />
+            <path d="M 96 63 Q 120 57 144 63 L 138 103 L 102 103 Z" fill="url(#coachShirt)" />
+            {/* Head */}
+            <circle cx="120" cy="39" r="14" fill="url(#coachSkin)" />
+            <path d="M 106 37 Q 108 23 122 23 Q 134 23 134 37 Q 125 31 114 33 Z" fill="#0F172A" />
+            <rect x="115" y="52" width="10" height="8" rx="3" fill="url(#coachSkin)" />
+
+            {/* Glowing Target Pecs (Peak Contraction at Chest Center) */}
+            <motion.ellipse
+              cx="111"
+              cy="75"
+              rx="9"
+              ry="7"
+              fill="url(#proMuscleGlowRed)"
+              filter="url(#proGlowFilter)"
+              animate={isPlaying ? { scale: [0.95, 1.32, 0.95], opacity: [0.38, 0.95, 0.38] } : {}}
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.ellipse
+              cx="129"
+              cy="75"
+              rx="9"
+              ry="7"
+              fill="url(#proMuscleGlowRed)"
+              filter="url(#proGlowFilter)"
+              animate={isPlaying ? { scale: [0.95, 1.32, 0.95], opacity: [0.38, 0.95, 0.38] } : {}}
+              transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+            />
+
+            {/* LEFT SHOULDER PIVOT (98, 67): Sweeps inward across chest */}
+            <g transform="translate(98, 67)">
+              <circle cx="0" cy="0" r="6" fill="url(#coachSkin)" />
+              <motion.g
+                animate={isPlaying ? { rotate: [78, 12, 78] } : { rotate: 78 }}
+                transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <path d="M -5 0 L -4 34 L 4 34 L 5 0 Z" fill="url(#coachSkin)" />
+                <circle cx="0" cy="35" r="4.5" fill="#D4AF37" />
+                <rect x="-5" y="34" width="10" height="6" rx="2" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
+                <line x1="0" y1="36" x2="-58" y2="2" stroke="#94A3B8" strokeWidth="1.5" strokeDasharray="3 2" opacity="0.7" />
+              </motion.g>
+            </g>
+
+            {/* RIGHT SHOULDER PIVOT (142, 67): Sweeps inward across chest */}
+            <g transform="translate(142, 67)">
+              <circle cx="0" cy="0" r="6" fill="url(#coachSkin)" />
+              <motion.g
+                animate={isPlaying ? { rotate: [-78, -12, -78] } : { rotate: -78 }}
+                transition={{ duration: baseDuration, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <path d="M -5 0 L -4 34 L 4 34 L 5 0 Z" fill="url(#coachSkin)" />
+                <circle cx="0" cy="35" r="4.5" fill="#D4AF37" />
+                <rect x="-5" y="34" width="10" height="6" rx="2" fill="#0F172A" stroke="#D4AF37" strokeWidth="1" />
+                <line x1="0" y1="36" x2="58" y2="2" stroke="#94A3B8" strokeWidth="1.5" strokeDasharray="3 2" opacity="0.7" />
+              </motion.g>
+            </g>
+
+            {/* Target Pin */}
+            <g transform="translate(120, 75)">
+              <motion.circle r="6" fill="none" stroke="#EF4444" strokeWidth="1.5" animate={isPlaying ? { scale: [1, 2], opacity: [1, 0] } : {}} transition={{ duration: 1.5, repeat: Infinity }} />
+              <circle r="3" fill="#EF4444" stroke="#FFFFFF" strokeWidth="1.2" />
+              <path d="M 0 0 L 24 -36 L 62 -36" stroke="#EF4444" strokeWidth="1.2" strokeDasharray="3 2" fill="none" />
+              <g transform="translate(30, -47)">
+                <rect width="74" height="19" rx="5" fill="#0F172A" stroke="#EF4444" strokeWidth="1" />
+                <text x="37" y="12.5" fill="#FFFFFF" fontSize="8.5" fontWeight="900" textAnchor="middle">
+                  {isAr ? 'الصدر: 94% EMG' : 'Chest: 94% EMG'}
+                </text>
+              </g>
+            </g>
+          </svg>
+        );
+      }
+
       case 'TRICEPS_PUSHDOWN':
       case 'BICEPS_CURL':
       default: {
@@ -897,12 +985,12 @@ export function CartoonAthleteVisualCanvas({
       />
 
       {/* Top Biomechanical Joint ROM & 3D Studio HUD */}
-      <div className="relative z-10 flex w-full items-center justify-between gap-1.5 text-[9.5px] font-black">
-        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-amber-500/40 bg-slate-900/90 px-2 py-0.5 text-amber-300 shadow-sm">
+      <div className="relative z-10 flex w-full flex-wrap items-center justify-between gap-1 text-[8.5px] sm:text-[9px] font-black">
+        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-amber-500/40 bg-slate-900/90 px-1.5 py-0.5 text-amber-300 shadow-sm">
           <Sparkles className="h-2.5 w-2.5 shrink-0 text-amber-400" />
-          <span>{isAr ? 'استوديو 3D تشريحي' : '3D Biomechanics'}</span>
+          <span>{isAr ? 'استوديو 3D' : '3D Studio'}</span>
         </span>
-        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-emerald-500/40 bg-slate-900/90 px-2 py-0.5 font-mono text-emerald-300">
+        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-emerald-500/40 bg-slate-900/90 px-1.5 py-0.5 font-mono text-emerald-300">
           ∠ ROM 95° • {impact.primaryTarget.activationPct}% EMG
         </span>
       </div>

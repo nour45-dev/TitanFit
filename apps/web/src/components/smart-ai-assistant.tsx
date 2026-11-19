@@ -429,15 +429,15 @@ function buildPublicFreeVisitorReply(
       textEn:
         '💎 **TitanFit SaaS Plans & Subscription Guide:**\nWe offer 3 tiers (payable via InstaPay or Vodafone Cash to `01002169889`):',
       highlightsAr: [
-        '1️⃣ **باقة البداية (Starter — 950 ج.م/شهر):** مثالية للجيم الصغير (حتى 200 مشترك و 5 موظفين) — إدارة الأعضاء بالـ QR والباقات والفواتير **بدون الذكاء الاصطناعي (No AI)**.',
-        '2️⃣ **باقة النمو الاحترافي (Pro + AI — 1,950 ج.م/شهر — الأكثر طلباً):** حتى 1,000 مشترك + **تفعيل كامل للذكاء الاصطناعي (كوتش جيم محترف + أخصائي تغذية بالجرامات + خبير المنصة والـ CRM)** + الحصص وبوابات الدخول والعمولات.',
+        '1️⃣ **باقة البداية (Starter — 950 ج.م/شهر):** مثالية للجيم الصغير (حتى 150 مشترك و 2 مدربين) — إدارة الأعضاء بالـ QR والباقات والفواتير **بدون الذكاء الاصطناعي (No AI)**.',
+        '2️⃣ **باقة النمو الاحترافي (Pro + AI — 1,950 ج.م/شهر — الأكثر طلباً):** حتى 600 مشترك و 8 مدربين + **تفعيل كامل للذكاء الاصطناعي (كوتش جيم محترف + أخصائي تغذية بالجرامات + خبير المنصة والـ CRM)** + الحصص وبوابات الدخول والعمولات.',
         '3️⃣ **باقة النخبة (Enterprise — 3,450 ج.م/شهر):** مشتركين ومدربين غير محدودين + **باقة AI الكاملة + VIP** + تطبيق المتدرب White-Label + تقارير BI واستوديو الفيديو.',
         '🏢 **ملاحظة الفروع:** كل جيم مشترك يضيف ويدير فروعه الخاصة به فقط من الإعدادات.',
       ],
       highlightsEn: [
-        '1️⃣ Starter (950 EGP/mo): Up to 200 members, core CRM & billing, No AI.',
-        '2️⃣ Pro + AI (1,950 EGP/mo): Up to 1,000 members + Full Pro AI Coach, Sports Nutritionist & Live CRM AI.',
-        '3️⃣ Enterprise (3,450 EGP/mo): Unlimited scale + Full VIP AI Suite + White-Label PWA.',
+        '1️⃣ **Starter (950 EGP/mo):** Up to 150 members & 2 trainers, core CRM & billing, No AI.',
+        '2️⃣ **Pro + AI (1,950 EGP/mo):** Up to 600 members & 8 trainers + Full Pro AI Coach, Sports Nutritionist & Live CRM AI.',
+        '3️⃣ **Enterprise (3,450 EGP/mo):** Unlimited scale + Full VIP AI Suite + White-Label PWA.',
       ],
       actionSection: 'PUBLIC_STOREFRONT',
       actionScrollId: 'saas-pricing-section',
@@ -1322,6 +1322,31 @@ function buildSmartReply(
   };
 }
 
+function renderFormattedAiText(text: string): React.ReactNode {
+  const segments = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return segments.map((part, idx) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+      return (
+        <strong key={idx} className="font-black text-slate-950 dark:text-white">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+      return (
+        <code
+          key={idx}
+          className="rounded bg-slate-200/80 px-1 py-0.5 font-mono text-[11px] font-bold text-amber-800 dark:bg-slate-800 dark:text-amber-300"
+          dir="ltr"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return <React.Fragment key={idx}>{part}</React.Fragment>;
+  });
+}
+
 export function SmartAiAssistantWidget() {
   const {
     locale,
@@ -1831,7 +1856,9 @@ export function SmartAiAssistantWidget() {
                             : 'border border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200'
                         }`}
                       >
-                        <p className="whitespace-pre-line">{isAr ? msg.textAr : msg.textEn}</p>
+                        <p className="whitespace-pre-line">
+                          {renderFormattedAiText(isAr ? msg.textAr : msg.textEn)}
+                        </p>
 
                         {msg.highlightsAr && msg.highlightsAr.length > 0 && (
                           <ul className="mt-2.5 space-y-2 border-t border-slate-100 pt-2.5 text-[11px] font-semibold text-slate-700 dark:border-slate-800 dark:text-slate-300">
@@ -1842,7 +1869,7 @@ export function SmartAiAssistantWidget() {
                                   className="flex items-start gap-1.5 whitespace-pre-line leading-relaxed"
                                 >
                                   <Sparkles className="mt-1 h-3.5 w-3.5 shrink-0 text-amber-500" />
-                                  <span>{h}</span>
+                                  <span>{renderFormattedAiText(h)}</span>
                                 </li>
                               ),
                             )}
@@ -1851,7 +1878,7 @@ export function SmartAiAssistantWidget() {
 
                         {(msg.followUpAr || msg.followUpEn) && (
                           <p className="mt-2.5 rounded-xl bg-emerald-500/10 px-3 py-2 text-[11px] font-extrabold text-emerald-800 dark:text-emerald-300">
-                            {isAr ? msg.followUpAr : msg.followUpEn}
+                            {renderFormattedAiText((isAr ? msg.followUpAr : msg.followUpEn) || '')}
                           </p>
                         )}
 
@@ -1987,9 +2014,17 @@ export function SmartAiAssistantWidget() {
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder={
-                      isAr
-                        ? 'اسأل الكوتش أو أخصائي التغذية أو اكتب اسم مشترك/تقرير الجيم...'
-                        : 'Ask the Gym Coach, Nutritionist, or look up a member/gym report...'
+                      isFreeVisitorMode
+                        ? isAr
+                          ? 'اسأل عن الباقات، حاسبة السعرات السريعة، أو التجربة المجانية...'
+                          : 'Ask about SaaS plans, quick calorie calculator, or the 7-day free trial...'
+                        : isMemberAccount
+                          ? isAr
+                            ? 'اسأل الكوتش عن تمرينك، السعرات، أو نظامك الغذائي...'
+                            : 'Ask your Coach about workouts, macros, or nutrition...'
+                          : isAr
+                            ? 'اسأل الكوتش أو أخصائي التغذية أو اكتب اسم مشترك/تقرير الجيم...'
+                            : 'Ask the Gym Coach, Nutritionist, or look up a member/gym report...'
                     }
                     className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />

@@ -539,7 +539,7 @@ function TitanFitEnterpriseShell() {
                   <span
                     data-testid="brand-app-name"
                     title={brandDisplayName}
-                    className="block truncate max-w-[105px] sm:max-w-[185px] xl:max-w-[260px] text-xs sm:text-base font-black tracking-tight text-slate-900 dark:text-white"
+                    className="block truncate min-w-[68px] max-w-[140px] sm:max-w-[200px] xl:max-w-[260px] text-xs sm:text-base font-black tracking-tight text-slate-900 dark:text-white"
                   >
                     {activeTenantCustom ? brandDisplayName : PLATFORM_CONFIG.appName}
                   </span>
@@ -615,7 +615,7 @@ function TitanFitEnterpriseShell() {
                 aria-label={isAr ? 'التنقل الرئيسي' : 'Primary navigation'}
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="hidden min-w-0 md:flex"
+                className="hidden min-w-0 lg:flex"
               >
                 <div className="no-scrollbar flex min-w-0 items-center gap-0.5 overflow-x-auto rounded-2xl border border-slate-200/80 bg-slate-100/70 p-1 shadow-inner dark:border-slate-800 dark:bg-slate-900/70">
                   {items.map((item) => {
@@ -746,9 +746,9 @@ function TitanFitEnterpriseShell() {
         </div>
       </header>
 
-      {/* Mobile Quick Navigation Bar (Shown below md breakpoint for ALL roles so mobile matches tablet/desktop navigation) */}
+      {/* Mobile & Tablet Quick Navigation Bar (Shown below lg breakpoint for ALL roles so mobile & tablet never overlap header logo) */}
       {isAuthenticated && (activeRole === 'SUPER_ADMIN' || activeRole === 'GYM_OWNER') ? (
-        <div className="sticky top-[53px] z-20 flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white/95 px-3 py-2 no-scrollbar backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 md:hidden">
+        <div className="sticky top-[53px] z-20 flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white/95 px-3 py-2 no-scrollbar backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 lg:hidden">
           {activeRole === 'SUPER_ADMIN' && (
             <button
               type="button"
@@ -841,7 +841,7 @@ function TitanFitEnterpriseShell() {
           </button>
         </div>
       ) : isAuthenticated && activeRole === 'MEMBER' ? (
-        <div className="sticky top-[53px] z-20 flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white/95 px-3 py-2 no-scrollbar backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 md:hidden">
+        <div className="sticky top-[53px] z-20 flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white/95 px-3 py-2 no-scrollbar backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 lg:hidden">
           <button
             type="button"
             onClick={() => setActiveSection('MEMBER_PWA')}
@@ -877,7 +877,7 @@ function TitanFitEnterpriseShell() {
           </button>
         </div>
       ) : (
-        <div className="sticky top-[53px] z-20 flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white/95 px-3 py-2 no-scrollbar backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 md:hidden">
+        <div className="sticky top-[53px] z-20 flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white/95 px-3 py-2 no-scrollbar backdrop-blur-md dark:border-slate-800 dark:bg-[#0B0F19]/95 lg:hidden">
           <button
             type="button"
             onClick={() => setActiveSection('PUBLIC_STOREFRONT')}

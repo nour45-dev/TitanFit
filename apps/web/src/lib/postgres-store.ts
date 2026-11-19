@@ -195,10 +195,16 @@ export async function ensurePostgresReady(): Promise<void> {
         `CREATE UNIQUE INDEX IF NOT EXISTS "gym_tenant_states_tenant_slug_key" ON "gym_tenant_states"("tenant_slug");`,
       );
 
+      await prisma.$executeRawUnsafe(
+        `ALTER TABLE "gym_tenant_states" ENABLE ROW LEVEL SECURITY;`,
+      );
+      await prisma.$executeRawUnsafe(
+        `ALTER TABLE "gym_tenant_states" FORCE ROW LEVEL SECURITY;`,
+      );
+      await prisma.$executeRawUnsafe(
+        `DROP POLICY IF EXISTS gym_tenant_states_isolation_policy ON "gym_tenant_states";`,
+      );
       await prisma.$executeRawUnsafe(`
-        ALTER TABLE "gym_tenant_states" ENABLE ROW LEVEL SECURITY;
-        ALTER TABLE "gym_tenant_states" FORCE ROW LEVEL SECURITY;
-        DROP POLICY IF EXISTS gym_tenant_states_isolation_policy ON "gym_tenant_states";
         CREATE POLICY gym_tenant_states_isolation_policy ON "gym_tenant_states"
           USING (is_app_super_admin() OR tenant_id = current_app_tenant_id())
           WITH CHECK (is_app_super_admin() OR tenant_id = current_app_tenant_id());

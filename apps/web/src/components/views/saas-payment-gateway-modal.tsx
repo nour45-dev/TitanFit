@@ -653,7 +653,7 @@ export function SaaSPaymentGatewayModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-3 sm:p-4 backdrop-blur-md overflow-y-auto"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 p-3 sm:p-4 backdrop-blur-md overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -1066,7 +1066,7 @@ export function SaaSPaymentGatewayModal({
            * ============================================================================ */
           <div className="space-y-5">
             {/* Modal Header */}
-            <div className="flex items-start gap-3.5 border-b border-slate-100 pb-4 dark:border-slate-800">
+            <div className="flex items-start gap-3.5 border-b border-slate-100 pb-4 pe-12 dark:border-slate-800">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-[#D4AF37] text-slate-950 shadow-md">
                 <CreditCard className="h-6 w-6" />
               </div>
@@ -1524,6 +1524,15 @@ export function SaaSPaymentGatewayModal({
 
             {/* ACTION BUTTON */}
             <div className="pt-2 flex flex-col gap-2">
+              {errorMessage && (
+                <div
+                  role="alert"
+                  className="flex items-start gap-2 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-3.5 text-xs font-bold text-rose-700 dark:text-rose-300"
+                >
+                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
               <button
                 type="button"
                 disabled={isSubmitting}
