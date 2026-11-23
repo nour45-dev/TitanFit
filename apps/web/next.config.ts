@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(__dirname, '../../'),
   output: process.env.NEXT_STANDALONE === 'true' ? 'standalone' : undefined,
   reactStrictMode: true,
+  productionBrowserSourceMaps: false,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error'] } : false,
+  },
   transpilePackages: ['@gymos/config', '@gymos/contracts', '@gymos/ui'],
   serverExternalPackages: ['@prisma/client', 'prisma', '@gymos/database'],
   poweredByHeader: false,
