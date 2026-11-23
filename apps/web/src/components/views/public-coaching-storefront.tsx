@@ -6,7 +6,10 @@ import {
   Activity,
   ArrowUpRight,
   Award,
+  BarChart3,
   BookOpen,
+  Bot,
+  Building2,
   Calculator,
   CheckCircle2,
   ChevronDown,
@@ -18,10 +21,13 @@ import {
   Flame,
   Gift,
   HeartPulse,
+  Lock,
   MessageCircle,
   MessageSquare,
   Play,
+  QrCode,
   ShieldCheck,
+  Smartphone,
   Sparkles,
   Star,
   TrendingUp,
@@ -233,45 +239,45 @@ export function PublicCoachingStorefrontView({
               <Sparkles className="h-3.5 w-3.5 text-amber-500" />
               <span>
                 {isAr
-                  ? 'أفضل وقت للبداية كان من سنة.. وتاني أفضل وقت هو الآن!'
-                  : 'THE BEST TIME TO START WAS A YEAR AGO — THE SECOND BEST TIME IS NOW!'}
+                  ? '🚀 المنصة السحابية المتكاملة لإدارة الجيمات والأندية الرياضية في مصر'
+                  : '🚀 ALL-IN-ONE CLOUD OPERATING SYSTEM FOR GYMS & FITNESS CLUBS'}
               </span>
             </motion.div>
 
-            <h1 className="text-3xl font-black leading-[1.22] tracking-tight text-slate-950 sm:text-5xl lg:text-6xl dark:text-white">
+            <h1 className="text-3xl font-black leading-[1.2] tracking-tight text-slate-950 sm:text-5xl lg:text-[3.25rem] dark:text-white">
               {isAr ? (
                 <>
-                  إنسى نظام الدايت الممل..{' '}
-                  <span className="text-amber-700 dark:text-amber-400">
-                    وابنِ لنفسك نمط حياة صحي
+                  أدِر ناديك الرياضي باحترافية كاملة —{' '}
+                  <span className="bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 bg-clip-text text-transparent dark:from-amber-300 dark:via-amber-400 dark:to-orange-400">
+                    اشتراكات، بوابات QR، كاشير
                   </span>{' '}
-                  وجسم مثالي بدون حرمان!
+                  وتطبيق متدربين باسم جيمك!
                 </>
               ) : (
                 <>
-                  Forget Boring Diets —{' '}
-                  <span className="text-amber-700 dark:text-amber-400">
-                    Build Your Sustainable Physique
+                  Run Your Gym Like an Enterprise —{' '}
+                  <span className="bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 bg-clip-text text-transparent dark:from-amber-300 dark:via-amber-400 dark:to-orange-400">
+                    QR Gates, Cashier POS, CRM
                   </span>{' '}
-                  With Balanced Nutrition & Structured Training
+                  &amp; Branded Member App!
                 </>
               )}
             </h1>
 
-            <p className="max-w-2xl text-sm font-normal leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
+            <p className="max-w-2xl text-sm font-normal leading-relaxed text-slate-600 sm:text-base dark:text-slate-300">
               {isAr
-                ? `منصة تفاعلية تساعدك على تخطيط نظامك الغذائي وحساب سعراتك وماكروزك اليومية بدقة، مع مكتبة وصفات مصورة وتمارين مشروحة بالفيديو والرسوم المتحركة من الجيم أو البيت خطوة بخطوة.`
-                : `An interactive platform to plan your nutrition, calculate your daily calories and macros, and follow illustrated meal recipes and step-by-step video & animated workouts.`}
+                ? 'منظومة سحابية متكاملة تجمع بين إدارة المتدربين، بوابات دخول بـ QR مشفر يمنع مشاركة الصور، تحصيل إنستاباي وفودافون كاش وكاش بضريبة 14%، نقطة بيع المكملات POS، وكوتش ذكاء اصطناعي — مع عزل تام 100% لبيانات كل نادٍ.'
+                : 'One unified cloud OS for member management, rotating HMAC-SHA256 QR turnstiles, Egyptian cashier & supplement POS, trainer commissions, and AI coaching — with strict multi-tenant PostgreSQL RLS isolation.'}
             </p>
 
-            {/* Primary CTA Buttons including the FREE TRIAL WORKOUTS & DIETS Button */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2">
+            {/* Primary SaaS Conversion CTAs */}
+            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 pt-2">
               <a
-                href="#free-calorie-calculator"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-7 py-3.5 text-sm font-black text-white shadow-md shadow-slate-950/10 transition hover:bg-slate-800 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
+                href="#saas-pricing-section"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-[#D4AF37] px-7 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-500/25 transition hover:brightness-105 active:scale-95"
               >
-                <Calculator className="h-4 w-4 text-amber-400 dark:text-slate-950" />
-                <span>{isAr ? 'احسب سعراتك وابدأ الآن' : 'Calculate Your Calories'}</span>
+                <Zap className="h-4 w-4" />
+                <span>{isAr ? 'اشترك الآن واختر باقة ناديك' : 'Choose Your Gym Plan'}</span>
               </a>
 
               {onOpenFreeTrialHub && (
@@ -279,71 +285,55 @@ export function PublicCoachingStorefrontView({
                   type="button"
                   data-testid="open-free-trial-hub-btn"
                   onClick={onOpenFreeTrialHub}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-900 shadow-2xs transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-900 shadow-2xs transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
                 >
                   <Gift className="h-4 w-4 text-amber-500" />
-                  <span>{isAr ? 'جرب مجاناً (تمارين فيديو + أنظمة)' : 'Try Free Workouts & Meal Plans'}</span>
+                  <span>{isAr ? 'استعرض تجربة المتدرب المجانية' : 'Preview Free Member Experience'}</span>
                 </button>
               )}
 
               <a
-                href="#recipes-section"
-                className="inline-flex items-center justify-center gap-1.5 py-2 text-xs font-bold text-slate-600 transition hover:text-amber-600 sm:ps-2"
+                href="#free-calorie-calculator"
+                className="inline-flex items-center justify-center gap-1.5 py-2 text-xs font-bold text-slate-600 transition hover:text-amber-600 dark:text-slate-300 sm:ps-2"
               >
-                <Utensils className="h-4 w-4 text-amber-500" />
-                <span>{isAr ? 'وصفات مبنية على سعراتك ←' : 'Recipes built on your calories →'}</span>
+                <Calculator className="h-4 w-4 text-amber-500" />
+                <span>{isAr ? 'جرب حاسبة السعرات التفاعلية ←' : 'Try Interactive Calorie Planner →'}</span>
               </a>
             </div>
 
-            {/* Trust Metrics - Only renders verified, non-placeholder metrics */}
-            {(() => {
-              const metrics: Array<{ val: string; ar: string; en: string }> = [];
-              const rawCount = PLATFORM_CONFIG.claims.activeMembersCount?.trim();
-              if (rawCount && !rawCount.startsWith('[')) {
-                metrics.push({
-                  val: rawCount,
-                  ar: 'قصة نجاح وتحول حقيقي',
-                  en: 'Verified Transformations',
-                });
-              }
-              const rawMed = PLATFORM_CONFIG.claims.medicalSupervisionPercent?.trim();
-              if (rawMed && !rawMed.startsWith('[')) {
-                metrics.push({
-                  val: rawMed,
-                  ar: 'تحت إشراف طبي ورياضي',
-                  en: 'Medical & PT Supervised',
-                });
-              }
-              metrics.push({
-                val: '24/7',
-                ar: 'متابعة يومية بالواتساب',
-                en: 'Daily 1-on-1 WhatsApp Support',
-              });
-
-              return (
-                <div
-                  data-testid="hero-trust-metrics"
-                  className={`grid grid-cols-${metrics.length === 1 ? '1' : metrics.length === 2 ? '2' : '3'} gap-3 border-t border-slate-100 pt-6 sm:gap-6 dark:border-slate-800`}
-                >
-                  {metrics.map((m, idx) => (
-                    <div
-                      key={m.en}
-                      className={idx > 0 ? 'border-s border-slate-100 ps-3 sm:ps-6 dark:border-slate-800' : ''}
-                    >
-                      <p className="font-mono text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
-                        {m.val}
-                      </p>
-                      <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-                        {isAr ? m.ar : m.en}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
+            {/* Verified Platform Architecture Trust Metrics */}
+            <div
+              data-testid="hero-trust-metrics"
+              className="grid grid-cols-3 gap-3 border-t border-slate-100 pt-6 sm:gap-6 dark:border-slate-800"
+            >
+              <div>
+                <p className="font-mono text-lg font-black tracking-tight text-slate-900 sm:text-2xl dark:text-white">
+                  FORCE RLS
+                </p>
+                <p className="mt-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  {isAr ? 'عزل بيانات 100% لكل جيم' : '100% Isolated Tenant DB'}
+                </p>
+              </div>
+              <div className="border-s border-slate-100 ps-3 sm:ps-6 dark:border-slate-800">
+                <p className="font-mono text-lg font-black tracking-tight text-emerald-600 sm:text-2xl dark:text-emerald-400">
+                  30s QR
+                </p>
+                <p className="mt-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  {isAr ? 'كود دخول مشفر يمنع التصوير' : 'HMAC Anti-Screenshot Gate'}
+                </p>
+              </div>
+              <div className="border-s border-slate-100 ps-3 sm:ps-6 dark:border-slate-800">
+                <p className="font-mono text-lg font-black tracking-tight text-amber-600 sm:text-2xl dark:text-amber-400">
+                  24/7
+                </p>
+                <p className="mt-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  {isAr ? 'تفعيل ودعم فني مباشر' : 'Instant Onboarding & Support'}
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* Left Visual Column — Modern Animated Fitness & Sports Nutrition Showcase + Illustrative Projection */}
+          {/* Left Visual Column — SaaS Product Showcase Card */}
           <motion.div
             initial={{ opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -352,98 +342,213 @@ export function PublicCoachingStorefrontView({
           >
             <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
               <div className="relative h-64 w-full overflow-hidden bg-slate-950 flex flex-col justify-end p-5">
-                {/* High-Resolution Custom Fitness & Sports Nutrition Hero Image with Slow Ken-Burns Motion */}
                 <motion.img
                   src="/brand/hero-fitness-nutrition.jpg"
-                  alt={isAr ? 'اللياقة البدنية والتغذية الرياضية المتكاملة' : 'Elite Fitness & Sports Nutrition'}
+                  alt={isAr ? 'منظومة TitanFit لإدارة الأندية الرياضية' : 'TitanFit Gym Operating System'}
                   data-testid="hero-fitness-nutrition-img"
                   initial={{ scale: 1.08 }}
                   animate={{ scale: [1.04, 1.12, 1.04] }}
                   transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
                   className="absolute inset-0 h-full w-full object-cover opacity-85"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/55 to-slate-950/15" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-slate-950/15" />
 
-                {/* Floating Animated Telemetry Pill 1: Sports Nutrition Macros */}
+                {/* Floating Pill 1: Rotating QR Gate */}
                 <motion.div
                   animate={{ y: [0, -6, 0] }}
                   transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
                   className="absolute top-3.5 start-3.5 z-10 flex items-center gap-2 rounded-2xl border border-emerald-400/40 bg-slate-950/85 px-3 py-1.5 text-[11px] font-black text-emerald-300 shadow-lg backdrop-blur-md"
                 >
-                  <Utensils className="h-3.5 w-3.5 text-emerald-400" />
-                  <span>{isAr ? 'تغذية محسوبة: 4P + 4C + 9F' : 'Macro Math: 4P + 4C + 9F'}</span>
+                  <QrCode className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>{isAr ? 'بوابة QR مشفرة HMAC' : 'HMAC QR Turnstiles'}</span>
                 </motion.div>
 
-                {/* Floating Animated Telemetry Pill 2: Live Biomechanical EMG Pulse */}
+                {/* Floating Pill 2: White-Label PWA */}
                 <motion.div
                   animate={{ y: [0, 6, 0] }}
                   transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
                   className="absolute top-3.5 end-3.5 z-10 flex items-center gap-1.5 rounded-2xl border border-amber-400/40 bg-slate-950/85 px-3 py-1.5 text-[11px] font-black text-amber-300 shadow-lg backdrop-blur-md"
                 >
-                  <Activity className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
-                  <span>{isAr ? 'محاكاة تمرين 3D • 96% EMG' : '3D Biomechanics • 96% EMG'}</span>
+                  <Smartphone className="h-3.5 w-3.5 text-amber-400" />
+                  <span>{isAr ? 'تطبيق المتدرب باسم ناديك' : 'White-Label Member PWA'}</span>
                 </motion.div>
 
-                <span className="relative z-10 w-fit rounded-full bg-emerald-700/95 px-3.5 py-1 text-xs font-extrabold text-white shadow backdrop-blur-xs">
-                  {isAr ? '🔥 مثال توضيحي لرحلة تحوّل متدرب' : '🔥 Illustrative Transformation Example'}
+                <span className="relative z-10 w-fit rounded-full bg-amber-500 px-3.5 py-1 text-xs font-black text-slate-950 shadow">
+                  {isAr ? '⚡ جاهز للتشغيل الفوري لناديك' : '⚡ Production-Ready Gym OS'}
                 </span>
                 <div className="relative z-10 mt-2.5 flex items-center justify-between text-white">
                   <div>
                     <p className="text-sm font-black">
-                      {isAr ? 'نموذج محاكاة رقمي (مثال توضيحي)' : 'Simulated Macro Case Model'}
+                      {isAr ? 'لوحة تحكم شاملة لصاحب الجيم + تطبيق المتدرب' : 'Owner Command Center + Member PWA'}
                     </p>
                     <p className="text-[11px] text-amber-300">
-                      {isAr ? 'محاكاة علمية لنحت القوام وخسارة دهون (ليس عميلاً حقيقياً)' : 'Scientific recomp projection (Illustrative - not a real client)'}
+                      {isAr ? 'كاشير مصري • عمولات مدربين • جرد مكملات • AI Coach' : 'Cashier POS • Trainer Commissions • Supplement Inventory • AI Coach'}
                     </p>
-                  </div>
-                  <div className="flex gap-0.5 text-amber-400">
-                    <Star className="h-4 w-4 fill-amber-400" />
-                    <Star className="h-4 w-4 fill-amber-400" />
-                    <Star className="h-4 w-4 fill-amber-400" />
-                    <Star className="h-4 w-4 fill-amber-400" />
-                    <Star className="h-4 w-4 fill-amber-400" />
                   </div>
                 </div>
               </div>
 
-              <div className="p-6">
-                <div className="grid grid-cols-2 gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-center dark:border-slate-800 dark:bg-slate-950">
-                  <div className="border-e border-slate-200 pe-2 dark:border-slate-800">
-                    <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
-                      {isAr ? 'قبل الاشتراك' : 'Before'}
-                    </p>
-                    <p className="mt-1 font-mono text-2xl font-black text-rose-600">92 kg</p>
-                    <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                      {isAr ? 'نسبة الدهون: 24% (22.1 كجم دهون)' : 'Body Fat: 24% (22.1 kg fat)'}
-                    </p>
-                    <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-                      {isAr ? 'الكتلة الخالية من الدهون: 69.9 كجم' : 'Lean Mass: 69.9 kg'}
+              <div className="p-5 space-y-3">
+                <div className="grid grid-cols-2 gap-2.5 text-xs">
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
+                    <p className="text-[10px] font-bold text-slate-500">{isAr ? 'بوابات الدفع المعتمدة' : 'Supported Gateways'}</p>
+                    <p className="mt-1 font-black text-slate-900 dark:text-white">
+                      {isAr ? 'إنستاباي • فودافون • كاش' : 'InstaPay • Vodafone • Cash'}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">
-                      {isAr ? 'بعد ١٢ أسبوع' : 'After 12 Wks'}
-                    </p>
-                    <p className="mt-1 font-mono text-2xl font-black text-emerald-700 dark:text-emerald-400">83 kg</p>
-                    <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400">
-                      {isAr ? 'نسبة الدهون: 16.5% • فرق الوزن: -9 كجم' : 'Body Fat: 16.5% • Weight Change: -9 kg'}
-                    </p>
-                    <p className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
-                      {isAr ? 'الدهون: 13.7 كجم (-8.4 كجم) • الكتلة الصافية: 69.3 كجم' : 'Fat: 13.7 kg (-8.4 kg) • Lean Mass: 69.3 kg'}
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
+                    <p className="text-[10px] font-bold text-slate-500">{isAr ? 'تبديل الهوية الفوري' : 'Club Branding'}</p>
+                    <p className="mt-1 font-black text-emerald-600 dark:text-emerald-400">
+                      {isAr ? 'شعار وألوان ناديك 100%' : '100% Your Logo & Colors'}
                     </p>
                   </div>
                 </div>
 
-                <blockquote className="mt-4 text-xs leading-relaxed font-semibold text-slate-700 dark:text-slate-300">
-                  {isAr
-                    ? '“مثال توضيحي بالأرقام: نزول واقعي بمعدل ٩ كجم في ١٢ أسبوعاً (منها ٨.٤ كجم دهون صافية: من ٢٢.١ كجم إلى ١٣.٧ كجم) مع الحفاظ على الكتلة الخالية من الدهون (٦٩.٩ كجم ← ٦٩.٣ كجم) عبر عجز سعرات معتدل وتدرج الأحمال.”'
-                    : '“Illustrative calculation: realistic 9 kg loss over 12 weeks (8.4 kg fat loss: 22.1 kg → 13.7 kg) while preserving lean mass (69.9 kg → 69.3 kg) through a moderate calorie deficit and progressive overload.”'}
-                </blockquote>
+                <a
+                  href="#saas-pricing-section"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 py-3 text-xs font-black text-white transition hover:bg-slate-800 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
+                >
+                  <span>{isAr ? 'ابدأ من 950 ج.م / شهر (أو وفر 20% سنوياً)' : 'Plans starting at 950 EGP/mo (Save 20% annually)'}</span>
+                  <ArrowUpRight className="h-4 w-4" />
+                </a>
               </div>
             </div>
           </motion.div>
         </div>
       </motion.section>
+
+      {/* 1.2 BEFORE VS AFTER TITANFIT — WHY GYM OWNERS SWITCH */}
+      <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-3xl border border-rose-200/80 bg-rose-50/50 p-6 sm:p-8 dark:border-rose-500/20 dark:bg-rose-950/15">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 px-3 py-1 text-[11px] font-black text-rose-700 dark:text-rose-300">
+            <span>❌ {isAr ? 'قبل TitanFit (الإدارة التقليدية)' : 'Before TitanFit (Manual Chaos)'}</span>
+          </span>
+          <h3 className="mt-3 text-lg font-black text-slate-900 dark:text-white">
+            {isAr ? 'مشاكل تسرّب الإيرادات والفوضى اليومية' : 'Revenue Leaks & Daily Operational Chaos'}
+          </h3>
+          <ul className="mt-4 space-y-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <li className="flex items-start gap-2">
+              <span className="text-rose-500 font-black">•</span>
+              <span>{isAr ? 'تداخل مواعيد انتهاء الاشتراكات وعدم معرفة المتدربين المتغيبين.' : 'Missed subscription expirations and zero churn visibility.'}</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-rose-500 font-black">•</span>
+              <span>{isAr ? 'تصوير كروت الدخول أو إرسال QR ثابت بين الأصدقاء لدخول الجيم مجاناً.' : 'Static membership cards shared via screenshots among non-members.'}</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-rose-500 font-black">•</span>
+              <span>{isAr ? 'تضارب حسابات الكاشير، عمولات المدربين، ومخزون المكملات الغذائية.' : 'Cashier mismatches, manual trainer commissions, and lost supplement stock.'}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="rounded-3xl border border-emerald-200/80 bg-emerald-50/50 p-6 sm:p-8 dark:border-emerald-500/25 dark:bg-emerald-950/15">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-black text-emerald-700 dark:text-emerald-300">
+            <span>✅ {isAr ? 'مع منظومة TitanFit OS' : 'With TitanFit Cloud OS'}</span>
+          </span>
+          <h3 className="mt-3 text-lg font-black text-slate-900 dark:text-white">
+            {isAr ? 'تحكم كامل، أمان بنكي، وتجربة فاخرة لمتدربيك' : 'Total Control, Bank-Grade Isolation & Luxury Member Experience'}
+          </h3>
+          <ul className="mt-4 space-y-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <li className="flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span>{isAr ? 'بوابة QR مشفرة تتغير كل 30 ثانية وتمنع مشاركة الصور نهائياً.' : 'Rotating 30s HMAC-SHA256 QR pass stops screenshot sharing cold.'}</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span>{isAr ? 'كاشير رسمي شامل ضريبة 14%، جرد لحظي لـ POS المكملات، وحساب عمولات المدربين تلقائياً.' : '14% VAT cashier, real-time POS supplement stock deduction & automated commissions.'}</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span>{isAr ? 'تطبيق متدربين (PWA) باسم وشعار ناديك مع تمارين 3D، جدول دايت، وكوتش AI.' : 'White-label Member PWA with 3D workouts, diet plans, and AI Coach.'}</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      {/* 1.4 6-PILLAR SAAS FEATURE GRID */}
+      <section className="space-y-6">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-black text-amber-800 dark:text-amber-300">
+            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+            <span>{isAr ? 'منظومة واحدة تغنيك عن 5 برامج منفصلة' : '6 CORE MODULES IN ONE UNIFIED SYSTEM'}</span>
+          </span>
+          <h2 className="text-2xl font-black text-slate-950 sm:text-3xl dark:text-white">
+            {isAr ? 'كل أدوات إدارة الجيم والبيع وتدريب الأعضاء في لوحة واحدة' : 'Everything Your Gym Needs to Scale & Retain Members'}
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            {
+              icon: QrCode,
+              color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+              titleAr: 'بوابات الدخول بالـ QR الدوار',
+              titleEn: 'Rotating HMAC QR Gates',
+              descAr: 'كود مشفر يتجدد كل 30 ثانية عبر الهاتف مع تحقق لحظي من صلاحية الاشتراك وعدد الحصص.',
+              descEn: 'Cryptographic 30-second rotating pass with live membership & freeze validation.',
+            },
+            {
+              icon: Users,
+              color: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+              titleAr: 'CRM المتدربين والملف الطبي والفروع',
+              titleEn: 'Member CRM & Multi-Branch',
+              descAr: 'تسجيل الأعضاء بالـ QR، تجميد الاشتراكات، سجل الإصابات، وعزل بيانات كل فرع وجيم.',
+              descEn: 'Member onboarding, freeze tracking, medical notes, and strict RLS tenant isolation.',
+            },
+            {
+              icon: CreditCard,
+              color: 'bg-sky-500/15 text-sky-600 dark:text-sky-400',
+              titleAr: 'الكاشير ونقطة بيع المكملات (POS)',
+              titleEn: 'Cashier & Supplement POS',
+              descAr: 'تحصيل كاش، إنستاباي، فودافون كاش، وفوري مع إصدار فواتير بضريبة 14% وخصم فوري من المخزون.',
+              descEn: 'Accept Cash, InstaPay, Vodafone Cash & Fawry with 14% VAT invoices and live stock deduction.',
+            },
+            {
+              icon: Bot,
+              color: 'bg-purple-500/15 text-purple-600 dark:text-purple-400',
+              titleAr: 'كوتش وأخصائي تغذية بالذكاء الاصطناعي',
+              titleEn: 'Pro AI Coach & CRM Assistant',
+              descAr: 'حساب Mifflin-St Jeor بالجرامات، بدائل إصابات المفاصل، ومساعد ذكي لبيانات الجيم للمالك.',
+              descEn: 'Gram-accurate nutrition plans, joint-safe swaps, and live CRM lookup for owners.',
+            },
+            {
+              icon: Smartphone,
+              color: 'bg-rose-500/15 text-rose-600 dark:text-rose-400',
+              titleAr: 'تطبيق المتدرب (White-Label PWA)',
+              titleEn: 'Branded Member PWA App',
+              descAr: 'يعمل على أي موبايل بدون متجر تطبيقات: تمارين 3D تفاعلية، دايت، مياه، ونقاط XP.',
+              descEn: 'Instant mobile web app with 3D animated workouts, macros, water tracker & XP leaderboard.',
+            },
+            {
+              icon: BarChart3,
+              color: 'bg-teal-500/15 text-teal-600 dark:text-teal-400',
+              titleAr: 'المدربون والعمولات والتقارير المالية',
+              titleEn: 'Trainer Commissions & BI Reports',
+              descAr: 'تتبع نسب المدربين، الحصص الجماعية، مصاريف الجيم، وتصدير تقارير CSV وPDF بضغطة زر.',
+              descEn: 'Automated PT commissions, class waitlists, expense tracking, and 1-click CSV/PDF exports.',
+            },
+          ].map((feat) => {
+            const Icon = feat.icon;
+            return (
+              <div
+                key={feat.titleEn}
+                className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-2xs transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+              >
+                <div className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl ${feat.color}`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-3.5 text-sm font-black text-slate-900 dark:text-white">
+                  {isAr ? feat.titleAr : feat.titleEn}
+                </h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                  {isAr ? feat.descAr : feat.descEn}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       {/* 1.5 MODERN ANIMATED FITNESS, NUTRITION & AI BIOMECHANICS SHOWCASE */}
       <section
@@ -897,36 +1002,36 @@ export function PublicCoachingStorefrontView({
           </form>
         </motion.div>
 
-        {/* B2B SaaS Callout: For Gym Owners & Coaches with Direct WhatsApp */}
+        {/* B2B SaaS Direct Sales & Onboarding Callout */}
         <motion.div
           whileHover={{ y: -4 }}
           transition={{ duration: 0.25 }}
-          className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-slate-50/70 p-6 shadow-2xs dark:border-slate-800 dark:bg-slate-900/60 sm:p-8"
+          className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-white to-emerald-500/5 p-6 shadow-2xs dark:border-amber-500/30 dark:bg-slate-900/90 sm:p-8"
         >
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1 text-xs font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200">
+            <span className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-white px-3.5 py-1 text-xs font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200">
               <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />
               {isAr ? 'لأصحاب الجيمات والمدربين (B2B SaaS White-Label)' : 'FOR GYM OWNERS & ONLINE COACHES'}
             </span>
-            <span className="flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
-              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              {isAr ? 'قريباً / نسخة تجريبية' : 'Coming Soon / Demo Preview'}
+            <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-black text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              {isAr ? 'متاح للتفعيل الفوري' : 'Live & Ready'}
             </span>
           </div>
 
           <h3 className="mt-3 text-xl font-black text-slate-900 dark:text-white sm:text-2xl">
             {isAr
-              ? 'هل أنت صاحب جيم أو مدرب أونلاين؟ استكشف النسخة التجريبية لمنصتك الخاصة!'
-              : 'Own a Gym or Coaching Brand? Explore the White-Label SaaS Demo Preview'}
+              ? 'جاهز لتحويل جيمك إلى منظومة احترافية باسمك وشعارك؟'
+              : 'Ready to Launch Your Own Branded Gym Operating System?'}
           </h3>
           <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400 sm:text-sm">
             {isAr
-              ? 'نموذج تجريبي استعراضي لنظام الهوية البصرية (White-Label) يشمل واجهة المتدربين، تطبيق العضو، محاكاة بوابات الـ QR، والربط المزمع مع فوري وإنستاباي و Paymob (قريباً / نسخة تجريبية).'
-              : 'Interactive demo preview of the white-label ecosystem: member PWA, simulated QR turnstiles, and planned Egypt payment gateway integrations (Coming Soon / Demo).'}
+              ? 'احصل على لوحة تحكم متكاملة + تطبيق المتدرب PWA + بوابات QR دوارة + كاشير ضريبي + مساعد AI — مفعّلة فوراً عبر إنستاباي أو فودافون كاش مع عزل كامل لبيانات ناديك.'
+              : 'Get your full Gym Owner Dashboard, White-Label Member PWA, HMAC QR turnstiles, 14% VAT cashier, and Pro AI Coach — activated immediately via InstaPay or Vodafone Cash.'}
           </p>
 
-          {/* WhatsApp Waitlist Highlight Box */}
-          <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+          {/* Official WhatsApp Sales Box (01002169889) */}
+          <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xs dark:border-slate-800 dark:bg-slate-950">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#25D366] text-white shadow-xs">
@@ -934,30 +1039,40 @@ export function PublicCoachingStorefrontView({
                 </div>
                 <div>
                   <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
-                    {isAr ? 'سجّل اهتمامك للانضمام لقائمة الانتظار (نسخة تجريبية)' : 'Register Interest to Join the Waitlist (Demo)'}
+                    {isAr ? 'تواصل مباشرة مع مبيعات TitanFit وتفعيل الباقات' : 'Direct TitanFit SaaS Sales & Onboarding'}
                   </p>
-                  <p className="font-mono text-sm font-black text-slate-900 dark:text-white dir-ltr">
-                    +20 155 994 9271
+                  <p className="font-mono text-sm font-black text-slate-900 dark:text-white" dir="ltr">
+                    01002169889
                   </p>
                 </div>
               </div>
 
-              <a
-                href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D9%81%D9%8A%20%D8%A7%D9%84%D8%A7%D9%86%D8%B6%D9%85%D8%A7%D9%85%20%D9%84%D9%82%D8%A7%D8%A6%D9%85%D8%A9%20%D8%A7%D9%86%D8%AA%D8%B8%D8%A7%D8%B1%20%D9%85%D9%86%D8%B5%D8%A9%20TitanFit"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-xs font-black text-white shadow-xs transition hover:bg-[#20bd5a]"
-              >
-                <MessageSquare className="h-4 w-4 fill-white" />
-                <span>{isAr ? 'قائمة انتظار' : 'Join Waitlist'}</span>
-              </a>
+              <div className="flex flex-wrap items-center gap-2">
+                <a
+                  href="#saas-pricing-section"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 py-2.5 text-xs font-black text-slate-950 shadow-xs transition hover:bg-amber-400"
+                >
+                  <Zap className="h-3.5 w-3.5" />
+                  <span>{isAr ? 'اختر الباقة واشترك' : 'View Plans'}</span>
+                </a>
+                <a
+                  href="https://wa.me/201002169889?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D9%81%D9%8A%20%D8%AA%D9%81%D8%B9%D9%8A%D9%84%20%D9%85%D9%86%D8%B5%D8%A9%20TitanFit%20%D9%84%D9%84%D8%AC%D9%8A%D9%85%20%D8%A7%D9%84%D8%AE%D8%A7%D8%B5%20%D8%A8%D9%8A"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-xs font-black text-white shadow-xs transition hover:bg-[#20bd5a]"
+                >
+                  <MessageSquare className="h-4 w-4 fill-white" />
+                  <span>{isAr ? 'واتساب المبيعات' : 'Sales WhatsApp'}</span>
+                </a>
+              </div>
             </div>
           </div>
         </motion.div>
       </div>
 
       {/* 9. B2B SAAS SUBSCRIPTION PLANS FOR GYM OWNERS & FITNESS CLUBS */}
-      <section id="gym-saas-plans" className="relative space-y-8 overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-slate-900/95 to-slate-950 p-6 sm:p-10 text-white shadow-2xl">
+      <section id="saas-pricing-section" className="scroll-mt-24">
+        <div id="gym-saas-plans" className="relative space-y-8 overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-slate-900/95 to-slate-950 p-6 sm:p-10 text-white shadow-2xl">
         <div className="absolute -top-24 -end-24 h-72 w-72 rounded-full bg-amber-500/15 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-amber-500/20 pb-6">
@@ -1168,6 +1283,7 @@ export function PublicCoachingStorefrontView({
             );
           })}
         </div>
+        </div>
       </section>
 
       {/* SAAS CHECKOUT & PAYMENT GATEWAY MODAL (INSTAPAY / VODAFONE CASH) */}
@@ -1303,13 +1419,13 @@ export function PublicCoachingStorefrontView({
 
                 <div className="flex items-center gap-2">
                   <a
-                    href="https://wa.me/201559949271?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D9%82%D8%B1%D8%A3%D8%AA%20%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%AA%D9%85%D8%B1%D9%8A%D9%86%20%D8%A7%D9%84%D9%85%D8%AC%D8%A7%D9%86%D9%8A%20%D9%88%D8%A3%D8%B1%D8%BA%D8%A8%20%D9%81%D9%8A%20%D8%A7%D9%84%D8%A7%D9%86%D8%B6%D9%85%D8%A7%D9%85%20%D9%84%D9%82%D8%A7%D8%A6%D9%85%D8%A9%20%D8%A7%D9%84%D8%A7%D9%86%D8%AA%D8%B8%D8%A7%D9%85"
+                    href="https://wa.me/201002169889?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D9%82%D8%B1%D8%A3%D8%AA%20%D9%83%D8%AA%D8%A7%D8%A8%20%D8%A7%D9%84%D8%AA%D9%85%D8%B1%D9%8A%D9%86%20%D8%A7%D9%84%D9%85%D8%AC%D8%A7%D9%86%D9%8A%20%D9%88%D8%A3%D8%B1%D8%BA%D8%A8%20%D9%81%D9%8A%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%A7%D9%84%D9%85%D9%86%D8%B5%D8%A9"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] px-4 py-2.5 text-xs font-black text-white hover:bg-[#20bd5a]"
                   >
                     <MessageSquare className="h-4 w-4 fill-white" />
-                    {isAr ? 'قائمة انتظار (واتساب)' : 'Join Waitlist (WhatsApp)'}
+                    {isAr ? 'تواصل واتساب (01002169889)' : 'WhatsApp (01002169889)'}
                   </a>
                   <button
                     type="button"
