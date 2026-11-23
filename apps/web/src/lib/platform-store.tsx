@@ -2403,11 +2403,43 @@ export function PlatformProvider({
   };
 
   const simulateGateScan = (
-    memberId: string,
+    memberIdOrQr: string,
     gateNameEn: string,
     gateNameAr: string,
   ): AccessLogItem => {
-    const member = members.find((m) => m.id === memberId) ?? members[0] ?? FALLBACK_DEFAULT_MEMBER;
+    const rawInput = (memberIdOrQr || '').trim();
+    // Parse TITANFIT:v1:<slug>:<MEMBER_CODE>:<HASH> QR payload if provided
+    const qrParts = rawInput.startsWith('TITANFIT:v1:') ? rawInput.split(':') : null;
+    const extractedCode = qrParts && qrParts.length >= 4 ? qrParts[3]!.trim() : rawInput;
+    const normalizedNeedle = extractedCode.toLowerCase();
+
+    const member = members.find(
+      (m) =>
+        m.id === rawInput ||
+        m.code.toLowerCase() === normalizedNeedle ||
+        m.phone.replace(/[\s-]/g, '') === rawInput.replace(/[\s-]/g, ''),
+    );
+
+    if (!member) {
+      const deniedLog: AccessLogItem = {
+        id: `acc-${Date.now()}`,
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        memberCode: extractedCode || 'NO-MEMBER',
+        memberNameEn: 'Unregistered / Invalid QR',
+        memberNameAr: 'عضو غير مسجل / كود غير صالح',
+        gateNameEn,
+        gateNameAr,
+        method: 'QR_ROTATING_HMAC',
+        decision: 'DENY_EXPIRED',
+        reasonEn: members.length === 0 ? 'No registered members in this gym yet' : `No matching member found for "${extractedCode}"`,
+        reasonAr: members.length === 0 ? 'لا يوجد متدربون مسجلون في النادي بعد' : `لم يتم العثور على متدرب مطابق للكود "${extractedCode}"`,
+        relayPulseMs: 0,
+      };
+      setAccessLogs((prev) => [deniedLog, ...prev]);
+      showToast(locale === 'ar' ? `⛔ ${deniedLog.reasonAr}` : `⛔ ${deniedLog.reasonEn}`);
+      return deniedLog;
+    }
+
     let decision: AccessLogItem['decision'] = 'ALLOW_ACCESS';
     let reasonEn = `Valid rotating HMAC-SHA256 QR token — ${member.planNameEn}`;
     let reasonAr = `رمز QR مشفر صالح — ${member.planNameAr}`;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Award,
   Calendar,
@@ -389,11 +389,28 @@ export function ClassesScheduleView() {
 export function AccessControlTurnstilesView() {
   const { locale, members, accessLogs, simulateGateScan } = usePlatformStore();
   const isAr = locale === 'ar';
-  const [selectedMemberId, setSelectedMemberId] = useState(members[0]?.id ?? 'mem-1001');
+  const [selectedMemberId, setSelectedMemberId] = useState(members[0]?.id ?? '');
+  const [qrInput, setQrInput] = useState('');
+  const [lastDecision, setLastDecision] = useState<(typeof accessLogs)[number] | null>(null);
   const [selectedGate, setSelectedGate] = useState({
     en: 'Main Lobby Turnstile #1',
     ar: 'بوابة الدخول الرئيسية #١',
   });
+
+  useEffect(() => {
+    if (members.length > 0 && !members.some((m) => m.id === selectedMemberId)) {
+      setSelectedMemberId(members[0]!.id);
+    } else if (members.length === 0 && selectedMemberId !== '') {
+      setSelectedMemberId('');
+    }
+  }, [members, selectedMemberId]);
+
+  const handleExecuteScan = (gateEn: string, gateAr: string) => {
+    const target = qrInput.trim() || selectedMemberId;
+    const res = simulateGateScan(target, gateEn, gateAr);
+    setLastDecision(res);
+    if (qrInput.trim()) setQrInput('');
+  };
 
   const gates = [
     { id: 'g1', en: 'Main Lobby Turnstile #1', ar: 'بوابة الدخول الرئيسية #١', status: 'ONLINE', zone: 'Main Floor' },
@@ -436,8 +453,8 @@ export function AccessControlTurnstilesView() {
               <p className="text-xs text-slate-500 dark:text-slate-400">{g.zone}</p>
               <button
                 type="button"
-                onClick={() => simulateGateScan(selectedMemberId, g.en, g.ar)}
-                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#D4AF37]/15 py-2 text-xs font-extrabold text-[#F3E5AB] transition hover:bg-[#D4AF37] hover:text-slate-950"
+                onClick={() => handleExecuteScan(g.en, g.ar)}
+                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-amber-500/15 py-2 text-xs font-extrabold text-amber-800 dark:text-[#F3E5AB] transition hover:bg-[#D4AF37] hover:text-slate-950"
               >
                 <Unlock className="h-3.5 w-3.5" />
                 {isAr ? 'مسح QR وفتح البوابة' : 'Scan QR & Pulse Gate'}
@@ -446,36 +463,88 @@ export function AccessControlTurnstilesView() {
           ))}
         </div>
 
-        {/* Simulator Bar */}
-        <div className="mt-5 flex flex-col justify-between gap-3 rounded-xl border border-[#D4AF37]/30 bg-slate-900/90 p-4 sm:flex-row sm:items-center">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xs font-bold text-[#F3E5AB]">
-              {isAr ? 'اختر العضو لاختبار البوابة (نشط / مجمد / منتهي):' : 'Select Member to Test Gate Rules:'}
-            </span>
-            <select
-              value={selectedMemberId}
-              onChange={(e) => setSelectedMemberId(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#121623] px-3 py-2 text-xs font-bold text-slate-900 dark:text-white"
-            >
-              {members.length === 0 && (
-                <option value="">{isAr ? 'لا يوجد أعضاء مسجلين بعد (0 عضو)' : 'No members registered yet'}</option>
-              )}
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {isAr ? m.fullNameAr : m.fullNameEn} — [{m.status}]
-                </option>
-              ))}
-            </select>
+        {/* Live QR Scanner & Simulator Bar */}
+        <div className="mt-5 space-y-3 rounded-xl border border-amber-500/30 bg-slate-50 p-4 dark:bg-slate-900/90">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:items-center">
+            <div className="lg:col-span-5">
+              <label className="mb-1 block text-[11px] font-bold text-slate-600 dark:text-[#F3E5AB]">
+                {isAr ? 'مسح / لصق كود QR أو كود العضو (TF-2026-...):' : 'Scan / Paste QR Token or Member Code:'}
+              </label>
+              <div className="relative">
+                <QrCode className="pointer-events-none absolute start-3 top-2.5 h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <input
+                  type="text"
+                  value={qrInput}
+                  onChange={(e) => setQrInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleExecuteScan(selectedGate.en, selectedGate.ar);
+                    }
+                  }}
+                  placeholder={isAr ? 'مثال: TITANFIT:v1:... أو TF-2026-1006' : 'e.g. TITANFIT:v1:... or TF-2026-1006'}
+                  className="w-full rounded-xl border border-slate-200 bg-white ps-9 pe-3 py-2 text-xs font-bold text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-700 dark:bg-[#121623] dark:text-white"
+                  dir="ltr"
+                />
+              </div>
+            </div>
+
+            <div className="lg:col-span-4">
+              <label className="mb-1 block text-[11px] font-bold text-slate-600 dark:text-[#F3E5AB]">
+                {isAr ? 'أو اختر العضو مباشرة:' : 'Or Select Member:'}
+              </label>
+              <select
+                value={selectedMemberId}
+                onChange={(e) => setSelectedMemberId(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-[#121623] dark:text-white"
+              >
+                {members.length === 0 && (
+                  <option value="">{isAr ? 'لا يوجد أعضاء مسجلين بعد (0 عضو)' : 'No members registered yet'}</option>
+                )}
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {isAr ? m.fullNameAr : m.fullNameEn} ({m.code}) — [{m.status}]
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="lg:col-span-3 lg:pt-5">
+              <button
+                type="button"
+                onClick={() => handleExecuteScan(selectedGate.en, selectedGate.ar)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#D4AF37] px-4 py-2.5 text-xs font-black text-slate-950 shadow-sm transition hover:brightness-105"
+              >
+                <QrCode className="h-4 w-4" />
+                <span>{isAr ? 'تنفيذ مسح QR الآن' : 'Execute Live QR Check-in'}</span>
+              </button>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() =>
-              simulateGateScan(selectedMemberId, selectedGate.en, selectedGate.ar)
-            }
-            className="rounded-xl bg-[#D4AF37] px-4 py-2.5 text-xs font-extrabold text-slate-950"
-          >
-            {isAr ? 'تنفيذ مسح QR الآن' : 'Execute Live QR Check-in'}
-          </button>
+
+          {lastDecision && (
+            <div
+              className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-3 text-xs font-bold ${
+                lastDecision.decision === 'ALLOW_ACCESS'
+                  ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-800 dark:text-emerald-200'
+                  : 'border-rose-500/40 bg-rose-500/15 text-rose-800 dark:text-rose-200'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {lastDecision.decision === 'ALLOW_ACCESS' ? (
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                ) : (
+                  <ShieldAlert className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                )}
+                <span>
+                  {isAr ? lastDecision.memberNameAr : lastDecision.memberNameEn} ({lastDecision.memberCode}) —{' '}
+                  {isAr ? lastDecision.reasonAr : lastDecision.reasonEn}
+                </span>
+              </div>
+              <span className="font-mono text-[11px] font-black">
+                {lastDecision.decision === 'ALLOW_ACCESS' ? 'RELAY 1500ms OPEN' : 'GATE LOCKED'}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -508,9 +577,9 @@ export function AccessControlTurnstilesView() {
                 </tr>
               )}
               {accessLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-900/40">
+                <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/40">
                   <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400">{log.timestamp}</td>
-                  <td className="px-4 py-3 font-bold text-white">
+                  <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">
                     {isAr ? log.memberNameAr : log.memberNameEn}{' '}
                     <span className="font-mono text-xs text-slate-500 dark:text-slate-400">({log.memberCode})</span>
                   </td>

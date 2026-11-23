@@ -79,6 +79,8 @@ export function OverviewView() {
   const isolatedClubNameAr = activeTenantCustom?.nameAr || 'مجموعة أندية تيتان فيت مصر';
   const isolatedClubNameEn = activeTenantCustom?.nameEn || 'TitanFit Egypt Athletic Clubs';
   const [chartPeriod, setChartPeriod] = useState<'7D' | '30D' | '90D' | '12M'>('30D');
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [whatsAppScope, setWhatsAppScope] = useState<'EXPIRING' | 'ALL'>('EXPIRING');
 
   const filteredMembers =
     selectedBranchId === 'ALL'
@@ -372,13 +374,7 @@ export function OverviewView() {
             </p>
             <button
               type="button"
-              onClick={() =>
-                showToast(
-                  isAr
-                    ? `تم إرسال رسائل تذكير التجديد عبر واتساب لـ ${expiringCount} عضواً!`
-                    : `Dispatched WhatsApp renewal reminders to ${expiringCount} members!`,
-                )
-              }
+              onClick={() => setShowWhatsAppModal(true)}
               className="rounded-lg bg-amber-500/20 px-2.5 py-1 text-xs font-bold text-amber-700 hover:bg-amber-500/30 dark:text-amber-200"
             >
               {isAr ? 'إرسال تذكير واتساب' : 'Send WhatsApp Blast'}
@@ -648,6 +644,165 @@ export function OverviewView() {
           </div>
         </div>
       </div>
+
+      {/* Real WhatsApp Renewal & Member Alerts Modal */}
+      {showWhatsAppModal && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm"
+          onClick={() => setShowWhatsAppModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden rounded-3xl border border-emerald-500/30 bg-white text-slate-900 shadow-2xl dark:bg-slate-900 dark:text-white"
+            dir={isAr ? 'rtl' : 'ltr'}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#25D366] text-white shadow-sm">
+                  <MessageCircle className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black">
+                    {isAr ? 'مركز إرسال تنبيهات الواتساب المباشر للأعضاء' : 'Direct WhatsApp Member Alerts'}
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {isAr
+                      ? 'إرسال فوري لرسائل تجديد الاشتراك أو التنبيهات عبر WhatsApp برقم العضو المسجل'
+                      : 'Send instant WhatsApp renewal reminders directly to registered member numbers'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowWhatsAppModal(false)}
+                className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-6 py-3 dark:border-slate-800 dark:bg-slate-950">
+              <button
+                type="button"
+                onClick={() => setWhatsAppScope('EXPIRING')}
+                className={`rounded-xl px-3 py-1.5 text-xs font-black transition ${
+                  whatsAppScope === 'EXPIRING'
+                    ? 'bg-amber-500 text-slate-950'
+                    : 'text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800'
+                }`}
+              >
+                {isAr ? `قريبة الانتهاء / منتهية (${filteredMembers.filter((m) => m.status === 'EXPIRING_SOON' || m.status === 'EXPIRED').length})` : 'Expiring / Expired'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setWhatsAppScope('ALL')}
+                className={`rounded-xl px-3 py-1.5 text-xs font-black transition ${
+                  whatsAppScope === 'ALL'
+                    ? 'bg-emerald-600 text-white'
+                    : 'text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800'
+                }`}
+              >
+                {isAr ? `كل أعضاء النادي (${filteredMembers.length})` : `All Members (${filteredMembers.length})`}
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-3">
+              {(() => {
+                const targetMembers =
+                  whatsAppScope === 'EXPIRING'
+                    ? filteredMembers.filter((m) => m.status === 'EXPIRING_SOON' || m.status === 'EXPIRED')
+                    : filteredMembers;
+
+                if (targetMembers.length === 0) {
+                  return (
+                    <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
+                      <p className="text-sm font-black text-slate-700 dark:text-slate-200">
+                        {filteredMembers.length === 0
+                          ? isAr
+                            ? 'لا يوجد أعضاء مسجلون في النادي بعد'
+                            : 'No members registered in this club yet'
+                          : isAr
+                            ? 'لا توجد اشتراكات قريبة الانتهاء أو منتهية حالياً'
+                            : 'No expiring or expired memberships right now'}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        {filteredMembers.length === 0
+                          ? isAr
+                            ? 'أضف أول متدرب من قسم المتدربين لتتمكن من إرسال تنبيهات الواتساب فوراً.'
+                            : 'Add a member in Members CRM first to dispatch WhatsApp alerts.'
+                          : isAr
+                            ? 'يمكنك التبديل إلى تبويب "كل أعضاء النادي" لإرسال تنبيه عام لجميع المتدربين.'
+                            : 'Switch to "All Members" above to message active members.'}
+                      </p>
+                      {filteredMembers.length === 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowWhatsAppModal(false);
+                            setActiveSection('MEMBERS');
+                          }}
+                          className="mt-4 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-xs font-black text-slate-950"
+                        >
+                          <UserPlus className="h-4 w-4" />
+                          <span>{isAr ? 'الانتقال لتسجيل متدرب' : 'Go to Register Member'}</span>
+                        </button>
+                      )}
+                    </div>
+                  );
+                }
+
+                return targetMembers.map((m) => {
+                  const digits = m.phone.replace(/[^0-9]/g, '');
+                  const waPhone = digits.startsWith('01') ? `2${digits}` : digits.startsWith('20') ? digits : `20${digits}`;
+                  const msgText = isAr
+                    ? `أهلاً بك يا كابتن ${m.fullNameAr} 👋\nتذكير من نادي (${isolatedClubNameAr}): اشتراكك في باقة (${m.planNameAr}) ينتهي بتاريخ (${m.endDate}).\nيسعدنا تجديد اشتراكك في الاستقبال أو عبر إنستاباي/فودافون كاش لضمان استمرار دخولك ببوابة الـ QR 💪.`
+                    : `Hi ${m.fullNameEn}, reminder from ${isolatedClubNameEn}: your ${m.planNameEn} membership ends on ${m.endDate}.`;
+                  const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(msgText)}`;
+
+                  return (
+                    <div
+                      key={m.id}
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950"
+                    >
+                      <div>
+                        <p className="text-sm font-black text-slate-900 dark:text-white">
+                          {isAr ? m.fullNameAr : m.fullNameEn}{' '}
+                          <span className="font-mono text-xs text-slate-500">({m.code})</span>
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {m.phone} • {isAr ? m.planNameAr : m.planNameEn} • {m.endDate}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard?.writeText(msgText).catch(() => {});
+                            showToast(isAr ? 'تم نسخ نص رسالة التذكير' : 'Message copied');
+                          }}
+                          className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                          <span>{isAr ? 'نسخ' : 'Copy'}</span>
+                        </button>
+                        <a
+                          href={waUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] px-4 py-2 text-xs font-black text-white shadow-sm transition hover:bg-[#20bd5a]"
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" />
+                          <span>{isAr ? 'إرسال واتساب الآن' : 'Send on WhatsApp'}</span>
+                        </a>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
