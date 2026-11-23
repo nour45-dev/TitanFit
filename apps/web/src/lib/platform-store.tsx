@@ -1299,7 +1299,7 @@ export function PlatformProvider({
   const activeTenantSlug = impersonatedTenant || currentUser?.tenantSlug || 'titanfit-egypt';
 
   const activeTenantCustom =
-    tenants.find((t) => t.slug === activeTenantSlug) ?? tenants[0] ?? null;
+    tenants.find((t) => t.slug === activeTenantSlug) ?? null;
 
   // Hydrate & persist Gym Owner Custom Content & Isolated Gym Data (Branches, Members, Plans, Invoices) per Tenant Slug
   useEffect(() => {
