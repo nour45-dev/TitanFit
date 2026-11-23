@@ -1129,6 +1129,42 @@ const FALLBACK_DEFAULT_MEMBER: MemberItem = {
   points: 100,
 };
 
+const VALID_WORKSPACE_SECTIONS: WorkspaceSection[] = [
+  'PUBLIC_STOREFRONT',
+  'FREE_TRIAL_HUB',
+  'OVERVIEW',
+  'MEMBERS',
+  'SUBSCRIPTIONS',
+  'PAYMENTS',
+  'CLASSES',
+  'ACCESS_CONTROL',
+  'POS_INVENTORY',
+  'STAFF_TRAINERS',
+  'CONTENT_LIBRARY',
+  'MEMBER_PWA',
+  'REPORTS',
+  'SETTINGS',
+  'SUPER_ADMIN',
+];
+
+function sectionToPath(section: WorkspaceSection): string {
+  if (section === 'PUBLIC_STOREFRONT') return '/';
+  return `/${section.toLowerCase().replace(/_/g, '-')}`;
+}
+
+function resolveSectionFromLocation(): WorkspaceSection | null {
+  if (typeof window === 'undefined') return null;
+  const pathSlug = window.location.pathname.replace(/^\/+|\/+$/g, '').toUpperCase().replace(/-/g, '_');
+  if (pathSlug && VALID_WORKSPACE_SECTIONS.includes(pathSlug as WorkspaceSection)) {
+    return pathSlug as WorkspaceSection;
+  }
+  const hashSlug = window.location.hash.replace(/^#/, '').toUpperCase().replace(/-/g, '_');
+  if (hashSlug && VALID_WORKSPACE_SECTIONS.includes(hashSlug as WorkspaceSection)) {
+    return hashSlug as WorkspaceSection;
+  }
+  return null;
+}
+
 export function PlatformProvider({
   children,
   initialLocale = 'ar',
@@ -1150,7 +1186,7 @@ export function PlatformProvider({
           window.history.pushState(
             { section: newSection },
             '',
-            `#${newSection.toLowerCase().replace(/_/g, '-')}`,
+            sectionToPath(newSection),
           );
         }
       } catch {}
@@ -1165,7 +1201,7 @@ export function PlatformProvider({
         setActiveSectionState(fallback);
         try {
           if (typeof window !== 'undefined' && window.history) {
-            window.history.replaceState({ section: fallback }, '', '#public-storefront');
+            window.history.replaceState({ section: fallback }, '', '/');
           }
         } catch {}
         return [];
@@ -1178,7 +1214,7 @@ export function PlatformProvider({
           window.history.replaceState(
             { section: prevSection },
             '',
-            `#${prevSection.toLowerCase().replace(/_/g, '-')}`,
+            sectionToPath(prevSection),
           );
         }
       } catch {}
@@ -1186,31 +1222,17 @@ export function PlatformProvider({
     });
   }, []);
 
-  // Synchronize browser history and popstate events
+  // Synchronize clean browser pathnames and popstate events (zero # hash URLs)
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const hash = window.location.hash.replace(/^#/, '').toUpperCase().replace(/-/g, '_');
-    if (hash) {
-      const validSections: WorkspaceSection[] = [
-        'PUBLIC_STOREFRONT',
-        'FREE_TRIAL_HUB',
-        'OVERVIEW',
-        'MEMBERS',
-        'SUBSCRIPTIONS',
-        'PAYMENTS',
-        'CLASSES',
-        'ACCESS_CONTROL',
-        'POS_INVENTORY',
-        'STAFF_TRAINERS',
-        'CONTENT_LIBRARY',
-        'MEMBER_PWA',
-        'REPORTS',
-        'SETTINGS',
-        'SUPER_ADMIN',
-      ];
-      if (validSections.includes(hash as WorkspaceSection)) {
-        setActiveSectionState(hash as WorkspaceSection);
+    const resolved = resolveSectionFromLocation();
+    if (resolved) {
+      setActiveSectionState(resolved);
+      if (window.location.hash) {
+        try {
+          window.history.replaceState({ section: resolved }, '', sectionToPath(resolved));
+        } catch {}
       }
     }
 
@@ -1219,15 +1241,11 @@ export function PlatformProvider({
         setActiveSectionState(e.state.section);
         setNavigationHistory((prev) => (prev.length > 0 ? prev.slice(0, -1) : []));
       } else {
-        setNavigationHistory((prev) => {
-          if (prev.length > 0) {
-            const last = prev[prev.length - 1]!;
-            setActiveSectionState(last);
-            return prev.slice(0, -1);
-          }
-          setActiveSectionState('PUBLIC_STOREFRONT');
-          return [];
-        });
+        const nextFromUrl = resolveSectionFromLocation() || 'PUBLIC_STOREFRONT';
+        setActiveSectionState(nextFromUrl);
+        if (nextFromUrl === 'PUBLIC_STOREFRONT') {
+          setNavigationHistory([]);
+        }
       }
     };
 

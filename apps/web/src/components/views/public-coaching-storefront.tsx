@@ -272,13 +272,14 @@ export function PublicCoachingStorefrontView({
 
             {/* Primary SaaS Conversion CTAs */}
             <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 pt-2">
-              <a
-                href="#saas-pricing-section"
+              <button
+                type="button"
+                onClick={() => document.getElementById('saas-pricing-section')?.scrollIntoView({ behavior: 'smooth' })}
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-[#D4AF37] px-7 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-500/25 transition hover:brightness-105 active:scale-95"
               >
                 <Zap className="h-4 w-4" />
                 <span>{isAr ? 'اشترك الآن واختر باقة ناديك' : 'Choose Your Gym Plan'}</span>
-              </a>
+              </button>
 
               {onOpenFreeTrialHub && (
                 <button
@@ -292,13 +293,14 @@ export function PublicCoachingStorefrontView({
                 </button>
               )}
 
-              <a
-                href="#free-calorie-calculator"
+              <button
+                type="button"
+                onClick={() => document.getElementById('free-calorie-calculator')?.scrollIntoView({ behavior: 'smooth' })}
                 className="inline-flex items-center justify-center gap-1.5 py-2 text-xs font-bold text-slate-600 transition hover:text-amber-600 dark:text-slate-300 sm:ps-2"
               >
                 <Calculator className="h-4 w-4 text-amber-500" />
                 <span>{isAr ? 'جرب حاسبة السعرات التفاعلية ←' : 'Try Interactive Calorie Planner →'}</span>
-              </a>
+              </button>
             </div>
 
             {/* Verified Platform Architecture Trust Metrics */}
@@ -404,13 +406,14 @@ export function PublicCoachingStorefrontView({
                   </div>
                 </div>
 
-                <a
-                  href="#saas-pricing-section"
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('saas-pricing-section')?.scrollIntoView({ behavior: 'smooth' })}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 py-3 text-xs font-black text-white transition hover:bg-slate-800 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
                 >
                   <span>{isAr ? 'ابدأ من 950 ج.م / شهر (أو وفر 20% سنوياً)' : 'Plans starting at 950 EGP/mo (Save 20% annually)'}</span>
                   <ArrowUpRight className="h-4 w-4" />
-                </a>
+                </button>
               </div>
             </div>
           </motion.div>
@@ -802,12 +805,13 @@ export function PublicCoachingStorefrontView({
                 : 'Illustrative Example of a Possible Result with Consistent Training & Nutrition'}
             </h2>
           </div>
-          <a
-            href="#free-calorie-calculator"
+          <button
+            type="button"
+            onClick={() => document.getElementById('free-calorie-calculator')?.scrollIntoView({ behavior: 'smooth' })}
             className="text-xs font-extrabold text-amber-800 dark:text-amber-400 hover:underline"
           >
             {isAr ? 'ابدأ قصتك بحساب سعراتك ←' : 'Start your story — calculate your calories →'}
-          </a>
+          </button>
         </div>
 
         <div className="grid grid-cols-1 gap-6 max-w-xl">
@@ -1048,13 +1052,14 @@ export function PublicCoachingStorefrontView({
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <a
-                  href="#saas-pricing-section"
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('saas-pricing-section')?.scrollIntoView({ behavior: 'smooth' })}
                   className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 py-2.5 text-xs font-black text-slate-950 shadow-xs transition hover:bg-amber-400"
                 >
                   <Zap className="h-3.5 w-3.5" />
                   <span>{isAr ? 'اختر الباقة واشترك' : 'View Plans'}</span>
-                </a>
+                </button>
                 <a
                   href="https://wa.me/201002169889?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D9%81%D9%8A%20%D8%AA%D9%81%D8%B9%D9%8A%D9%84%20%D9%85%D9%86%D8%B5%D8%A9%20TitanFit%20%D9%84%D9%84%D8%AC%D9%8A%D9%85%20%D8%A7%D9%84%D8%AE%D8%A7%D8%B5%20%D8%A8%D9%8A"
                   target="_blank"
