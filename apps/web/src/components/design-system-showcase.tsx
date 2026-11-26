@@ -1289,7 +1289,7 @@ function TitanFitEnterpriseShell() {
               data-testid="footer-privacy-link"
               className="text-slate-700 underline-offset-4 hover:text-amber-600 hover:underline dark:text-slate-300 dark:hover:text-amber-400"
             >
-              {isAr ? 'سياسة الخصوصية (مسودة)' : 'Privacy Policy (Draft)'}
+              {isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}
             </a>
             <span className="text-slate-300 dark:text-slate-700">|</span>
             <a
@@ -1297,7 +1297,7 @@ function TitanFitEnterpriseShell() {
               data-testid="footer-terms-link"
               className="text-slate-700 underline-offset-4 hover:text-amber-600 hover:underline dark:text-slate-300 dark:hover:text-amber-400"
             >
-              {isAr ? 'شروط الاستخدام (مسودة)' : 'Terms of Use (Draft)'}
+              {isAr ? 'شروط الاستخدام' : 'Terms of Use'}
             </a>
           </nav>
         </div>
